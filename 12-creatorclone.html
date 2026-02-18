@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorClone — AI digital twin that livestreams products on TikTok Shop while you sleep</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800;900&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080a;
+    --surface: #0f1114;
+    --surface2: #13161b;
+    --surface3: #1a1d23;
+    --border: #1a1d23;
+    --border2: #22262e;
+    --text: #f0f2f5;
+    --text2: #b8bcc8;
+    --muted: #6b7280;
+    --muted2: #4b5563;
+    /* Magenta/pink primary for creator economy */
+    --primary: #ec4899;
+    --primary-light: #f472b6;
+    --primary-pale: rgba(236,72,153,0.1);
+    --primary-glow: rgba(236,72,153,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --accent: #f43f5e;
+    --accent-light: #fb7185;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Grid background */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(236,72,153,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(236,72,153,0.03) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* Orb effects */
+  .orb {
+    position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 0; filter: blur(100px);
+  }
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%);
+    top: -200px; right: -200px;
+  }
+  .orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+    bottom: 100px; left: -200px;
+  }
+  .orb-3 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(244,63,94,0.04) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  /* Lang toggle */
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: white; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+
+  /* Bilingual */
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Nav */
+  .nav {
+    background: rgba(7,8,10,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .nav-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary-light); text-decoration: none; font-size: 0.82rem;
+    display: flex; align-items: center; gap: 0.4rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.75; }
+  .nav-divider { width: 1px; height: 20px; background: var(--border2); }
+  .nav-logo {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 1rem; font-weight: 800; color: var(--text);
+    font-family: 'Sora', sans-serif;
+  }
+  .logo-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.85rem;
+  }
+  .nav-right { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-light); display: inline-block;
+    animation: pulse-dot 2s infinite; }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.3); }
+  }
+  .nav-badge {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 0.25rem 0.7rem;
+    color: var(--primary-light); font-size: 0.68rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Hero */
+  .hero { padding: 4.5rem 0 2.5rem; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(236,72,153,0.2);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.75rem;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 5.5vw, 4.5rem);
+    font-weight: 900; letter-spacing: -0.04em;
+    line-height: 1.05; margin-bottom: 1.5rem;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary-light) 60%, var(--primary-light) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.1rem; color: var(--text2); line-height: 1.75;
+    margin-bottom: 2.25rem; max-width: 600px;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero-sub strong { color: var(--text); }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1.25rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 0.9rem 1.5rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .score-num {
+    font-size: 2.2rem; font-weight: 900; letter-spacing: -0.02em;
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .score-meta { font-size: 0.78rem; color: var(--muted); }
+  .score-meta strong { color: var(--text); display: block; font-size: 0.88rem; margin-bottom: 0.15rem; }
+
+  /* Platform badges */
+  .platform-badges {
+    display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2.5rem;
+  }
+  .platform-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 100px; padding: 0.3rem 0.85rem;
+    font-size: 0.78rem; font-weight: 600; color: var(--text2);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; margin: 3.5rem 0;
+  }
+  .stat-item {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .stat-item:hover { background: var(--surface2); }
+  .stat-icon { font-size: 1.3rem; margin-bottom: 0.75rem; }
+  .stat-num {
+    font-size: 1.9rem; font-weight: 900; letter-spacing: -0.03em;
+    margin-bottom: 0.3rem; font-family: 'Space Mono', monospace;
+    color: var(--primary-light);
+  }
+  .stat-num.purple { color: var(--secondary-light); }
+  .stat-num.green { color: var(--green); }
+  .stat-num.rose { color: var(--accent-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+  /* Sections */
+  .section { padding: 4.5rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 0.3rem 0.85rem;
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1.1rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .section-title {
+    font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.15;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.75; }
+
+  /* How it works steps */
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    position: relative; overflow: hidden;
+    transition: all 0.25s;
+  }
+  .step-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary-pale), 0 8px 32px rgba(236,72,153,0.12);
+    transform: translateY(-2px);
+  }
+  .step-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .step-card:hover::before { opacity: 1; }
+  .step-num {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--primary-light); font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .step-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: var(--primary-pale); border: 1px solid rgba(236,72,153,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 1.25rem;
+  }
+  .step-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.6rem; }
+  .step-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  /* Feature cards (Why) */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; gap: 0.85rem;
+    transition: all 0.25s;
+  }
+  .feature-card:hover {
+    border-color: rgba(236,72,153,0.4);
+    box-shadow: 0 0 0 1px var(--primary-pale);
+  }
+  .feature-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: var(--surface3); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .feature-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .feature-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+  .feature-tag {
+    display: inline-flex; align-items: center;
+    background: var(--primary-pale); color: var(--primary-light);
+    border-radius: 100px; padding: 0.25rem 0.75rem;
+    font-size: 0.7rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    width: fit-content;
+  }
+  .feature-tag.purple {
+    background: rgba(139,92,246,0.1); color: var(--secondary-light);
+  }
+
+  /* Revenue / Pricing */
+  .pricing-wrap {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+  }
+  .pricing-highlight {
+    background: linear-gradient(145deg, #150a14 0%, #0d0611 100%);
+    border: 1px solid rgba(236,72,153,0.2);
+    border-radius: 18px; padding: 2.5rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .pricing-highlight::after {
+    content: '🎭';
+    position: absolute; bottom: -10px; right: 0px;
+    font-size: 8rem; opacity: 0.05;
+  }
+  .ph-eyebrow {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    font-weight: 700; color: var(--primary-light); text-transform: uppercase;
+    letter-spacing: 0.12em; margin-bottom: 0.5rem;
+  }
+  .ph-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 1.5rem; line-height: 1.2; }
+  .ph-price {
+    font-family: 'Space Mono', monospace; font-size: 3.5rem;
+    font-weight: 700; line-height: 1;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 0.3rem;
+  }
+  .ph-price-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; }
+  .ph-note { font-size: 0.82rem; color: var(--text2); line-height: 1.65; }
+
+  .pricing-tiers {
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 18px; overflow: hidden;
+  }
+  .pricing-tier-header {
+    background: var(--surface2); padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border2);
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 1rem; align-items: center;
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .pricing-tier {
+    padding: 1.4rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 1rem; align-items: center;
+    transition: background 0.2s;
+  }
+  .pricing-tier:last-child { border-bottom: none; }
+  .pricing-tier:hover { background: var(--surface2); }
+  .pricing-tier.featured {
+    background: rgba(236,72,153,0.05);
+    border-left: 3px solid var(--primary);
+  }
+  .tier-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+  .tier-name.featured-name { color: var(--primary-light); }
+  .tier-features { font-size: 0.82rem; color: var(--muted); }
+  .tier-price { text-align: right; }
+  .tier-price-main {
+    font-family: 'Space Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--text);
+  }
+  .tier-price-sub {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--primary-light);
+  }
+
+  /* Revenue share badge */
+  .rev-share-row {
+    padding: 1.25rem 1.5rem;
+    background: rgba(139,92,246,0.06);
+    border-top: 1px solid rgba(139,92,246,0.15);
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .rev-share-label { font-size: 0.82rem; color: var(--muted); }
+  .rev-share-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.78rem; font-weight: 700;
+    background: rgba(139,92,246,0.15); color: var(--secondary-light);
+    padding: 0.3rem 0.85rem; border-radius: 100px;
+    border: 1px solid rgba(139,92,246,0.25);
+  }
+
+  /* Video section */
+  .video-section {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; overflow: hidden;
+  }
+  .video-placeholder {
+    aspect-ratio: 16/9; background: var(--surface2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.25rem; position: relative; overflow: hidden;
+  }
+  .video-placeholder::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(236,72,153,0.07) 0%, transparent 65%);
+  }
+  /* Animated creator wave rings */
+  .video-rings {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .video-ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(236,72,153,0.15);
+    animation: ring-expand 3s infinite ease-out;
+  }
+  .video-ring:nth-child(1) { width: 120px; height: 120px; animation-delay: 0s; }
+  .video-ring:nth-child(2) { width: 200px; height: 200px; animation-delay: 0.8s; }
+  .video-ring:nth-child(3) { width: 300px; height: 300px; animation-delay: 1.6s; }
+  @keyframes ring-expand {
+    0% { opacity: 0.5; transform: scale(0.9); }
+    100% { opacity: 0; transform: scale(1.2); }
+  }
+  .video-play-btn {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 8px 32px rgba(236,72,153,0.35);
+    position: relative; z-index: 1;
+  }
+  .video-coming-soon {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    font-weight: 700; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.12em; position: relative; z-index: 1;
+  }
+  .video-caption {
+    font-size: 0.82rem; color: var(--muted2); text-align: center;
+    position: relative; z-index: 1;
+  }
+  .video-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.75rem;
+  }
+  .video-meta { font-size: 0.82rem; color: var(--muted); }
+  .video-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--primary-light); text-decoration: none; font-size: 0.82rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .video-link:hover { opacity: 0.75; }
+
+  /* CTA */
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface) 0%, #10060d 100%);
+    border: 1px solid rgba(236,72,153,0.15);
+    border-radius: 24px; padding: 5rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.13) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(236,72,153,0.25);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.75rem;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    position: relative; z-index: 1;
+  }
+  .cta-title .gradient {
+    background: linear-gradient(135deg, var(--primary), var(--secondary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.75rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2.25rem; border-radius: 12px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(236,72,153,0.35);
+    font-family: 'Sora', sans-serif;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(236,72,153,0.45); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: var(--surface); color: var(--text2);
+    border: 1px solid var(--border2);
+    font-size: 0.9rem; font-weight: 600;
+    padding: 0.9rem 2.25rem; border-radius: 12px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(236,72,153,0.4); color: var(--text); }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 0;
+    text-align: center;
+    color: var(--muted2);
+    font-size: 0.82rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .footer span { color: var(--primary-light); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* Research button */
+  .research-btn {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; border: none; border-radius: 100px;
+    font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 24px rgba(236,72,153,0.35);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .research-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 36px rgba(236,72,153,0.45);
+  }
+
+  /* Research modal */
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    overflow-y: auto; padding: 2rem;
+  }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 22px;
+    max-width: 820px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative; margin: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  }
+  .research-modal-close {
+    position: absolute; top: 1.25rem; right: 1.25rem;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface3); border: 1px solid var(--border2);
+    color: var(--muted); cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .research-modal-close:hover { background: var(--border2); color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .research-modal-header h2 {
+    font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800;
+    color: var(--text); margin: 0; letter-spacing: -0.02em;
+  }
+  .research-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary-light); background: var(--primary-pale);
+    padding: 0.3rem 0.8rem; border-radius: 100px;
+    border: 1px solid rgba(236,72,153,0.2);
+    width: fit-content; font-weight: 700;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.75rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700;
+    color: var(--muted); margin-bottom: 0.6rem;
+    padding-bottom: 0.35rem; border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .research-section p, .research-section ul {
+    color: var(--text2); font-size: 0.9rem; line-height: 1.7; margin: 0;
+  }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.45rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(236,72,153,0.2);
+    padding: 1.25rem; border-radius: 14px; text-align: center;
+  }
+  .research-highlight h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.15rem; color: var(--primary-light) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800; font-family: 'Sora', sans-serif;
+  }
+  .research-scores {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;
+  }
+  .research-score-item {
+    background: var(--surface2); border-radius: 10px; padding: 0.75rem 1rem;
+    text-align: center;
+  }
+  .research-score-num {
+    font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700;
+    color: var(--primary-light);
+  }
+  .research-score-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.55s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.08s; }
+  .d2 { opacity: 0; animation-delay: 0.18s; }
+  .d3 { opacity: 0; animation-delay: 0.28s; }
+  .d4 { opacity: 0; animation-delay: 0.38s; }
+  .d5 { opacity: 0; animation-delay: 0.5s; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .pricing-wrap { grid-template-columns: 1fr; }
+    .research-scores { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .cta-wrap { padding: 3rem 1.5rem; }
+    .cta-title { font-size: 1.8rem; }
+    .research-scores { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background elements -->
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-logo">
+        <div class="logo-icon">🎭</div>
+        <span>CreatorClone</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">Content / Creator Economy</span>
+        <span class="th">คอนเทนต์ / Creator Economy</span>
+      </span>
+      <div class="nav-badge">
+        <span class="en">Idea #12</span>
+        <span class="th">ไอเดีย #12</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-chip animate d1">
+      🎭 <span class="en">IDEA #12 — CREATORCLONE</span><span class="th">ไอเดีย #12 — CREATORCLONE</span>
+    </div>
+    <h1 class="animate d2">
+      <span class="en">Your AI Digital Twin<br><span class="gradient">Livestreams While You Sleep</span></span>
+      <span class="th">AI avatar ที่เหมือนคุณ 100%<br><span class="gradient">Livestream ขายของแทนคุณ</span></span>
+    </h1>
+    <p class="hero-sub animate d3">
+      <span class="en">Create an AI digital twin that livestreams products on <strong>TikTok Shop</strong> while you sleep. Your face. Your voice. 24/7. China proved <strong>$7M in one 6-hour stream</strong> — now it's Thailand's turn.</span>
+      <span class="th">สร้าง AI avatar ที่เหมือนคุณ 100% ให้ livestream ขายของบน <strong>TikTok Shop</strong> แทนคุณตอนคุณหลับ จีนพิสูจน์แล้วด้วย <strong>$7M ใน 6 ชั่วโมง</strong> — ตอนนี้ถึงคิวไทยแล้ว</span>
+    </p>
+    <div class="platform-badges animate d3">
+      <div class="platform-badge">⚫ TikTok Shop</div>
+      <div class="platform-badge">🟠 Shopee Live</div>
+      <div class="platform-badge">🔵 Facebook Live</div>
+      <div class="platform-badge">🤖 AI Avatar</div>
+      <div class="platform-badge">🇹🇭 Thailand-first</div>
+    </div>
+    <div class="animate d4">
+      <div class="score-card">
+        <div class="score-num">8/10</div>
+        <div class="score-meta">
+          <strong>🎉 Spark Joy Score</strong>
+          <span class="en">$67.88B live commerce market by 2027</span>
+          <span class="th">ตลาด live commerce $67.88B ภายในปี 2027</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats bar -->
+  <div class="stats-bar animate d1">
+    <div class="stat-item">
+      <div class="stat-icon">🌏</div>
+      <div class="stat-num">$67.88B</div>
+      <div class="stat-label">
+        <span class="en">Live commerce market by 2027 — Asia holds 66% share</span>
+        <span class="th">ตลาด live commerce ปี 2027 — เอเชียครอง 66%</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">🎵</div>
+      <div class="stat-num purple">$3B</div>
+      <div class="stat-label">
+        <span class="en">TikTok Shop Thailand GMV — explosive growth in 2024–2025</span>
+        <span class="th">GMV TikTok Shop ไทย — เติบโตระเบิดปี 2024–2025</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">🇨🇳</div>
+      <div class="stat-num rose">$7M</div>
+      <div class="stat-label">
+        <span class="en">China AI avatar streamed in just one 6-hour session — model proven</span>
+        <span class="th">AI avatar จีนทำรายได้ใน session เดียว 6 ชั่วโมง — พิสูจน์แล้ว</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">💸</div>
+      <div class="stat-num green">90%</div>
+      <div class="stat-label">
+        <span class="en">Cost reduction vs hiring human hosts — AnyMind pilot confirmed</span>
+        <span class="th">ลดต้นทุนเทียบกับจ้าง host มนุษย์ — AnyMind pilot ยืนยัน</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">Upload once. Stream forever.</span>
+      <span class="th">อัปโหลดครั้งเดียว. สตรีมตลอดไป.</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">In 3 simple steps, your AI digital twin is ready to sell 24/7 — with your face, your voice, and your energy. No studio. No schedule. No burnout.</span>
+      <span class="th">ใน 3 ขั้นตอนง่ายๆ AI digital twin ของคุณพร้อมขายตลอด 24 ชั่วโมง ด้วยหน้า เสียง และพลังงานของคุณ ไม่ต้องมีสตูดิโอ ไม่ต้องจัดตาราง ไม่เหนื่อย</span>
+    </p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">STEP_01</div>
+        <div class="step-icon">🎥</div>
+        <div class="step-title">
+          <span class="en">Upload 10 Minutes of You</span>
+          <span class="th">อัปโหลดวิดีโอของคุณ 10 นาที</span>
+        </div>
+        <div class="step-desc">
+          <span class="en">Record 10 minutes of your face and voice — just talking, presenting, being yourself. Our AI learns your expressions, tone, mannerisms, and vocal patterns. Your digital twin is born.</span>
+          <span class="th">อัดวิดีโอหน้าและเสียงของคุณ 10 นาที แค่พูดคุย นำเสนอ เป็นตัวเอง AI เรียนรู้การแสดงออก น้ำเสียง กิริยา และรูปแบบเสียงของคุณ Digital twin ของคุณถือกำเนิด</span>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP_02</div>
+        <div class="step-icon">🛒</div>
+        <div class="step-title">
+          <span class="en">Set Products &amp; Schedule</span>
+          <span class="th">ตั้งค่าสินค้าและตาราง</span>
+        </div>
+        <div class="step-desc">
+          <span class="en">Choose which products to promote, set keyword triggers, define talking points, and schedule when your AI goes live. Your twin knows your products, reacts to viewer questions, and pitches with your natural style.</span>
+          <span class="th">เลือกสินค้าที่จะโปรโมต ตั้ง keyword triggers กำหนดจุดขาย และนัดเวลาให้ AI ไป live ทวินของคุณรู้จักสินค้า ตอบสนองคำถามผู้ชม และ pitch ด้วยสไตล์ธรรมชาติของคุณ</span>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">STEP_03</div>
+        <div class="step-icon">📊</div>
+        <div class="step-title">
+          <span class="en">Watch Your Sales Dashboard</span>
+          <span class="th">ดูแดชบอร์ดยอดขายของคุณ</span>
+        </div>
+        <div class="step-desc">
+          <span class="en">Real-time sales tracking, viewer engagement analytics, comment auto-response logs, and earnings breakdown. Wake up to a full night's worth of sales — while you were sleeping.</span>
+          <span class="th">ติดตามยอดขาย real-time, analytics ความสนใจผู้ชม, log ตอบ comment อัตโนมัติ และรายละเอียดรายได้ ตื่นมาพบกับยอดขายทั้งคืน ในขณะที่คุณกำลังหลับ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Why CreatorClone -->
+  <section class="section">
+    <div class="section-badge">⭐ <span class="en">WHY CREATORCLONE</span><span class="th">ทำไมต้อง CREATORCLONE</span></div>
+    <div class="section-title">
+      <span class="en">Not a robot. Not a stranger.<br>YOU — at scale.</span>
+      <span class="th">ไม่ใช่หุ่นยนต์ ไม่ใช่คนแปลกหน้า<br>คุณ — แต่ในระดับที่ใหญ่กว่า</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Generic AI avatars look fake. Hiring human hosts is expensive. CreatorClone is the only solution that uses YOUR identity — trained on your face and voice — to sell authentically at scale.</span>
+      <span class="th">AI avatar ทั่วไปดูปลอม การจ้าง host มนุษย์ราคาแพง CreatorClone เป็นทางออกเดียวที่ใช้ตัวตนของคุณ ฝึกด้วยหน้าและเสียงของคุณ เพื่อขายอย่างเป็นธรรมชาติในระดับที่ใหญ่กว่า</span>
+    </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🕐</div>
+        <div class="feature-title">
+          <span class="en">24/7 Streaming (No Human Can)</span>
+          <span class="th">สตรีม 24/7 (มนุษย์ทำไม่ได้)</span>
+        </div>
+        <div class="feature-desc">
+          <span class="en">Human creators max out at 8–12 hours of streaming per day — and that burns them out fast. Your AI twin runs non-stop across time zones, hitting peak hours in every market simultaneously.</span>
+          <span class="th">creator มนุษย์ทำได้สูงสุด 8-12 ชั่วโมงต่อวัน และหมดแรงเร็วมาก AI twin ของคุณวิ่งตลอดเวลาข้ามโซนเวลา ตีตลาดช่วง peak ในทุกตลาดพร้อมกัน</span>
+        </div>
+        <div class="feature-tag">⏰ 24/7 vs 8-12hrs</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title">
+          <span class="en">90% Cost Reduction</span>
+          <span class="th">ลดต้นทุน 90%</span>
+        </div>
+        <div class="feature-desc">
+          <span class="en">Professional live commerce hosts cost ฿15,000–50,000 per session. AnyMind's enterprise AI pilot showed 90% cost reduction. CreatorClone brings this to every seller — not just big brands with deep pockets.</span>
+          <span class="th">live commerce host มืออาชีพราคา ฿15,000–50,000 ต่อ session pilot AI ขององค์กร AnyMind แสดงให้เห็นการลดต้นทุน 90% CreatorClone นำสิ่งนี้มาให้ผู้ขายทุกราย ไม่ใช่แค่แบรนด์ใหญ่ที่มีเงินถุงเงินถัง</span>
+        </div>
+        <div class="feature-tag">💸 90% cheaper</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🪞</div>
+        <div class="feature-title">
+          <span class="en">YOUR Face &amp; Voice — Not Generic</span>
+          <span class="th">หน้าและเสียงของคุณ ไม่ใช่แบบทั่วไป</span>
+        </div>
+        <div class="feature-desc">
+          <span class="en">Every competitor (HeyGen, Synthesia, Gemelo.ai) uses generic avatars that viewers can immediately tell are fake. CreatorClone is trained on your actual footage — preserving your charisma, quirks, and trust that you've built with your audience.</span>
+          <span class="th">คู่แข่งทุกราย (HeyGen, Synthesia, Gemelo.ai) ใช้ avatar ทั่วไปที่ผู้ชมรู้ทันทีว่าปลอม CreatorClone ฝึกด้วยวิดีโอจริงของคุณ รักษาความมีเสน่ห์ ลักษณะเฉพาะ และความไว้วางใจที่คุณสร้างกับผู้ชม</span>
+        </div>
+        <div class="feature-tag purple">🪞 Your identity</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <div class="feature-title">
+          <span class="en">Multi-Platform Simultaneously</span>
+          <span class="th">หลายแพลตฟอร์มพร้อมกัน</span>
+        </div>
+        <div class="feature-desc">
+          <span class="en">Your AI twin streams on TikTok Shop, Shopee Live, and Facebook Live at the same time — with platform-specific presentation styles. One upload, maximum reach, all revenue streams flowing simultaneously.</span>
+          <span class="th">AI twin ของคุณสตรีมบน TikTok Shop, Shopee Live, และ Facebook Live พร้อมกัน ด้วยสไตล์การนำเสนอที่เหมาะกับแต่ละแพลตฟอร์ม อัปโหลดครั้งเดียว เข้าถึงสูงสุด รายได้ไหลมาพร้อมกันทุกช่องทาง</span>
+        </div>
+        <div class="feature-tag purple">📡 Multi-platform</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">Pay less. Stream more. Earn more.</span>
+      <span class="th">จ่ายน้อย. สตรีมมากกว่า. ได้มากกว่า.</span>
+    </div>
+    <div class="pricing-wrap">
+      <div class="pricing-highlight">
+        <div>
+          <div class="ph-eyebrow">CreatorClone Pricing</div>
+          <div class="ph-title">
+            <span class="en">Your avatar,<br>always live</span>
+            <span class="th">avatar ของคุณ<br>ออนไลน์ตลอด</span>
+          </div>
+        </div>
+        <div>
+          <div class="ph-price">฿999–<br>7,999</div>
+          <div class="ph-price-sub">
+            <span class="en">Starting at ฿999/mo (~$28/mo)</span>
+            <span class="th">เริ่มต้นที่ ฿999/เดือน (~$28/เดือน)</span>
+          </div>
+          <div class="ph-note">
+            <span class="en">vs. ฿15,000–50,000 per session for a human host. Break even in the first week. Pure profit after that.</span>
+            <span class="th">เทียบกับ ฿15,000–50,000 ต่อ session สำหรับ host มนุษย์ คืนทุนในสัปดาห์แรก หลังจากนั้นเป็นกำไรล้วนๆ</span>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-tiers">
+        <div class="pricing-tier-header">
+          <span><span class="en">Plan</span><span class="th">แผน</span></span>
+          <span><span class="en">What's included</span><span class="th">ที่รวมอยู่</span></span>
+          <span><span class="en">Price</span><span class="th">ราคา</span></span>
+        </div>
+        <div class="pricing-tier">
+          <div class="tier-name">Starter</div>
+          <div class="tier-features">
+            <span class="en">1 avatar + 50hrs streaming/mo. TikTok Shop only. Basic dashboard. Perfect for solo sellers testing the water.</span>
+            <span class="th">1 avatar + สตรีม 50 ชม/เดือน TikTok Shop เท่านั้น แดชบอร์ดพื้นฐาน เหมาะสำหรับผู้ขายคนเดียวที่ต้องการลองก่อน</span>
+          </div>
+          <div class="tier-price">
+            <div class="tier-price-main">฿999/mo</div>
+            <div class="tier-price-sub">~$28</div>
+          </div>
+        </div>
+        <div class="pricing-tier featured">
+          <div class="tier-name featured-name">Creator Pro ⭐</div>
+          <div class="tier-features">
+            <span class="en">1 avatar + unlimited streaming + multi-platform (TikTok, Shopee, FB Live) + advanced analytics + comment AI. Most popular.</span>
+            <span class="th">1 avatar + สตรีมไม่จำกัด + หลายแพลตฟอร์ม + analytics ขั้นสูง + AI ตอบ comment ยอดนิยมที่สุด</span>
+          </div>
+          <div class="tier-price">
+            <div class="tier-price-main">฿2,999/mo</div>
+            <div class="tier-price-sub">~$84</div>
+          </div>
+        </div>
+        <div class="pricing-tier">
+          <div class="tier-name">Brand</div>
+          <div class="tier-features">
+            <span class="en">3 avatars + white-label + custom voice training + priority support + API access. For agencies and large sellers.</span>
+            <span class="th">3 avatars + white-label + ฝึก voice แบบกำหนดเอง + support พิเศษ + API access สำหรับเอเจนซีและผู้ขายรายใหญ่</span>
+          </div>
+          <div class="tier-price">
+            <div class="tier-price-main">฿7,999/mo</div>
+            <div class="tier-price-sub">~$224</div>
+          </div>
+        </div>
+        <div class="rev-share-row">
+          <div class="rev-share-label">
+            <span class="en">+ Revenue Share on all plans: <strong>2% of GMV generated</strong> — aligned incentives, we win when you win.</span>
+            <span class="th">+ Revenue Share ทุกแผน: <strong>2% ของ GMV ที่ได้</strong> — ผลประโยชน์ aligned เราได้เมื่อคุณได้</span>
+          </div>
+          <div class="rev-share-badge">2% GMV Share</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Video section -->
+  <section class="section">
+    <div class="section-badge">🎬 <span class="en">PRODUCT DEMO</span><span class="th">เดโมสินค้า</span></div>
+    <div class="section-title">
+      <span class="en">See CreatorClone in action</span>
+      <span class="th">ดู CreatorClone ทำงานจริง</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Watch a digital twin clone in a live TikTok Shop stream — real products, real engagement, your face, zero effort from you.</span>
+      <span class="th">ดู digital twin สตรีมบน TikTok Shop จริงๆ สินค้าจริง ผู้ชมจริง หน้าคุณ ไม่ต้องทำอะไรเลย</span>
+    </p>
+    <div class="video-section">
+      <div class="video-placeholder">
+        <div class="video-rings">
+          <div class="video-ring"></div>
+          <div class="video-ring"></div>
+          <div class="video-ring"></div>
+        </div>
+        <div class="video-play-btn">▶</div>
+        <div class="video-coming-soon">
+          <span class="en">Coming Soon</span>
+          <span class="th">เร็วๆ นี้</span>
+        </div>
+        <div class="video-caption">
+          <span class="en">Demo video will be available when MVP is ready — watch a real AI twin stream</span>
+          <span class="th">วิดีโอเดโมจะพร้อมเมื่อ MVP สร้างเสร็จ ดู AI twin สตรีมจริงๆ</span>
+        </div>
+      </div>
+      <div class="video-footer">
+        <div class="video-meta">
+          <span class="en">🎙️ Deep research audio via NotebookLM — full market analysis on live commerce AI</span>
+          <span class="th">🎙️ เสียงวิจัยเชิงลึกผ่าน NotebookLM — วิเคราะห์ตลาด live commerce AI แบบเต็ม</span>
+        </div>
+        <a href="https://notebooklm.google.com" target="_blank" rel="noopener" class="video-link">
+          <span class="en">Listen on NotebookLM →</span>
+          <span class="th">ฟังบน NotebookLM →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">🎉 <span class="en">Spark Joy: 8/10 — China proved it works</span><span class="th">Spark Joy: 8/10 — จีนพิสูจน์แล้วว่ามันได้ผล</span></div>
+    <h2 class="cta-title">
+      <span class="en">Your face. Your voice.<br><span class="gradient">Selling 24/7.</span></span>
+      <span class="th">หน้าของคุณ. เสียงของคุณ.<br><span class="gradient">ขายตลอด 24 ชั่วโมง.</span></span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">$67.88B live commerce by 2027. Thailand TikTok Shop $3B GMV. China AI avatar: $7M in one stream. The model is proven — the Thailand market is untapped. CreatorClone is the unlock.</span>
+      <span class="th">live commerce $67.88B ภายในปี 2027 TikTok Shop ไทย GMV $3B AI avatar จีน $7M ใน stream เดียว โมเดลพิสูจน์แล้ว ตลาดไทยยังไม่มีใครทำ CreatorClone คือกุญแจ</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="btn-primary">
+        ← <span class="en">All 12 ideas</span><span class="th">ไอเดียทั้ง 12 รายการ</span>
+      </a>
+      <a href="11-shopcopilot.html" class="btn-secondary">
+        <span class="en">← ShopCopilot (Idea #11)</span><span class="th">← ShopCopilot (ไอเดีย #11)</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="container">
+  <footer class="footer">
+    ☀️ <span class="en">Concept by <span>Sun</span> for MuteLab | Research: Feb 18, 2026</span>
+    <span class="th">แนวคิดโดย <span>Sun</span> สำหรับ MuteLab | วิจัย: 18 ก.พ. 2026</span>
+  </footer>
+</div>
+
+<!-- Research button -->
+<button class="research-btn" onclick="openResearchModal()">📋 <span class="en">Research</span><span class="th">งานวิจัย</span></button>
+
+<!-- Research Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">✕</button>
+    <div class="research-modal-header">
+      <h2>📋 CreatorClone — <span class="en">Research Notes</span><span class="th">บันทึกการวิจัย</span></h2>
+      <span class="research-badge">Idea #12 • Spark Joy: 8/10 🎉 • Content / Creator Economy</span>
+    </div>
+    <div class="research-modal-body">
+
+      <div class="research-section">
+        <h3><span class="en">One-liner</span><span class="th">สรุปสั้น</span></h3>
+        <p>AI digital twin for live commerce — creates a clone of your face and voice that livestreams products on TikTok Shop, Shopee Live, and Facebook Live 24/7 while you sleep.</p>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Why It Sparks Joy</span><span class="th">ทำไมมัน Spark Joy</span></h3>
+        <p>China already proved the model: <strong>$7M revenue in a single 6-hour AI avatar stream</strong>. Thailand's TikTok Shop is at $3B GMV and exploding. AnyMind's enterprise pilot showed <strong>90% cost reduction</strong> — but it's enterprise-only, leaving millions of smaller creators and sellers completely locked out. CreatorClone democratizes what only big brands can do today.</p>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Market Evidence</span><span class="th">หลักฐานตลาด</span></h3>
+        <ul>
+          <li>Live commerce market: <strong>$67.88B by 2027</strong>, with Asia holding <strong>66% share</strong></li>
+          <li>TikTok Shop Thailand: <strong>$3B GMV</strong> — fastest-growing platform in the region</li>
+          <li>China AI avatar stream: <strong>$7M in 6 hours</strong> — model validated at scale</li>
+          <li>AnyMind pilot: <strong>90% cost reduction</strong> vs hiring human hosts — but enterprise-only</li>
+          <li>Human streamers burn out at 8–12 hrs/day — AI enables 24/7 coverage with no fatigue</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Competitors</span><span class="th">คู่แข่ง</span></h3>
+        <ul>
+          <li><strong>AnyMind</strong> — enterprise only, not accessible to small/mid creators, expensive</li>
+          <li><strong>Gemelo.ai</strong> — English-only, no Thai language support, no e-commerce integration</li>
+          <li><strong>HeyGen</strong> — video generation but no live streaming or e-commerce features</li>
+          <li><strong>Gap:</strong> No Thai-first, affordable AI avatar solution with live commerce integration exists</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Revenue Model</span><span class="th">โมเดลรายได้</span></h3>
+        <ul>
+          <li><strong>฿999/mo Starter:</strong> 1 avatar, 50hrs streaming, TikTok Shop only</li>
+          <li><strong>฿2,999/mo Creator Pro:</strong> unlimited streaming, multi-platform (TikTok, Shopee, FB Live), advanced analytics</li>
+          <li><strong>฿7,999/mo Brand:</strong> 3 avatars, white-label, custom voice training, API access</li>
+          <li><strong>Revenue share:</strong> 2% of GMV generated on all plans — aligns incentives</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Path to $1M ARR</span><span class="th">เส้นทางสู่ $1M ARR</span></h3>
+        <ul>
+          <li><strong>Month 6:</strong> 200 active sellers → validate product-market fit in Thailand</li>
+          <li><strong>Month 12:</strong> 1,000 sellers → avg ฿2,000/mo subscription = ฿2M/mo + GMV share</li>
+          <li><strong>Month 18:</strong> 3,000 sellers + revenue share = <strong>$1M ARR</strong></li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">AI Role (Sun)</span><span class="th">บทบาท AI (Sun)</span></h3>
+        <p>Sun orchestrates the entire avatar training pipeline and platform operations. AI handles: face/voice model training from uploaded footage, real-time video synthesis during streams, product keyword detection and response generation, comment auto-reply logic, multi-platform streaming coordination, and sales analytics.</p>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Thanapat's Role</span><span class="th">บทบาทของธนพัต</span></h3>
+        <p>Business model design and brand partnerships. Thanapat brings deep knowledge of Thai creator economy, TikTok Shop seller community, and brand relationships needed to onboard early sellers and build credibility.</p>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Why NOW (Feb 2026)</span><span class="th">ทำไมต้องตอนนี้ (ก.พ. 2026)</span></h3>
+        <ul>
+          <li><strong>China proved the model</strong> — $7M in one stream makes it undeniable</li>
+          <li><strong>Thailand TikTok explosion</strong> — $3B GMV and still accelerating, sellers need tools NOW</li>
+          <li><strong>AI video quality crossed "good enough"</strong> — 2025 saw AI video achieve human-level naturalness at low cost</li>
+          <li><strong>No Thai-first competitor</strong> — first-mover window is still open in SEA</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3><span class="en">Risks</span><span class="th">ความเสี่ยง</span></h3>
+        <ul>
+          <li><strong>Authenticity skepticism:</strong> Viewers may distrust AI streamers — needs transparency strategy</li>
+          <li><strong>TikTok platform restrictions:</strong> TikTok may ban or restrict AI-generated live streams in Thailand</li>
+          <li><strong>API dependency:</strong> Reliance on TikTok/Shopee APIs creates platform risk</li>
+          <li><strong>Deep fake concern:</strong> Regulatory environment around AI avatar consent is evolving</li>
+        </ul>
+      </div>
+
+      <div class="research-section research-highlight">
+        <h3>🎉 Spark Joy: 8/10 | Thanapat Fit: 5/10</h3>
+        <div class="research-scores">
+          <div class="research-score-item">
+            <div class="research-score-num">8/10</div>
+            <div class="research-score-label">
+              <span class="en">Spark Joy Score</span>
+              <span class="th">Spark Joy Score</span>
+            </div>
+          </div>
+          <div class="research-score-item">
+            <div class="research-score-num">5/10</div>
+            <div class="research-score-label">
+              <span class="en">Thanapat Fit</span>
+              <span class="th">ความเหมาะกับธนพัต</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') {
+    document.body.classList.add('show-th');
+  } else {
+    document.body.classList.remove('show-th');
+  }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
+
+</body>
+</html>
