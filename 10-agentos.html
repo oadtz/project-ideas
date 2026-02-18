@@ -1089,5 +1089,237 @@ function setLang(lang) {
   });
 }
 </script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 AgentOS</h2>
+      <span class="research-badge">Idea #10 • Spark Joy: 8/10 🔥</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3>One-liner</h3>
+        <p>Platform ให้ businesses deploy และ manage ทีม AI agents ที่ทำงานร่วมกัน — เหมือน "HR system for AI employees"</p>
+      </section>
+      <section class="research-section">
+        <h3>ทำไมมัน spark joy</h3>
+        <p>เราใช้ OpenClaw จัดการ AI agents (Sun, Steve, Oat) มาแล้ว — เรารู้จาก first-hand experience ว่ามันต้องการอะไร ทุกบริษัทกำลังจะต้องจัดการ "AI employees" — ใครจะ assign งาน? ใครจะตรวจ quality? ใครจะจัดการ budget? นี่คือ HR/project management แต่สำหรับ AI agents</p>
+      </section>
+      <section class="research-section">
+        <h3>วิธีทำงาน</h3>
+        <ul>
+          <li>ลง agents เข้า "team" — กำหนด role, permissions, budget limits</li>
+          <li>Assign tasks → agents ทำงาน → ระบบ track progress + quality</li>
+          <li>Dashboard: เห็น output ทุก agent, cost per agent, performance metrics</li>
+          <li>Escalation: agent ไม่แน่ใจ → escalate ให้ human approve</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Market evidence</h3>
+        <ul>
+          <li>"61% of employees expect their job role to change significantly in 2026 due to AI agents" (IBM)</li>
+          <li>Microsoft Convergence 2025: "agentic business applications" era</li>
+          <li>Mercor: $4.5M revenue per employee using AI agents</li>
+          <li>"23 companies building infrastructure for AI agents" (HaaS on SaaS, Sep 2025)</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Revenue model</h3>
+        <p>$99-999/mo per "team" depending on # agents + features</p>
+      </section>
+      <section class="research-section">
+        <h3>Path to $1M</h3>
+        <ul>
+          <li><strong>Month 1-3:</strong> MVP (use our OpenClaw experience as foundation)</li>
+          <li><strong>Month 6:</strong> 50 teams → $25K/mo</li>
+          <li><strong>Month 12:</strong> 200 teams → $100K/mo</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>AI role (Sun)</h3>
+        <p>Sun builds platform, uses our experience running multi-agent teams</p>
+      </section>
+      <section class="research-section">
+        <h3>Thanapat role</h3>
+        <p>Product vision, enterprise sales, architecture</p>
+      </section>
+      <section class="research-section">
+        <h3>Why NOW</h3>
+        <p>Agent adoption exploding, no standard "agent management" tool yet, we have real experience</p>
+      </section>
+      <section class="research-section">
+        <h3>Risks</h3>
+        <p>OpenAI/Microsoft อาจ build it natively, complex product to build, enterprise sales cycle long</p>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>🔥 Spark Joy Score: 8/10</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+.research-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, var(--cyan), var(--cyan-light));
+  color: white;
+  border: none;
+  border-radius: 980px;
+  font-family: -apple-system, 'Geist', 'Noto Sans Thai', BlinkMacSystemFont, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--cyan-glow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+}
+.research-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(6,182,212,0.4);
+}
+.research-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  overflow-y: auto;
+  padding: 2rem;
+}
+.research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+.research-modal-content {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(209,209,214,0.8);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.08);
+  -webkit-font-smoothing: antialiased;
+}
+.research-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 1.8rem;
+  color: var(--muted);
+  background: var(--surface3);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 28px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.research-modal-close:hover {
+  background: var(--border2);
+  color: var(--text);
+}
+.research-modal-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.research-modal-header h2 {
+  font-family: -apple-system, 'Geist', BlinkMacSystemFont, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.research-badge {
+  font-family: 'Geist Mono', 'SF Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--cyan);
+  background: var(--cyan-pale);
+  padding: 0.3rem 0.8rem;
+  border-radius: 980px;
+  border: 1px solid rgba(6,182,212,0.2);
+  width: fit-content;
+  font-weight: 500;
+}
+.research-modal-body { padding: 1.5rem 2rem 2rem; }
+.research-section { margin-bottom: 1.5rem; }
+.research-section:last-child { margin-bottom: 0; }
+.research-section h3 {
+  font-family: -apple-system, 'Geist', BlinkMacSystemFont, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.research-section p, .research-section ul {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin: 0;
+}
+.research-section ul { padding-left: 1.5rem; }
+.research-section li { margin-bottom: 0.4rem; }
+.research-highlight {
+  background: var(--cyan-pale);
+  border: 1px solid rgba(6,182,212,0.2);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+.research-highlight h3 {
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--cyan) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+</style>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
 </body>
 </html>

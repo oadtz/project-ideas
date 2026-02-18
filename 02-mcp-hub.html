@@ -554,12 +554,222 @@
   </footer>
 </div>
 
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 MCP Hub</h2>
+      <span class="research-badge">Idea #02 • Spark Joy: 8/10 🔥</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3>One-liner</h3>
+        <p>Registry + Marketplace สำหรับ MCP (Model Context Protocol) servers — ที่เดียวที่ developers มาหา, ติดตั้ง, และขาย AI tool integrations</p>
+      </section>
+      <section class="research-section">
+        <h3>ทำไมมัน spark joy</h3>
+        <p>MCP คือมาตรฐานใหม่ที่ Anthropic สร้าง (donate ให้ Linux Foundation แล้ว, ร่วมกับ OpenAI + Block) — มันเป็น "USB-C ของ AI" ที่ทำให้ AI models เชื่อมต่อกับ tools ได้ทั้งหมด ตอนนี้ ecosystem กำลังระเบิด แต่ <strong>ยังไม่มี npm-style registry ที่ดี</strong> — นี่คือ timing เดียวกับตอน npm เริ่มต้น</p>
+      </section>
+      <section class="research-section">
+        <h3>วิธีทำงาน</h3>
+        <ul>
+          <li>Developers publish MCP servers (ตัว connector ระหว่าง AI กับบริการต่างๆ)</li>
+          <li>Users ค้นหา ติดตั้ง รีวิว</li>
+          <li>Premium tier สำหรับ enterprise-grade servers + analytics + support</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Market evidence</h3>
+        <ul>
+          <li>MCP donated to Linux Foundation (Dec 2025) — backed by Anthropic, OpenAI, Block</li>
+          <li>Thoughtworks: "thriving ecosystem energy... will doubtless see an interesting and innovative 2026"</li>
+          <li>เปรียบเทียบ: npm Inc ถูก GitHub ซื้อไป — registry ที่ชนะ = มูลค่ามหาศาล</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Revenue model</h3>
+        <p>Free tier + paid listings ($29-99/mo) + enterprise plan ($499+/mo) + transaction fees for paid servers</p>
+      </section>
+      <section class="research-section">
+        <h3>Path to $1M</h3>
+        <ul>
+          <li><strong>Month 1-2:</strong> สร้าง registry MVP</li>
+          <li><strong>Month 3:</strong> 200 servers listed, developer adoption</li>
+          <li><strong>Month 12:</strong> 2,000+ servers, 500 paid listings → $50-100K/mo</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>AI role (Sun)</h3>
+        <p>Sun builds platform, auto-indexes public MCP servers, generates docs, handles community</p>
+      </section>
+      <section class="research-section">
+        <h3>Thanapat role</h3>
+        <p>Technical architecture, developer relations strategy</p>
+      </section>
+      <section class="research-section">
+        <h3>Why NOW</h3>
+        <p>MCP เพิ่งเป็นมาตรฐาน, ecosystem กำลังก่อตัว, ยังไม่มี dominant hub</p>
+      </section>
+      <section class="research-section">
+        <h3>Risks</h3>
+        <p>Anthropic/OpenAI อาจสร้าง official registry เอง, open-source alternatives</p>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>🔥 Spark Joy Score: 8/10</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+.research-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,200,83,0.3);
+  transition: all 0.2s ease;
+}
+.research-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,200,83,0.4);
+}
+.research-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+  padding: 2rem;
+}
+.research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+.research-modal-content {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
+}
+.research-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.research-modal-close:hover { color: var(--text); }
+.research-modal-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.research-modal-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+.research-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--primary-dark);
+  background: rgba(0,200,83,0.1);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid rgba(0,200,83,0.2);
+  width: fit-content;
+}
+.research-modal-body {
+  padding: 1.5rem 2rem 2rem;
+}
+.research-section {
+  margin-bottom: 1.5rem;
+}
+.research-section:last-child { margin-bottom: 0; }
+.research-section h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.research-section p, .research-section ul {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin: 0;
+}
+.research-section ul { padding-left: 1.5rem; }
+.research-section li { margin-bottom: 0.4rem; }
+.research-highlight {
+  background: rgba(0,200,83,0.08);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+.research-highlight h3 {
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+}
+</style>
+
 <script>
 function setLang(lang) {
   document.body.classList.toggle('show-th', lang === 'th');
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
 }
+
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeResearchModal(); }
+});
+
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) { closeResearchModal(); }
+});
 </script>
 </body>
 </html>

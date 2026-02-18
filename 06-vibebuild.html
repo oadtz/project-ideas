@@ -954,5 +954,218 @@
     }
   }
 </script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 VibeBuild Thailand</h2>
+      <span class="research-badge">Idea #06 • Spark Joy: 8/10 🔥</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3>One-liner</h3>
+        <p>Platform ให้คนไทยสร้าง app/เว็บ/ร้านค้าออนไลน์ด้วยการพิมพ์ภาษาไทย — vibe coding สำหรับ 63 ล้านคน</p>
+      </section>
+      <section class="research-section">
+        <h3>ทำไมมัน spark joy</h3>
+        <p>Base44 ทำ $15M/year สำหรับตลาด global ภาษาอังกฤษ แต่ <strong>ยังไม่มีใครทำ vibe coding ภาษาไทย</strong> คนไทย 63 ล้านคนออนไลน์ SME ไทย 3 ล้านราย ส่วนใหญ่ไม่รู้ code — ถ้าบอกว่า "อยากได้ร้านขายเสื้อผ้า มีตะกร้า จ่ายผ่าน PromptPay" แล้ว AI สร้างให้ = game changer</p>
+      </section>
+      <section class="research-section">
+        <h3>วิธีทำงาน</h3>
+        <ul>
+          <li>พิมพ์ภาษาไทย: "สร้างเว็บร้านกาแฟ มีเมนู สั่งออนไลน์ จ่ายผ่าน PromptPay"</li>
+          <li>AI สร้าง full working app — deploy ได้เลย</li>
+          <li>Integration กับ ecosystem ไทย: PromptPay, LINE OA, Shopee, Kerry Express</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Market evidence</h3>
+        <ul>
+          <li>Base44: $15M revenue in 1 year, $80M valuation</li>
+          <li>Thai e-commerce: $32B (2025), Thai SMEs: 3M+</li>
+          <li>LINE MINI App opportunity: "next major opportunity for brands in Asian markets" (Omisoft, Dec 2025)</li>
+          <li>Vibe coding: Microsoft backing it, multiple $10M+ startups</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Revenue model</h3>
+        <p>Freemium — free basic apps → $19/mo Pro → $49/mo Business → custom enterprise</p>
+      </section>
+      <section class="research-section">
+        <h3>Path to $1M</h3>
+        <ul>
+          <li><strong>Month 1-3:</strong> MVP with basic Thai-language app builder</li>
+          <li><strong>Month 6:</strong> 1,000 users, 200 paid → $5-10K/mo</li>
+          <li><strong>Month 12:</strong> 5,000 users, 1,000 paid → $30-50K/mo</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>AI role (Sun)</h3>
+        <p>Sun builds platform, handles Thai NLU, generates apps, customer support</p>
+      </section>
+      <section class="research-section">
+        <h3>Thanapat role</h3>
+        <p>Product vision, Thai market strategy, LINE/PromptPay integrations</p>
+      </section>
+      <section class="research-section">
+        <h3>Why NOW</h3>
+        <p>Vibe coding กำลังเป็นเทรนด์ แต่ไม่มี Thai-first solution, LINE MINI App ecosystem กำลังโต</p>
+      </section>
+      <section class="research-section">
+        <h3>Risks</h3>
+        <p>Global players (Bolt.new, Base44) อาจเพิ่มภาษาไทย, ต้อง localize integrations เยอะ</p>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>🔥 Spark Joy Score: 8/10</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+.research-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, var(--blue), var(--blue-light));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Mitr', 'Noto Sans Thai', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,48,135,0.4);
+  transition: all 0.3s ease;
+}
+.research-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,48,135,0.5);
+  background: linear-gradient(135deg, var(--red), var(--blue));
+}
+.research-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(26,26,46,0.85);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+  padding: 2rem;
+}
+.research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+.research-modal-content {
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(0,48,135,0.2);
+}
+.research-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.research-modal-close:hover { color: var(--red); }
+.research-modal-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--blue-pale), #fff0f5);
+  border-radius: 20px 20px 0 0;
+}
+.research-modal-header h2 {
+  font-family: 'Kanit', 'Noto Sans Thai', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--blue);
+  margin: 0;
+}
+.research-badge {
+  font-size: 0.75rem;
+  color: var(--red);
+  background: rgba(227,28,61,0.1);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: 1px solid rgba(227,28,61,0.25);
+  width: fit-content;
+  font-weight: 600;
+}
+.research-modal-body { padding: 1.5rem 2rem 2rem; }
+.research-section { margin-bottom: 1.5rem; }
+.research-section:last-child { margin-bottom: 0; }
+.research-section h3 {
+  font-family: 'Kanit', 'Noto Sans Thai', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--blue-pale);
+}
+.research-section p, .research-section ul {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin: 0;
+}
+.research-section ul { padding-left: 1.5rem; }
+.research-section li { margin-bottom: 0.4rem; }
+.research-highlight {
+  background: linear-gradient(135deg, var(--blue-pale), rgba(212,160,23,0.1));
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--gold);
+}
+.research-highlight h3 {
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--red) !important;
+}
+</style>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
 </body>
 </html>

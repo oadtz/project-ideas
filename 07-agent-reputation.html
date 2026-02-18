@@ -887,5 +887,223 @@ function setLang(lang) {
   });
 }
 </script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 Agent Reputation Protocol</h2>
+      <span class="research-badge">Idea #07 • Spark Joy: 9/10 🔥</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3>One-liner</h3>
+        <p>On-chain reputation + identity system สำหรับ AI agents — ทำให้ agents มี "ประวัติการทำงาน" ที่ verify ได้ ก่อนจ้างงาน</p>
+      </section>
+      <section class="research-section">
+        <h3>ทำไมมัน spark joy</h3>
+        <p>เมื่อ agents เริ่มทำธุรกรรมกันเอง (ซื้อ, ขาย, negotiate) → ปัญหาใหญ่คือ <strong>trust</strong> ฉันจะจ้าง agent ตัวนี้ได้ยังไงถ้าไม่รู้ว่ามันเคยทำงานดีมาก่อน? นี่คือปัญหาเดียวกับ e-commerce ยุคแรก (eBay แก้ด้วย seller ratings) — แต่สำหรับ machines</p>
+      </section>
+      <section class="research-section">
+        <h3>วิธีทำงาน</h3>
+        <ul>
+          <li>Agents ลงทะเบียน → ได้ on-chain identity (DID)</li>
+          <li>ทุก task ที่ทำเสร็จ → ได้ verified credential on-chain</li>
+          <li>Hiring agents ดู reputation score ก่อนจ้าง</li>
+          <li>Smart contracts enforce SLA + automatic escrow</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Market evidence</h3>
+        <ul>
+          <li>AI agent trust = top enterprise blocker (multiple sources 2025-2026)</li>
+          <li>DePIN + AI agent intersection is growing fast</li>
+          <li>eBay's reputation system was KEY to e-commerce adoption</li>
+          <li>Virtuals Protocol: agents on Base chain already transacting autonomously</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Revenue model</h3>
+        <p>Verification fees ($0.01-0.10 per credential) + premium reputation analytics ($49-299/mo) + enterprise integration</p>
+      </section>
+      <section class="research-section">
+        <h3>Path to $1M</h3>
+        <ul>
+          <li><strong>Month 1-4:</strong> Build protocol + initial adoption</li>
+          <li><strong>Month 6:</strong> 10,000 agents registered</li>
+          <li><strong>Month 12:</strong> 100,000 agents, 1M+ verifications → $50-100K/mo</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>AI role (Sun)</h3>
+        <p>Sun builds protocol, smart contracts, manages community</p>
+      </section>
+      <section class="research-section">
+        <h3>Thanapat role</h3>
+        <p>Blockchain architecture (CTO at Water Ledger = perfect background!)</p>
+      </section>
+      <section class="research-section">
+        <h3>Why NOW</h3>
+        <p>Agent economy กำลังเกิด, ยังไม่มี standard reputation layer</p>
+      </section>
+      <section class="research-section">
+        <h3>Risks</h3>
+        <p>ต้องมี adoption ก่อนจึงมี value, standard wars, big players might build their own</p>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>🔥 Spark Joy Score: 9/10</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+.research-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(135deg, var(--purple), var(--purple-light));
+  color: white;
+  border: 1px solid var(--border-glow);
+  border-radius: 12px;
+  font-family: 'Space Grotesk', 'Noto Sans Thai', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+  transition: all 0.3s ease;
+}
+.research-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(124,58,237,0.6), 0 0 40px rgba(212,175,55,0.2);
+  background: linear-gradient(135deg, var(--purple-light), var(--gold));
+}
+.research-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(9,5,15,0.92);
+  backdrop-filter: blur(12px);
+  overflow-y: auto;
+  padding: 2rem;
+}
+.research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+.research-modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(124,58,237,0.3), 0 0 100px rgba(212,175,55,0.05);
+}
+.research-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 2rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.research-modal-close:hover { color: var(--gold-light); }
+.research-modal-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--surface2), var(--surface));
+  border-radius: 20px 20px 0 0;
+}
+.research-modal-header h2 {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+.research-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--gold);
+  background: var(--gold-pale);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: 1px solid rgba(212,175,55,0.3);
+  width: fit-content;
+}
+.research-modal-body { padding: 1.5rem 2rem 2rem; }
+.research-section { margin-bottom: 1.5rem; }
+.research-section:last-child { margin-bottom: 0; }
+.research-section h3 {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--purple-light);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.research-section p, .research-section ul {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin: 0;
+}
+.research-section ul { padding-left: 1.5rem; }
+.research-section li { margin-bottom: 0.4rem; }
+.research-highlight {
+  background: var(--purple-pale);
+  border: 1px solid var(--border-glow);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+.research-highlight h3 {
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--gold-light) !important;
+  text-transform: none;
+  letter-spacing: 0;
+}
+</style>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
 </body>
 </html>
