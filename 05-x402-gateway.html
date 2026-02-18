@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>x402 Gateway — Stripe for AI Agent Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Code+Pro:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080c;
+    --surface: #0e0e14;
+    --surface-elevated: #141420;
+    --border: #1c1c2e;
+    --text: #f4f4f8;
+    --muted: #7a7a96;
+    --primary: #f59e0b;
+    --primary-glow: rgba(245,158,11,0.12);
+    --secondary: #3b82f6;
+    --success: #10b981;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 100px 100px;
+    mask-image: linear-gradient(180deg, black 0%, transparent 60%);
+  }
+
+  .golden-glow {
+    position: fixed; width: 500px; height: 500px;
+    border-radius: 50%; filter: blur(150px);
+    pointer-events: none; z-index: 0;
+    background: radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%);
+    top: -150px; left: 50%; transform: translateX(-50%);
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 0;
+  }
+  .logo {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.2rem; font-weight: 700;
+    color: var(--primary);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--primary), #d97706);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    color: var(--bg);
+  }
+  .nav-badge {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.7rem;
+    background: var(--surface-elevated);
+    color: var(--primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .lang-toggle {
+    position: fixed; top: 1.5rem; right: 2rem; z-index: 100;
+    display: flex; gap: 0; border-radius: 6px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .lang-btn {
+    padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; border: none; background: transparent; color: var(--muted);
+    font-family: 'Source Code Pro', monospace; transition: all 0.2s;
+  }
+  .lang-btn.active { background: var(--primary); color: var(--bg); }
+
+  .th { display: none; }
+  body.show-th .th { display: inline; }
+  body.show-th .en { display: none; }
+
+  .hero {
+    text-align: center;
+    padding: 5rem 0 3rem;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .hero-badge .dot {
+    width: 8px; height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 .highlight {
+    color: var(--primary);
+    position: relative;
+  }
+
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.8;
+  }
+
+  .hero-cta {
+    display: flex; gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 1rem 2rem; border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem; font-weight: 600;
+    text-decoration: none; transition: all 0.2s ease;
+    cursor: pointer; border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), #d97706);
+    color: var(--bg);
+    box-shadow: 0 4px 24px rgba(245,158,11,0.25);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,158,11,0.35); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--primary); }
+
+  .code-demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 4rem 0;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-title {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .code-lang {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    background: rgba(245,158,11,0.1);
+    color: var(--primary);
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .code-body {
+    padding: 1.5rem;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text);
+    overflow-x: auto;
+  }
+  .code-body .comment { color: var(--muted); }
+  .code-body .keyword { color: var(--secondary); }
+  .code-body .string { color: var(--success); }
+  .code-body .func { color: var(--primary); }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; margin: 4rem 0;
+  }
+  @media (max-width: 700px) { .stats { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  }
+  .stat-card .num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.3rem;
+  }
+  .stat-card .label { color: var(--muted); font-size: 0.9rem; }
+
+  .section { padding: 4rem 0; }
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .section-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .section-sub { color: var(--muted); font-size: 1rem; }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  @media (max-width: 800px) { .how-grid { grid-template-columns: 1fr; } }
+
+  .how-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.2s ease;
+  }
+  .how-card:hover { border-color: var(--primary); }
+  .how-card .num {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1rem;
+  }
+  .how-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .how-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 700px) { .features { grid-template-columns: 1fr; } }
+
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.8rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+  }
+  .feature .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .feature h3 { font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+  .feature p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 700px) { .revenue-grid { grid-template-columns: 1fr; } }
+
+  .revenue-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .revenue-card .amount {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--success);
+    margin-bottom: 0.3rem;
+  }
+  .revenue-card .name { font-weight: 700; margin-bottom: 0.3rem; }
+  .revenue-card .desc { color: var(--muted); font-size: 0.85rem; }
+
+  .timeline {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-time {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 100px;
+  }
+  .timeline-content h4 { font-weight: 700; margin-bottom: 0.2rem; }
+  .timeline-content p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  .cta-section {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: radial-gradient(ellipse at center, var(--primary-glow), transparent);
+    border-radius: 24px;
+    margin: 4rem 0;
+  }
+  .cta-section h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .cta-section p { color: var(--muted); margin-bottom: 2rem; font-size: 1.05rem; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--muted); text-decoration: none;
+    font-size: 0.85rem; padding: 1.5rem 0; transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="golden-glow"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="container">
+  <a href="index.html" class="back-link">← <span class="en">Back to all ideas</span><span class="th">กลับไปดูทุกไอเดีย</span></a>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">₿</div>
+      x402 Gateway
+    </div>
+    <div class="nav-badge">Concept #05</div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span class="en">Built on Coinbase x402 Protocol</span>
+      <span class="th">สร้างบน Coinbase x402 Protocol</span>
+    </div>
+    <h1>
+      <span class="en"><span class="highlight">Stripe</span> for<br>AI Agent Payments.</span>
+      <span class="th"><span class="highlight">Stripe</span> สำหรับ<br>AI Agent Payments</span>
+    </h1>
+    <p>
+      <span class="en">One SDK lets your API accept stablecoin payments from AI agents. No accounts, no invoices, no friction — just instant machine-to-machine payments over HTTP.</span>
+      <span class="th">SDK เดียวให้ API ของคุณรับ stablecoin จาก AI agents ได้ ไม่ต้องมีบัญชี ไม่ต้องออกใบแจ้งหนี้ ไม่มีความซับซ้อน — แค่ instant payments ผ่าน HTTP</span>
+    </p>
+    <div class="hero-cta">
+      <a href="#how" class="btn btn-primary"><span class="en">See How It Works →</span><span class="th">ดูวิธีทำงาน →</span></a>
+      <a href="#revenue" class="btn btn-ghost"><span class="en">Revenue Model</span><span class="th">โมเดลรายได้</span></a>
+    </div>
+  </section>
+
+  <div class="code-demo">
+    <div class="code-header">
+      <span class="code-title"><span class="en">Your API, monetized in 3 lines</span><span class="th">API ของคุณ มอร์นิไทซ์ใน 3 บรรทัด</span></span>
+      <span class="code-lang">Node.js</span>
+    </div>
+    <div class="code-body">
+      <span class="keyword">const</span> { x402 } = <span class="func">require</span>(<span class="string">'@x402-gateway/sdk'</span>);<br><br>
+      <span class="comment">// Add payment middleware to any endpoint</span><br>
+      app.<span class="func">use</span>(<span class="string">'/api/premium'</span>, x402.<span class="func">requirePayment</span>(<span class="string">'0.01'</span>));<br><br>
+      <span class="comment">// That's it. AI agents can now pay to access your API.</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num">$30T</div>
+      <div class="stat-label"><span class="en">Projected Agent Economy by 2030</span><span class="th">Agent Economy คาดการณ์ปี 2030</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">x402</div>
+      <div class="stat-label"><span class="en">Coinbase's New Protocol</span><span class="th">Protocol ใหม่จาก Coinbase</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">$95B</div>
+      <div class="stat-label"><span class="en">Stripe's Valuation (proof of model)</span><span class="th">Valuation Stripe (พิสูจน์โมเดล)</span></div>
+    </div>
+  </div>
+
+  <section class="section" id="how">
+    <div class="section-header">
+      <div class="section-title"><span class="en">How It Works</span><span class="th">ทำงานอย่างไร</span></div>
+      <div class="section-sub"><span class="en">Make your API monetizable for AI agents in minutes.</span><span class="th">ทำให้ API ของคุณรับเงินจาก AI agents ได้ในไม่กี่นาที</span></div>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="num"><span class="en">STEP 01</span><span class="th">ขั้นตอนที่ 1</span></div>
+        <h3><span class="en">Add Our SDK</span><span class="th">ติดตั้ง SDK</span></h3>
+        <p><span class="en">npm install @x402-gateway/sdk. Add one middleware line to your Express, Fastify, or any Node server.</span><span class="th">npm install @x402-gateway/sdk เพิ่ม middleware บรรทัดเดียวใน Express, Fastify หรือ Node server ใดก็ได้</span></p>
+      </div>
+      <div class="how-card">
+        <div class="num"><span class="en">STEP 02</span><span class="th">ขั้นตอนที่ 2</span></div>
+        <h3><span class="en">Set Your Prices</span><span class="th">ตั้งราคา</span></h3>
+        <p><span class="en">Define pricing per endpoint: $0.01 for /search, $0.10 for /analyze, $1.00 for /premium. Dynamic pricing supported.</span><span class="th">กำหนดราคาต่อ endpoint: $0.01 สำหรับ /search, $0.10 สำหรับ /analyze, $1.00 สำหรับ /premium รองรับ dynamic pricing</span></p>
+      </div>
+      <div class="how-card">
+        <div class="num"><span class="en">STEP 03</span><span class="th">ขั้นตอนที่ 3</span></div>
+        <h3><span class="en">Get Paid Instantly</span><span class="th">รับเงินทันที</span></h3>
+        <p><span class="en">AI agents pay via x402. You receive USDC instantly. No chargebacks, no invoices, no 30-day waits.</span><span class="th">AI agents จ่ายผ่าน x402 คุณได้รับ USDC ทันที ไม่มี chargebacks ไม่มีใบแจ้งหนี้ ไม่ต้องรอ 30 วัน</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title"><span class="en">Why x402 Gateway?</span><span class="th">ทำไมต้อง x402 Gateway?</span></div>
+      <div class="section-sub"><span class="en">The missing layer for the machine economy.</span><span class="th">ชั้นที่ขาดหายไปสำหรับ machine economy</span></div>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <div class="icon">⚡</div>
+        <div>
+          <h3><span class="en">Instant Settlement</span><span class="th">Settlement ทันที</span></h3>
+          <p><span class="en">No waiting for bank transfers. Payments settle on-chain in seconds, 24/7/365.</span><span class="th">ไม่ต้องรอโอนเงิน ชำระเงินบน blockchain ในไม่กี่วินาที ตลอด 24/7/365</span></p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="icon">🌍</div>
+        <div>
+          <h3><span class="en">Borderless by Default</span><span class="th">ไร้พรมแดนโดยค่าเริ่มต้น</span></h3>
+          <p><span class="en">Agent in Bangkok pays API in Berlin. No FX fees, no international wire headaches.</span><span class="th">Agent ในกรุงเทพฯ จ่าย API ในเบอร์ลิน ไม่มีค่า FX ไม่ปวดหัวเรื่อง international wire</span></p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="icon">🔐</div>
+        <div>
+          <h3><span class="en">No Account Required</span><span class="th">ไม่ต้องมีบัญชี</span></h3>
+          <p><span class="en">Agents pay directly over HTTP. No signup flows, no OAuth, no session management.</span><span class="th">Agents จ่ายโดยตรงผ่าน HTTP ไม่มี signup flows ไม่มี OAuth ไม่ต้องจัดการ session</span></p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="icon">📊</div>
+        <div>
+          <h3><span class="en">Analytics Dashboard</span><span class="th">Dashboard Analytics</span></h3>
+          <p><span class="en">See every payment, every agent, revenue trends. Understand your machine customers.</span><span class="th">เห็นทุกการชำระเงิน ทุก agent แนวโน้มรายได้ เข้าใจลูกค้า machine ของคุณ</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="revenue">
+    <div class="section-header">
+      <div class="section-title"><span class="en">Revenue Model</span><span class="th">โมเดลรายได้</span></div>
+      <div class="section-sub"><span class="en">Multiple streams from day one.</span><span class="th">หลายช่องทางรายได้ตั้งแต่วันแรก</span></div>
+    </div>
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="amount"><span class="en">1-3%</span><span class="th">1-3%</span></div>
+        <div class="name"><span class="en">Transaction Fee</span><span class="th">ค่าธรรมเนียมธุรกรรม</span></div>
+        <div class="desc"><span class="en">On every payment processed through gateway</span><span class="th">จากทุกการชำระเงินที่ผ่าน gateway</span></div>
+      </div>
+      <div class="revenue-card">
+        <div class="amount"><span class="en">$99+</span><span class="th">$99+</span></div>
+        <div class="name"><span class="en">Pro Features</span><span class="th">ฟีเจอร์ Pro</span></div>
+        <div class="desc"><span class="en">Advanced analytics, fraud detection, custom pricing</span><span class="th">Analytics ขั้นสูง, ตรวจจับ fraud, กำหนดราคาเอง</span></div>
+      </div>
+      <div class="revenue-card">
+        <div class="amount"><span class="en">$499+</span><span class="th">$499+</span></div>
+        <div class="name"><span class="en">Enterprise Plan</span><span class="th">Enterprise Plan</span></div>
+        <div class="desc"><span class="en">Self-hosted, SLA, dedicated support</span><span class="th">Self-hosted, SLA, ซัพพอร์ตเฉพาะ</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title"><span class="en">Path to $1M</span><span class="th">เส้นทางสู่ $1M (฿32M)</span></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-time"><span class="en">Month 1-3</span><span class="th">เดือนที่ 1-3</span></div>
+        <div class="timeline-content">
+          <h4><span class="en">Gateway MVP</span><span class="th">Gateway MVP</span></h4>
+          <p><span class="en">Build SDK, basic dashboard. Onboard 10 pilot API providers. Prove the model works.</span><span class="th">สร้าง SDK, dashboard พื้นฐาน Onboard 10 API providers แรก พิสูจน์ว่าโมเดลใช้ได้</span></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time"><span class="en">Month 6</span><span class="th">เดือนที่ 6</span></div>
+        <div class="timeline-content">
+          <h4><span class="en">100 API Providers</span><span class="th">100 API Providers</span></h4>
+          <p><span class="en">Developer adoption growing. Processing $100K/mo in agent payments. Revenue ~$2-3K/mo.</span><span class="th">Developer adoption เติบโต ประมวลผล $100K/เดือน ใน agent payments รายได้ ~$2-3K/เดือน</span></p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-time"><span class="en">Month 12</span><span class="th">เดือนที่ 12</span></div>
+        <div class="timeline-content">
+          <h4><span class="en">Processing $1M+/mo → $10-30K/mo</span><span class="th">ประมวลผล $1M+/เดือน → $10-30K/เดือน</span></h4>
+          <p><span class="en">500+ API providers. Enterprise deals closing. Clear path to $100K/mo.</span><span class="th">500+ API providers ปิดดีล enterprise ทางชัดเจนสู่ $100K/เดือน</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2><span class="en">The Payment Layer for<br>Machine Economy.</span><span class="th">Payment Layer<br>สำหรับ Machine Economy</span></h2>
+    <p><span class="en">x402 is brand new. Nobody has built the "Stripe" yet. Perfect fit for your blockchain background.</span><span class="th">x402 เพิ่งเปิดตัว ยังไม่มีใครสร้าง "Stripe" เหมาะสมกับ blockchain background ของคุณอย่างยิ่ง</span></p>
+    <a href="index.html" class="btn btn-primary">← <span class="en">Back to All Ideas</span><span class="th">กลับไปดูทุกไอเดีย</span></a>
+  </section>
+
+  <footer>
+    <p>☀️ Concept by <a href="#">Sun</a> for MuteLab | Research: Feb 18, 2026 | <a href="index.html"><span class="en">View all 10 ideas</span><span class="th">ดูทั้ง 10 ไอเดีย</span></a></p>
+  </footer>
+</div>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

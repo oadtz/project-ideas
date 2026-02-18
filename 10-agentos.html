@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentOS — The Operating System for AI Teams</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --bg2: #ffffff;
+    --surface: #ffffff;
+    --surface2: #f2f2f7;
+    --surface3: #e8e8ed;
+    --border: #d1d1d6;
+    --border2: #c7c7cc;
+    --text: #1c1c1e;
+    --text2: #3a3a3c;
+    --muted: #8e8e93;
+    --muted2: #aeaeb2;
+    --cyan: #06b6d4;
+    --cyan-light: #22d3ee;
+    --cyan-pale: rgba(6,182,212,0.08);
+    --cyan-glow: rgba(6,182,212,0.15);
+    --green: #34c759;
+    --red: #ff3b30;
+    --amber: #ff9f0a;
+    --blue: #007aff;
+    --purple: #af52de;
+    --sidebar-bg: #f2f2f7;
+  }
+
+  /* Dark mode off — light macOS style */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Geist', 'Noto Sans Thai', BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle grid bg */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  /* Lang toggle */
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    font-family: 'Geist Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 500;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Geist Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--cyan); color: white; }
+  .lang-btn:hover:not(.active) { color: var(--cyan); }
+
+  /* Bilingual */
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Top bar — macOS menubar feel */
+  .topbar {
+    background: rgba(245,245,247,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--cyan); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 500; transition: opacity 0.2s;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Geist Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  /* OS Window UI */
+  .os-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .window-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .wt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .wt-close { background: var(--red); }
+  .wt-min { background: var(--amber); }
+  .wt-max { background: var(--green); }
+  .wt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Geist Mono', monospace;
+  }
+  .window-body { padding: 0; }
+
+  /* Sidebar + main layout */
+  .app-layout {
+    display: flex; min-height: 480px;
+  }
+  .app-sidebar {
+    width: 200px; flex-shrink: 0;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0;
+  }
+  .sidebar-section {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin: 0.5rem 0 0.25rem;
+    font-family: 'Geist Mono', monospace;
+  }
+  .sidebar-item {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem; font-weight: 500; color: var(--text2);
+    display: flex; align-items: center; gap: 0.6rem;
+    cursor: pointer; border-radius: 8px; margin: 0 0.5rem;
+    transition: all 0.15s;
+  }
+  .sidebar-item:hover { background: rgba(0,0,0,0.04); }
+  .sidebar-item.active { background: var(--cyan); color: white; }
+  .sidebar-icon { font-size: 0.9rem; }
+  .sidebar-badge {
+    margin-left: auto; background: var(--cyan);
+    color: white; border-radius: 100px;
+    width: 18px; height: 18px; font-size: 0.6rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sidebar-item.active .sidebar-badge { background: white; color: var(--cyan); }
+
+  /* Main area */
+  .app-main { flex: 1; padding: 1.5rem; overflow: hidden; }
+  .main-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .main-title-bar { display: flex; align-items: center; gap: 0.75rem; }
+  .main-view-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .filter-row {
+    display: flex; gap: 0.5rem;
+  }
+  .filter-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.25rem 0.7rem;
+    font-size: 0.72rem; font-weight: 500; color: var(--muted);
+    cursor: pointer;
+  }
+  .filter-chip.active { background: var(--cyan); color: white; border-color: var(--cyan); }
+
+  /* Agent cards grid */
+  .agents-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  .agent-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    transition: all 0.2s;
+  }
+  .agent-card:hover { border-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan-pale); }
+  .agent-card-top { display: flex; align-items: flex-start; gap: 0.6rem; }
+  .agent-avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+  .agent-info { flex: 1; min-width: 0; }
+  .agent-name { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .agent-role { font-size: 0.65rem; color: var(--muted); }
+  .agent-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .status-running { background: var(--green); }
+  .status-idle { background: var(--amber); }
+  .status-paused { background: var(--muted2); }
+  .agent-metrics {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .agent-metric { background: var(--surface2); border-radius: 6px; padding: 0.3rem 0.5rem; }
+  .am-val { font-family: 'Geist Mono', monospace; font-size: 0.7rem; font-weight: 700; color: var(--text); }
+  .am-key { font-size: 0.58rem; color: var(--muted); }
+
+  /* Hero section */
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 680px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--cyan-pale); border: 1px solid rgba(6,182,212,0.2);
+    color: var(--cyan); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 600; margin-bottom: 1.5rem;
+    font-family: 'Geist Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4.2rem);
+    font-weight: 800; letter-spacing: -0.04em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .cyan { color: var(--cyan); }
+  .hero-sub {
+    font-size: 1.1rem; color: var(--muted); line-height: 1.7;
+    margin-bottom: 2rem; max-width: 560px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .score-num { font-size: 2rem; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; font-family: 'Geist Mono', monospace; }
+  .score-meta { font-size: 0.75rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.85rem; }
+
+  /* Stats */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan-pale), 0 4px 16px rgba(0,0,0,0.08); }
+  .stat-icon-wrap { margin-bottom: 1rem; font-size: 1.5rem; }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Geist Mono', monospace; }
+  .stat-num .cyan { color: var(--cyan); }
+  .stat-label { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  /* Sections */
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 600; color: var(--muted);
+    font-family: 'Geist Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  /* How it works - panel UI */
+  .workflow {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .wf-step:hover { background: var(--bg); }
+  .wf-num {
+    font-family: 'Geist Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  /* Pricing panels */
+  .pricing-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1.25rem;
+  }
+  .price-highlight {
+    background: linear-gradient(135deg, var(--text) 0%, var(--text2) 100%);
+    border-radius: 16px; padding: 2.5rem;
+    color: white; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .price-highlight .ph-label {
+    font-size: 0.72rem; font-weight: 600; opacity: 0.6;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Geist Mono', monospace;
+  }
+  .price-highlight .ph-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+  .price-highlight .ph-num {
+    font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--cyan-light); line-height: 1; margin-bottom: 0.3rem;
+    font-family: 'Geist Mono', monospace;
+  }
+  .price-highlight .ph-sub { font-size: 0.85rem; opacity: 0.6; margin-bottom: 2rem; }
+  .price-highlight .ph-note { font-size: 0.82rem; opacity: 0.8; line-height: 1.6; }
+
+  .price-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .price-tier {
+    background: var(--surface); padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    transition: background 0.2s;
+  }
+  .price-tier:hover { background: var(--bg); }
+  .pt-label {
+    width: 80px; font-size: 0.78rem; font-weight: 700; color: var(--text2);
+    flex-shrink: 0;
+  }
+  .pt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .pt-price { text-align: right; flex-shrink: 0; }
+  .pt-usd {
+    font-family: 'Geist Mono', monospace; font-size: 1rem; font-weight: 700;
+    color: var(--text);
+  }
+  .pt-thb {
+    font-family: 'Geist Mono', monospace; font-size: 0.68rem;
+    color: var(--cyan);
+  }
+
+  /* Roadmap - notification center style */
+  .roadmap-notif {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .notif-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Geist Mono', monospace;
+  }
+  .notif-clear { font-size: 0.72rem; color: var(--cyan); cursor: pointer; font-weight: 600; }
+  .notif-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: var(--bg); }
+  .notif-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .notif-content { flex: 1; }
+  .notif-app {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Geist Mono', monospace;
+  }
+  .notif-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .notif-body { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .notif-right { text-align: right; flex-shrink: 0; }
+  .notif-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Geist Mono', monospace; }
+  .notif-metric {
+    font-family: 'Geist Mono', monospace; font-size: 0.85rem; font-weight: 700;
+    color: var(--cyan); margin-top: 0.4rem;
+  }
+
+  /* Why us */
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .why-panel:hover { border-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan-pale); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  /* CTA */
+  .cta-wrap {
+    background: var(--text);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3);
+    color: var(--cyan-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 600; margin-bottom: 1.5rem;
+    font-family: 'Geist Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.8rem; font-weight: 800; letter-spacing: -0.04em;
+    color: white; margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+  }
+  .cta-title .cyan { color: var(--cyan-light); }
+  .cta-sub { color: rgba(255,255,255,0.55); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: var(--cyan); color: white;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(6,182,212,0.4);
+  }
+  .cta-btn-primary:hover { background: var(--cyan-light); transform: translateY(-1px); }
+  .cta-btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.12);
+    font-size: 0.9rem; font-weight: 600;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .cta-btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .workflow { grid-template-columns: 1fr 1fr; }
+    .pricing-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .agents-grid { grid-template-columns: 1fr 1fr; }
+    .app-sidebar { width: 160px; }
+  }
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .agents-grid { grid-template-columns: 1fr; }
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; }
+    .cta-title { font-size: 2rem; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+  .d5 { opacity: 0; animation-delay: 0.5s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar (macOS menubar) -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">⚡</div>
+        <span>AgentOS</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">5 agents running</span>
+        <span class="th">5 agents กำลังทำงาน</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 10</span>
+        <span class="th">ไอเดีย 10</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        ⚡ <span class="en">IDEA 10 — AGENTOS</span><span class="th">ไอเดีย 10 — AGENTOS</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">The Operating System<br>for <span class="cyan">AI Teams</span></span>
+        <span class="th">ระบบปฏิบัติการ<br>สำหรับ<span class="cyan">ทีม AI</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en">Deploy, manage, and orchestrate teams of AI agents. Like <strong>HR + project management</strong>, but for AI employees. The infrastructure layer for the agentic enterprise.</span>
+        <span class="th">Deploy จัดการ และควบคุมทีม AI agents เหมือน <strong>HR + project management</strong> แต่สำหรับพนักงาน AI ชั้น infrastructure สำหรับองค์กรยุค agent</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-card">
+          <div class="score-num">8/10</div>
+          <div class="score-meta">
+            <strong>🔥 Spark Joy</strong>
+            <span class="en">Strong validation from OpenClaw building experience</span>
+            <span class="th">ยืนยันจากประสบการณ์ build OpenClaw โดยตรง</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OS Window Demo -->
+  <div class="os-window animate d3" style="margin-bottom:4rem;">
+    <div class="window-titlebar">
+      <div class="wt-dot wt-close"></div>
+      <div class="wt-dot wt-min"></div>
+      <div class="wt-dot wt-max"></div>
+      <div class="wt-title">
+        AgentOS — <span class="en">MuteLab Team Dashboard</span><span class="th">แดชบอร์ดทีม MuteLab</span>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="app-layout">
+        <!-- Sidebar -->
+        <div class="app-sidebar">
+          <div class="sidebar-section">
+            <span class="en">OVERVIEW</span><span class="th">ภาพรวม</span>
+          </div>
+          <div class="sidebar-item active">
+            <span class="sidebar-icon">🤖</span>
+            <span class="en">Agents</span><span class="th">Agents</span>
+            <span class="sidebar-badge">5</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">📋</span>
+            <span class="en">Tasks</span><span class="th">งาน</span>
+            <span class="sidebar-badge" style="background:var(--amber);color:white;">12</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">📈</span>
+            <span class="en">Performance</span><span class="th">ประสิทธิภาพ</span>
+          </div>
+          <div class="sidebar-section">
+            <span class="en">TEAMS</span><span class="th">ทีม</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">🔬</span>
+            <span class="en">Research</span><span class="th">วิจัย</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">💻</span>
+            <span class="en">Engineering</span><span class="th">วิศวกรรม</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">📣</span>
+            <span class="en">Marketing</span><span class="th">การตลาด</span>
+          </div>
+          <div class="sidebar-section">
+            <span class="en">SETTINGS</span><span class="th">ตั้งค่า</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">💰</span>
+            <span class="en">Budgets</span><span class="th">งบประมาณ</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="sidebar-icon">🔐</span>
+            <span class="en">Permissions</span><span class="th">สิทธิ์</span>
+          </div>
+        </div>
+
+        <!-- Main -->
+        <div class="app-main">
+          <div class="main-header">
+            <div class="main-title-bar">
+              <div class="main-view-title">
+                <span class="en">Active Agents</span><span class="th">Agents ที่ทำงานอยู่</span>
+              </div>
+            </div>
+            <div class="filter-row">
+              <div class="filter-chip active">
+                <span class="en">All</span><span class="th">ทั้งหมด</span>
+              </div>
+              <div class="filter-chip">
+                <span class="en">Running</span><span class="th">กำลังทำ</span>
+              </div>
+              <div class="filter-chip">
+                <span class="en">Idle</span><span class="th">รอ</span>
+              </div>
+            </div>
+          </div>
+          <div class="agents-grid">
+            <!-- Agent 1 -->
+            <div class="agent-card">
+              <div class="agent-card-top">
+                <div class="agent-avatar" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);">🔬</div>
+                <div class="agent-info">
+                  <div class="agent-name">Sun (CEO)</div>
+                  <div class="agent-role"><span class="en">Strategy & Research</span><span class="th">กลยุทธ์และวิจัย</span></div>
+                </div>
+                <div class="agent-status-dot status-running"></div>
+              </div>
+              <div class="agent-metrics">
+                <div class="agent-metric">
+                  <div class="am-val">247</div>
+                  <div class="am-key"><span class="en">tasks done</span><span class="th">งานสำเร็จ</span></div>
+                </div>
+                <div class="agent-metric">
+                  <div class="am-val">99.1%</div>
+                  <div class="am-key"><span class="en">success</span><span class="th">สำเร็จ</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Agent 2 -->
+            <div class="agent-card">
+              <div class="agent-card-top">
+                <div class="agent-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4);">💻</div>
+                <div class="agent-info">
+                  <div class="agent-name">Main (CTO)</div>
+                  <div class="agent-role"><span class="en">Engineering Lead</span><span class="th">หัวหน้าวิศวกรรม</span></div>
+                </div>
+                <div class="agent-status-dot status-running"></div>
+              </div>
+              <div class="agent-metrics">
+                <div class="agent-metric">
+                  <div class="am-val">1,840</div>
+                  <div class="am-key"><span class="en">tasks done</span><span class="th">งานสำเร็จ</span></div>
+                </div>
+                <div class="agent-metric">
+                  <div class="am-val">97.3%</div>
+                  <div class="am-key"><span class="en">success</span><span class="th">สำเร็จ</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Agent 3 -->
+            <div class="agent-card">
+              <div class="agent-card-top">
+                <div class="agent-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">💼</div>
+                <div class="agent-info">
+                  <div class="agent-name">Steve (CFO)</div>
+                  <div class="agent-role"><span class="en">Finance & Ops</span><span class="th">การเงินและปฏิบัติการ</span></div>
+                </div>
+                <div class="agent-status-dot status-idle"></div>
+              </div>
+              <div class="agent-metrics">
+                <div class="agent-metric">
+                  <div class="am-val">562</div>
+                  <div class="am-key"><span class="en">tasks done</span><span class="th">งานสำเร็จ</span></div>
+                </div>
+                <div class="agent-metric">
+                  <div class="am-val">98.8%</div>
+                  <div class="am-key"><span class="en">success</span><span class="th">สำเร็จ</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🧑‍💼</div>
+      <div class="stat-num"><span class="cyan">61%</span></div>
+      <div class="stat-label">
+        <span class="en">of employees expect their jobs to fundamentally change from AI (IBM study). AgentOS manages that transition.</span>
+        <span class="th">ของพนักงานคาดว่างานของตนจะเปลี่ยนแปลงจาก AI (IBM) AgentOS จัดการการเปลี่ยนผ่านนั้น</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num">$4.5M</div>
+      <div class="stat-label">
+        <span class="en">revenue per employee at Mercor. AI companies need tools to manage agent-augmented teams at scale. That's AgentOS.</span>
+        <span class="th">รายได้ต่อพนักงานที่ Mercor บริษัท AI ต้องการเครื่องมือจัดการทีมที่ augment ด้วย agent นั่นคือ AgentOS</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🪟</div>
+      <div class="stat-num"><span class="cyan">MS</span></div>
+      <div class="stat-label">
+        <span class="en">Microsoft is pushing "agentic business apps" as their next big wave. The market direction is clear — we just need the OS layer.</span>
+        <span class="th">Microsoft กำลัง push "agentic business apps" เป็นคลื่นใหม่ ทิศทางตลาดชัดเจน แค่ต้องการ OS layer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">HR for AI employees</span>
+      <span class="th">HR สำหรับพนักงาน AI</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Running a team of AI agents is like managing employees — but with superpowers. AgentOS provides the management layer.</span>
+      <span class="th">การบริหารทีม AI agents เหมือนการบริหารพนักงาน แต่มีพลังพิเศษ AgentOS คือ management layer ที่ต้องการ</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">➕</div>
+        <div class="wf-title">
+          <span class="en">Add Agents to Team</span>
+          <span class="th">เพิ่ม Agents เข้าทีม</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Connect AI agents (OpenClaw, Claude, custom). Assign roles, give each agent a name and personality. Your AI org chart.</span>
+          <span class="th">เชื่อมต่อ AI agents (OpenClaw, Claude, custom) กำหนดบทบาท ตั้งชื่อและบุคลิก org chart ของ AI คุณ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🔐</div>
+        <div class="wf-title">
+          <span class="en">Assign Roles & Budgets</span>
+          <span class="th">กำหนดบทบาทและงบประมาณ</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Set permissions (what tools/APIs each agent can access), spending limits, approval workflows. Like IT + Finance for AI.</span>
+          <span class="th">ตั้งสิทธิ์ (เครื่องมือ/API ที่แต่ละ agent เข้าถึงได้) วงเงิน ขั้นตอนอนุมัติ เหมือน IT + Finance สำหรับ AI</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">📊</div>
+        <div class="wf-title">
+          <span class="en">Track Performance</span>
+          <span class="th">ติดตามผลงาน</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Real-time dashboards for task completion, cost per task, error rates, and efficiency. Performance reviews for AI.</span>
+          <span class="th">แดชบอร์ด real-time สำหรับงานสำเร็จ ต้นทุนต่องาน อัตราผิดพลาด ประสิทธิภาพ การประเมินผลสำหรับ AI</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_04</div>
+        <div class="wf-icon">🙋</div>
+        <div class="wf-title">
+          <span class="en">Escalate to Humans</span>
+          <span class="th">ส่งต่อให้มนุษย์</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">When agents hit uncertainty or budget limits, they escalate to the right human. Seamless human-in-the-loop workflows.</span>
+          <span class="th">เมื่อ agent ไม่แน่ใจหรือถึงวงเงิน จะส่งต่อให้มนุษย์ที่ถูกคน human-in-the-loop ที่ไร้รอยต่อ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteLab -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">We're already living this</span>
+      <span class="th">เราใช้ชีวิตแบบนี้อยู่แล้ว</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">MuteLab already runs multi-agent teams daily. We're building AgentOS for customers we already know how to serve.</span>
+      <span class="th">MuteLab บริหารทีม multi-agent ทุกวันอยู่แล้ว เราสร้าง AgentOS สำหรับลูกค้าที่เรารู้จักวิธีรับใช้ดีอยู่แล้ว</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🤖</div>
+        <div class="why-panel-title">
+          <span class="en">Built from real experience</span>
+          <span class="th">สร้างจากประสบการณ์จริง</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">OpenClaw runs Sun, Main, and Steve as AI agents daily. We know the real problems — coordination, budget control, escalation, observability — because we live them.</span>
+          <span class="th">OpenClaw รัน Sun, Main, Steve เป็น AI agents ทุกวัน เรารู้ปัญหาจริง ทั้ง coordination งบประมาณ การส่งต่อ observability เพราะเราเผชิญอยู่เอง</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">⏱️</div>
+        <div class="why-panel-title">
+          <span class="en">MVP in 3 months, not 12</span>
+          <span class="th">MVP 3 เดือน ไม่ใช่ 12</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">OpenClaw codebase is the foundation. Many AgentOS features are already built — agent management, memory, task routing. We package and productize what we have.</span>
+          <span class="th">codebase ของ OpenClaw คือรากฐาน หลายฟีเจอร์ AgentOS สร้างแล้ว เราแค่ package และ productize สิ่งที่มีอยู่</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🎯</div>
+        <div class="why-panel-title">
+          <span class="en">Right moment, right product</span>
+          <span class="th">เวลาและสินค้าที่ถูกต้อง</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">In 2026, every serious company will be building AI agent teams. They need management software. AgentOS is the HR/PM tool for that world — and we build it before the crowd arrives.</span>
+          <span class="th">ในปี 2026 บริษัทจริงจังทุกแห่งจะสร้างทีม AI agent พวกเขาต้องการซอฟต์แวร์การบริหาร AgentOS คือเครื่องมือ HR/PM สำหรับโลกนั้น</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💸</div>
+        <div class="why-panel-title">
+          <span class="en">High-value B2B recurring</span>
+          <span class="th">B2B recurring มูลค่าสูง</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">$99–999/mo per team. Companies don't cancel mission-critical infrastructure. Low churn, high NPS, natural upsell as teams grow. Perfect SaaS model.</span>
+          <span class="th">$99–999/เดือน/ทีม บริษัทไม่ยกเลิก infrastructure สำคัญ churn ต่ำ NPS สูง upsell ตามธรรมชาติเมื่อทีมโต</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Pricing -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">PRICING</span><span class="th">ราคา</span></div>
+    <div class="section-title">
+      <span class="en">Simple team-based pricing</span>
+      <span class="th">ราคาตามทีม เรียบง่าย</span>
+    </div>
+    <div class="pricing-row">
+      <div class="price-highlight">
+        <div>
+          <div class="ph-label">AgentOS Pricing</div>
+          <div class="ph-title">Per<br>team/month</div>
+        </div>
+        <div>
+          <div class="ph-num">$99–999</div>
+          <div class="ph-sub">
+            <span class="en">฿3,168–31,968/mo</span>
+            <span class="th">฿3,168–31,968/เดือน</span>
+          </div>
+          <div class="ph-note">
+            <span class="en">A "team" = 1 human + up to 10 AI agents. Most companies have 5–20 teams. The math works out fast.</span>
+            <span class="th">"ทีม" = มนุษย์ 1 คน + AI agents สูงสุด 10 ตัว บริษัทส่วนใหญ่มี 5–20 ทีม ตัวเลขโตเร็ว</span>
+          </div>
+        </div>
+      </div>
+      <div class="price-tiers">
+        <div class="price-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.65rem;font-weight:700;color:var(--muted);font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Plan</span><span class="th">แผน</span>
+          </div>
+          <div style="flex:1;font-size:0.65rem;font-weight:700;color:var(--muted);font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Features</span><span class="th">ฟีเจอร์</span>
+          </div>
+          <div style="font-size:0.65rem;font-weight:700;color:var(--muted);font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="price-tier">
+          <div class="pt-label">Starter</div>
+          <div class="pt-desc">
+            <span class="en">1 team, up to 5 agents, basic dashboards, email escalation</span>
+            <span class="th">1 ทีม สูงสุด 5 agents แดชบอร์ดพื้นฐาน ส่งต่อทาง email</span>
+          </div>
+          <div class="pt-price">
+            <div class="pt-usd">$99/mo</div>
+            <div class="pt-thb">฿3,168</div>
+          </div>
+        </div>
+        <div class="price-tier" style="background:rgba(6,182,212,0.04); border-left: 3px solid var(--cyan);">
+          <div class="pt-label" style="color:var(--cyan);">
+            <span class="en">Pro ⭐</span>
+            <span class="th">Pro ⭐</span>
+          </div>
+          <div class="pt-desc">
+            <span class="en">Up to 5 teams, 10 agents/team, analytics, Slack/LINE escalation, budget controls</span>
+            <span class="th">สูงสุด 5 ทีม 10 agents/ทีม analytics ส่งต่อ Slack/LINE ควบคุมงบประมาณ</span>
+          </div>
+          <div class="pt-price">
+            <div class="pt-usd">$299/mo</div>
+            <div class="pt-thb">฿9,568</div>
+          </div>
+        </div>
+        <div class="price-tier">
+          <div class="pt-label">Business</div>
+          <div class="pt-desc">
+            <span class="en">Unlimited teams, SSO, audit logs, SLA, custom integrations, dedicated support</span>
+            <span class="th">ทีมไม่จำกัด SSO audit logs SLA integrations แบบ custom support เฉพาะ</span>
+          </div>
+          <div class="pt-price">
+            <div class="pt-usd">$999/mo</div>
+            <div class="pt-thb">฿31,968</div>
+          </div>
+        </div>
+        <div class="price-tier" style="background:var(--bg);">
+          <div class="pt-label" style="color:var(--purple);">Enterprise</div>
+          <div class="pt-desc">
+            <span class="en">Custom deployment, on-premise option, white-label, volume pricing for 100+ teams</span>
+            <span class="th">deploy แบบ custom on-premise white-label ราคาพิเศษสำหรับ 100+ ทีม</span>
+          </div>
+          <div class="pt-price">
+            <div class="pt-usd">Custom</div>
+            <div class="pt-thb" style="color:var(--purple);">
+              <span class="en">Contact us</span>
+              <span class="th">ติดต่อ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From MVP to $100K/mo</span>
+      <span class="th">จาก MVP สู่ $100K/เดือน</span>
+    </div>
+    <div class="roadmap-notif">
+      <div class="notif-header">
+        <span>
+          <span class="en">AgentOS — Milestone Notifications</span>
+          <span class="th">AgentOS — การแจ้งเตือน Milestones</span>
+        </span>
+        <span class="notif-clear">
+          <span class="en">12 months to $100K/mo</span>
+          <span class="th">12 เดือนสู่ $100K/เดือน</span>
+        </span>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(6,182,212,0.1);">🏗️</div>
+        <div class="notif-content">
+          <div class="notif-app">
+            <span class="en">MONTH 1–3 · BUILD</span>
+            <span class="th">เดือน 1–3 · สร้าง</span>
+          </div>
+          <div class="notif-title">
+            <span class="en">MVP built from OpenClaw</span>
+            <span class="th">MVP สร้างจาก OpenClaw</span>
+          </div>
+          <div class="notif-body">
+            <span class="en">Extract core agent management features from OpenClaw. Build dashboard UI. Sign 5 design partners for free beta access.</span>
+            <span class="th">แยก core agent management จาก OpenClaw สร้าง dashboard UI เซ็นสัญญา 5 design partners สำหรับ free beta</span>
+          </div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-time">Mo 1–3</div>
+          <div class="notif-metric">5 beta teams</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(52,199,89,0.1);">💼</div>
+        <div class="notif-content">
+          <div class="notif-app">
+            <span class="en">MONTH 6 · REVENUE</span>
+            <span class="th">เดือน 6 · รายได้</span>
+          </div>
+          <div class="notif-title">
+            <span class="en">50 teams paying — $25K/mo</span>
+            <span class="th">50 ทีมจ่ายเงิน — $25K/เดือน</span>
+          </div>
+          <div class="notif-body">
+            <span class="en">Convert beta users to paid. Launch Product Hunt. Target AI-first companies building with Claude/GPT. Thai market launch with LINE integration.</span>
+            <span class="th">แปลง beta เป็นลูกค้าจ่ายเงิน launch Product Hunt เจาะบริษัท AI-first launch ตลาดไทยพร้อม LINE integration</span>
+          </div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-time">Mo 6</div>
+          <div class="notif-metric">฿800K/mo</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(255,159,10,0.1);">🚀</div>
+        <div class="notif-content">
+          <div class="notif-app">
+            <span class="en">MONTH 12 · SCALE</span>
+            <span class="th">เดือน 12 · ขยาย</span>
+          </div>
+          <div class="notif-title">
+            <span class="en">200 teams — $100K/mo</span>
+            <span class="th">200 ทีม — $100K/เดือน</span>
+          </div>
+          <div class="notif-body">
+            <span class="en">First enterprise deals. Integration with major agent platforms (LangChain, AutoGen, OpenClaw). Series A conversations. The infrastructure story is clear.</span>
+            <span class="th">ปิด enterprise deals แรก integrate กับ agent platforms ใหญ่ คุยกับ Series A infrastructure story ชัดเจน</span>
+          </div>
+        </div>
+        <div class="notif-right">
+          <div class="notif-time">Mo 12</div>
+          <div class="notif-metric">฿3.2M/mo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">🔥 <span class="en">Spark Joy: 8/10</span><span class="th">Spark Joy: 8/10</span></div>
+    <h2 class="cta-title">
+      <span class="en">AI teams need an<br><span class="cyan">operating system.</span></span>
+      <span class="th">ทีม AI ต้องการ<br><span class="cyan">ระบบปฏิบัติการ</span></span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">We're already running AI teams at MuteLab. AgentOS is us packaging our operational wisdom as software. Build once, sell to everyone.</span>
+      <span class="th">เรารัน AI teams ที่ MuteLab อยู่แล้ว AgentOS คือการ package ความรู้ปฏิบัติการของเราเป็นซอฟต์แวร์ สร้างครั้งเดียว ขายทุกคน</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All 10 ideas</span><span class="th">ไอเดียทั้ง 10</span>
+      </a>
+      <a href="07-agent-reputation.html" class="cta-btn-secondary">
+        <span class="en">Agent Reputation Protocol →</span><span class="th">Agent Reputation Protocol →</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+</script>
+</body>
+</html>
