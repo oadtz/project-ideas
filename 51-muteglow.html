@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteGlow — AI Clinic Management for Thai Beauty & Aesthetic Clinics</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a070f;
+    --bg2: #0f0b18;
+    --surface: #13101f;
+    --surface2: #1e1530;
+    --surface3: #2a1f3d;
+    --border: rgba(236,72,153,0.15);
+    --border2: rgba(236,72,153,0.25);
+    --text: #f5f0fa;
+    --text2: #d4c8e8;
+    --muted: #8878a8;
+    --muted2: #6a5a82;
+    --primary: #ec4899;
+    --primary-light: #f472b6;
+    --primary-pale: rgba(236,72,153,0.08);
+    --primary-glow: rgba(236,72,153,0.2);
+    --secondary: #a855f7;
+    --secondary-light: #c084fc;
+    --secondary-pale: rgba(168,85,247,0.08);
+    --secondary-glow: rgba(168,85,247,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(236,72,153,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168,85,247,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(168,85,247,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Hero */
+  .hero { padding: 7rem 0 5rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.78rem; font-weight: 600; color: var(--primary-light);
+    margin-bottom: 2rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text2);
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* Stats */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 2rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* Sections */
+  .section { padding: 4rem 0; }
+  .section-title {
+    font-size: 1.8rem; font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+  .section-sub { color: var(--text2); font-size: 1rem; margin-bottom: 2.5rem; max-width: 650px; }
+  .section-center { text-align: center; }
+  .section-center .section-sub { margin: 0 auto 2.5rem; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(236,72,153,0.08); }
+  .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .card p { color: var(--text2); font-size: 0.9rem; line-height: 1.7; }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 32px var(--primary-glow);
+  }
+  .price-card .tier { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); margin-bottom: 0.5rem; font-family: 'Space Mono', monospace; }
+  .price-card .price { font-size: 2rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .price-card .price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+  .price-card .desc { color: var(--text2); font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .price-card ul { list-style: none; }
+  .price-card li { padding: 0.4rem 0; font-size: 0.85rem; color: var(--text2); }
+  .price-card li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
+  /* Competitor table */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+  .comp-table th, .comp-table td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .comp-table th { color: var(--primary); font-weight: 700; font-family: 'Space Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .comp-table td { color: var(--text2); }
+  .comp-table tr:hover td { background: var(--primary-pale); }
+
+  /* Score */
+  .score-section { padding: 4rem 0; text-align: center; }
+  .score-big {
+    font-size: 5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; max-width: 800px; margin: 2rem auto 0; }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .score-item .label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+  .score-item .val { font-size: 1.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+
+  /* Risks */
+  .risk-list { max-width: 800px; }
+  .risk-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+  .risk-badge {
+    flex-shrink: 0; padding: 0.2rem 0.7rem; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    height: fit-content; margin-top: 0.2rem;
+  }
+  .risk-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk-med { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk-low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk-text { color: var(--text2); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Insight */
+  .insight-box {
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .insight-box::before {
+    content: '💡';
+    position: absolute; top: 1rem; right: 1.5rem;
+    font-size: 3rem; opacity: 0.15;
+  }
+  .insight-box h3 { color: var(--primary-light); font-size: 1.1rem; margin-bottom: 1rem; }
+  .insight-box p { color: var(--text2); font-size: 0.95rem; line-height: 1.8; }
+
+  /* Footer */
+  .footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .footer p { color: var(--muted2); font-size: 0.8rem; }
+
+  @media (max-width: 768px) {
+    .stats-bar { gap: 1.5rem; }
+    .hero { padding: 5rem 0 3rem; }
+    .section { padding: 2.5rem 0; }
+    .cards { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .comp-table { font-size: 0.75rem; }
+    .comp-table th, .comp-table td { padding: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">✨ IDEA #51 — BEAUTY TECH / B2B SaaS</div>
+    <h1 class="en">MuteGlow</h1>
+    <h1 class="th">MuteGlow</h1>
+    <p class="hero-sub en">AI-Powered Clinic Management Platform for Thai Beauty & Aesthetic Clinics — Appointments, Patient Records, Treatment Tracking, Before/After Photos, and Revenue Analytics. All on LINE.</p>
+    <p class="hero-sub th">แพลตฟอร์ม AI บริหารคลินิกความงามครบวงจร — นัดหมาย, ประวัติคนไข้, ติดตามทรีทเมนท์, Before/After, วิเคราะห์รายได้ ทั้งหมดผ่าน LINE</p>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">$90B+</div>
+        <div class="stat-label en">Global Aesthetic Medicine Market</div>
+        <div class="stat-label th">ตลาดเวชศาสตร์ความงามทั่วโลก</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">30K+</div>
+        <div class="stat-label en">Thai Beauty/Aesthetic Clinics</div>
+        <div class="stat-label th">คลินิกความงามในไทย</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">ZERO</div>
+        <div class="stat-label en">AI Thai-Language Clinic SaaS</div>
+        <div class="stat-label th">AI SaaS คลินิกภาษาไทย</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">14.3%</div>
+        <div class="stat-label en">Market CAGR to 2033</div>
+        <div class="stat-label th">CAGR ถึง 2033</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">🏥 The Problem</h2>
+    <h2 class="section-title th">🏥 ปัญหา</h2>
+    <p class="section-sub en">Thailand has 30,000+ beauty clinics — from luxury Botox centers to neighborhood laser clinics. Most manage everything with LINE chat, paper notebooks, and Excel. Zero AI tools exist in Thai.</p>
+    <p class="section-sub th">ไทยมีคลินิกความงาม 30,000+ แห่ง ตั้งแต่คลินิกโบท็อกซ์หรูไปจนถึงคลินิกเลเซอร์หัวมุม ส่วนใหญ่จัดการด้วย LINE, สมุดจด, และ Excel ไม่มี AI ภาษาไทยเลย</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3 class="en">Paper-Based Records</h3>
+        <h3 class="th">ใช้กระดาษจดทุกอย่าง</h3>
+        <p class="en">Patient treatment history, injection maps, allergy notes — scattered across notebooks. Impossible to search or analyze. Compliance risk with Thai FDA.</p>
+        <p class="th">ประวัติทรีทเมนท์ แผนที่ฉีด บันทึกแพ้ยา กระจัดกระจายในสมุด ค้นหาไม่ได้ วิเคราะห์ไม่ได้ เสี่ยงกับ อย.ไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3 class="en">LINE Chat Chaos</h3>
+        <h3 class="th">LINE วุ่นวาย</h3>
+        <p class="en">Appointment booking, follow-ups, before/after photo sharing — all in LINE chat. Staff drowning in messages. After-hours bookings lost. No tracking.</p>
+        <p class="th">นัดหมาย ติดตามผล แชร์รูป Before/After ทั้งหมดใน LINE สต๊าฟจมอยู่กับข้อความ นัดหลังเวลาทำงานหายหมด ไม่มีระบบติดตาม</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3 class="en">Revenue Blind Spots</h3>
+        <h3 class="th">มองไม่เห็นรายได้</h3>
+        <p class="en">Which treatments are most profitable? Which doctor generates the most revenue? Top customer lifetime value? Nobody knows — it's all in spreadsheets.</p>
+        <p class="th">ทรีทเมนท์ไหนกำไรสุด? หมอคนไหนทำเงินมากสุด? มูลค่าตลอดอายุลูกค้า? ไม่มีใครรู้ — ทุกอย่างอยู่ใน Excel</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">✨ The Solution: MuteGlow</h2>
+    <h2 class="section-title th">✨ ทางออก: MuteGlow</h2>
+    <p class="section-sub en">All-in-one AI clinic management — built for Thai beauty clinics, delivered through LINE + web dashboard. From booking to billing to beautiful analytics.</p>
+    <p class="section-sub th">ระบบบริหารคลินิก AI ครบวงจร — สร้างมาเพื่อคลินิกความงามไทย ผ่าน LINE + แดชบอร์ดเว็บ ตั้งแต่จองนัดถึงบิลถึงสถิติสวยๆ</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3 class="en">AI Booking Agent on LINE</h3>
+        <h3 class="th">AI จองนัดผ่าน LINE</h3>
+        <p class="en">Natural Thai chat. Understands "อยากทำโบท็อกซ์วันเสาร์" → checks doctor availability → books → confirms → sends reminders. 24/7, no staff needed.</p>
+        <p class="th">แชทภาษาไทยธรรมชาติ เข้าใจ "อยากทำโบท็อกซ์วันเสาร์" → เช็คคิว → จอง → ยืนยัน → แจ้งเตือน 24 ชม. ไม่ต้องมีสต๊าฟ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3 class="en">Before/After Photo Management</h3>
+        <h3 class="th">จัดการรูป Before/After</h3>
+        <p class="en">Standardized photo capture (angle guides, lighting), AI auto-comparison, consent-managed sharing, portfolio generation for marketing. PDPA compliant.</p>
+        <p class="th">ถ่ายรูปมาตรฐาน (ไกด์มุม แสง) AI เปรียบเทียบอัตโนมัติ แชร์ตามความยินยอม สร้างพอร์ตฟอลิโอ สอดคล้อง PDPA</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💉</div>
+        <h3 class="en">Treatment Tracking & Injection Maps</h3>
+        <h3 class="th">ติดตามทรีทเมนท์ & แผนที่ฉีด</h3>
+        <p class="en">Digital injection maps, filler volume tracking, treatment intervals, next-session AI recommendations. Never lose a patient's treatment history again.</p>
+        <p class="th">แผนที่ฉีดดิจิทัล ติดตามปริมาณฟิลเลอร์ ช่วงเวลาทรีทเมนท์ AI แนะนำเซสชันถัดไป ไม่มีวันทำประวัติคนไข้หาย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Revenue & Analytics Dashboard</h3>
+        <h3 class="th">แดชบอร์ดรายได้ & สถิติ</h3>
+        <p class="en">Real-time revenue by treatment, doctor, time period. Customer lifetime value. Retention rates. Product inventory tracking. Tax-ready reports for ภ.ง.ด. filing.</p>
+        <p class="th">รายได้แบบเรียลไทม์ตามทรีทเมนท์ หมอ ช่วงเวลา มูลค่าตลอดอายุลูกค้า อัตราการกลับมา ติดตามสินค้า รายงานพร้อมยื่น ภ.ง.ด.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔔</div>
+        <h3 class="en">Smart Follow-Up & Retention</h3>
+        <h3 class="th">ติดตามผล & รักษาลูกค้าอัจฉริยะ</h3>
+        <p class="en">AI predicts when each patient needs their next Botox/filler session based on treatment history. Auto-sends LINE reminders at the perfect time. Reduces churn, increases revenue.</p>
+        <p class="th">AI คาดการณ์เมื่อไรที่คนไข้ต้องโบท็อกซ์/ฟิลเลอร์ครั้งต่อไป ส่ง LINE เตือนอัตโนมัติในเวลาที่เหมาะ ลดลูกค้าหาย เพิ่มรายได้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3 class="en">PDPA & Thai FDA Compliance</h3>
+        <h3 class="th">สอดคล้อง PDPA & อย.ไทย</h3>
+        <p class="en">Built-in consent management, data retention policies, patient data encryption. Thai FDA-compliant treatment documentation. PDPA-ready privacy notices auto-generated.</p>
+        <p class="th">ระบบจัดการความยินยอม นโยบายเก็บข้อมูล เข้ารหัสข้อมูลคนไข้ เอกสารทรีทเมนท์ตาม อย. ประกาศความเป็นส่วนตัว PDPA สร้างอัตโนมัติ</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET DATA -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">📈 Market Data</h2>
+    <h2 class="section-title th">📈 ข้อมูลตลาด</h2>
+
+    <table class="comp-table">
+      <tr><th class="en">Metric</th><th class="th">ตัวชี้วัด</th><th class="en">Value</th><th class="th">มูลค่า</th></tr>
+      <tr><td class="en">Global Aesthetic Medicine Market (2024)</td><td class="th">ตลาดเวชศาสตร์ความงามโลก (2024)</td><td>$89.6B</td></tr>
+      <tr><td class="en">Projected by 2033</td><td class="th">คาดการณ์ปี 2033</td><td>$240B (14.3% CAGR)</td></tr>
+      <tr><td class="en">Thai Beauty Clinics Estimated</td><td class="th">คลินิกความงามไทย (ประมาณ)</td><td>30,000+</td></tr>
+      <tr><td class="en">Thailand Medical Tourism Revenue</td><td class="th">รายได้ท่องเที่ยวเชิงการแพทย์ไทย</td><td>$5B+ / yr</td></tr>
+      <tr><td class="en">Avg Revenue per Clinic (Mid-range)</td><td class="th">รายได้เฉลี่ย/คลินิก (ระดับกลาง)</td><td>฿500K-5M / mo</td></tr>
+      <tr><td class="en">Clinics & Aesthetic Centers Market Share</td><td class="th">ส่วนแบ่งตลาดคลินิก & ศูนย์ความงาม</td><td>48.09% of end-use</td></tr>
+      <tr><td class="en">Non-Surgical Procedures (2024, Global)</td><td class="th">หัตถการไม่ผ่าตัด (2024, โลก)</td><td>20.54M procedures</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">🥊 Competition Landscape</h2>
+    <h2 class="section-title th">🥊 แผนที่การแข่งขัน</h2>
+
+    <table class="comp-table">
+      <tr><th>Player</th><th class="en">Focus</th><th class="th">จุดเน้น</th><th class="en">Gap vs MuteGlow</th><th class="th">ช่องว่างเทียบ MuteGlow</th></tr>
+      <tr><td>Aesthetic Record</td><td>US Med Spas (9K+ clinics)</td><td>English-only, no LINE, US pricing ($150+/mo)</td></tr>
+      <tr><td>PatientNow</td><td>US Plastic Surgery + MedSpa</td><td>English-only, enterprise pricing, no Thai</td></tr>
+      <tr><td>Jane App</td><td>Canada clinics (CAD $79-149/mo)</td><td>English, general practice, no aesthetics-specific</td></tr>
+      <tr><td>Phorest</td><td>Salons + MedSpas (UK/US/EU)</td><td>English, email/SMS-first, no LINE</td></tr>
+      <tr><td>Clinicminds</td><td>EU aesthetic clinics</td><td>English/EU, no Thai, web-only</td></tr>
+      <tr><td style="color: var(--primary); font-weight: 700">🇹🇭 Thai Market</td><td colspan="2" style="color: var(--primary)">ZERO AI-powered, Thai-language clinic management SaaS exists</td></tr>
+    </table>
+
+    <div class="insight-box" style="margin-top: 2rem;">
+      <h3 class="en">The Gap</h3>
+      <h3 class="th">ช่องว่าง</h3>
+      <p class="en">Every global competitor is English-only, email/SMS-first, and priced for US/EU markets ($150-400+/mo). Thai beauty clinics live on LINE — they book on LINE, share before/after photos on LINE, follow up on LINE. No global tool integrates LINE. No tool speaks Thai. No tool understands Thai FDA compliance. The entire Thai beauty clinic management market is wide open.</p>
+      <p class="th">คู่แข่งทุกรายเป็นภาษาอังกฤษ ใช้ email/SMS เป็นหลัก ราคาตลาด US/EU ($150-400+/เดือน) คลินิกความงามไทยอยู่บน LINE — จองบน LINE, แชร์รูปบน LINE, ติดตามผลบน LINE ไม่มีเครื่องมือไหนที่เชื่อมต่อ LINE ไม่มีที่พูดภาษาไทย ไม่มีที่เข้าใจ อย.ไทย ตลาดบริหารคลินิกความงามไทยเปิดกว้างทั้งหมด</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section">
+  <div class="container section-center">
+    <h2 class="section-title en">💎 Revenue Model</h2>
+    <h2 class="section-title th">💎 โมเดลรายได้</h2>
+    <p class="section-sub en">High-ticket B2B — beauty clinics have money and are willing to pay for tools that increase revenue + reduce admin work.</p>
+    <p class="section-sub th">B2B ราคาสูง — คลินิกความงามมีเงินและยินดีจ่ายเพื่อเครื่องมือที่เพิ่มรายได้ + ลดงานแอดมิน</p>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="tier">Starter</div>
+        <div class="price">฿1,499 <span>/ mo</span></div>
+        <div class="desc en">Solo doctor, 1 location</div>
+        <div class="desc th">หมอคนเดียว 1 สาขา</div>
+        <ul>
+          <li class="en">AI booking agent on LINE</li><li class="th">AI จองนัดผ่าน LINE</li>
+          <li class="en">Up to 500 patients</li><li class="th">สูงสุด 500 คนไข้</li>
+          <li class="en">Treatment records & history</li><li class="th">บันทึก & ประวัติทรีทเมนท์</li>
+          <li class="en">Before/after photos</li><li class="th">รูป Before/After</li>
+          <li class="en">Basic revenue reports</li><li class="th">รายงานรายได้พื้นฐาน</li>
+          <li class="en">LINE reminders & follow-ups</li><li class="th">LINE เตือนนัด & ติดตามผล</li>
+        </ul>
+      </div>
+
+      <div class="price-card featured">
+        <div class="tier">⭐ Clinic</div>
+        <div class="price">฿3,999 <span>/ mo</span></div>
+        <div class="desc en">Multi-doctor, up to 3 locations</div>
+        <div class="desc th">หลายหมอ สูงสุด 3 สาขา</div>
+        <ul>
+          <li class="en">Everything in Starter</li><li class="th">ทุกอย่างใน Starter</li>
+          <li class="en">Unlimited patients</li><li class="th">คนไข้ไม่จำกัด</li>
+          <li class="en">Injection maps & filler tracking</li><li class="th">แผนที่ฉีด & ติดตามฟิลเลอร์</li>
+          <li class="en">AI treatment recommendations</li><li class="th">AI แนะนำทรีทเมนท์</li>
+          <li class="en">Revenue analytics by doctor/treatment</li><li class="th">วิเคราะห์รายได้ตามหมอ/ทรีทเมนท์</li>
+          <li class="en">Inventory tracking (Botox/filler units)</li><li class="th">ติดตามสต็อก (โบท็อกซ์/ฟิลเลอร์)</li>
+          <li class="en">PDPA compliance tools</li><li class="th">เครื่องมือ PDPA</li>
+          <li class="en">PromptPay QR payments</li><li class="th">ชำระเงิน PromptPay QR</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="tier">Chain</div>
+        <div class="price">฿9,999 <span>/ mo</span></div>
+        <div class="desc en">Unlimited locations, enterprise</div>
+        <div class="desc th">ไม่จำกัดสาขา ระดับองค์กร</div>
+        <ul>
+          <li class="en">Everything in Clinic</li><li class="th">ทุกอย่างใน Clinic</li>
+          <li class="en">Unlimited locations & doctors</li><li class="th">ไม่จำกัดสาขา & หมอ</li>
+          <li class="en">Central dashboard for all branches</li><li class="th">แดชบอร์ดรวมทุกสาขา</li>
+          <li class="en">API & ERP integration</li><li class="th">เชื่อมต่อ API & ERP</li>
+          <li class="en">White-label option</li><li class="th">ตัวเลือก White-label</li>
+          <li class="en">Custom AI training</li><li class="th">ฝึก AI แบบกำหนดเอง</li>
+          <li class="en">Dedicated account manager</li><li class="th">ผู้จัดการบัญชีเฉพาะ</li>
+          <li class="en">Thai FDA compliance reports</li><li class="th">รายงานตาม อย.ไทย</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE MATH -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">🧮 Revenue Math to $1M</h2>
+    <h2 class="section-title th">🧮 คำนวณรายได้ถึง $1M</h2>
+
+    <table class="comp-table">
+      <tr><th class="en">Scenario</th><th class="th">สถานการณ์</th><th class="en">Calculation</th><th class="th">การคำนวณ</th><th>Revenue</th></tr>
+      <tr><td>Starter Mix</td><td>1,500 × ฿1,499</td><td>฿27M / yr</td></tr>
+      <tr><td>Blended Mix</td><td>1,000 × ฿1,499 + 400 × ฿3,999 + 50 × ฿9,999</td><td>฿33.6M / yr ≈ $1.05M ✅</td></tr>
+      <tr><td>Enterprise Focus</td><td>500 × ฿1,499 + 300 × ฿3,999 + 100 × ฿9,999</td><td>฿39.5M / yr ≈ $1.23M ✅</td></tr>
+      <tr><td colspan="2" style="color: var(--primary)">Market penetration needed</td><td style="color: var(--primary)">Only 0.05% of 30K+ clinics</td></tr>
+      <tr><td colspan="2" style="color: var(--green)">Time to first $</td><td style="color: var(--green)">30-45 days (free pilot → paid)</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section class="score-section">
+  <div class="container">
+    <h2 class="section-title en" style="margin-bottom: 1.5rem;">📊 Idea Score</h2>
+    <h2 class="section-title th" style="margin-bottom: 1.5rem;">📊 คะแนนไอเดีย</h2>
+    <div class="score-big">36/50</div>
+    <p style="color: var(--green); font-weight: 700; font-family: 'Space Mono', monospace; margin-bottom: 0.5rem;">✅ PASS</p>
+
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="label">Market Potential</div>
+        <div class="val">8/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Problem Severity</div>
+        <div class="val">7/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Competition Gap</div>
+        <div class="val">8/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Build Feasibility</div>
+        <div class="val">7/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Our Advantage</div>
+        <div class="val">6/10</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">⚠️ Risks & Mitigations</h2>
+    <h2 class="section-title th">⚠️ ความเสี่ยง & การบรรเทา</h2>
+
+    <div class="risk-list">
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>Medical data regulations.</strong> Patient health records may trigger Thai Medical Practice Act requirements. Mitigate: position as "clinic management" (not EMR), comply with PDPA, partner with medical compliance advisor.</span>
+          <span class="th"><strong>กฎหมายข้อมูลการแพทย์</strong> เวชระเบียนคนไข้อาจเข้าข่าย พ.ร.บ.วิชาชีพเวชกรรม บรรเทา: วางตำแหน่งเป็น "ระบบบริหารคลินิก" (ไม่ใช่ EMR) ปฏิบัติตาม PDPA ร่วมมือกับที่ปรึกษาด้าน compliance</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>Aesthetic Record / global players entering Thailand.</strong> They have scale and features. Mitigate: LINE-native + Thai-first architecture = deep moat. Localization is not just translation — it's Thai booking culture, LINE communication norms, Thai FDA, PromptPay, ภ.ง.ด. filing.</span>
+          <span class="th"><strong>Aesthetic Record / ผู้เล่นระดับโลกเข้าไทย</strong> มีขนาดและฟีเจอร์ บรรเทา: LINE-native + สถาปัตยกรรมไทยเป็นหลัก = คูกว้าง Localization ไม่ใช่แค่แปลภาษา แต่คือวัฒนธรรมการจอง, LINE, อย., PromptPay, ภ.ง.ด.</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>Sales cycle for clinics.</strong> B2B sales to clinic owners takes time — need demo, pilot, trust. Mitigate: free 30-day pilot, ROI calculator showing time saved vs cost, start with small/solo clinics that decide fast.</span>
+          <span class="th"><strong>วงจรการขายคลินิก</strong> การขาย B2B ให้เจ้าของคลินิกต้องใช้เวลา — ต้องเดโม่ ทดลอง สร้างความไว้ใจ บรรเทา: ทดลอง 30 วันฟรี คำนวณ ROI เริ่มจากคลินิกเล็ก/เดี่ยวที่ตัดสินใจเร็ว</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-low">LOW</span>
+        <div class="risk-text">
+          <span class="en"><strong>No beauty/medical domain expertise.</strong> Mitigate: partner with 2-3 early adopter clinics as design partners, they teach us the domain while we build for free. Aesthetic workflows are well-defined (booking → consultation → treatment → photo → follow-up).</span>
+          <span class="th"><strong>ไม่มีความเชี่ยวชาญด้านความงาม/การแพทย์</strong> บรรเทา: ร่วมมือกับคลินิก 2-3 แห่งเป็น design partner เขาสอนเรื่อง domain เราสร้างระบบฟรี กระบวนการความงามชัดเจน (จอง → ปรึกษา → ทรีทเมนท์ → ถ่ายรูป → ติดตาม)</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-low">LOW</span>
+        <div class="risk-text">
+          <span class="en"><strong>LINE platform risk.</strong> LINE is deeply entrenched in Thai business communication — no realistic alternative. MuteGlow uses LINE as a channel, not as a platform dependency.</span>
+          <span class="th"><strong>ความเสี่ยง LINE</strong> LINE ฝังลึกในการสื่อสารธุรกิจไทย — ไม่มีทางเลือกอื่นจริงๆ MuteGlow ใช้ LINE เป็นช่องทาง ไม่ใช่พึ่งพาเป็นแพลตฟอร์ม</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY INSIGHT -->
+<section class="section">
+  <div class="container">
+    <div class="insight-box">
+      <h3 class="en">💡 Key Insight</h3>
+      <h3 class="th">💡 ข้อมูลเชิงลึกสำคัญ</h3>
+      <p class="en">The beauty clinic management market is a PROVEN multi-billion dollar category globally. Aesthetic Record serves 9,000+ clinics. PatientNow and Jane App are each multi-million dollar businesses. But ZERO serve Thailand. The LINE moat is impenetrable — global tools architecturally cannot integrate LINE because their entire platform is built on email/SMS/web. MuteGlow starts where the market is: on LINE. The "smart follow-up" feature is the hidden revenue driver — when AI reminds a patient their Botox is wearing off and it's time for the next session, that's generating ฿5,000-30,000 per reminder for the clinic. Each automated follow-up that brings a patient back is worth 3-20x the monthly subscription. The ROI practically sells itself.</p>
+      <p class="th">ตลาดบริหารคลินิกความงามเป็นหมวดหมู่ที่พิสูจน์แล้วมูลค่าหลายพันล้านทั่วโลก Aesthetic Record รองรับ 9,000+ คลินิก PatientNow และ Jane App ล้วนเป็นธุรกิจหลายล้านดอลลาร์ แต่ไม่มีใครรองรับไทยเลย คูป้องกัน LINE ทะลุไม่ได้ — เครื่องมือระดับโลกไม่สามารถรวม LINE ได้เพราะทั้งแพลตฟอร์มสร้างบน email/SMS/web MuteGlow เริ่มที่ตลาด: บน LINE ฟีเจอร์ "ติดตามอัจฉริยะ" คือตัวสร้างรายได้ที่ซ่อนอยู่ — เมื่อ AI เตือนคนไข้ว่าโบท็อกซ์หมดฤทธิ์แล้วถึงเวลาเซสชันถัดไป นั่นคือการสร้างรายได้ ฿5,000-30,000 ต่อการเตือนแต่ละครั้งสำหรับคลินิก การติดตามอัตโนมัติแต่ละครั้งที่นำคนไข้กลับมาคุ้มค่า 3-20 เท่าของค่าสมาชิกรายเดือน ROI ขายตัวเองได้</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>MuteGlow — Idea #51 | MuteLab Research Sprint | February 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.7rem;">Research by Sun ☀️ AI CEO</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()));
+}
+</script>
+</body>
+</html>
