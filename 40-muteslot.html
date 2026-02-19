@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSlot — AI Booking Agent for Thai Service Businesses on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #06b6d4;
+    --secondary-light: #22d3ee;
+    --secondary-pale: rgba(6,182,212,0.08);
+    --secondary-glow: rgba(6,182,212,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(6,182,212,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.cyan {
+    background: var(--secondary-pale); border-color: rgba(6,182,212,0.2);
+    color: var(--secondary-light);
+  }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .green { color: var(--primary); }
+  .hero h1 .cyan { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .green { color: var(--primary); }
+  .stat-num .cyan { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem; margin-bottom: 3rem;
+  }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2rem;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+  .feature-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  .risk-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  .risk-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+  }
+  .risk-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; font-family: 'Space Mono', monospace; }
+  .risk-label.high { color: var(--red); }
+  .risk-label.med { color: var(--amber); }
+  .risk-label.low { color: var(--green); }
+  .risk-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .risk-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .price-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2rem; text-align: center;
+    transition: all 0.2s;
+  }
+  .price-card.featured { border-color: var(--primary); box-shadow: 0 0 30px var(--primary-glow); }
+  .price-name { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; font-family: 'Space Mono', monospace; }
+  .price-amount { font-size: 2.5rem; font-weight: 800; color: var(--text); font-family: 'Space Mono', monospace; margin-bottom: 0.25rem; }
+  .price-amount .currency { font-size: 1rem; color: var(--muted); }
+  .price-period { font-size: 0.75rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .price-features { list-style: none; text-align: left; }
+  .price-features li { font-size: 0.82rem; color: var(--text2); padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 0.5rem; }
+  .price-features li::before { content: '✓'; color: var(--primary); font-weight: 700; }
+
+  .verdict {
+    background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(6,182,212,0.05));
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 3rem; text-align: center;
+    margin: 4rem 0;
+  }
+  .verdict-score { font-size: 4rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .verdict-label { font-size: 1.2rem; color: var(--text); font-weight: 700; margin-bottom: 1rem; }
+  .verdict-breakdown {
+    display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .vb-item { text-align: center; }
+  .vb-score { font-size: 1.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .vb-label { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  footer {
+    text-align: center; padding: 3rem 0;
+    border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 0.8rem;
+  }
+
+  @media (max-width: 768px) {
+    .token-grid, .stats-row, .features-grid, .risk-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2rem; }
+    .verdict-breakdown { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th'); this.classList.add('active'); this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th'); this.classList.add('active'); this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← <span class="en">All Ideas</span><span class="th">ไอเดียทั้งหมด</span></a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo"><div class="logo-icon">M</div> MuteLab</div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span> IDEA #40
+      <span class="topbar-badge">📅 SLOT</span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">📅 <span class="en">IDEA #40 — SERVICE AUTOMATION</span><span class="th">ไอเดีย #40 — ระบบจองคิวอัตโนมัติ</span></div>
+      <h1>
+        <span class="en">Mute<span class="green">Slot</span><br>AI Booking Agent<br>for Thai <span class="cyan">LINE</span></span>
+        <span class="th">Mute<span class="green">Slot</span><br>AI จองคิว<br>บน <span class="cyan">LINE</span> สำหรับร้านค้า</span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en"><strong>500K+ Thai service businesses</strong> handle bookings via LINE chat manually. Staff spends hours responding to messages. No-shows cost 15-30% of revenue. MuteSlot is an AI agent that plugs into their LINE Official Account — handles booking conversations 24/7 in Thai, manages schedules, sends reminders, and eliminates no-shows.</span>
+        <span class="th"><strong>ร้านค้าบริการในไทย 500,000+ แห่ง</strong> จัดการจองคิวผ่าน LINE แชทด้วยมือ พนักงานเสียเวลาหลายชั่วโมงต่อวันตอบข้อความ ลูกค้าไม่มา (no-show) ทำให้เสียรายได้ 15-30% MuteSlot คือ AI agent ที่เชื่อมต่อ LINE Official Account — จัดการจองคิวตลอด 24 ชม. พูดไทยได้ จัดตาราง ส่งแจ้งเตือน ลด no-show</span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">36</div>
+          <div class="score-meta"><strong><span class="en">Overall Score</span><span class="th">คะแนนรวม</span></strong>/50 — ✅ PASS</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:var(--secondary-light)">฿999</div>
+          <div class="score-meta"><strong><span class="en">Starting Price</span><span class="th">ราคาเริ่มต้น</span></strong><span class="en">/month per business</span><span class="th">/เดือน ต่อร้าน</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY METRICS -->
+  <section class="token-window">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title"><span class="en">market_data.json — Key Metrics</span><span class="th">market_data.json — ตัวเลขสำคัญ</span></div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📊</div>
+          <div class="tc-name"><span class="en">GLOBAL MARKET</span><span class="th">ตลาดโลก</span></div>
+          <div class="tc-value">$633M</div>
+          <div class="tc-sub"><span class="en">Appointment scheduling (2023)</span><span class="th">ระบบจองคิว (2023)</span></div>
+          <div class="tc-badge"><span class="en">→ $1.5B by 2030</span><span class="th">→ $1.5B ภายใน 2030</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🏪</div>
+          <div class="tc-name"><span class="en">THAI SERVICE SMEs</span><span class="th">ร้านบริการในไทย</span></div>
+          <div class="tc-value">500K+</div>
+          <div class="tc-sub"><span class="en">Salons, clinics, spas, tutors</span><span class="th">ร้านเสริมสวย คลินิก สปา ติวเตอร์</span></div>
+          <div class="tc-badge cyan"><span class="en">ALL USE LINE</span><span class="th">ทุกร้านใช้ LINE</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">💸</div>
+          <div class="tc-name"><span class="en">NO-SHOW COST</span><span class="th">ต้นทุน No-Show</span></div>
+          <div class="tc-value">15-30%</div>
+          <div class="tc-sub"><span class="en">Revenue lost to no-shows</span><span class="th">รายได้ที่สูญเสียจากลูกค้าไม่มา</span></div>
+          <div class="tc-badge"><span class="en">INDUSTRY STANDARD</span><span class="th">มาตรฐานอุตสาหกรรม</span></div>
+        </div>
+      </div>
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">💬</div>
+          <div class="tc-name">LINE USERS</div>
+          <div class="tc-value">56M+</div>
+          <div class="tc-sub"><span class="en">Monthly active in Thailand</span><span class="th">ผู้ใช้งานรายเดือนในไทย</span></div>
+          <div class="tc-badge">82% PENETRATION</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🎯</div>
+          <div class="tc-name"><span class="en">REVENUE TARGET</span><span class="th">เป้ารายได้</span></div>
+          <div class="tc-value">฿30M</div>
+          <div class="tc-sub"><span class="en">1,500 businesses × ฿1,500/mo</span><span class="th">1,500 ร้าน × ฿1,500/เดือน</span></div>
+          <div class="tc-badge cyan">≈ $937K/YR</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">⚡</div>
+          <div class="tc-name"><span class="en">TIME TO FIRST $</span><span class="th">เวลาถึงรายได้แรก</span></div>
+          <div class="tc-value">2-4W</div>
+          <div class="tc-sub"><span class="en">MVP → pilot with local salons</span><span class="th">MVP → ทดลองกับร้านเสริมสวย</span></div>
+          <div class="tc-badge"><span class="en">FAST VALIDATION</span><span class="th">ทดสอบไว</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💇</div>
+      <div class="stat-num"><span class="green">3M+</span></div>
+      <div class="stat-label"><span class="en">Registered Thai SMEs. Service sector is largest.</span><span class="th">SME จดทะเบียนในไทย ภาคบริการใหญ่ที่สุด</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📱</div>
+      <div class="stat-num"><span class="green">67M</span></div>
+      <div class="stat-label"><span class="en">LINE registered users in Thailand — nearly entire population</span><span class="th">ผู้ใช้ LINE ในไทย เกือบทั้งประเทศ</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⏰</div>
+      <div class="stat-num"><span class="cyan">3-5</span>hr</div>
+      <div class="stat-label"><span class="en">Hours/day staff spends managing LINE chat bookings manually</span><span class="th">ชั่วโมง/วัน ที่พนักงานเสียไปจัดการจองทาง LINE</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌙</div>
+      <div class="stat-num"><span class="green">40</span>%</div>
+      <div class="stat-label"><span class="en">Booking inquiries come after-hours — lost without AI</span><span class="th">คำขอจองมานอกเวลาทำการ — สูญเสียถ้าไม่มี AI</span></div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-badge">🔧 <span class="en">CORE FEATURES</span><span class="th">ฟีเจอร์หลัก</span></div>
+    <h2 class="section-title"><span class="en">What MuteSlot Does</span><span class="th">MuteSlot ทำอะไรได้</span></h2>
+    <p class="section-sub"><span class="en">An AI booking agent that lives inside your existing LINE Official Account</span><span class="th">AI จองคิวที่อยู่ใน LINE Official Account ที่มีอยู่แล้ว</span></p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title"><span class="en">AI Chat Booking</span><span class="th">จองคิวผ่านแชท AI</span></div>
+        <div class="feature-desc"><span class="en">Customers chat naturally in Thai — "ขอจองทำเล็บพรุ่งนี้บ่าย 2 ค่ะ". AI understands context, checks availability, confirms instantly. No forms, no apps to download.</span><span class="th">ลูกค้าแชทเป็นธรรมชาติ AI เข้าใจบริบท เช็คคิวว่าง ยืนยันทันที ไม่ต้องกรอกฟอร์ม ไม่ต้องโหลดแอป</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title"><span class="en">Smart Scheduling</span><span class="th">จัดตารางอัจฉริยะ</span></div>
+        <div class="feature-desc"><span class="en">Manages multiple staff calendars, service durations, buffer times. Auto-suggests alternatives when requested slot is full. Handles recurring appointments.</span><span class="th">จัดการตารางพนักงานหลายคน ระยะเวลาบริการ เวลาบัฟเฟอร์ แนะนำทางเลือกเมื่อคิวเต็ม จัดการนัดซ้ำ</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-title"><span class="en">No-Show Killer</span><span class="th">ลด No-Show</span></div>
+        <div class="feature-desc"><span class="en">Automated reminders at 24h, 2h, and 30min before appointment via LINE. One-tap confirm/reschedule. Reduces no-shows by 60-80% (industry proven).</span><span class="th">แจ้งเตือนอัตโนมัติ 24 ชม., 2 ชม., 30 นาทีก่อนนัด ผ่าน LINE กดยืนยัน/เลื่อนนัดได้เลย ลด no-show 60-80%</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title"><span class="en">Business Dashboard</span><span class="th">แดชบอร์ดธุรกิจ</span></div>
+        <div class="feature-desc"><span class="en">Daily/weekly booking overview, staff utilization, peak hours analysis, customer history. Revenue tracking. All accessible via LINE or web dashboard.</span><span class="th">ภาพรวมจองรายวัน/สัปดาห์ วิเคราะห์ชั่วโมงพีค ประวัติลูกค้า ดูได้ทาง LINE หรือเว็บ</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title"><span class="en">Upsell Engine</span><span class="th">เครื่องยนต์อัพเซล</span></div>
+        <div class="feature-desc"><span class="en">AI suggests add-on services based on customer history. "ทำเล็บด้วยไหมคะ ครั้งที่แล้วทำสวยมากเลย". Increases average ticket 15-25%.</span><span class="th">AI แนะนำบริการเพิ่มเติมจากประวัติลูกค้า เพิ่มยอดเฉลี่ย 15-25%</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <div class="feature-title"><span class="en">Review Collection</span><span class="th">เก็บรีวิวอัตโนมัติ</span></div>
+        <div class="feature-desc"><span class="en">Auto-sends review request via LINE after appointment. Positive reviews routed to Google Maps. Negative ones flagged for owner response.</span><span class="th">ส่งขอรีวิวอัตโนมัติหลังนัด รีวิวดีส่งไป Google Maps รีวิวแย่แจ้งเจ้าของทันที</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section class="section">
+    <div class="section-badge">⚔️ <span class="en">COMPETITION</span><span class="th">คู่แข่ง</span></div>
+    <h2 class="section-title"><span class="en">Why This Gap Exists</span><span class="th">ทำไมยังไม่มีใครทำ</span></h2>
+    <p class="section-sub"><span class="en">Global booking tools are web-first. Thai businesses live on LINE. That's the gap.</span><span class="th">ระบบจองคิวทั่วโลกทำบนเว็บ แต่ร้านไทยอยู่บน LINE นั่นคือช่องว่าง</span></p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <div class="feature-title"><span class="en">Global Players</span><span class="th">ผู้เล่นระดับโลก</span></div>
+        <div class="feature-desc"><span class="en"><strong>Calendly</strong> ($100M+ ARR), <strong>Fresha</strong>, <strong>Booksy</strong>, <strong>Vagaro</strong> — all web/app based. Not LINE-native. Not Thai-first. Don't understand Thai booking culture.</span><span class="th"><strong>Calendly</strong>, <strong>Fresha</strong>, <strong>Booksy</strong>, <strong>Vagaro</strong> — ทั้งหมดเป็นเว็บ/แอป ไม่ใช่ LINE ไม่เข้าใจวัฒนธรรมจองคิวของคนไทย</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🇹🇭</div>
+        <div class="feature-title"><span class="en">Thai Landscape</span><span class="th">ตลาดไทย</span></div>
+        <div class="feature-desc"><span class="en"><strong>LINE OA</strong> has basic scheduling but NO AI. <strong>Oho Chat</strong> does LINE automation but not specialized booking. No Thai player combines AI + LINE + booking + no-show prevention.</span><span class="th"><strong>LINE OA</strong> มีจองคิวพื้นฐานแต่ไม่มี AI <strong>Oho Chat</strong> ทำ LINE automation แต่ไม่เชี่ยวชาญจองคิว ยังไม่มีใครรวม AI + LINE + จองคิว + ลด no-show</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section">
+    <div class="section-badge">💳 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <h2 class="section-title"><span class="en">Pricing Tiers</span><span class="th">แพ็กเกจราคา</span></h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name"><span class="en">STARTER</span><span class="th">เริ่มต้น</span></div>
+        <div class="price-amount"><span class="currency">฿</span>499</div>
+        <div class="price-period"><span class="en">/month — Solo practitioner</span><span class="th">/เดือน — ร้านเดี่ยว</span></div>
+        <ul class="price-features">
+          <li><span class="en">1 staff calendar</span><span class="th">ตาราง 1 พนักงาน</span></li>
+          <li><span class="en">AI booking chat (Thai)</span><span class="th">AI จองคิวภาษาไทย</span></li>
+          <li><span class="en">200 bookings/month</span><span class="th">จอง 200 ครั้ง/เดือน</span></li>
+          <li><span class="en">LINE reminders</span><span class="th">แจ้งเตือนทาง LINE</span></li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="price-name"><span class="en">BUSINESS ⭐</span><span class="th">ธุรกิจ ⭐</span></div>
+        <div class="price-amount"><span class="currency">฿</span>1,499</div>
+        <div class="price-period"><span class="en">/month — Most popular</span><span class="th">/เดือน — ยอดนิยม</span></div>
+        <ul class="price-features">
+          <li><span class="en">Up to 10 staff</span><span class="th">พนักงานสูงสุด 10 คน</span></li>
+          <li><span class="en">Unlimited bookings</span><span class="th">จองไม่จำกัด</span></li>
+          <li><span class="en">Upsell recommendations</span><span class="th">แนะนำอัพเซล</span></li>
+          <li><span class="en">Review collection</span><span class="th">เก็บรีวิวอัตโนมัติ</span></li>
+          <li><span class="en">Analytics dashboard</span><span class="th">แดชบอร์ดวิเคราะห์</span></li>
+          <li><span class="en">Multi-branch</span><span class="th">หลายสาขา</span></li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="price-name"><span class="en">ENTERPRISE</span><span class="th">องค์กร</span></div>
+        <div class="price-amount"><span class="currency">฿</span>4,999</div>
+        <div class="price-period"><span class="en">/month — Chain businesses</span><span class="th">/เดือน — เชนธุรกิจ</span></div>
+        <ul class="price-features">
+          <li><span class="en">Unlimited staff & branches</span><span class="th">พนักงาน & สาขาไม่จำกัด</span></li>
+          <li><span class="en">API integration</span><span class="th">เชื่อมต่อ API</span></li>
+          <li><span class="en">Custom AI training</span><span class="th">ฝึก AI เฉพาะร้าน</span></li>
+          <li><span class="en">POS integration</span><span class="th">เชื่อมต่อ POS</span></li>
+          <li><span class="en">Dedicated support</span><span class="th">ซัพพอร์ตเฉพาะ</span></li>
+          <li><span class="en">White-label option</span><span class="th">ใส่แบรนด์ตัวเอง</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section class="section">
+    <div class="section-badge">⚠️ <span class="en">RISKS</span><span class="th">ความเสี่ยง</span></div>
+    <h2 class="section-title"><span class="en">What Could Go Wrong</span><span class="th">อะไรที่อาจผิดพลาด</span></h2>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-label high"><span class="en">HIGH RISK</span><span class="th">ความเสี่ยงสูง</span></div>
+        <div class="risk-title"><span class="en">LINE Platform Risk</span><span class="th">ความเสี่ยงจาก LINE</span></div>
+        <div class="risk-desc"><span class="en">LINE could build native AI booking features, killing the business overnight. Mitigation: build strong customer relationships and data moat. Diversify to WhatsApp/web.</span><span class="th">LINE อาจสร้างฟีเจอร์ AI จองคิวเอง ลดความเสี่ยงโดยสร้าง moat จากข้อมูลลูกค้า กระจายไปช่องทางอื่น</span></div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label med"><span class="en">MEDIUM RISK</span><span class="th">ความเสี่ยงปานกลาง</span></div>
+        <div class="risk-title"><span class="en">Thai SME Willingness to Pay</span><span class="th">ร้านไทยยอมจ่ายไหม</span></div>
+        <div class="risk-desc"><span class="en">Thai micro-businesses are price sensitive. ฿499/mo (~$15) may feel expensive for small salons. Mitigation: freemium tier, prove ROI with no-show reduction data.</span><span class="th">ร้านเล็กอาจรู้สึกแพง ลดความเสี่ยงด้วย freemium และพิสูจน์ ROI จากการลด no-show</span></div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label med"><span class="en">MEDIUM RISK</span><span class="th">ความเสี่ยงปานกลาง</span></div>
+        <div class="risk-title"><span class="en">AI Misunderstanding Thai</span><span class="th">AI เข้าใจภาษาไทยผิด</span></div>
+        <div class="risk-desc"><span class="en">Thai is complex (tones, particles, slang). AI may misbook. Mitigation: fallback to human handoff, continuous training, confirmation loops.</span><span class="th">ภาษาไทยซับซ้อน AI อาจจองผิด แก้ด้วยระบบ human handoff และยืนยันซ้ำก่อนจอง</span></div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label low"><span class="en">LOW RISK</span><span class="th">ความเสี่ยงต่ำ</span></div>
+        <div class="risk-title"><span class="en">Cold Start / Sales</span><span class="th">เริ่มต้นจากศูนย์</span></div>
+        <div class="risk-desc"><span class="en">No existing relationships with service businesses. Mitigation: offer free pilot to 10-20 salons in Bangkok, build case studies, referral program.</span><span class="th">ไม่มีความสัมพันธ์กับร้านค้า แก้ด้วยเสนอทดลองฟรี 10-20 ร้านในกทม. สร้าง case study</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <div class="verdict-score">36/50</div>
+    <div class="verdict-label"><span class="en">✅ PASS — Boring But Profitable</span><span class="th">✅ ผ่าน — น่าเบื่อแต่ทำเงิน</span></div>
+    <p style="color:var(--muted); max-width:600px; margin:0 auto; font-size:0.9rem;">
+      <span class="en">Proven model globally (Calendly = $100M+ ARR). Thailand's LINE-first culture creates a clear gap. Revenue math works with 0.3% of Thai service SMEs. Fast MVP, real pain, recurring revenue.</span>
+      <span class="th">โมเดลพิสูจน์แล้วในต่างประเทศ (Calendly = $100M+ ARR) วัฒนธรรม LINE ของไทยสร้างช่องว่างชัดเจน ทำรายได้ได้แค่ 0.3% ของร้านบริการในไทย MVP เร็ว ปัญหาจริง รายได้ recurring</span>
+    </p>
+    <div class="verdict-breakdown">
+      <div class="vb-item"><div class="vb-score">8</div><div class="vb-label">MARKET</div></div>
+      <div class="vb-item"><div class="vb-score">8</div><div class="vb-label">PROBLEM</div></div>
+      <div class="vb-item"><div class="vb-score">7</div><div class="vb-label">COMP GAP</div></div>
+      <div class="vb-item"><div class="vb-score">8</div><div class="vb-label">FEASIBILITY</div></div>
+      <div class="vb-item"><div class="vb-score">5</div><div class="vb-label">ADVANTAGE</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>MuteLab Research Sprint — Idea #40 — February 2026</p>
+    <p style="margin-top:0.5rem; font-size:0.7rem; color:var(--muted2);">AI-generated research. Not investment advice. Data as of Feb 2026.</p>
+  </footer>
+
+</div>
+</body>
+</html>
