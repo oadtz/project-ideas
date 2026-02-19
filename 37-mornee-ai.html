@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>หมอหนี้ AI (MorNee AI) — AI Debt Coach on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.amber {
+    background: var(--secondary-pale); border-color: rgba(245,158,11,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .green { color: var(--primary); }
+  .hero h1 .amber { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.amber { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .green { color: var(--primary); }
+  .stat-num .amber { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .green { color: var(--primary); }
+  .cta-title .amber { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  .score-breakdown {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem; margin: 2rem 0;
+  }
+  .sb-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; text-align: center;
+    transition: all 0.2s;
+  }
+  .sb-item:hover { border-color: var(--border2); }
+  .sb-score { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+  .sb-label { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .score-breakdown { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+    .score-breakdown { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+  .d5 { opacity: 0; animation-delay: 0.5s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">💊</div>
+        <span>MorNee AI</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">28M+ in debt · ฿16.35T crisis</span>
+        <span class="th">28M+ เป็นหนี้ · วิกฤต ฿16.35T</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 37</span>
+        <span class="th">ไอเดีย 37</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        💊 <span class="en">IDEA 37 — MORNEE AI · DEBT DOCTOR</span><span class="th">ไอเดีย 37 — หมอหนี้ AI · ที่ปรึกษาหนี้</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en"><span class="green">หมอหนี้ AI</span><br>Your <span class="amber">Debt Doctor</span> on LINE</span>
+        <span class="th"><span class="green">หมอหนี้ AI</span><br><span class="amber">ที่ปรึกษาแก้หนี้</span>บน LINE</span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered debt management coach</strong> on LINE. Analyzes your total debt picture, creates personalized payoff strategies (snowball/avalanche), generates bank negotiation letters, and tracks your journey to debt freedom. "The first debt doctor that never sleeps, never judges."</span>
+        <span class="th"><strong>โค้ชแก้หนี้ด้วย AI</strong> บน LINE วิเคราะห์ภาพรวมหนี้ทั้งหมด สร้างแผนปลดหนี้เฉพาะบุคคล (snowball/avalanche) ร่างจดหมายเจรจากับธนาคาร และติดตามเส้นทางสู่อิสรภาพทางการเงิน "หมอหนี้คนแรกที่ไม่เคยหลับ ไม่เคยตัดสิน"</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">37/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 37/50 — PASS</strong>
+              <span class="en">Massive pain + zero AI competition in Thai</span>
+              <span class="th">ปัญหาใหญ่ + ไม่มี AI แข่งในไทย</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num amber">฿16.35T</div>
+            <div class="score-meta">
+              <strong>🇹🇭 Household Debt</strong>
+              <span class="en">87-90% of GDP — highest in Asia</span>
+              <span class="th">87-90% ของ GDP — สูงสุดในเอเชีย</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Score Breakdown -->
+  <div class="score-breakdown animate d3">
+    <div class="sb-item">
+      <div class="sb-score">8<span style="font-size:0.8rem;color:var(--muted);">/10</span></div>
+      <div class="sb-label"><span class="en">Market</span><span class="th">ตลาด</span></div>
+    </div>
+    <div class="sb-item">
+      <div class="sb-score">9<span style="font-size:0.8rem;color:var(--muted);">/10</span></div>
+      <div class="sb-label"><span class="en">Problem</span><span class="th">ปัญหา</span></div>
+    </div>
+    <div class="sb-item">
+      <div class="sb-score">8<span style="font-size:0.8rem;color:var(--muted);">/10</span></div>
+      <div class="sb-label"><span class="en">Gap</span><span class="th">ช่องว่าง</span></div>
+    </div>
+    <div class="sb-item">
+      <div class="sb-score">7<span style="font-size:0.8rem;color:var(--muted);">/10</span></div>
+      <div class="sb-label"><span class="en">Build</span><span class="th">สร้าง</span></div>
+    </div>
+    <div class="sb-item">
+      <div class="sb-score">5<span style="font-size:0.8rem;color:var(--muted);">/10</span></div>
+      <div class="sb-label"><span class="en">Advantage</span><span class="th">ข้อได้เปรียบ</span></div>
+    </div>
+  </div>
+
+  <!-- Demo Window -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        หมอหนี้ AI — <span class="en">LINE Chat Preview</span><span class="th">ตัวอย่างแชท LINE</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📊</div>
+          <div class="tc-name"><span class="en">DEBT X-RAY</span><span class="th">เอ็กซ์เรย์หนี้</span></div>
+          <div class="tc-value">Free</div>
+          <div class="tc-sub"><span class="en">Full debt picture analysis</span><span class="th">วิเคราะห์ภาพรวมหนี้ทั้งหมด</span></div>
+          <div class="tc-badge">✓ <span class="en">Instant report</span><span class="th">รายงานทันที</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🗺️</div>
+          <div class="tc-name"><span class="en">PAYOFF PLAN</span><span class="th">แผนปลดหนี้</span></div>
+          <div class="tc-value">฿99/mo</div>
+          <div class="tc-sub"><span class="en">Personalized debt-free roadmap</span><span class="th">แผนปลดหนี้เฉพาะคุณ</span></div>
+          <div class="tc-badge">✓ <span class="en">AI-optimized</span><span class="th">AI ปรับให้เหมาะ</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">⚖️</div>
+          <div class="tc-name"><span class="en">NEGOTIATOR</span><span class="th">เจรจาหนี้</span></div>
+          <div class="tc-value">฿299/mo</div>
+          <div class="tc-sub"><span class="en">Bank letter templates + coaching</span><span class="th">แม่แบบจดหมาย + โค้ชชิ่ง</span></div>
+          <div class="tc-badge amber">⭐ <span class="en">Full Access</span><span class="th">เข้าถึงทั้งหมด</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">💊 Debt Recovery Pipeline</span><span class="th">💊 ขั้นตอนฟื้นฟูหนี้</span></span>
+          <span style="color:var(--primary);">AI + Data ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:70%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Debt X-Ray</span><span class="th">เอ็กซ์เรย์หนี้</span> ✓</span>
+          <span><span class="en">Strategy</span><span class="th">วางแผน</span> ✓</span>
+          <span><span class="en">Negotiate</span><span class="th">เจรจา</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Debt Free!</span><span class="th">ปลดหนี้!</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num"><span class="green">฿16.35T</span></div>
+      <div class="stat-label">
+        <span class="en">Thai household debt (Q1 2025). That's 87-90% of GDP — highest in Asia. Average household owes ฿144,871. This is a national crisis.</span>
+        <span class="th">หนี้ครัวเรือนไทย (Q1 2025) คิดเป็น 87-90% ของ GDP สูงสุดในเอเชีย เฉลี่ยครัวเรือนละ ฿144,871 นี่คือวิกฤตระดับชาติ</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">👥</div>
+      <div class="stat-num"><span class="amber">28M+</span></div>
+      <div class="stat-label">
+        <span class="en">Thai people with consumer debt. Credit cards, personal loans, car loans, mortgages. Government debt clinics are overwhelmed with demand.</span>
+        <span class="th">คนไทยที่มีหนี้ผู้บริโภค บัตรเครดิต สินเชื่อส่วนบุคคล รถ บ้าน คลินิกแก้หนี้ของรัฐรับไม่ไหว</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="green">ZERO</span></div>
+      <div class="stat-label">
+        <span class="en">AI debt coaches in Thailand. BOT has a basic web form (Debt DIY). SAM has a hotline (1443). NO AI chatbot. NO LINE bot. Zero competition.</span>
+        <span class="th">AI โค้ชหนี้ในไทย มีแค่เว็บฟอร์มพื้นฐาน (Debt DIY) ของ ธปท. และสายด่วน SAM (1443) ไม่มี AI chatbot ไม่มี LINE bot ไม่มีคู่แข่ง</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌍</div>
+      <div class="stat-num"><span class="amber">$3.7B</span></div>
+      <div class="stat-label">
+        <span class="en">Global AI financial assistant market by 2033 (18.1% CAGR). Cleo (UK) valued at $700M. Trim acquired by OneMain. Proven model, unlocalized for Thailand.</span>
+        <span class="th">ตลาด AI ที่ปรึกษาการเงินโลกปี 2033 (CAGR 18.1%) Cleo (UK) มูลค่า $700M Trim ถูกซื้อโดย OneMain โมเดลพิสูจน์แล้ว ยังไม่มีในไทย</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">Three steps to debt freedom</span>
+      <span class="th">3 ขั้นตอนสู่อิสรภาพทางการเงิน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Add หมอหนี้ AI on LINE. Chat naturally in Thai. Get a personalized debt-free plan in minutes — not weeks waiting for a bank appointment.</span>
+      <span class="th">เพิ่มเพื่อน หมอหนี้ AI บน LINE แชทเป็นธรรมชาติเป็นภาษาไทย ได้แผนปลดหนี้ในไม่กี่นาที ไม่ต้องรอนัดธนาคารเป็นสัปดาห์</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Debt X-Ray</span>
+          <span class="th">เอ็กซ์เรย์หนี้</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Tell the bot about your debts — credit cards, loans, interest rates. AI builds a complete financial snapshot. Like a doctor diagnosing before prescribing.</span>
+          <span class="th">บอกบอทเกี่ยวกับหนี้ — บัตรเครดิต สินเชื่อ ดอกเบี้ย AI สร้างภาพรวมการเงินทั้งหมด เหมือนหมอวินิจฉัยก่อนสั่งยา</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🗺️</div>
+        <div class="wf-title">
+          <span class="en">AI Payoff Strategy</span>
+          <span class="th">แผนปลดหนี้ AI</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI calculates optimal payoff order (snowball vs avalanche vs hybrid). Shows exact monthly payments, interest saved, and your debt-free date. Real math, not hope.</span>
+          <span class="th">AI คำนวณลำดับจ่ายหนี้ที่ดีที่สุด (snowball/avalanche/hybrid) แสดงยอดจ่ายรายเดือน ดอกเบี้ยที่ประหยัด และวันปลดหนี้ คณิตศาสตร์จริง ไม่ใช่ความหวัง</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">📝</div>
+        <div class="wf-title">
+          <span class="en">Negotiate & Track</span>
+          <span class="th">เจรจาและติดตาม</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI generates bank negotiation letters, guides you through debt restructuring options, and sends weekly progress updates. Your pocket debt coach — 24/7.</span>
+          <span class="th">AI ร่างจดหมายเจรจากับธนาคาร แนะนำทางเลือกปรับโครงสร้างหนี้ และส่งอัพเดทความคืบหน้ารายสัปดาห์ โค้ชหนี้ในกระเป๋า — 24/7</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MorNee AI -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">Why now? Why LINE? Why AI?</span>
+      <span class="th">ทำไมตอนนี้? ทำไม LINE? ทำไม AI?</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Thailand's debt crisis is at record levels. Government programs can't scale. An AI on LINE can reach 54M Thai users with zero download friction.</span>
+      <span class="th">วิกฤตหนี้ไทยสูงสุดเป็นประวัติการณ์ โปรแกรมรัฐขยายไม่ทัน AI บน LINE เข้าถึง 54M คนไทยโดยไม่ต้องดาวน์โหลด</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE = Zero Friction (54M Thai Users)</span>
+          <span class="th">LINE = ไม่มีอุปสรรค (54M คนไทยใช้)</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">No app download. No registration. Just add a friend on LINE — the app every Thai person already has. People in debt don't want another app; they want help NOW.</span>
+          <span class="th">ไม่ต้องดาวน์โหลด ไม่ต้องสมัคร แค่เพิ่มเพื่อนบน LINE ที่คนไทยทุกคนมีอยู่แล้ว คนเป็นหนี้ไม่อยากติดตั้งแอพใหม่ เขาอยากได้ความช่วยเหลือตอนนี้</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🤖</div>
+        <div class="why-panel-title">
+          <span class="en">AI 24/7 vs Government 9-5</span>
+          <span class="th">AI 24/7 vs ราชการ 9-5</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">BOT's Debt DIY is a basic web form. SAM's hotline 1443 has limited hours. คลินิกแก้หนี้ requires in-person visits. AI never sleeps, handles unlimited users, zero wait time.</span>
+          <span class="th">Debt DIY ของ ธปท. คือเว็บฟอร์มพื้นฐาน สายด่วน SAM 1443 มีเวลาจำกัด คลินิกแก้หนี้ต้องไปด้วยตัว AI ไม่มีวันหยุด รับไม่จำกัด ไม่ต้องรอ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🙈</div>
+        <div class="why-panel-title">
+          <span class="en">No Shame, No Judgment</span>
+          <span class="th">ไม่อาย ไม่ถูกตัดสิน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Debt is taboo in Thai culture. People are ashamed to seek help. An AI chatbot removes the social stigma — you can be completely honest about your finances privately.</span>
+          <span class="th">หนี้เป็นเรื่องละอายในสังคมไทย คนอายไม่กล้าขอความช่วยเหลือ AI chatbot ลบความอายออก — คุณพูดความจริงเรื่องการเงินได้อย่างสบายใจ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🏦</div>
+        <div class="why-panel-title">
+          <span class="en">B2C2B: Banks Will Pay</span>
+          <span class="th">B2C2B: ธนาคารจะจ่าย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Banks WANT debtors to restructure (it's cheaper than write-offs). B2C2B model: free for users → banks/fintech pay for referrals and debt recovery leads. Cleo (UK) raised $700M on this model.</span>
+          <span class="th">ธนาคารอยากให้ลูกหนี้ปรับโครงสร้าง (ถูกกว่าตัดหนี้สูญ) โมเดล B2C2B: ฟรีสำหรับผู้ใช้ → ธนาคาร/fintech จ่ายค่า referral Cleo (UK) ระดมทุนได้ $700M ด้วยโมเดลนี้</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">Free to start, premium to accelerate</span>
+      <span class="th">เริ่มฟรี พรีเมียมเร่งปลดหนี้</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Free debt X-ray hooks users. Premium tiers for serious debt management. B2B partnerships with banks and fintech for sustainable revenue.</span>
+      <span class="th">เอ็กซ์เรย์หนี้ฟรีดึงผู้ใช้ Premium tier สำหรับจัดการหนี้จริงจัง B2B partnership กับธนาคารและ fintech เป็นรายได้ยั่งยืน</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿5M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿5M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18</span>
+            <span class="th">ARR ภายในเดือนที่ 18</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 5K free users (viral — debt is emotional)<br>Month 6: 30K users, 3% convert = 900 paying<br>Month 12: 100K users + B2B deals<br>Month 18: 200K users = ฿5M ARR</span>
+            <span class="th">เดือน 3: 5K free users (ไวรัล — หนี้เป็นเรื่องอารมณ์)<br>เดือน 6: 30K users, 3% convert = 900 จ่ายเงิน<br>เดือน 12: 100K users + B2B deals<br>เดือน 18: 200K users = ฿5M ARR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">📊</div>
+          <div class="rt-label">Free</div>
+          <div class="rt-desc">
+            <span class="en">Debt X-ray (one-time analysis), basic payoff calculator. Hook users in with instant value.</span>
+            <span class="th">เอ็กซ์เรย์หนี้ (วิเคราะห์ครั้งเดียว) เครื่องคำนวณปลดหนี้เบื้องต้น ดึงผู้ใช้ด้วย value ทันที</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿0</div>
+            <div class="rt-note"><span class="en">forever</span><span class="th">ตลอดไป</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(16,185,129,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">🗺️</div>
+          <div class="rt-label" style="color:var(--primary-light);">Coach ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Personalized AI payoff plan, weekly progress tracking, spending alerts, motivation messages. Core revenue driver.</span>
+            <span class="th">แผน AI ปลดหนี้เฉพาะบุคคล ติดตามรายสัปดาห์ แจ้งเตือนใช้จ่าย ข้อความให้กำลังใจ แกนหลักรายได้</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿99/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">⚖️</div>
+          <div class="rt-label">Negotiator</div>
+          <div class="rt-desc">
+            <span class="en">Bank negotiation letter templates, debt restructuring guidance, legal rights education, priority AI support.</span>
+            <span class="th">แม่แบบจดหมายเจรจาธนาคาร คำแนะนำปรับโครงสร้างหนี้ ความรู้สิทธิ์ตามกฎหมาย AI ซัพพอร์ตพิเศษ</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿299/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏦</div>
+          <div class="rt-label">B2B</div>
+          <div class="rt-desc">
+            <span class="en">Banks pay for qualified debt restructuring leads. Fintech partners for referral commissions. The real monetization engine.</span>
+            <span class="th">ธนาคารจ่ายค่า lead ปรับโครงสร้างหนี้ Fintech partner ค่า commission แนะนำ เครื่องยนต์สร้างรายได้ตัวจริง</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿500+</div>
+            <div class="rt-note"><span class="en">per lead</span><span class="th">ต่อ lead</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From LINE bot to fintech platform</span>
+      <span class="th">จาก LINE bot สู่แพลตฟอร์ม fintech</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">💊 MorNee AI — Milestone Timeline</span>
+          <span class="th">💊 หมอหนี้ AI — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿5M ARR target · Month 18</span>
+          <span class="th">เป้า ฿5M ARR · เดือนที่ 18</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–2 · MVP LAUNCH</span>
+            <span class="th">เดือน 1–2 · เปิดตัว MVP</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">LINE bot + Debt X-ray + basic payoff calculator</span>
+            <span class="th">LINE bot + เอ็กซ์เรย์หนี้ + เครื่องคำนวณปลดหนี้เบื้องต้น</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Build LINE bot with conversational debt intake. Implement snowball/avalanche calculators. Free tier only. Seed on Facebook debt groups and Pantip.</span>
+            <span class="th">สร้าง LINE bot รับข้อมูลหนี้แบบสนทนา ระบบคำนวณ snowball/avalanche เริ่มฟรีก่อน Seed ในกลุ่ม Facebook แก้หนี้ และ Pantip</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time"><span class="en">Week 1-8</span><span class="th">สัปดาห์ 1-8</span></div>
+          <div class="roadmap-metric">5K users</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">💰</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 3–6 · MONETIZE</span>
+            <span class="th">เดือน 3–6 · สร้างรายได้</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Launch premium tiers + negotiation letter generator</span>
+            <span class="th">เปิด premium tier + ระบบร่างจดหมายเจรจา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add ฿99/mo Coach tier (weekly tracking, alerts). Add ฿299/mo Negotiator (bank letter templates, legal rights). Content marketing on debt-related topics.</span>
+            <span class="th">เพิ่ม Coach ฿99/เดือน (ติดตามรายสัปดาห์ แจ้งเตือน) เพิ่ม Negotiator ฿299/เดือน (แม่แบบจดหมาย สิทธิ์กฎหมาย) Content marketing เรื่องหนี้</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time"><span class="en">Month 3-6</span><span class="th">เดือน 3-6</span></div>
+          <div class="roadmap-metric">30K users</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🏦</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 7–12 · B2B PARTNERSHIPS</span>
+            <span class="th">เดือน 7–12 · B2B PARTNERSHIPS</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Bank partnerships + fintech referral revenue</span>
+            <span class="th">พาร์ทเนอร์ธนาคาร + รายได้ fintech referral</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Partner with banks for debt restructuring referrals. Integrate with fintech (refinancing, consolidation). B2B revenue becomes primary growth engine.</span>
+            <span class="th">ร่วมกับธนาคารส่งต่อลูกหนี้ปรับโครงสร้าง เชื่อมต่อ fintech (refinance, consolidation) รายได้ B2B กลายเป็นเครื่องยนต์หลัก</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time"><span class="en">Month 7-12</span><span class="th">เดือน 7-12</span></div>
+          <div class="roadmap-metric">100K users</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 13–18 · SCALE</span>
+            <span class="th">เดือน 13–18 · ขยาย</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Full fintech platform + expand to SEA</span>
+            <span class="th">แพลตฟอร์ม fintech เต็มรูปแบบ + ขยาย SEA</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add credit score improvement features. Expand to Vietnam/Philippines (similar debt crises). Seek VC for Series A if traction warrants.</span>
+            <span class="th">เพิ่มฟีเจอร์ปรับปรุง credit score ขยายสู่เวียดนาม/ฟิลิปปินส์ (วิกฤตหนี้คล้ายกัน) ระดมทุน Series A ถ้า traction ดี</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time"><span class="en">Month 13-18</span><span class="th">เดือน 13-18</span></div>
+          <div class="roadmap-metric">200K+ users</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Risks -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⚠️ <span class="en">RISKS & MITIGATIONS</span><span class="th">ความเสี่ยงและการจัดการ</span></div>
+    <div class="section-title">
+      <span class="en">Honest assessment of challenges</span>
+      <span class="th">ประเมินความท้าทายอย่างตรงไปตรงมา</span>
+    </div>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">⚖️</div>
+        <div class="why-panel-title">
+          <span class="en">Regulatory Risk: Financial Advice</span>
+          <span class="th">ความเสี่ยงกฎหมาย: ให้คำปรึกษาการเงิน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Mitigation: Position as "educational tool" not "financial advisor." Clear disclaimers. Follow BOT guidelines. Don't manage money directly — just calculate and educate.</span>
+          <span class="th">การจัดการ: วางตำแหน่งเป็น "เครื่องมือให้ความรู้" ไม่ใช่ "ที่ปรึกษาการเงิน" ข้อจำกัดความรับผิดชอบชัดเจน ตาม ธปท. ไม่จัดการเงินโดยตรง — แค่คำนวณและให้ความรู้</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💸</div>
+        <div class="why-panel-title">
+          <span class="en">Monetization: Can Debtors Pay?</span>
+          <span class="th">สร้างรายได้: คนเป็นหนี้จ่ายไหวไหม?</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Mitigation: ฿99/mo is less than one coffee. Free tier provides real value. B2B partnerships (banks, fintech) are the real revenue engine — users are the product, banks are the customer.</span>
+          <span class="th">การจัดการ: ฿99/เดือน ถูกกว่ากาแฟ 1 แก้ว Free tier ให้ value จริง B2B partnerships คือรายได้จริง — ผู้ใช้คือผลิตภัณฑ์ ธนาคารคือลูกค้า</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">
+      💊 <span class="en">IDEA 37 · SCORE: 37/50 ✅</span><span class="th">ไอเดีย 37 · คะแนน: 37/50 ✅</span>
+    </div>
+    <div class="cta-title">
+      <span class="en"><span class="green">28M Thais</span> need a <span class="amber">debt doctor</span></span>
+      <span class="th"><span class="green">28M คนไทย</span>ต้องการ<span class="amber">หมอหนี้</span></span>
+    </div>
+    <p class="cta-sub">
+      <span class="en">฿16.35 trillion in household debt. Zero AI solutions. 54M LINE users. The gap is massive. The pain is real.</span>
+      <span class="th">หนี้ครัวเรือน ฿16.35 ล้านล้าน ไม่มี AI ให้ความช่วยเหลือ 54M คนใช้ LINE ช่องว่างมหาศาล ปัญหาจริง</span>
+    </p>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
