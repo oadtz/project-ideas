@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteMoo — AI Fortune Telling: Astrology + Data Science</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #10b981;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .video-placeholder {
+    background: var(--surface2);
+    border: 2px dashed var(--border2);
+    border-radius: 16px; padding: 4rem 2rem;
+    text-align: center; margin-bottom: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .video-placeholder::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .vp-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.7; }
+  .vp-title { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .vp-sub { font-size: 0.9rem; color: var(--muted); }
+  .vp-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 980px; padding: 0.4rem 1rem;
+    font-size: 0.75rem; font-weight: 700; margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .gold { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: linear-gradient(135deg, var(--primary), #d97706);
+    color: #0a0a0f;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.4); }
+  .cta-btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: rgba(139,92,246,0.1); color: var(--secondary-light);
+    border: 1px solid rgba(139,92,246,0.3);
+    font-size: 0.9rem; font-weight: 600;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-secondary:hover { background: rgba(139,92,246,0.2); transform: translateY(-1px); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+  .d5 { opacity: 0; animation-delay: 0.5s; }
+
+  .research-btn {
+    position: fixed;
+    bottom: 2rem; right: 2rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #0a0a0f;
+    border: none; border-radius: 980px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .research-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(16,185,129,0.4);
+  }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px) saturate(1.5);
+    overflow-y: auto; padding: 2rem;
+  }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content {
+    background: #16162a;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative; margin: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(16,185,129,0.1);
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1.5rem;
+    color: var(--muted); background: var(--surface2);
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .research-modal-close:hover { background: var(--surface3); color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative;
+  }
+  .research-modal-header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 20px 20px 0 0;
+  }
+  .research-modal-header h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0;
+  }
+  .research-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); background: var(--primary-pale);
+    padding: 0.3rem 0.8rem; border-radius: 980px;
+    border: 1px solid rgba(16,185,129,0.2);
+    width: fit-content; font-weight: 600;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .research-section p, .research-section ul {
+    color: var(--text2); font-size: 0.88rem; line-height: 1.65; margin: 0;
+  }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.4rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+  }
+  .research-highlight h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--primary) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+  .research-highlight-purple {
+    background: var(--secondary-pale); border: 1px solid rgba(139,92,246,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+    margin-top: 0.75rem;
+  }
+  .research-highlight-purple h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--secondary-light) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🔮</div>
+        <span>MuteMoo</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">52M believers · ฿4B market</span>
+        <span class="th">52 ล้านคนเชื่อ · ตลาด ฿4B</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 22</span>
+        <span class="th">ไอเดีย 22</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        📚 <span class="en">IDEA 28 — AI TUTOR THAI</span><span class="th">ไอเดีย 28 — ติวเตอร์ AI ไทย</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="gold">Tutor</span> for<br><span class="purple">Thai Students</span></span>
+        <span class="th"><span class="gold">ติวเตอร์ AI</span><br>สำหรับ<span class="purple">นักเรียนไทย</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>Khanmigo-style AI tutoring</strong> localized for Thai curriculum: TCAS, A-Level, TGAT, TPAT. Interactive chatbot that explains concepts in Thai, adapts to each student, available 24/7 for ฿99-299/month.</span>
+        <span class="th"><strong>ติว AI แบบ Khanmigo</strong> ที่ localize สำหรับหลักสูตรไทย: TCAS, A-Level, TGAT, TPAT แชทบอทสอนพิเศษที่อธิบายเป็นภาษาไทย ปรับตามระดับนักเรียน ใช้ได้ 24/7 แค่ ฿99-299/เดือน</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">31/50</div>
+            <div class="score-meta"><strong>📊 Score: 31/50</strong>
+              <span class="en">Huge market, AI-first approach</span><span class="th">ตลาดใหญ่ AI-first approach</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">$3.98B</div>
+            <div class="score-meta"><strong>📈 Market by 2033</strong>
+              <span class="en">Thai online education, 24.5% CAGR</span><span class="th">การศึกษาออนไลน์ไทย CAGR 24.5%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div><div class="tt-dot tt-min"></div><div class="tt-dot tt-max"></div>
+      <div class="tt-title">AI Tutor — <span class="en">Plans</span><span class="th">แพ็คเกจ</span></div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📖</div>
+          <div class="tc-name"><span class="en">BASIC</span><span class="th">พื้นฐาน</span></div>
+          <div class="tc-value">฿99/mo</div>
+          <div class="tc-sub"><span class="en">AI tutor, basic subjects</span><span class="th">ติว AI วิชาพื้นฐาน</span></div>
+          <div class="tc-badge">✓ <span class="en">TCAS Ready</span><span class="th">พร้อมสอบ TCAS</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🎯</div>
+          <div class="tc-name"><span class="en">PREMIUM</span><span class="th">พรีเมียม</span></div>
+          <div class="tc-value">฿299/mo</div>
+          <div class="tc-sub"><span class="en">All subjects + practice exams</span><span class="th">ทุกวิชา + ข้อสอบฝึก</span></div>
+          <div class="tc-badge">✓ <span class="en">A-Level + TGAT/TPAT</span><span class="th">A-Level + TGAT/TPAT</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">👨‍👩‍👧</div>
+          <div class="tc-name"><span class="en">FAMILY</span><span class="th">ครอบครัว</span></div>
+          <div class="tc-value">฿999/mo</div>
+          <div class="tc-sub"><span class="en">+ Parent dashboard</span><span class="th">+ แดชบอร์ดผู้ปกครอง</span></div>
+          <div class="tc-badge purple">⭐ <span class="en">Progress Reports</span><span class="th">รายงานความก้าวหน้า</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span>📚 <span class="en">Learning Pipeline</span><span class="th">กระบวนการเรียนรู้</span></span>
+          <span style="color:var(--primary);">24/7 Available ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:75%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Ask Question</span><span class="th">ถามคำถาม</span> ✓</span>
+          <span><span class="en">AI Explains</span><span class="th">AI อธิบาย</span> ✓</span>
+          <span><span class="en">Practice</span><span class="th">ฝึกทำ</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Master</span><span class="th">เข้าใจ</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📈</div>
+      <div class="stat-num"><span class="gold">$555M</span></div>
+      <div class="stat-label"><span class="en">Thai online education market (2024). Growing to $3.98B by 2033 at 24.5% CAGR.</span><span class="th">ตลาดการศึกษาออนไลน์ไทย (2024) โตเป็น $3.98B ภายใน 2033 CAGR 24.5%</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💸</div>
+      <div class="stat-num"><span class="purple">฿10K-100K+</span></div>
+      <div class="stat-label"><span class="en">Parents spend on cram schools per year. AI tutoring: ฿99-299/month.</span><span class="th">พ่อแม่จ่ายค่ากวดวิชาต่อปี ติว AI: ฿99-299/เดือน</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="gold">0</span></div>
+      <div class="stat-label"><span class="en">AI chatbot tutors in Thai. Existing players use video/courses, not interactive AI.</span><span class="th">แชทบอทติว AI ภาษาไทย ผู้เล่นปัจจุบันใช้วิดีโอ/คอร์ส ไม่ใช่ AI interactive</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🎓</div>
+      <div class="stat-num"><span class="purple">24/7</span></div>
+      <div class="stat-label"><span class="en">AI never sleeps. Students can study anytime, get instant help at 2 AM before exams.</span><span class="th">AI ไม่เคยหลับ นักเรียนเรียนได้ทุกเวลา ขอความช่วยเหลือตี 2 ก่อนสอบได้</span></div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title"><span class="en">Your personal AI tutor, always ready</span><span class="th">ติวเตอร์ AI ส่วนตัว พร้อมเสมอ</span></div>
+    <div class="card-grid">
+      <div class="glow-card"><div class="card-icon">💬</div><h3><span class="en">1. Ask Anything</span><span class="th">1. ถามอะไรก็ได้</span></h3><p><span class="en">Type or voice your question in Thai. "ช่วยอธิบายสมการกำลังสองหน่อย" — AI understands and responds naturally.</span><span class="th">พิมพ์หรือพูดคำถามเป็นไทย "ช่วยอธิบายสมการกำลังสองหน่อย" — AI เข้าใจและตอบอย่างเป็นธรรมชาติ</span></p></div>
+      <div class="glow-card"><div class="card-icon">🧠</div><h3><span class="en">2. AI Explains Step-by-Step</span><span class="th">2. AI อธิบายทีละขั้น</span></h3><p><span class="en">Not just answers — full explanations adapted to your level. If you don't understand, ask again. AI never gets frustrated.</span><span class="th">ไม่ใช่แค่คำตอบ — อธิบายเต็มๆ ปรับตามระดับ ไม่เข้าใจก็ถามใหม่ AI ไม่เคยหงุดหงิด</span></p></div>
+      <div class="glow-card"><div class="card-icon">📝</div><h3><span class="en">3. Practice & Track</span><span class="th">3. ฝึกทำและติดตาม</span></h3><p><span class="en">Practice problems, mock exams, progress tracking. Parents see dashboard with study stats and weak areas.</span><span class="th">โจทย์ฝึก ข้อสอบจำลอง ติดตามความก้าวหน้า ผู้ปกครองดูแดชบอร์ดสถิติและจุดอ่อน</span></p></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">🎯 <span class="en">WHY THIS WINS</span><span class="th">ทำไมถึงชนะ</span></div>
+    <div class="section-title"><span class="en">Khanmigo for Thailand — massive gap</span><span class="th">Khanmigo สำหรับไทย — ช่องว่างมหาศาล</span></div>
+    <div class="card-grid">
+      <div class="glow-card"><div class="card-icon">🌍</div><h3><span class="en">Proven Model: Khanmigo</span><span class="th">โมเดลพิสูจน์: Khanmigo</span></h3><p><span class="en">Khan Academy's AI tutor is revolutionizing education globally. Thailand has no equivalent. We can be first.</span><span class="th">ติว AI ของ Khan Academy กำลังปฏิวัติการศึกษาโลก ไทยยังไม่มี เราเป็นรายแรกได้</span></p></div>
+      <div class="glow-card"><div class="card-icon">💰</div><h3><span class="en">30-100x Cheaper</span><span class="th">ถูกกว่า 30-100 เท่า</span></h3><p><span class="en">฿99-299/month vs ฿3,000-10,000/month for cram schools. Every Thai family can afford AI tutoring.</span><span class="th">฿99-299/เดือน เทียบกับ ฿3,000-10,000/เดือน สำหรับกวดวิชา ทุกครอบครัวไทยจ่ายได้</span></p></div>
+      <div class="glow-card"><div class="card-icon">📱</div><h3><span class="en">Thai Curriculum Focused</span><span class="th">เน้นหลักสูตรไทย</span></h3><p><span class="en">TCAS, TGAT, TPAT, A-Level — specific to what Thai students actually need. Not generic global content.</span><span class="th">TCAS, TGAT, TPAT, A-Level — เฉพาะสิ่งที่นักเรียนไทยต้องการจริง ไม่ใช่ content ทั่วไป</span></p></div>
+      <div class="glow-card"><div class="card-icon">🤖</div><h3><span class="en">AI = Infinite Patience</span><span class="th">AI = อดทนไม่มีขีดจำกัด</span></h3><p><span class="en">Ask the same question 10 times. AI explains 10 different ways. No judgment, no frustration, ever.</span><span class="th">ถามคำถามเดิม 10 ครั้ง AI อธิบาย 10 วิธี ไม่มีการตัดสิน ไม่หงุดหงิด ตลอดกาล</span></p></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📊 <span class="en">SCORING</span><span class="th">การให้คะแนน</span></div>
+    <div class="section-title"><span class="en">Evaluation Breakdown</span><span class="th">รายละเอียดคะแนน</span></div>
+    <div class="card-grid">
+      <div class="glow-card"><h3>Market Potential</h3><p style="font-size:2rem;font-weight:800;color:var(--primary);">8/10</p><p><span class="en">$555M → $3.98B market, 24.5% CAGR</span><span class="th">ตลาด $555M → $3.98B, CAGR 24.5%</span></p></div>
+      <div class="glow-card"><h3>Problem Severity</h3><p style="font-size:2rem;font-weight:800;color:var(--secondary-light);">7/10</p><p><span class="en">Parents already spending ฿10K-100K+/yr on tutoring</span><span class="th">พ่อแม่จ่ายค่าติว ฿10K-100K+/ปี อยู่แล้ว</span></p></div>
+      <div class="glow-card"><h3>Competition Gap</h3><p style="font-size:2rem;font-weight:800;color:var(--primary);">5/10</p><p><span class="en">Strong video players but zero AI chatbot tutors in Thai</span><span class="th">มีวิดีโอ player แข็ง แต่ยังไม่มี AI chatbot ติวไทย</span></p></div>
+      <div class="glow-card"><h3>Build Feasibility</h3><p style="font-size:2rem;font-weight:800;color:var(--secondary-light);">6/10</p><p><span class="en">LLM-based, needs Thai curriculum content/question banks</span><span class="th">ใช้ LLM ต้องมี content หลักสูตรไทย/คลังข้อสอบ</span></p></div>
+      <div class="glow-card"><h3>Our Advantage</h3><p style="font-size:2rem;font-weight:800;color:var(--primary);">5/10</p><p><span class="en">AI 24/7, adaptive learning, but need Thai edu content</span><span class="th">AI 24/7 เรียนรู้แบบ adaptive แต่ต้องมี content การศึกษาไทย</span></p></div>
+      <div class="glow-card" style="border-color:var(--primary);background:var(--primary-pale);"><h3>TOTAL</h3><p style="font-size:2.5rem;font-weight:800;color:var(--primary);">31/50</p><p style="color:var(--primary);">✅ PASSED</p></div>
+    </div>
+  </section>
+</div>
+
+<a href="index.html" class="back-link" style="display:block;text-align:center;padding:2rem;color:var(--muted);text-decoration:none;font-size:0.85rem;">← Back to all ideas</a>
+
+<script>
+const langBtns = document.querySelectorAll('.lang-btn');
+function setLang(l) {
+  document.documentElement.setAttribute('data-lang', l);
+  langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+  localStorage.setItem('lang', l);
+}
+langBtns.forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+setLang(localStorage.getItem('lang') || 'en');
+</script>
+</body>
+</html>
