@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteStock — AI Food Cost Intelligence for Thai Restaurants</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.amber {
+    background: var(--secondary-pale); border-color: rgba(245,158,11,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .green { color: var(--primary); }
+  .hero h1 .amber { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.amber { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .green { color: var(--primary); }
+  .stat-num .amber { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+  }
+  .cta-sub {
+    font-size: 1rem; color: var(--muted); margin-bottom: 2rem;
+    max-width: 600px; margin-left: auto; margin-right: auto;
+    line-height: 1.7; position: relative; z-index: 1;
+  }
+
+  footer {
+    text-align: center; padding: 2rem;
+    color: var(--muted2); font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    border-top: 1px solid rgba(16,185,129,0.08);
+  }
+
+  @media (max-width: 768px) {
+    .token-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .revenue-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2rem; }
+    .cta-title { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← <span class="en">All Ideas</span><span class="th">ทุกไอเดีย</span></a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">M</div>
+        MuteLab
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span class="en">IDEA #48</span><span class="th">ไอเดีย #48</span>
+      <span class="topbar-badge">📦 F&B / B2B SaaS</span>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="en">📦 AI Food Cost Intelligence</span>
+        <span class="th">📦 AI วิเคราะห์ต้นทุนอาหาร</span>
+      </div>
+      <h1>
+        <span class="en">MuteStock — <span class="green">Stop Wasting Money</span> on Food You <span class="amber">Throw Away</span></span>
+        <span class="th">MuteStock — <span class="green">หยุดเสียเงิน</span>กับอาหาร<span class="amber">ที่ทิ้งทุกวัน</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI-powered food cost intelligence for Thai restaurants and cafes. <strong>Snap a photo of your receipt</strong> → AI tracks costs, predicts tomorrow's demand, and generates purchase lists. <strong>No POS required</strong> — works via LINE alone. Reduce food waste by 30-55%, save ฿10-50K/month.</span>
+        <span class="th">AI วิเคราะห์ต้นทุนอาหารสำหรับร้านอาหารไทย <strong>ถ่ายรูปใบเสร็จ</strong> → AI ติดตามต้นทุน พยากรณ์ยอดขายพรุ่งนี้ สร้างรายการสั่งซื้อ <strong>ไม่ต้องมีเครื่อง POS</strong> — ใช้ผ่าน LINE อย่างเดียว ลดอาหารเหลือทิ้ง 30-55% ประหยัด ฿10-50K/เดือน</span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">33</div>
+          <div class="score-meta">
+            <strong><span class="en">MuteLab Score</span><span class="th">คะแนน MuteLab</span></strong>
+            <span class="en">out of 50 — PASS ✅</span><span class="th">จาก 50 — ผ่าน ✅</span>
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-num amber">5</div>
+          <div class="score-meta">
+            <strong><span class="en">Founder Fit</span><span class="th">Founder Fit</span></strong>
+            <span class="en">CTO background → API integrations</span><span class="th">CTO background → API integrations</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="token-window">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">mutestock_market_analysis.terminal</div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🍜</div>
+          <div class="tc-name"><span class="en">Thai Restaurants</span><span class="th">ร้านอาหารไทย</span></div>
+          <div class="tc-value">300K+</div>
+          <div class="tc-sub"><span class="en">registered food businesses</span><span class="th">ร้านอาหารจดทะเบียน</span></div>
+          <div class="tc-badge">📈 GROWING 15%+ YOY</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🗑️</div>
+          <div class="tc-name"><span class="en">Food Waste</span><span class="th">อาหารเหลือทิ้ง</span></div>
+          <div class="tc-value">5-15%</div>
+          <div class="tc-sub"><span class="en">of food purchased — wasted</span><span class="th">ของอาหารที่ซื้อ — ทิ้ง</span></div>
+          <div class="tc-badge amber">💸 ฿10-50K/MO LOST</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🤖</div>
+          <div class="tc-name"><span class="en">AI Competition</span><span class="th">คู่แข่ง AI</span></div>
+          <div class="tc-value">ZERO</div>
+          <div class="tc-sub"><span class="en">AI food cost tools in Thai</span><span class="th">เครื่องมือ AI ต้นทุนอาหารภาษาไทย</span></div>
+          <div class="tc-badge">🎯 BLUE OCEAN</div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">GLOBAL MODEL PROVEN</span><span class="th">โมเดลระดับโลกพิสูจน์แล้ว</span></span>
+          <span style="color:var(--primary)">ClearCOGS: 55% waste reduction, 40% profit increase</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:66%"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Receipt Photo</span><span class="th">ถ่ายใบเสร็จ</span></span>
+          <span><span class="en">AI Analysis</span><span class="th">AI วิเคราะห์</span></span>
+          <span><span class="en">Smart Purchase List</span><span class="th">รายการสั่งซื้ออัจฉริยะ</span></span>
+          <span><span class="en">Save 30-55%</span><span class="th">ประหยัด 30-55%</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num"><span class="green">30-35%</span></div>
+      <div class="stat-label"><span class="en">Food cost as % of restaurant revenue — the #1 expense to optimize</span><span class="th">ต้นทุนอาหาร % ของรายได้ — ค่าใช้จ่าย #1 ที่ต้องจัดการ</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📱</div>
+      <div class="stat-num">67<span class="amber">M</span></div>
+      <div class="stat-label"><span class="en">LINE users in Thailand — universal distribution, zero app download</span><span class="th">ผู้ใช้ LINE ในไทย — ไม่ต้องโหลดแอปเพิ่ม</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏪</div>
+      <div class="stat-num">18<span class="green">K+</span></div>
+      <div class="stat-label"><span class="en">StoreHub businesses in SEA — proves Thai F&B pays for SaaS</span><span class="th">ธุรกิจใช้ StoreHub ใน SEA — พิสูจน์ F&B จ่ายค่า SaaS</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⚡</div>
+      <div class="stat-num"><span class="amber">0</span></div>
+      <div class="stat-label"><span class="en">Thai AI food cost tools — FoodStory/StoreHub do basic stock only, no AI forecasting</span><span class="th">เครื่องมือ AI ต้นทุนอาหารไทย — FoodStory/StoreHub ทำแค่สต็อกพื้นฐาน ไม่มี AI</span></div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">⚙️ HOW IT WORKS</span>
+      <span class="th">⚙️ ทำงานอย่างไร</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">No POS. No Hardware. Just LINE.</span>
+      <span class="th">ไม่ต้องมี POS ไม่ต้องซื้อเครื่อง แค่ LINE</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Unlike ClearCOGS ($$$, POS required) or FoodStory (iPad POS), MuteStock works through LINE — the app every Thai restaurant already uses. Camera-first approach: snap receipts, record sales, get AI insights.</span>
+      <span class="th">ต่างจาก ClearCOGS ($$$, ต้องมี POS) หรือ FoodStory (POS บน iPad) MuteStock ใช้ผ่าน LINE — แอปที่ทุกร้านอาหารไทยมีอยู่แล้ว ถ่ายรูปใบเสร็จ บันทึกยอดขาย รับ AI insights</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">Step 01</div>
+        <div class="wf-icon">📸</div>
+        <div class="wf-title"><span class="en">Snap Receipts</span><span class="th">ถ่ายรูปใบเสร็จ</span></div>
+        <div class="wf-desc"><span class="en">Photo your daily ingredient purchases. AI extracts items, quantities, prices instantly via OCR + Gemini Vision. No manual data entry.</span><span class="th">ถ่ายรูปใบเสร็จซื้อวัตถุดิบ AI อ่านรายการ จำนวน ราคา ด้วย OCR + Gemini Vision ไม่ต้องพิมพ์เอง</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">Step 02</div>
+        <div class="wf-icon">📊</div>
+        <div class="wf-title"><span class="en">AI Predicts Demand</span><span class="th">AI พยากรณ์ยอดขาย</span></div>
+        <div class="wf-desc"><span class="en">ML models analyze day-of-week, weather, holidays, events, and your sales history to predict tomorrow's demand for each menu item.</span><span class="th">ML วิเคราะห์วันในสัปดาห์ สภาพอากาศ วันหยุด เทศกาล และประวัติยอดขาย เพื่อพยากรณ์เมนูพรุ่งนี้</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">Step 03</div>
+        <div class="wf-icon">🛒</div>
+        <div class="wf-title"><span class="en">Smart Purchase List</span><span class="th">รายการสั่งซื้ออัจฉริยะ</span></div>
+        <div class="wf-desc"><span class="en">Every morning: AI sends your optimal purchase list via LINE. Exactly what to buy, how much, from which supplier. Stop overbuying, stop running out.</span><span class="th">ทุกเช้า AI ส่งรายการสั่งซื้อผ่าน LINE ซื้ออะไร เท่าไหร่ จากร้านไหน หยุดซื้อเกิน หยุดของหมด</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">💡 WHY NOW</span>
+      <span class="th">💡 ทำไมตอนนี้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">The Timing Is Perfect</span>
+      <span class="th">จังหวะเวลาที่เหมาะสม</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">ClearCOGS proves the model globally (300+ brands, 55% waste reduction). Thai restaurants still use gut feeling. The gap is enormous.</span>
+      <span class="th">ClearCOGS พิสูจน์โมเดลระดับโลก (300+ แบรนด์ ลดของเสีย 55%) ร้านอาหารไทยยังใช้ "ความรู้สึก" ในการสั่งซื้อ ช่องว่างมหาศาล</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🍜</div>
+        <div class="why-panel-title"><span class="en">300K+ Thai Restaurants</span><span class="th">ร้านอาหาร 300K+</span></div>
+        <div class="why-panel-desc"><span class="en">Thailand's foodservice market is booming — cloud kitchens fastest growing category. Every restaurant has food cost as their #1 pain. Average food cost: 30-35% of revenue.</span><span class="th">ตลาด F&B ไทยเติบโต — cloud kitchen โตเร็วสุด ทุกร้านมีปัญหาต้นทุนอาหาร เฉลี่ย 30-35% ของรายได้</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title"><span class="en">LINE-First = No Friction</span><span class="th">LINE ก่อน = ไร้อุปสรรค</span></div>
+        <div class="why-panel-desc"><span class="en">Most Thai restaurants don't have POS systems. Global tools require expensive hardware. MuteStock: just add our LINE bot. Works on the phone they already carry.</span><span class="th">ร้านอาหารไทยส่วนใหญ่ไม่มี POS เครื่องมือต่างประเทศต้องมีฮาร์ดแวร์แพง MuteStock: แค่เพิ่ม LINE bot ใช้มือถือที่มีอยู่</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🗑️</div>
+        <div class="why-panel-title"><span class="en">5-15% Food Wasted Daily</span><span class="th">อาหารเสีย 5-15% ทุกวัน</span></div>
+        <div class="why-panel-desc"><span class="en">Thai restaurant owners buy by gut feeling. They overbuy (waste) or underbuy (lost sales). MuteStock's AI reduces waste by 30-55% — proven ROI from Day 1.</span><span class="th">เจ้าของร้านสั่งซื้อตาม "ความรู้สึก" ซื้อเกิน (ทิ้ง) หรือซื้อน้อยไป (เสียยอด) AI ลดของเสีย 30-55% — ROI พิสูจน์ได้ตั้งแต่วันแรก</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🤖</div>
+        <div class="why-panel-title"><span class="en">Zero Thai Competitors</span><span class="th">คู่แข่งในไทย = ศูนย์</span></div>
+        <div class="why-panel-desc"><span class="en">ClearCOGS (US), Restaurant365 (US), Apicbase (EU) — all English-only, POS-dependent, enterprise pricing ($200+/mo). Zero AI food cost tools in Thai language on LINE.</span><span class="th">ClearCOGS (US), Restaurant365 (US), Apicbase (EU) — ภาษาอังกฤษ ต้องมี POS ราคา enterprise ($200+/เดือน) ไม่มีเครื่องมือ AI ต้นทุนอาหารภาษาไทยบน LINE</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">💰 REVENUE MODEL</span>
+      <span class="th">💰 โมเดลรายได้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Path to ฿32M ($1M)</span>
+      <span class="th">เส้นทางสู่ ฿32M ($1M)</span>
+    </h2>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label"><span class="en">REVENUE TARGET</span><span class="th">เป้ารายได้</span></div>
+          <div class="rh-title"><span class="en">Annual Recurring Revenue</span><span class="th">รายได้ประจำปี</span></div>
+          <div class="rh-num">฿32M</div>
+          <div class="rh-sub"><span class="en">≈ $1M USD / year</span><span class="th">≈ $1M USD / ปี</span></div>
+        </div>
+        <div class="rh-note">
+          <span class="en">3,200 restaurants × ฿999/mo avg = ฿38M/yr<br>Need only 1% of 300K+ Thai restaurants</span>
+          <span class="th">3,200 ร้าน × ฿999/เดือน เฉลี่ย = ฿38M/ปี<br>ต้องการแค่ 1% ของร้านอาหาร 300K+</span>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier">
+          <div class="rt-icon">🌱</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc"><span class="en">Receipt OCR, food cost tracking, basic weekly report, 1 branch</span><span class="th">OCR ใบเสร็จ ติดตามต้นทุน รายงานรายสัปดาห์ 1 สาขา</span></div>
+          <div class="rt-price">
+            <div class="rt-amount">฿499<span style="font-size:0.6em;color:var(--muted)">/mo</span></div>
+            <div class="rt-note"><span class="en">micro restaurants</span><span class="th">ร้านเล็ก</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">⚡</div>
+          <div class="rt-label">Business</div>
+          <div class="rt-desc"><span class="en">AI demand forecast, smart purchase lists, waste tracking, menu profitability, up to 3 branches</span><span class="th">AI พยากรณ์ รายการสั่งซื้ออัจฉริยะ ติดตามของเสีย วิเคราะห์เมนู 3 สาขา</span></div>
+          <div class="rt-price">
+            <div class="rt-amount">฿1,499<span style="font-size:0.6em;color:var(--muted)">/mo</span></div>
+            <div class="rt-note"><span class="en">⭐ most popular</span><span class="th">⭐ ยอดนิยม</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Chain</div>
+          <div class="rt-desc"><span class="en">Unlimited branches, POS integration (FoodStory/StoreHub), API, central purchasing, custom AI models</span><span class="th">สาขาไม่จำกัด เชื่อมต่อ POS API จัดซื้อส่วนกลาง AI เฉพาะร้าน</span></div>
+          <div class="rt-price">
+            <div class="rt-amount">฿4,999<span style="font-size:0.6em;color:var(--muted)">/mo</span></div>
+            <div class="rt-note"><span class="en">restaurant chains</span><span class="th">เชนร้านอาหาร</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🤝</div>
+          <div class="rt-label">Supplier</div>
+          <div class="rt-desc"><span class="en">Ingredient supplier marketplace — connect directly with restaurant purchase lists for guaranteed orders</span><span class="th">ตลาดซัพพลายเออร์ — เชื่อมกับรายการสั่งซื้อร้านโดยตรง</span></div>
+          <div class="rt-price">
+            <div class="rt-amount">2-5%<span style="font-size:0.6em;color:var(--muted)">/txn</span></div>
+            <div class="rt-note"><span class="en">marketplace fee</span><span class="th">ค่าธรรมเนียม</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">🗺️ ROADMAP</span>
+      <span class="th">🗺️ แผนงาน</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Execution Plan</span>
+      <span class="th">แผนการดำเนินงาน</span>
+    </h2>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span><span class="en">📋 Development Phases</span><span class="th">📋 ขั้นตอนพัฒนา</span></span>
+        <span class="roadmap-tag">12-MONTH PLAN</span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2)">📸</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">Phase 1 — Week 1-3</span><span class="th">เฟส 1 — สัปดาห์ 1-3</span></div>
+          <div class="roadmap-title"><span class="en">LINE Bot + Receipt OCR MVP</span><span class="th">LINE Bot + OCR ใบเสร็จ MVP</span></div>
+          <div class="roadmap-body"><span class="en">Basic food cost tracking via photo receipts. Daily cost report. Manual sales input. Free pilot with 10 local restaurants.</span><span class="th">ติดตามต้นทุนอาหารพื้นฐานจากรูปใบเสร็จ รายงานต้นทุนรายวัน ยอดขายกรอกเอง ทดลองฟรีกับ 10 ร้าน</span></div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">MONTH 1</div>
+          <div class="roadmap-metric">10 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--secondary-pale);border:1px solid rgba(245,158,11,0.2)">🤖</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">Phase 2 — Month 2-3</span><span class="th">เฟส 2 — เดือน 2-3</span></div>
+          <div class="roadmap-title"><span class="en">AI Demand Forecasting + Purchase Lists</span><span class="th">AI พยากรณ์ + รายการสั่งซื้อ</span></div>
+          <div class="roadmap-body"><span class="en">ML models trained on pilot data. Daily smart purchase lists. Menu profitability analysis. Launch paid tiers.</span><span class="th">ML เทรนจากข้อมูลร้านทดลอง รายการสั่งซื้ออัจฉริยะ วิเคราะห์เมนูทำกำไร เปิดขาย</span></div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">MONTH 2-3</div>
+          <div class="roadmap-metric">100 users</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2)">🔗</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">Phase 3 — Month 4-6</span><span class="th">เฟส 3 — เดือน 4-6</span></div>
+          <div class="roadmap-title"><span class="en">POS Integration + Supplier Marketplace</span><span class="th">เชื่อมต่อ POS + ตลาดซัพพลายเออร์</span></div>
+          <div class="roadmap-body"><span class="en">FoodStory & StoreHub integration. Supplier marketplace (Makro, local markets). Chain management features.</span><span class="th">เชื่อมกับ FoodStory & StoreHub ตลาดซัพพลายเออร์ (แม็คโคร ตลาดสด) ระบบจัดการเชน</span></div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">MONTH 4-6</div>
+          <div class="roadmap-metric">1K users</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--secondary-pale);border:1px solid rgba(245,158,11,0.2)">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">Phase 4 — Month 7-12</span><span class="th">เฟส 4 — เดือน 7-12</span></div>
+          <div class="roadmap-title"><span class="en">Scale + SEA Expansion</span><span class="th">ขยาย + เข้า SEA</span></div>
+          <div class="roadmap-body"><span class="en">Scale to 3K+ Thai restaurants. Expand to Vietnam, Indonesia, Philippines (LINE/Zalo/WhatsApp). Enterprise tier for hotel chains.</span><span class="th">ขยายสู่ 3K+ ร้านไทย เข้าเวียดนาม อินโด ฟิลิปปินส์ Enterprise tier สำหรับเชนโรงแรม</span></div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">MONTH 7-12</div>
+          <div class="roadmap-metric">฿32M ARR</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-wrap">
+    <div class="cta-chip">
+      <span class="en">📦 IDEA #48 — MuteStock</span>
+      <span class="th">📦 ไอเดีย #48 — MuteStock</span>
+    </div>
+    <h2 class="cta-title">
+      <span class="en">AI Food Cost Intelligence<br>Score: 33/50 ✅</span>
+      <span class="th">AI วิเคราะห์ต้นทุนอาหาร<br>คะแนน: 33/50 ✅</span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">ClearCOGS proves the model ($40% profit increase). Thai restaurants have zero AI tools. The camera-first, LINE-native approach removes every adoption barrier. "Boring but profitable" — food cost management isn't sexy, but it's a proven money printer.</span>
+      <span class="th">ClearCOGS พิสูจน์โมเดล (กำไรเพิ่ม 40%) ร้านอาหารไทยไม่มี AI tools เลย ถ่ายรูป + LINE = ลบทุกอุปสรรคการใช้งาน "น่าเบื่อแต่ทำเงิน" — จัดการต้นทุนอาหารไม่เซ็กซี่ แต่พิสูจน์แล้วว่าพิมพ์เงินได้</span>
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  <span class="en">MuteLab Research — February 2026 — Idea Sprint</span>
+  <span class="th">MuteLab Research — กุมภาพันธ์ 2026 — Idea Sprint</span>
+</footer>
+
+</body>
+</html>
