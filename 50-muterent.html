@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteRent — AI Rental Property Management on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* HERO */
+  .hero { padding: 6rem 0 4rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1.2rem; border-radius: 50px;
+    border: 1px solid var(--border2);
+    background: var(--primary-pale);
+    color: var(--primary-light); font-size: 0.82rem; font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800; line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+  .hero h1 span { color: var(--primary); }
+  .hero .subtitle {
+    font-size: 1.15rem; color: var(--text2);
+    max-width: 640px; margin: 0 auto 2rem;
+  }
+
+  /* SCORE BAR */
+  .score-bar {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 140px;
+  }
+  .score-num {
+    font-size: 1.8rem; font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    color: var(--primary);
+  }
+  .score-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  .score-total .score-num { font-size: 2.4rem; color: var(--secondary); }
+
+  /* SECTIONS */
+  section { padding: 3.5rem 0; }
+  .section-title {
+    font-size: 1.6rem; font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .section-title .icon { font-size: 1.3rem; }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+  }
+  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--primary-light); }
+  .card p { font-size: 0.88rem; color: var(--text2); }
+
+  /* STAT */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .stat-val {
+    font-size: 1.6rem; font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    color: var(--primary);
+  }
+  .stat-desc { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.2rem; }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    text-align: center;
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 30px var(--primary-glow);
+  }
+  .price-card .tier { font-size: 0.82rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; }
+  .price-card .price { font-size: 2rem; font-weight: 800; font-family: 'Space Mono', monospace; margin: 0.5rem 0; }
+  .price-card .freq { font-size: 0.75rem; color: var(--muted); }
+  .price-card ul { list-style: none; margin-top: 1rem; text-align: left; }
+  .price-card li { font-size: 0.82rem; color: var(--text2); padding: 0.3rem 0; padding-left: 1.2rem; position: relative; }
+  .price-card li::before { content: '✓'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+
+  /* RISKS */
+  .risk { padding: 1rem 1.2rem; background: var(--surface); border-radius: 12px; border-left: 3px solid var(--amber); margin-bottom: 0.8rem; }
+  .risk-high { border-left-color: var(--red); }
+  .risk-low { border-left-color: var(--green); }
+  .risk-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+  .risk-label.high { color: var(--red); }
+  .risk-label.medium { color: var(--amber); }
+  .risk-label.low { color: var(--green); }
+  .risk p { font-size: 0.85rem; color: var(--text2); }
+
+  /* VERDICT */
+  .verdict {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+  .verdict h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; }
+  .verdict p { font-size: 1rem; color: var(--text2); max-width: 600px; margin: 0 auto; }
+
+  /* BACK LINK */
+  .back {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--muted); text-decoration: none; font-size: 0.85rem;
+    margin-bottom: 2rem; transition: color 0.2s;
+  }
+  .back:hover { color: var(--primary); }
+
+  @media (max-width: 640px) {
+    .container { padding: 0 1rem; }
+    .hero { padding: 4rem 0 2rem; }
+    .hero h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<div class="container">
+  <a href="index.html" class="back">← <span class="en">Back to all ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+
+  <header class="hero">
+    <div class="hero-badge">
+      <span class="en">🏠 Idea #50 · PropTech / B2B SaaS</span>
+      <span class="th">🏠 ไอเดีย #50 · PropTech / B2B SaaS</span>
+    </div>
+    <h1>
+      <span class="en">MuteRent — <span>AI Rental Property Management</span> on LINE</span>
+      <span class="th">MuteRent — <span>ระบบจัดการห้องเช่าด้วย AI</span> บน LINE</span>
+    </h1>
+    <p class="subtitle">
+      <span class="en">AI-powered property management for Thai landlords with 1-50 units. Rent collection, tenant screening, maintenance tracking, contract generation — all through LINE. No app download. No complex software.</span>
+      <span class="th">ระบบจัดการห้องเช่าด้วย AI สำหรับเจ้าของห้อง 1-50 ห้อง เก็บค่าเช่า คัดกรองผู้เช่า ติดตามซ่อมบำรุง สร้างสัญญา — ทั้งหมดผ่าน LINE ไม่ต้องโหลดแอป ไม่ต้องใช้ซอฟต์แวร์ซับซ้อน</span>
+    </p>
+  </header>
+
+  <!-- SCORE -->
+  <div class="score-bar">
+    <div class="score-item"><div class="score-num">7</div><div class="score-label"><span class="en">Market</span><span class="th">ตลาด</span></div></div>
+    <div class="score-item"><div class="score-num">8</div><div class="score-label"><span class="en">Problem</span><span class="th">ปัญหา</span></div></div>
+    <div class="score-item"><div class="score-num">8</div><div class="score-label"><span class="en">Gap</span><span class="th">ช่องว่าง</span></div></div>
+    <div class="score-item"><div class="score-num">7</div><div class="score-label"><span class="en">Build</span><span class="th">สร้าง</span></div></div>
+    <div class="score-item"><div class="score-num">5</div><div class="score-label"><span class="en">Advantage</span><span class="th">ข้อได้เปรียบ</span></div></div>
+    <div class="score-item score-total"><div class="score-num">35</div><div class="score-label"><span class="en">TOTAL /50</span><span class="th">รวม /50</span></div></div>
+  </div>
+
+  <!-- MARKET -->
+  <section>
+    <h2 class="section-title"><span class="icon">📊</span> <span class="en">Market Data</span><span class="th">ข้อมูลตลาด</span></h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-val">8M+</div><div class="stat-desc"><span class="en">Rental units in Thailand</span><span class="th">ห้องเช่าในไทย</span></div></div>
+      <div class="stat"><div class="stat-val">2M+</div><div class="stat-desc"><span class="en">Small landlords (1-50 units)</span><span class="th">เจ้าของห้อง (1-50 ห้อง)</span></div></div>
+      <div class="stat"><div class="stat-val">$14B+</div><div class="stat-desc"><span class="en">Global property mgmt software</span><span class="th">ซอฟต์แวร์จัดการอสังหาฯโลก</span></div></div>
+      <div class="stat"><div class="stat-val">15%</div><div class="stat-desc"><span class="en">CAGR through 2030</span><span class="th">อัตราเติบโตถึง 2030</span></div></div>
+      <div class="stat"><div class="stat-val">67M</div><div class="stat-desc"><span class="en">LINE users in Thailand</span><span class="th">ผู้ใช้ LINE ในไทย</span></div></div>
+      <div class="stat"><div class="stat-val">฿4-8K</div><div class="stat-desc"><span class="en">Avg rent per unit/month</span><span class="th">ค่าเช่าเฉลี่ยต่อห้อง/เดือน</span></div></div>
+    </div>
+  </section>
+
+  <!-- CONCEPT -->
+  <section>
+    <h2 class="section-title"><span class="icon">💡</span> <span class="en">Concept</span><span class="th">แนวคิด</span></h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3><span class="en">💬 LINE-Native Management</span><span class="th">💬 จัดการผ่าน LINE</span></h3>
+        <p><span class="en">Landlords manage everything through LINE — the app they already use. Add tenants, track payments, handle maintenance requests. No new software to learn.</span>
+        <span class="th">เจ้าของจัดการทุกอย่างผ่าน LINE — แอปที่ใช้อยู่แล้ว เพิ่มผู้เช่า ติดตามการชำระเงิน จัดการแจ้งซ่อม ไม่ต้องเรียนรู้ซอฟต์แวร์ใหม่</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">💰 AI Rent Collection</span><span class="th">💰 AI เก็บค่าเช่า</span></h3>
+        <p><span class="en">Auto-send payment reminders before due date. Track who's paid, who's late. AI escalates politely: reminder → follow-up → warning. Integrates with PromptPay QR.</span>
+        <span class="th">ส่งแจ้งเตือนชำระเงินอัตโนมัติก่อนครบกำหนด ติดตามว่าใครจ่ายแล้ว ใครค้าง AI ติดตามสุภาพ: เตือน → ทวง → แจ้งเตือนจริงจัง เชื่อมต่อ PromptPay QR</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🔍 Tenant Screening</span><span class="th">🔍 คัดกรองผู้เช่า</span></h3>
+        <p><span class="en">AI verifies tenant info, generates risk score based on employment, income verification, and references. Reduces bad tenants and disputes.</span>
+        <span class="th">AI ตรวจสอบข้อมูลผู้เช่า ให้คะแนนความเสี่ยงจากการจ้างงาน รายได้ และเอกสารอ้างอิง ลดปัญหาผู้เช่าไม่ดี</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🔧 Maintenance Tracker</span><span class="th">🔧 ติดตามงานซ่อม</span></h3>
+        <p><span class="en">Tenants report issues via LINE with photos. AI categorizes urgency, assigns to handymen, tracks resolution. Full audit trail.</span>
+        <span class="th">ผู้เช่าแจ้งซ่อมผ่าน LINE พร้อมรูปภาพ AI จัดหมวดหมู่ความเร่งด่วน มอบหมายช่าง ติดตามจนเสร็จ บันทึกครบ</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">📄 Contract Generator</span><span class="th">📄 สร้างสัญญาเช่า</span></h3>
+        <p><span class="en">AI generates legally-compliant Thai rental contracts. Customizable templates. Digital signature support. Auto-renewal reminders.</span>
+        <span class="th">AI สร้างสัญญาเช่าถูกกฎหมาย ปรับแต่งเทมเพลตได้ รองรับเซ็นดิจิทัล แจ้งเตือนต่อสัญญาอัตโนมัติ</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">📊 Financial Dashboard</span><span class="th">📊 แดชบอร์ดการเงิน</span></h3>
+        <p><span class="en">Income/expense tracking per unit. Occupancy rates. Tax-ready income reports for ภ.ง.ด. filing. Monthly P&L summary via LINE.</span>
+        <span class="th">ติดตามรายรับ/รายจ่ายต่อห้อง อัตราการเข้าพัก รายงานภาษีพร้อมยื่น ภ.ง.ด. สรุป P&L รายเดือนส่งทาง LINE</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section>
+    <h2 class="section-title"><span class="icon">⚔️</span> <span class="en">Competitive Landscape</span><span class="th">คู่แข่ง</span></h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3><span class="en">🌍 Global Players</span><span class="th">🌍 คู่แข่งระดับโลก</span></h3>
+        <p><span class="en">Buildium ($100M+ ARR), AppFolio (NASDAQ), Rentec Direct, TenantCloud — ALL web-first, English-only, US market focus, $50-450/mo. None integrate LINE or support Thai tax filing.</span>
+        <span class="th">Buildium, AppFolio, Rentec, TenantCloud — ทั้งหมดเป็นเว็บ ภาษาอังกฤษ เน้นตลาด US $50-450/เดือน ไม่มีที่เชื่อมต่อ LINE หรือรองรับภาษีไทย</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🇹🇭 Thai Market</span><span class="th">🇹🇭 ตลาดไทย</span></h3>
+        <p><span class="en">ZERO AI-powered, LINE-native property management for small Thai landlords. PropertyGuru/DDproperty = listing platforms (marketplace), NOT management tools. Some basic Excel/Google Sheets templates exist but no automation.</span>
+        <span class="th">ไม่มี AI จัดการห้องเช่าผ่าน LINE สำหรับเจ้าของห้องรายย่อยในไทย PropertyGuru/DDproperty = แพลตฟอร์มลงประกาศ ไม่ใช่เครื่องมือจัดการ มีแค่ Excel/Sheets เบื้องต้น</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🎯 The Gap</span><span class="th">🎯 ช่องว่าง</span></h3>
+        <p><span class="en">Small Thai landlords (1-50 units) manage via LINE chat + notebook + Excel. No integrated tool exists in their language, on their platform. The entire workflow is manual and fragmented.</span>
+        <span class="th">เจ้าของห้องเช่ารายย่อยจัดการด้วย LINE + สมุดจด + Excel ไม่มีเครื่องมือรวมในภาษาไทย บนแพลตฟอร์มที่ใช้ กระบวนการทั้งหมดเป็น manual และกระจัดกระจาย</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section>
+    <h2 class="section-title"><span class="icon">💎</span> <span class="en">Revenue Model</span><span class="th">โมเดลรายได้</span></h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="tier">Starter</div>
+        <div class="price">฿299<span class="freq">/mo</span></div>
+        <ul>
+          <li><span class="en">Up to 5 units</span><span class="th">สูงสุด 5 ห้อง</span></li>
+          <li><span class="en">Rent reminders via LINE</span><span class="th">แจ้งเตือนค่าเช่าผ่าน LINE</span></li>
+          <li><span class="en">Payment tracking</span><span class="th">ติดตามการชำระเงิน</span></li>
+          <li><span class="en">Basic contracts</span><span class="th">สัญญาเช่าพื้นฐาน</span></li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="tier">Business</div>
+        <div class="price">฿899<span class="freq">/mo</span></div>
+        <ul>
+          <li><span class="en">Up to 20 units</span><span class="th">สูงสุด 20 ห้อง</span></li>
+          <li><span class="en">AI rent collection agent</span><span class="th">AI เก็บค่าเช่าอัตโนมัติ</span></li>
+          <li><span class="en">Tenant screening</span><span class="th">คัดกรองผู้เช่า</span></li>
+          <li><span class="en">Maintenance tracking</span><span class="th">ติดตามงานซ่อม</span></li>
+          <li><span class="en">Financial reports + tax</span><span class="th">รายงานการเงิน + ภาษี</span></li>
+          <li><span class="en">PromptPay integration</span><span class="th">เชื่อมต่อ PromptPay</span></li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="tier">Portfolio</div>
+        <div class="price">฿2,999<span class="freq">/mo</span></div>
+        <ul>
+          <li><span class="en">Up to 100 units</span><span class="th">สูงสุด 100 ห้อง</span></li>
+          <li><span class="en">Multi-property dashboard</span><span class="th">แดชบอร์ดหลายทรัพย์สิน</span></li>
+          <li><span class="en">Team management</span><span class="th">จัดการทีม</span></li>
+          <li><span class="en">API access</span><span class="th">เชื่อมต่อ API</span></li>
+          <li><span class="en">White-label for agents</span><span class="th">White-label สำหรับนายหน้า</span></li>
+          <li><span class="en">Custom AI training</span><span class="th">ฝึก AI ตามต้องการ</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVENUE MATH -->
+  <section>
+    <h2 class="section-title"><span class="icon">🧮</span> <span class="en">Revenue Math</span><span class="th">คำนวณรายได้</span></h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-val">3,000</div><div class="stat-desc"><span class="en">Starter × ฿299/mo</span><span class="th">Starter × ฿299/เดือน</span></div></div>
+      <div class="stat"><div class="stat-val">1,500</div><div class="stat-desc"><span class="en">Business × ฿899/mo</span><span class="th">Business × ฿899/เดือน</span></div></div>
+      <div class="stat"><div class="stat-val">200</div><div class="stat-desc"><span class="en">Portfolio × ฿2,999/mo</span><span class="th">Portfolio × ฿2,999/เดือน</span></div></div>
+      <div class="stat"><div class="stat-val">฿2.8M/mo</div><div class="stat-desc"><span class="en">= ฿33.6M/yr ≈ $1.05M ✅</span><span class="th">= ฿33.6M/ปี ≈ $1.05M ✅</span></div></div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section>
+    <h2 class="section-title"><span class="icon">⚠️</span> <span class="en">Risk Assessment</span><span class="th">ประเมินความเสี่ยง</span></h2>
+    <div class="risk">
+      <div class="risk-label medium">MEDIUM</div>
+      <p><span class="en">Thai small landlords are extremely price-sensitive. ฿299/mo may feel expensive for a 3-room apartment owner. Mitigate: free tier for 1-2 units, prove value before charging.</span>
+      <span class="th">เจ้าของห้องรายย่อยไวต่อราคามาก ฿299/เดือนอาจรู้สึกแพงสำหรับเจ้าของ 3 ห้อง แก้: ฟรีสำหรับ 1-2 ห้อง พิสูจน์คุณค่าก่อนเก็บเงิน</span></p>
+    </div>
+    <div class="risk">
+      <div class="risk-label medium">MEDIUM</div>
+      <p><span class="en">LINE platform risk — LINE could build native property management features. Mitigate: LINE focuses on messaging/payments, not vertical SaaS. Deep feature moat takes years to replicate.</span>
+      <span class="th">ความเสี่ยงแพลตฟอร์ม LINE — LINE อาจสร้างฟีเจอร์จัดการอสังหาฯเอง แก้: LINE เน้นแชท/ชำระเงิน ไม่ใช่ vertical SaaS ฟีเจอร์ลึกใช้เวลาหลายปีจะสร้าง</span></p>
+    </div>
+    <div class="risk">
+      <div class="risk-label medium">MEDIUM</div>
+      <p><span class="en">Global players (Buildium, AppFolio) entering Thailand. Mitigate: LINE-first architecture, Thai language/culture, Thai tax compliance — hard for US tools to replicate.</span>
+      <span class="th">คู่แข่งระดับโลกเข้าตลาดไทย แก้: สถาปัตยกรรม LINE-first ภาษา/วัฒนธรรมไทย ภาษีไทย — เครื่องมือ US ทำตามยาก</span></p>
+    </div>
+    <div class="risk risk-low">
+      <div class="risk-label low">LOW</div>
+      <p><span class="en">Technical complexity — LINE Bot + AI + payment tracking is well-understood tech stack. MVP buildable in 2-3 weeks.</span>
+      <span class="th">ความซับซ้อนทางเทคนิค — LINE Bot + AI + ติดตามชำระเงิน เป็น tech stack ที่เข้าใจดี สร้าง MVP ได้ใน 2-3 สัปดาห์</span></p>
+    </div>
+  </section>
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <h2><span class="en">✅ PASS — 35/50</span><span class="th">✅ ผ่าน — 35/50</span></h2>
+    <p>
+      <span class="en">The "boring but profitable" archetype. 2M+ Thai landlords manage properties via LINE chat and notebooks. Global property management is a $14B market (Buildium/AppFolio proven). Zero Thai-specific, LINE-native solution exists. Low-risk, proven model, recurring revenue, and a massive untapped local market. ROI pitch: "You lose ฿5K/mo chasing late rent manually. MuteRent costs ฿299."</span>
+      <span class="th">"น่าเบื่อแต่กำไรดี" เจ้าของห้อง 2M+ คนจัดการผ่าน LINE กับสมุดจด ตลาดจัดการอสังหาฯโลก $14B (Buildium/AppFolio พิสูจน์แล้ว) ไม่มีโซลูชัน LINE-native เฉพาะไทย ความเสี่ยงต่ำ โมเดลพิสูจน์แล้ว รายได้ recurring ตลาดท้องถิ่นขนาดใหญ่ยังไม่มีใครจับ</span>
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
