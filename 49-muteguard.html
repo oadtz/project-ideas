@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteGuard — AI Website Security Scanner for Thai Businesses</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #ef4444;
+    --secondary-light: #f87171;
+    --secondary-pale: rgba(239,68,68,0.08);
+    --secondary-glow: rgba(239,68,68,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(239,68,68,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(239,68,68,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Hero */
+  .hero {
+    padding: 6rem 0 4rem;
+    text-align: center;
+    position: relative;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    padding: 0.45rem 1.2rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--primary-light);
+    margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    margin-bottom: 1.2rem;
+  }
+  .hero h1 .accent { color: var(--primary); }
+  .hero h1 .accent2 { color: var(--secondary); }
+  .hero .sub {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 640px;
+    margin: 0 auto 2rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .hero-stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .hero-stat {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    min-width: 140px;
+  }
+  .hero-stat .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .hero-stat .label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Sections */
+  section { padding: 4rem 0; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--primary);
+    margin-bottom: 0.8rem;
+  }
+  section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  section h2 .accent { color: var(--primary); }
+  section p.desc {
+    color: var(--text2);
+    font-size: 1rem;
+    max-width: 680px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* Grid cards */
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+  .g-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    transition: border-color 0.25s, transform 0.25s;
+  }
+  .g-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+  .g-card .icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .g-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .g-card p { font-size: 0.88rem; color: var(--text2); line-height: 1.6; font-weight: 300; }
+
+  /* Threat cards */
+  .threat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .threat-card {
+    background: var(--secondary-pale);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .threat-card .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary);
+  }
+  .threat-card .label { font-size: 0.82rem; color: var(--text2); margin-top: 0.3rem; }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card.featured { border-color: var(--primary); }
+  .price-card.featured::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  }
+  .price-card .tier {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+  .price-card .price {
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  .price-card .price .currency { font-size: 1.1rem; color: var(--muted); }
+  .price-card .price .period { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .price-card ul {
+    list-style: none;
+    margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .price-card li {
+    font-size: 0.85rem;
+    color: var(--text2);
+    padding-left: 1.4rem;
+    position: relative;
+  }
+  .price-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* Score */
+  .score-section { margin-top: 4rem; }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+    text-align: center;
+  }
+  .score-item .score-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .score-item .score-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .total-score {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+  }
+  .total-score .big {
+    font-family: 'Space Mono', monospace;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .total-score .verdict {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.3rem;
+  }
+  .total-score .verdict.pass { color: var(--green); }
+
+  /* Competitive */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+  }
+  .comp-table th, .comp-table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .comp-table td { color: var(--text2); }
+  .comp-table tr:hover td { color: var(--text); }
+  .comp-table .us { color: var(--primary); font-weight: 600; }
+
+  /* Footer */
+  footer {
+    padding: 3rem 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+  footer p { font-size: 0.8rem; color: var(--muted); }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  /* Back link */
+  .back-link {
+    position: fixed; top: 1.3rem; left: 2rem; z-index: 100;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.4rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+  .back-link:hover { color: var(--primary); border-color: var(--border2); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 4rem 0 3rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-stats { gap: 1rem; }
+    section h2 { font-size: 1.6rem; }
+    .comp-table { font-size: 0.75rem; }
+    .comp-table th, .comp-table td { padding: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<a href="index.html" class="back-link">← ALL IDEAS</a>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">🛡️ IDEA #49 — CYBERSECURITY / B2B SaaS</div>
+    <h1>
+      <span class="en"><span class="accent">MuteGuard</span> — AI Website<br>Security Scanner for<br><span class="accent2">Thai Businesses</span></span>
+      <span class="th"><span class="accent">MuteGuard</span> — AI สแกน<br>ความปลอดภัยเว็บไซต์<br><span class="accent2">สำหรับธุรกิจไทย</span></span>
+    </h1>
+    <p class="sub">
+      <span class="en">Continuous AI-powered security scanning for Thai business websites. Detects vulnerabilities, monitors for breaches, checks PDPA compliance — all in Thai, with LINE alerts. From ฿999/mo. Enterprise security at SME prices.</span>
+      <span class="th">สแกนความปลอดภัยเว็บไซต์ด้วย AI อย่างต่อเนื่อง ตรวจจับช่องโหว่ ติดตามการรั่วไหล ตรวจ PDPA compliance — ทั้งหมดเป็นภาษาไทย แจ้งเตือนผ่าน LINE เริ่มต้น ฿999/เดือน ความปลอดภัยระดับ enterprise ราคา SME</span>
+    </p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">$17.5B</div>
+        <div class="label"><span class="en">Global SVM Market 2025</span><span class="th">ตลาดโลก SVM 2025</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">3.2M+</div>
+        <div class="label"><span class="en">Thai SMEs Must Secure</span><span class="th">SME ไทยต้องป้องกัน</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">฿5M</div>
+        <div class="label"><span class="en">Max PDPA Fine / Violation</span><span class="th">ค่าปรับ PDPA สูงสุด/ครั้ง</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">ZERO</div>
+        <div class="label"><span class="en">Thai AI Security Scanner</span><span class="th">AI สแกนภาษาไทย</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THREAT LANDSCAPE -->
+  <section>
+    <div class="section-label"><span class="en">// THE PROBLEM</span><span class="th">// ปัญหา</span></div>
+    <h2>
+      <span class="en">Thailand's <span class="accent2">Cybersecurity Crisis</span> Is Real</span>
+      <span class="th">วิกฤต<span class="accent2">ไซเบอร์ซีเคียวริตี้</span>ของไทยเป็นเรื่องจริง</span>
+    </h2>
+    <p class="desc">
+      <span class="en">Ransomware-as-a-service attacks on Thai SMEs are surging. PDPA enforcement is accelerating with 5,273 breach investigations. The government mandated a 2025 Website Security Standard. Yet most Thai businesses have ZERO security monitoring.</span>
+      <span class="th">แรนซัมแวร์โจมตี SME ไทยเพิ่มขึ้นอย่างรวดเร็ว การบังคับใช้ PDPA เข้มข้นขึ้นด้วยการสอบสวน 5,273 กรณี รัฐบาลออกมาตรฐานความปลอดภัยเว็บไซต์ 2025 แต่ธุรกิจไทยส่วนใหญ่ไม่มีการตรวจสอบความปลอดภัยเลย</span>
+    </p>
+
+    <div class="threat-grid">
+      <div class="threat-card">
+        <div class="num">5,273</div>
+        <div class="label"><span class="en">PDPA breach investigations</span><span class="th">สอบสวนละเมิด PDPA</span></div>
+      </div>
+      <div class="threat-card">
+        <div class="num">฿5M</div>
+        <div class="label"><span class="en">Max fine per violation</span><span class="th">ค่าปรับสูงสุดต่อครั้ง</span></div>
+      </div>
+      <div class="threat-card">
+        <div class="num">1 Year</div>
+        <div class="label"><span class="en">Criminal liability</span><span class="th">โทษจำคุก</span></div>
+      </div>
+      <div class="threat-card">
+        <div class="num">90%</div>
+        <div class="label"><span class="en">SMEs with no security</span><span class="th">SME ที่ไม่มีระบบป้องกัน</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="section-label"><span class="en">// SOLUTION</span><span class="th">// โซลูชัน</span></div>
+    <h2>
+      <span class="en">Enterprise <span class="accent">Security Intelligence</span> at SME Prices</span>
+      <span class="th">ระบบรักษาความปลอดภัย<span class="accent">ระดับ Enterprise</span> ในราคา SME</span>
+    </h2>
+
+    <div class="grid-3">
+      <div class="g-card">
+        <div class="icon">🔍</div>
+        <h3><span class="en">AI Vulnerability Scanner</span><span class="th">สแกนช่องโหว่ด้วย AI</span></h3>
+        <p><span class="en">Automated scanning for OWASP Top 10, SQL injection, XSS, outdated CMS, exposed admin panels, SSL issues. AI explains every finding in plain Thai with step-by-step fix instructions.</span>
+        <span class="th">สแกนอัตโนมัติ OWASP Top 10, SQL injection, XSS, CMS เก่า, admin panel ที่เปิดอยู่, ปัญหา SSL พร้อมอธิบายทุกผลลัพธ์เป็นภาษาไทยกับวิธีแก้ไขทีละขั้นตอน</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">🌐</div>
+        <h3><span class="en">Dark Web Monitoring</span><span class="th">ตรวจสอบ Dark Web</span></h3>
+        <p><span class="en">24/7 monitoring for leaked credentials, stolen customer data, and domain mentions on dark web markets and paste sites. LINE alert within minutes of detection.</span>
+        <span class="th">ตรวจสอบ 24/7 ค้นหาข้อมูลรั่วไหล รหัสผ่านถูกขโมย ข้อมูลลูกค้าหลุด และการกล่าวถึงโดเมนบน dark web แจ้งเตือน LINE ภายในนาที</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">📋</div>
+        <h3><span class="en">PDPA Compliance Check</span><span class="th">ตรวจสอบ PDPA Compliance</span></h3>
+        <p><span class="en">Scans for PDPA violations: cookie consent, privacy policy, data collection practices, encryption status. Generates compliance report meeting 2025 Website Security Standard.</span>
+        <span class="th">สแกนการละเมิด PDPA: cookie consent, นโยบายความเป็นส่วนตัว, การเก็บข้อมูล, สถานะการเข้ารหัส สร้างรายงาน compliance ตามมาตรฐานเว็บ 2025</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">🔔</div>
+        <h3><span class="en">LINE Security Alerts</span><span class="th">แจ้งเตือนผ่าน LINE</span></h3>
+        <p><span class="en">Real-time alerts via LINE when vulnerabilities are discovered, credentials are leaked, or security score changes. No email buried in spam — direct to your LINE.</span>
+        <span class="th">แจ้งเตือนทันทีผ่าน LINE เมื่อพบช่องโหว่ ข้อมูลรั่วไหล หรือ security score เปลี่ยน ไม่ต้องค้นเมลใน spam — แจ้งตรงถึง LINE</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">📊</div>
+        <h3><span class="en">Security Score Dashboard</span><span class="th">แดชบอร์ด Security Score</span></h3>
+        <p><span class="en">Simple A-F security grade for your website. Track improvements over time. Share with stakeholders, partners, or insurance providers as proof of security posture.</span>
+        <span class="th">เกรด A-F ง่ายๆ สำหรับเว็บไซต์ ติดตามการปรับปรุง แชร์กับผู้มีส่วนได้เสีย คู่ค้า หรือบริษัทประกันเพื่อพิสูจน์ระดับความปลอดภัย</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">🏢</div>
+        <h3><span class="en">White-Label for IT Firms</span><span class="th">White-Label สำหรับ IT Firms</span></h3>
+        <p><span class="en">IT service companies and managed security providers can white-label MuteGuard. Your brand, our AI engine. Manage all clients from one dashboard.</span>
+        <span class="th">บริษัท IT และ managed security provider สามารถ white-label MuteGuard แบรนด์คุณ AI เราจัดการลูกค้าทั้งหมดจาก dashboard เดียว</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITIVE LANDSCAPE -->
+  <section>
+    <div class="section-label"><span class="en">// COMPETITION</span><span class="th">// คู่แข่ง</span></div>
+    <h2>
+      <span class="en">The <span class="accent">Thai Gap</span> Is Wide Open</span>
+      <span class="th">ช่องว่างในตลาด<span class="accent">ไทย</span>ยังเปิดกว้าง</span>
+    </h2>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th><span class="en">Price</span><span class="th">ราคา</span></th>
+          <th><span class="en">Thai Language</span><span class="th">ภาษาไทย</span></th>
+          <th>LINE</th>
+          <th>SME-Focus</th>
+          <th>AI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Qualys WAS</td>
+          <td>$500+/mo</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>✓</td>
+        </tr>
+        <tr>
+          <td>Intruder.io</td>
+          <td>$100+/mo</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>~</td>
+          <td>~</td>
+        </tr>
+        <tr>
+          <td>SecurityScorecard</td>
+          <td>Enterprise</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>✓</td>
+        </tr>
+        <tr>
+          <td>CYBER ELITE</td>
+          <td>Enterprise</td>
+          <td>✓</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>✓</td>
+        </tr>
+        <tr class="us">
+          <td>🛡️ MuteGuard</td>
+          <td>฿999/mo</td>
+          <td>✓</td>
+          <td>✓</td>
+          <td>✓</td>
+          <td>✓</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- PRICING -->
+  <section>
+    <div class="section-label"><span class="en">// PRICING</span><span class="th">// ราคา</span></div>
+    <h2>
+      <span class="en"><span class="accent">Security</span> Shouldn't Be a Luxury</span>
+      <span class="th"><span class="accent">ความปลอดภัย</span>ไม่ควรเป็นของหรู</span>
+    </h2>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="tier">SCAN</div>
+        <div class="price"><span class="currency">฿</span>999<span class="period">/mo</span></div>
+        <ul>
+          <li><span class="en">1 website scan (weekly)</span><span class="th">สแกน 1 เว็บ (รายสัปดาห์)</span></li>
+          <li><span class="en">OWASP Top 10 detection</span><span class="th">ตรวจจับ OWASP Top 10</span></li>
+          <li><span class="en">SSL & header checks</span><span class="th">ตรวจ SSL & header</span></li>
+          <li><span class="en">Security score A-F</span><span class="th">Security score A-F</span></li>
+          <li><span class="en">LINE alerts</span><span class="th">แจ้งเตือน LINE</span></li>
+          <li><span class="en">Thai fix instructions</span><span class="th">วิธีแก้ไขภาษาไทย</span></li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="tier">PROTECT</div>
+        <div class="price"><span class="currency">฿</span>2,999<span class="period">/mo</span></div>
+        <ul>
+          <li><span class="en">Up to 5 websites (daily scans)</span><span class="th">5 เว็บ (สแกนรายวัน)</span></li>
+          <li><span class="en">Dark web credential monitoring</span><span class="th">ตรวจสอบ Dark Web</span></li>
+          <li><span class="en">PDPA compliance reports</span><span class="th">รายงาน PDPA compliance</span></li>
+          <li><span class="en">Malware detection</span><span class="th">ตรวจจับมัลแวร์</span></li>
+          <li><span class="en">Competitor security benchmarking</span><span class="th">เปรียบเทียบคู่แข่ง</span></li>
+          <li><span class="en">Priority LINE + email alerts</span><span class="th">แจ้งเตือนด่วน LINE + email</span></li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="tier">FORTRESS</div>
+        <div class="price"><span class="currency">฿</span>9,999<span class="period">/mo</span></div>
+        <ul>
+          <li><span class="en">Unlimited websites</span><span class="th">ไม่จำกัดเว็บ</span></li>
+          <li><span class="en">API access</span><span class="th">API access</span></li>
+          <li><span class="en">Penetration test reports</span><span class="th">รายงาน pentest</span></li>
+          <li><span class="en">Incident response playbook</span><span class="th">แผนรับมือเหตุการณ์</span></li>
+          <li><span class="en">Dedicated security advisor</span><span class="th">ที่ปรึกษาด้านความปลอดภัย</span></li>
+          <li><span class="en">SLA: 1-hour critical alerts</span><span class="th">SLA: แจ้งเตือนวิกฤต 1 ชม.</span></li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="tier">IT FIRM / WHITE-LABEL</div>
+        <div class="price"><span class="currency">฿</span>19,999<span class="period">/mo</span></div>
+        <ul>
+          <li><span class="en">White-label platform</span><span class="th">แพลตฟอร์ม white-label</span></li>
+          <li><span class="en">Multi-client management</span><span class="th">จัดการหลายลูกค้า</span></li>
+          <li><span class="en">Your brand, our AI engine</span><span class="th">แบรนด์คุณ AI เรา</span></li>
+          <li><span class="en">Per-client billing</span><span class="th">เรียกเก็บต่อลูกค้า</span></li>
+          <li><span class="en">Custom reporting templates</span><span class="th">รายงานแบบกำหนดเอง</span></li>
+          <li><span class="en">Partner revenue share</span><span class="th">แบ่งรายได้พาร์ทเนอร์</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVENUE MATH -->
+  <section>
+    <div class="section-label"><span class="en">// REVENUE MODEL</span><span class="th">// โมเดลรายได้</span></div>
+    <h2>
+      <span class="en">Path to <span class="accent">$1M</span></span>
+      <span class="th">เส้นทางสู่ <span class="accent">$1M</span></span>
+    </h2>
+    <div class="grid-3">
+      <div class="g-card">
+        <div class="icon">🎯</div>
+        <h3><span class="en">Target Mix</span><span class="th">เป้าหมาย</span></h3>
+        <p><span class="en">2,000 Scan × ฿999 + 300 Protect × ฿2,999 + 50 Fortress × ฿9,999 + 10 White-Label × ฿19,999 = ฿3.7M/mo = ฿44.4M/yr ≈ $1.39M ✅</span>
+        <span class="th">2,000 Scan × ฿999 + 300 Protect × ฿2,999 + 50 Fortress × ฿9,999 + 10 White-Label × ฿19,999 = ฿3.7M/เดือน = ฿44.4M/ปี ≈ $1.39M ✅</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">📈</div>
+        <h3><span class="en">Penetration Required</span><span class="th">ส่วนแบ่งตลาดที่ต้องการ</span></h3>
+        <p><span class="en">Need only 0.07% of 3.2M Thai SMEs. Free scan as viral lead magnet → scary report → upsell to monitoring.</span>
+        <span class="th">ต้องการแค่ 0.07% ของ 3.2M SME ไทย สแกนฟรีเป็นตัวดึงลูกค้า → รายงานน่ากลัว → อัปเซลล์เป็นแบบรายเดือน</span></p>
+      </div>
+      <div class="g-card">
+        <div class="icon">⚡</div>
+        <h3><span class="en">Time to First $</span><span class="th">เวลาถึงรายได้แรก</span></h3>
+        <p><span class="en">30-45 days. Free URL scan → show vulnerabilities → fear of PDPA fines → paid subscription. Same playbook as Cookiebot, which built a multi-million business on free GDPR scans.</span>
+        <span class="th">30-45 วัน สแกน URL ฟรี → แสดงช่องโหว่ → กลัวค่าปรับ PDPA → สมัครแบบเสียเงิน เหมือน Cookiebot ที่สร้างธุรกิจหลายล้านจากสแกน GDPR ฟรี</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORE -->
+  <section class="score-section">
+    <div class="section-label"><span class="en">// EVALUATION</span><span class="th">// ประเมินผล</span></div>
+    <h2>
+      <span class="en">MuteLab <span class="accent">Score</span></span>
+      <span class="th">คะแนน <span class="accent">MuteLab</span></span>
+    </h2>
+
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="score-num">7</div>
+        <div class="score-label"><span class="en">Market /10</span><span class="th">ตลาด /10</span></div>
+      </div>
+      <div class="score-item">
+        <div class="score-num">7</div>
+        <div class="score-label"><span class="en">Problem /10</span><span class="th">ปัญหา /10</span></div>
+      </div>
+      <div class="score-item">
+        <div class="score-num">6</div>
+        <div class="score-label"><span class="en">Competition Gap /10</span><span class="th">ช่องว่าง /10</span></div>
+      </div>
+      <div class="score-item">
+        <div class="score-num">8</div>
+        <div class="score-label"><span class="en">Build Feasibility /10</span><span class="th">ความเป็นไปได้ /10</span></div>
+      </div>
+      <div class="score-item">
+        <div class="score-num">7</div>
+        <div class="score-label"><span class="en">Our Advantage /10</span><span class="th">ข้อได้เปรียบ /10</span></div>
+      </div>
+    </div>
+
+    <div class="total-score">
+      <div class="big">35/50</div>
+      <div class="verdict pass">✅ PASS — <span class="en">Strong CTO fit + fear-driven buying + proven global playbook</span><span class="th">เข้ากับพื้นฐาน CTO + ซื้อด้วยความกลัว + โมเดลพิสูจน์แล้วทั่วโลก</span></div>
+    </div>
+  </section>
+
+  <!-- KEY INSIGHT -->
+  <section>
+    <div class="section-label"><span class="en">// KEY INSIGHT</span><span class="th">// ข้อมูลสำคัญ</span></div>
+    <h2>
+      <span class="en">Fear <span class="accent2">Sells</span> — And Security Is All Fear</span>
+      <span class="th">ความกลัว<span class="accent2">ขายได้</span> — และความปลอดภัยคือความกลัวทั้งหมด</span>
+    </h2>
+    <p class="desc" style="margin-bottom:1rem">
+      <span class="en">The "free website scan" funnel is one of the highest-converting B2B lead magnets in existence. Enter your URL → see a scary report of vulnerabilities → realize you're exposed to ฿5M PDPA fines → sign up for monitoring. Cookiebot and SecurityScorecard built billion-dollar businesses on this exact model. Thailand has zero local players doing this in Thai with LINE alerts.</span>
+      <span class="th">ช่องทาง "สแกนเว็บฟรี" เป็น B2B lead magnet ที่มี conversion สูงที่สุด ใส่ URL → เห็นรายงานช่องโหว่น่ากลัว → ตระหนักว่าเสี่ยงค่าปรับ PDPA ฿5M → สมัครแบบติดตาม Cookiebot และ SecurityScorecard สร้างธุรกิจพันล้านจากโมเดลเดียวกัน ประเทศไทยไม่มีผู้เล่นท้องถิ่นที่ทำสิ่งนี้เป็นภาษาไทยพร้อมแจ้งเตือน LINE</span>
+    </p>
+    <p class="desc">
+      <span class="en"><strong>Pairs with MuteSafe (#46):</strong> MuteGuard scans for technical vulnerabilities. MuteSafe handles legal PDPA compliance documents. Together they form a complete "security + compliance" bundle — upsell heaven. One customer, two products, higher ARPU.</span>
+      <span class="th"><strong>จับคู่กับ MuteSafe (#46):</strong> MuteGuard สแกนช่องโหว่ทางเทคนิค MuteSafe จัดการเอกสาร PDPA compliance รวมกันเป็นแพ็คเกจ "ความปลอดภัย + compliance" — โอกาสอัปเซลล์สูง ลูกค้า 1 คน สินค้า 2 ตัว ARPU สูงขึ้น</span>
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p><span class="en">MuteGuard — Idea #49 from MuteLab's Sprint Research | <a href="index.html">Back to Dashboard</a></span>
+    <span class="th">MuteGuard — ไอเดีย #49 จากการวิจัย Sprint ของ MuteLab | <a href="index.html">กลับสู่แดชบอร์ด</a></span></p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()));
+}
+</script>
+</body>
+</html>
