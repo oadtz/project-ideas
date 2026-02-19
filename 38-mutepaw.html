@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MutePaw — AI Pet Nutrition & Health Advisor on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* HERO */
+  .hero { padding: 7rem 0 5rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.45rem 1.2rem; border-radius: 99px;
+    background: var(--primary-pale); border: 1px solid var(--border);
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 800;
+    line-height: 1.1; margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 1.15rem; color: var(--text2); max-width: 640px;
+    margin: 0 auto 2.5rem; line-height: 1.7;
+  }
+
+  /* SECTIONS */
+  .section { padding: 5rem 0; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--primary); text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .section h2 {
+    font-size: 2rem; font-weight: 700; margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .section .subtitle {
+    font-size: 1.05rem; color: var(--text2); max-width: 620px;
+    margin-bottom: 3rem; line-height: 1.7;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid; gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(245,158,11,0.08);
+  }
+  .card-icon {
+    font-size: 2rem; margin-bottom: 1rem;
+  }
+  .card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.6rem; }
+  .card p { font-size: 0.9rem; color: var(--text2); line-height: 1.6; }
+
+  /* SCORE */
+  .score-section { padding: 5rem 0; }
+  .score-grid {
+    display: grid; gap: 1.2rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-bottom: 2rem;
+  }
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .score-card .score-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 2.2rem; font-weight: 700;
+    color: var(--primary);
+  }
+  .score-card .score-label {
+    font-size: 0.8rem; color: var(--muted);
+    margin-top: 0.3rem; font-weight: 500;
+  }
+  .score-total {
+    text-align: center; padding: 2rem;
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+  }
+  .score-total .big-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 4rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .score-total .verdict {
+    font-size: 1.1rem; color: var(--green); font-weight: 600;
+    margin-top: 0.5rem;
+  }
+
+  /* STATS */
+  .stats-row {
+    display: grid; gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin: 3rem 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.8rem;
+    text-align: center;
+  }
+  .stat-card .stat-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.8rem; font-weight: 700; color: var(--primary);
+  }
+  .stat-card .stat-desc {
+    font-size: 0.82rem; color: var(--muted); margin-top: 0.4rem;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid; gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 40px var(--primary-glow);
+  }
+  .price-card .price-name {
+    font-size: 0.75rem; font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    color: var(--primary); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .price-card .price-amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem; font-weight: 700; margin-bottom: 0.3rem;
+  }
+  .price-card .price-period { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .price-card ul { list-style: none; }
+  .price-card li {
+    font-size: 0.85rem; color: var(--text2); padding: 0.35rem 0;
+    padding-left: 1.3rem; position: relative;
+  }
+  .price-card li::before {
+    content: '✓'; position: absolute; left: 0;
+    color: var(--green); font-weight: 700;
+  }
+
+  /* COMPETITORS */
+  .comp-table {
+    width: 100%; border-collapse: collapse; margin-top: 2rem;
+    font-size: 0.85rem;
+  }
+  .comp-table th, .comp-table td {
+    padding: 0.8rem 1rem; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .comp-table td { color: var(--text2); }
+  .comp-table tr:hover td { background: var(--primary-pale); }
+
+  /* RISK */
+  .risk-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  .risk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .risk-card .risk-level {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.2rem 0.6rem; border-radius: 6px;
+    display: inline-block; margin-bottom: 0.8rem;
+  }
+  .risk-low { background: rgba(16,185,129,0.15); color: var(--green); }
+  .risk-med { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .risk-high { background: rgba(239,68,68,0.15); color: var(--red); }
+  .risk-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .risk-card p { font-size: 0.82rem; color: var(--text2); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 3rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem; color: var(--muted2);
+    font-family: 'Space Mono', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .hero { padding: 5rem 0 3rem; }
+    .section { padding: 3rem 0; }
+    .container { padding: 0 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">🐾 IDEA #38 — PET ECONOMY</div>
+    <h1>
+      <span class="en">MutePaw<br>AI Pet Nutrition &<br>Health Advisor</span>
+      <span class="th">MutePaw<br>AI ที่ปรึกษาโภชนาการ<br>& สุขภาพสัตว์เลี้ยง</span>
+    </h1>
+    <p class="en">Your pet's personal AI nutritionist on LINE. Scan food, check symptoms, get breed-specific advice — all in Thai, all on the app 67M Thais already use daily.</p>
+    <p class="th">นักโภชนาการ AI ส่วนตัวของน้อง บน LINE สแกนอาหาร เช็คอาการ รับคำแนะนำตามสายพันธุ์ — ภาษาไทย บนแอพที่คนไทย 67 ล้านคนใช้ทุกวัน</p>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">// MARKET OPPORTUNITY</div>
+    <h2 class="en">Thailand: SEA's #1 Pet Market</h2>
+    <h2 class="th">ไทย: ตลาดสัตว์เลี้ยง #1 ของอาเซียน</h2>
+    <p class="subtitle en">Thailand has the highest pet ownership rate in APAC. Pet parents are spending more than ever — but have zero AI tools in Thai to help them make better decisions.</p>
+    <p class="subtitle th">ไทยมีอัตราการเลี้ยงสัตว์สูงสุดในเอเชียแปซิฟิก ทาสหมาแมวใช้จ่ายมากขึ้นทุกปี แต่ยังไม่มีเครื่องมือ AI ภาษาไทยสักตัวที่ช่วยตัดสินใจ</p>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">฿46B</div>
+        <div class="stat-desc en">Thai pet food market (2025)</div>
+        <div class="stat-desc th">ตลาดอาหารสัตว์เลี้ยงไทย (2568)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">$2.2B</div>
+        <div class="stat-desc en">Total pet food market value</div>
+        <div class="stat-desc th">มูลค่าตลาดอาหารสัตว์เลี้ยงทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">10%+</div>
+        <div class="stat-desc en">YoY growth since 2011</div>
+        <div class="stat-desc th">เติบโต YoY ตั้งแต่ปี 2554</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">฿12K</div>
+        <div class="stat-desc en">Avg household pet spend/year</div>
+        <div class="stat-desc th">ค่าใช้จ่ายเฉลี่ย/ครัวเรือน/ปี</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-label">// THE PROBLEM</div>
+    <h2 class="en">Pet Parents Are Flying Blind</h2>
+    <h2 class="th">ทาสหมาแมวตัดสินใจแบบไม่มีข้อมูล</h2>
+    <p class="subtitle en">With 100+ pet food brands, conflicting advice online, and vet visits costing ฿500-2,000 per trip — Thai pet owners are overwhelmed and making expensive mistakes.</p>
+    <p class="subtitle th">อาหาร 100+ ยี่ห้อ ข้อมูลออนไลน์ขัดกัน ค่าหมอ ฿500-2,000/ครั้ง — คนเลี้ยงสัตว์เครียดและจ่ายแพงโดยไม่จำเป็น</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">😵</div>
+        <h3 class="en">Food Label Confusion</h3>
+        <h3 class="th">ฉลากอาหารงง</h3>
+        <p class="en">Ingredients lists are in English, nutritional values are meaningless to 90% of owners. "Is this actually good for my Shiba?" Nobody knows.</p>
+        <p class="th">ส่วนผสมเป็นภาษาอังกฤษ ค่าโภชนาการไม่มีความหมายสำหรับ 90% ของเจ้าของ "อันนี้ดีจริงมั้ยสำหรับชิบะ?" ไม่มีใครรู้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💸</div>
+        <h3 class="en">Overfeeding Epidemic</h3>
+        <h3 class="th">ให้กินเยอะเกินไป</h3>
+        <p class="en">Overfeeding is the #1 pet health issue in Thailand. 40%+ of urban pets are overweight. Owners don't know correct portions for their breed/age.</p>
+        <p class="th">ให้อาหารเกินคือปัญหาสุขภาพ #1 สัตว์เลี้ยงในเมือง 40%+ น้ำหนักเกิน เจ้าของไม่รู้ปริมาณที่เหมาะกับสายพันธุ์/อายุ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3 class="en">Unnecessary Vet Visits</h3>
+        <h3 class="th">ไปหาหมอโดยไม่จำเป็น</h3>
+        <p class="en">"Is my cat vomiting because of the new food or something serious?" Most owners panic-visit the vet, spending ฿1,000+ when it's often just a diet issue.</p>
+        <p class="th">"แมวอ้วกเพราะเปลี่ยนอาหารหรือป่วยจริง?" เจ้าของส่วนใหญ่ตกใจพาไปหาหมอ จ่าย ฿1,000+ ทั้งที่มักเป็นแค่เรื่องอาหาร</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">// THE SOLUTION</div>
+    <h2 class="en">Your Pet's AI Nutritionist on LINE</h2>
+    <h2 class="th">นักโภชนาการ AI ของน้องบน LINE</h2>
+    <p class="subtitle en">MutePaw is a LINE chatbot that gives breed-specific, age-appropriate nutrition and health guidance — powered by AI, delivered in Thai, available 24/7.</p>
+    <p class="subtitle th">MutePaw คือ LINE bot ที่ให้คำแนะนำโภชนาการและสุขภาพเฉพาะสายพันธุ์/อายุ — ขับเคลื่อนด้วย AI ภาษาไทย พร้อมให้บริการ 24/7</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3 class="en">Food Scanner</h3>
+        <h3 class="th">สแกนอาหาร</h3>
+        <p class="en">Snap a photo of any pet food bag. AI reads ingredients, rates quality (A-F), and tells you if it's right for YOUR pet's breed, age, and weight.</p>
+        <p class="th">ถ่ายรูปถุงอาหาร AI อ่านส่วนผสม ให้เกรด (A-F) บอกว่าเหมาะกับน้องของคุณมั้ย ตามสายพันธุ์ อายุ น้ำหนัก</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🩺</div>
+        <h3 class="en">Symptom Checker</h3>
+        <h3 class="th">เช็คอาการ</h3>
+        <p class="en">Describe symptoms in Thai. AI assesses urgency: 🟢 Home care / 🟡 Monitor / 🔴 See vet NOW. Saves panic trips and catches real emergencies.</p>
+        <p class="th">บอกอาการเป็นภาษาไทย AI ประเมินความเร่งด่วน: 🟢 ดูแลเอง / 🟡 สังเกต / 🔴 พาไปหาหมอเลย ลดไปหาหมอมัว่ จับเคสฉุกเฉินจริง</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🍖</div>
+        <h3 class="en">Portion Calculator</h3>
+        <h3 class="th">คำนวณปริมาณอาหาร</h3>
+        <p class="en">Exact daily portions based on breed, age, weight, activity level, and the specific food brand you're using. No more guessing.</p>
+        <p class="th">คำนวณปริมาณต่อวันตามสายพันธุ์ อายุ น้ำหนัก กิจกรรม และยี่ห้ออาหารที่ใช้อยู่ ไม่ต้องเดาอีกต่อไป</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3 class="en">Health Records</h3>
+        <h3 class="th">ประวัติสุขภาพ</h3>
+        <p class="en">Track vaccinations, medications, weight trends, vet visits — all in LINE. Share with your vet instantly. Never lose a record again.</p>
+        <p class="th">ติดตามวัคซีน ยา น้ำหนัก การไปหาหมอ — ทั้งหมดใน LINE แชร์ให้หมอได้เลย ไม่หายอีกต่อไป</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛒</div>
+        <h3 class="en">Smart Recommendations</h3>
+        <h3 class="th">แนะนำอัจฉริยะ</h3>
+        <p class="en">AI recommends the best food, treats, and supplements for YOUR pet — with price comparison across Shopee, Lazada, and local shops.</p>
+        <p class="th">AI แนะนำอาหาร ขนม อาหารเสริมที่ดีที่สุดสำหรับน้อง — เทียบราคา Shopee, Lazada และร้านใกล้บ้าน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3 class="en">Vet Finder</h3>
+        <h3 class="th">หาคลินิกใกล้บ้าน</h3>
+        <p class="en">Find nearby vets with reviews, opening hours, and emergency availability. One tap to call or navigate from LINE.</p>
+        <p class="th">หาคลินิกใกล้บ้าน รีวิว เวลาเปิด-ปิด เคสฉุกเฉิน แตะเดียวโทรหรือนำทางจาก LINE</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section class="section" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-label">// COMPETITIVE LANDSCAPE</div>
+    <h2 class="en">Zero Thai AI Pet Advisors Exist</h2>
+    <h2 class="th">ไม่มี AI ที่ปรึกษาสัตว์เลี้ยงภาษาไทย</h2>
+    <p class="subtitle en">Global apps exist but none speak Thai, none are on LINE, and none understand local pet food brands.</p>
+    <p class="subtitle th">แอพต่างประเทศมีอยู่ แต่ไม่มีภาษาไทย ไม่อยู่บน LINE และไม่รู้จักยี่ห้ออาหารสัตว์ไทย</p>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Thai Language</th>
+          <th>LINE Bot</th>
+          <th>Food Scanner</th>
+          <th>AI-Powered</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--primary)">MutePaw</strong></td>
+          <td>✅ Native</td>
+          <td>✅ Yes</td>
+          <td>✅ Yes</td>
+          <td>✅ LLM</td>
+        </tr>
+        <tr>
+          <td>TTCare (Korea)</td>
+          <td>❌ English/Korean</td>
+          <td>❌ App only</td>
+          <td>❌ No</td>
+          <td>✅ AI Vision</td>
+        </tr>
+        <tr>
+          <td>Daisy Pet AI</td>
+          <td>❌ English</td>
+          <td>❌ App only</td>
+          <td>❌ No</td>
+          <td>✅ LLM</td>
+        </tr>
+        <tr>
+          <td>Mars Petcare AI</td>
+          <td>❌ English</td>
+          <td>❌ App only</td>
+          <td>❌ No</td>
+          <td>✅ Proprietary</td>
+        </tr>
+        <tr>
+          <td>PetPulse</td>
+          <td>❌ English</td>
+          <td>❌ Web</td>
+          <td>❌ No</td>
+          <td>✅ LLM</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- REVENUE MODEL -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">// REVENUE MODEL</div>
+    <h2 class="en">Freemium + Affiliate + B2B</h2>
+    <h2 class="th">Freemium + Affiliate + B2B</h2>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-amount">฿0</div>
+        <div class="price-period en">forever</div>
+        <div class="price-period th">ตลอดชีพ</div>
+        <ul>
+          <li class="en">Breed identification from photo</li>
+          <li class="th">ระบุสายพันธุ์จากรูป</li>
+          <li class="en">3 food scans per month</li>
+          <li class="th">สแกนอาหาร 3 ครั้ง/เดือน</li>
+          <li class="en">Basic symptom checker</li>
+          <li class="th">เช็คอาการเบื้องต้น</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="price-name">Premium 🌟</div>
+        <div class="price-amount">฿149</div>
+        <div class="price-period en">/month per pet</div>
+        <div class="price-period th">/เดือน ต่อน้อง 1 ตัว</div>
+        <ul>
+          <li class="en">Unlimited food scans</li>
+          <li class="th">สแกนอาหารไม่จำกัด</li>
+          <li class="en">Personalized nutrition plan</li>
+          <li class="th">แผนโภชนาการเฉพาะตัว</li>
+          <li class="en">Weight & health tracking</li>
+          <li class="th">ติดตามน้ำหนัก & สุขภาพ</li>
+          <li class="en">Vaccination reminders</li>
+          <li class="th">แจ้งเตือนวัคซีน</li>
+          <li class="en">Priority AI responses</li>
+          <li class="th">AI ตอบเร็วขึ้น</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Family 🏠</div>
+        <div class="price-amount">฿299</div>
+        <div class="price-period en">/month up to 5 pets</div>
+        <div class="price-period th">/เดือน สูงสุด 5 ตัว</div>
+        <ul>
+          <li class="en">Everything in Premium</li>
+          <li class="th">ทุกอย่างใน Premium</li>
+          <li class="en">Multi-pet profiles</li>
+          <li class="th">โปรไฟล์หลายตัว</li>
+          <li class="en">Vet consultation credits</li>
+          <li class="th">เครดิตปรึกษาหมอ</li>
+          <li class="en">Emergency 24/7 hotline</li>
+          <li class="th">สายด่วน 24/7</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 2rem; border-color: var(--secondary); background: var(--secondary-pale);">
+      <h3 class="en">💰 The Real Money: Affiliate + B2B</h3>
+      <h3 class="th">💰 รายได้จริง: Affiliate + B2B</h3>
+      <p class="en" style="margin-top: 0.5rem;">When MutePaw recommends food → affiliate link to Shopee/Lazada (10-15% commission on ฿46B market). Pet food brands (Royal Canin, Hills, SmartHeart) pay for featured recommendations. Pet insurance partners pay per qualified lead (20-30% commission). The subscription is just the surface.</p>
+      <p class="th" style="margin-top: 0.5rem;">เมื่อ MutePaw แนะนำอาหาร → ลิงก์ affiliate ไป Shopee/Lazada (คอมมิชชั่น 10-15% จากตลาด ฿46B) แบรนด์อาหาร (Royal Canin, Hills, SmartHeart) จ่ายเพื่อให้แนะนำ ประกันสัตว์เลี้ยงจ่ายต่อ lead (คอม 20-30%) สมาชิกรายเดือนเป็นแค่ผิวน้ำ</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NOW -->
+<section class="section" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-label">// WHY NOW</div>
+    <h2 class="en">Perfect Timing</h2>
+    <h2 class="th">จังหวะที่สมบูรณ์แบบ</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <h3 class="en">Pet Humanization Wave</h3>
+        <h3 class="th">สัตว์เลี้ยง = ลูก</h3>
+        <p class="en">Thai millennials/Gen Z treat pets as children. Birth rate declining → pet adoption rising. Premium spending exploding 12% YoY.</p>
+        <p class="th">คน Gen Y/Z เลี้ยงสัตว์เหมือนลูก อัตราเกิดลด → เลี้ยงสัตว์เพิ่ม ใช้จ่ายพรีเมียมโต 12% ต่อปี</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3 class="en">AI Vision Ready</h3>
+        <h3 class="th">AI Vision พร้อม</h3>
+        <p class="en">GPT-4V, Gemini Pro Vision — food label scanning now works. Thai language AI finally good enough for natural conversation.</p>
+        <p class="th">GPT-4V, Gemini Pro Vision — สแกนฉลากอาหารได้แล้ว AI ภาษาไทยพร้อมสำหรับบทสนทนาธรรมชาติ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💚</div>
+        <h3 class="en">LINE = Distribution</h3>
+        <h3 class="th">LINE = ช่องทางถึงลูกค้า</h3>
+        <p class="en">67M Thai LINE users. No app download needed. Add friend → start chatting. Zero friction acquisition.</p>
+        <p class="th">คนไทยใช้ LINE 67 ล้านคน ไม่ต้องโหลดแอพ แอดเพื่อน → เริ่มแชท ไม่มีอุปสรรค</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">// RISKS & MITIGATION</div>
+    <h2 class="en">Known Risks</h2>
+    <h2 class="th">ความเสี่ยงที่รู้</h2>
+
+    <div class="risk-grid">
+      <div class="risk-card">
+        <span class="risk-level risk-med">MEDIUM</span>
+        <h4 class="en">Veterinary Liability</h4>
+        <h4 class="th">ความรับผิดทางสัตวแพทย์</h4>
+        <p class="en">AI advice ≠ vet diagnosis. Mitigation: Clear disclaimers, always recommend vet for serious cases, position as "educational tool" not medical device.</p>
+        <p class="th">คำแนะนำ AI ≠ การวินิจฉัยหมอ แก้ไข: ข้อจำกัดชัดเจน แนะนำพบหมอเสมอสำหรับเคสรุนแรง วางตำแหน่งเป็น "เครื่องมือให้ความรู้"</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level risk-low">LOW</span>
+        <h4 class="en">Monetization Speed</h4>
+        <h4 class="th">ความเร็วในการทำเงิน</h4>
+        <p class="en">Pet owners may resist ฿149/mo subscription. Mitigation: Affiliate revenue is primary (no subscription needed), freemium creates large user base first.</p>
+        <p class="th">เจ้าของอาจไม่อยากจ่าย ฿149/เดือน แก้ไข: Affiliate คือรายได้หลัก (ไม่ต้องสมัคร) freemium สร้างฐานผู้ใช้ก่อน</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level risk-med">MEDIUM</span>
+        <h4 class="en">Data Accuracy</h4>
+        <h4 class="th">ความแม่นยำของข้อมูล</h4>
+        <p class="en">Wrong food advice could harm pets. Mitigation: Partner with Thai vets for knowledge validation, use established nutrition databases (NRC, AAFCO).</p>
+        <p class="th">แนะนำอาหารผิดอาจเป็นอันตราย แก้ไข: ร่วมมือกับสัตวแพทย์ไทยตรวจสอบ ใช้ฐานข้อมูลโภชนาการมาตรฐาน (NRC, AAFCO)</p>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level risk-low">LOW</span>
+        <h4 class="en">Global Competition Entry</h4>
+        <h4 class="th">คู่แข่งต่างชาติเข้ามา</h4>
+        <p class="en">TTCare or Mars could localize. Mitigation: First-mover on LINE, deep Thai brand knowledge, community moat. They'd need years to catch local insights.</p>
+        <p class="th">TTCare หรือ Mars อาจทำภาษาไทย แก้ไข: เจ้าแรกบน LINE รู้จักแบรนด์ไทยลึก ชุมชนเป็น moat ต้องใช้เวลาหลายปีตามทัน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section class="score-section" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-label">// SCORE BREAKDOWN</div>
+    <h2 class="en">Idea Evaluation</h2>
+    <h2 class="th">คะแนนประเมินไอเดีย</h2>
+
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="score-value">7</div>
+        <div class="score-label en">Market Potential /10</div>
+        <div class="score-label th">ศักยภาพตลาด /10</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value">7</div>
+        <div class="score-label en">Problem Severity /10</div>
+        <div class="score-label th">ความรุนแรงปัญหา /10</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value">8</div>
+        <div class="score-label en">Competition Gap /10</div>
+        <div class="score-label th">ช่องว่างการแข่งขัน /10</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value">8</div>
+        <div class="score-label en">Build Feasibility /10</div>
+        <div class="score-label th">ความเป็นไปได้สร้าง /10</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value">5</div>
+        <div class="score-label en">Our Advantage /10</div>
+        <div class="score-label th">ข้อได้เปรียบของเรา /10</div>
+      </div>
+    </div>
+
+    <div class="score-total">
+      <div class="big-score">35/50</div>
+      <div class="verdict">✅ PASS — Strong market + zero Thai competition + highly buildable</div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD PLAN -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">// BUILD PLAN</div>
+    <h2 class="en">MVP in 2 Weeks</h2>
+    <h2 class="th">MVP ใน 2 สัปดาห์</h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3 class="en">Week 1: Core Bot</h3>
+        <h3 class="th">สัปดาห์ 1: Bot หลัก</h3>
+        <p class="en">LINE Messaging API + Gemini Pro Vision. Breed ID, food scanner (photo → ingredient analysis → rating), basic symptom checker. Thai language throughout.</p>
+        <p class="th">LINE Messaging API + Gemini Pro Vision ระบุสายพันธุ์ สแกนอาหาร (รูป → วิเคราะห์ส่วนผสม → เกรด) เช็คอาการเบื้องต้น ภาษาไทยทั้งหมด</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h3 class="en">Week 2: Monetization</h3>
+        <h3 class="th">สัปดาห์ 2: ทำเงิน</h3>
+        <p class="en">Shopee/Lazada affiliate links in food recommendations. Free tier limits. Premium tier via LINE Pay. Pet food brand database (top 50 Thai brands).</p>
+        <p class="th">ลิงก์ affiliate Shopee/Lazada ในคำแนะนำอาหาร จำกัด free tier พรีเมียมจ่ายผ่าน LINE Pay ฐานข้อมูลอาหาร 50 แบรนด์ไทยยอดนิยม</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>MutePaw — Idea #38 | MuteLab Research Sprint | February 2026</p>
+    <p style="margin-top: 0.5rem;">Score: 35/50 ✅ | Category: Pet Economy | Status: Research Complete</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>
