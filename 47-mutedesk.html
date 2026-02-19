@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteDesk — AI Customer Support Agent for Thai E-commerce & SMEs</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(6,182,212,0.15);
+    --border2: rgba(6,182,212,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #06b6d4;
+    --primary-light: #22d3ee;
+    --primary-pale: rgba(6,182,212,0.08);
+    --primary-glow: rgba(6,182,212,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(6,182,212,0.08), 0 0 0 1px rgba(6,182,212,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.gold {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .cyan { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .cyan { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+  }
+  .cta-title .cyan { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+  .research-btn {
+    position: fixed;
+    bottom: 2rem; right: 2rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #0a0a0f;
+    border: none; border-radius: 980px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(6,182,212,0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .research-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 32px rgba(6,182,212,0.4); }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px) saturate(1.5);
+    overflow-y: auto; padding: 2rem;
+  }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content {
+    background: #16162a;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative; margin: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1.5rem;
+    color: var(--muted); background: var(--surface2);
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .research-modal-close:hover { background: var(--surface3); color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative;
+  }
+  .research-modal-header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 20px 20px 0 0;
+  }
+  .research-modal-header h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0;
+  }
+  .research-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); background: var(--primary-pale);
+    padding: 0.3rem 0.8rem; border-radius: 980px;
+    border: 1px solid rgba(6,182,212,0.2);
+    width: fit-content; font-weight: 600;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .research-section p, .research-section ul {
+    color: var(--text2); font-size: 0.88rem; line-height: 1.65; margin: 0;
+  }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.4rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(6,182,212,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+  }
+  .research-highlight h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--primary) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🎧</div>
+        <span>MuteDesk</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">500K+ sellers · 80% inquiries automated</span>
+        <span class="th">500K+ ผู้ขาย · ตอบอัตโนมัติ 80%</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 47</span>
+        <span class="th">ไอเดีย 47</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        🎧 <span class="en">IDEA 47 — MUTEDESK · AI CUSTOMER SUPPORT</span><span class="th">ไอเดีย 47 — MUTEDESK · AI ตอบลูกค้า</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="cyan">Support Agent</span><br>for Thai <span class="purple">E-commerce</span></span>
+        <span class="th">AI <span class="cyan">ตอบลูกค้า</span><br>สำหรับ<span class="purple">ร้านค้าออนไลน์ไทย</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered customer support agent</strong> that actually understands your products, policies, and brand voice. Handles 80% of customer inquiries on LINE, Facebook, Shopee, and Lazada — 24/7, in natural Thai. Not a keyword chatbot. Real AI.</span>
+        <span class="th"><strong>AI ตอบลูกค้าอัจฉริยะ</strong>ที่เข้าใจสินค้า นโยบาย และแบรนด์ของคุณจริงๆ ตอบคำถาม 80% บน LINE, Facebook, Shopee, Lazada — 24 ชม. ภาษาไทยธรรมชาติ ไม่ใช่แชทบอทแบบคีย์เวิร์ด AI จริงๆ</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">36/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 36/50 — PASS</strong>
+              <span class="en">Replaces ฿15-25K/mo staff cost</span>
+              <span class="th">แทนพนักงานค่าจ้าง ฿15-25K/เดือน</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">80%</div>
+            <div class="score-meta">
+              <strong>🤖 Auto-Resolution Rate</strong>
+              <span class="en">AI handles most inquiries without human</span>
+              <span class="th">AI ตอบเองได้ส่วนใหญ่โดยไม่ต้องใช้คน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        MuteDesk — <span class="en">AI Support Agent Dashboard</span><span class="th">แดชบอร์ด AI ตอบลูกค้า</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">💬</div>
+          <div class="tc-name"><span class="en">AI CHAT AGENT</span><span class="th">AI ตอบแชท</span></div>
+          <div class="tc-value"><span class="en">Natural Thai</span><span class="th">ภาษาไทยธรรมชาติ</span></div>
+          <div class="tc-sub"><span class="en">Understands context, not just keywords</span><span class="th">เข้าใจบริบท ไม่ใช่แค่คีย์เวิร์ด</span></div>
+          <div class="tc-badge">✓ <span class="en">LLM-Powered</span><span class="th">ขับเคลื่อนด้วย LLM</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📦</div>
+          <div class="tc-name"><span class="en">ORDER TRACKING</span><span class="th">ติดตามพัสดุ</span></div>
+          <div class="tc-value"><span class="en">Auto-Status</span><span class="th">สถานะอัตโนมัติ</span></div>
+          <div class="tc-sub"><span class="en">Real-time order & shipping updates</span><span class="th">อัปเดตออเดอร์และขนส่งเรียลไทม์</span></div>
+          <div class="tc-badge">✓ <span class="en">Shopee + Lazada</span><span class="th">Shopee + Lazada</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🔄</div>
+          <div class="tc-name"><span class="en">HUMAN HANDOFF</span><span class="th">ส่งต่อให้คน</span></div>
+          <div class="tc-value"><span class="en">Smart Escalation</span><span class="th">ส่งต่ออัจฉริยะ</span></div>
+          <div class="tc-sub"><span class="en">Complex cases → human agent</span><span class="th">เรื่องซับซ้อน → พนักงาน</span></div>
+          <div class="tc-badge gold">⚡ <span class="en">Seamless</span><span class="th">ไร้รอยต่อ</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">🎧 AI Customer Support Pipeline</span><span class="th">🎧 ขั้นตอน AI ตอบลูกค้า</span></span>
+          <span style="color:var(--primary);">Train → Deploy → Resolve ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:80%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Upload Catalog</span><span class="th">อัปโหลดสินค้า</span> ✓</span>
+          <span><span class="en">Train AI Agent</span><span class="th">เทรน AI</span> ✓</span>
+          <span><span class="en">Connect Channels</span><span class="th">เชื่อมช่องทาง</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Auto-Resolve 80%</span><span class="th">ตอบเอง 80%</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🛒</div>
+      <div class="stat-num"><span class="cyan">500K+</span></div>
+      <div class="stat-label">
+        <span class="en">Active sellers on Shopee Thailand alone. Add Lazada, TikTok Shop, LINE shops — millions of sellers drowning in customer messages.</span>
+        <span class="th">ผู้ขายบน Shopee ไทยอย่างเดียว รวม Lazada, TikTok Shop, LINE shops — ล้านร้านค้าจมกับข้อความลูกค้า</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⏰</div>
+      <div class="stat-num"><span class="purple">3-5 hrs</span></div>
+      <div class="stat-label">
+        <span class="en">Daily time SME owners spend answering repetitive customer questions. Same questions: "มีสีอื่นมั้ย?", "ส่งกี่วัน?", "รับเปลี่ยนมั้ย?" — over and over.</span>
+        <span class="th">ที่เจ้าของ SME ใช้ตอบคำถามซ้ำๆ ทุกวัน คำถามเดิม: "มีสีอื่นมั้ย?", "ส่งกี่วัน?", "รับเปลี่ยนมั้ย?" — ซ้ำแล้วซ้ำเล่า</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌙</div>
+      <div class="stat-num"><span class="cyan">40%</span></div>
+      <div class="stat-label">
+        <span class="en">Of customer inquiries come after business hours. No response = lost sale. Thai shoppers browse at night — sellers sleep. AI doesn't.</span>
+        <span class="th">ของคำถามลูกค้ามานอกเวลาทำการ ไม่ตอบ = เสียยอด คนไทยช้อปกลางคืน — แม่ค้าหลับ AI ไม่หลับ</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="purple">0</span></div>
+      <div class="stat-label">
+        <span class="en">Affordable AI-powered (LLM) customer support tools for Thai SMEs. ZWIZ.AI & Oho Chat are keyword-matching, not AI. Zendesk costs $155+/agent/mo.</span>
+        <span class="th">AI (LLM) ตอบลูกค้าราคาถูกสำหรับ SME ไทย ZWIZ.AI, Oho Chat เป็นแค่จับคีย์เวิร์ด Zendesk ราคา $155+/agent/เดือน</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">From inbox chaos to AI-powered support in 3 steps</span>
+      <span class="th">จากกล่องข้อความวุ่นวาย สู่ AI ตอบลูกค้าใน 3 ขั้นตอน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Upload your product catalog, set your policies, connect your channels. MuteDesk's AI learns your business and starts resolving customer inquiries in minutes — not months.</span>
+      <span class="th">อัปโหลดรายการสินค้า ตั้งค่านโยบาย เชื่อมช่องทาง AI ของ MuteDesk เรียนรู้ธุรกิจของคุณและเริ่มตอบลูกค้าภายในไม่กี่นาที — ไม่ใช่เป็นเดือน</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Upload & Train</span>
+          <span class="th">อัปโหลดและเทรน</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Upload your product catalog, FAQ, shipping policies, return policies, and brand voice guidelines. AI learns everything about your business. Import from Shopee/Lazada seller center or upload CSV/Excel. Add example conversations for tone training.</span>
+          <span class="th">อัปโหลดรายการสินค้า, FAQ, นโยบายจัดส่ง, นโยบายคืนสินค้า และแนวทางแบรนด์ AI เรียนรู้ทุกอย่างเกี่ยวกับธุรกิจ นำเข้าจาก Shopee/Lazada หรืออัปโหลด CSV/Excel เพิ่มตัวอย่างบทสนทนาเพื่อเทรนน้ำเสียง</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🔗</div>
+        <div class="wf-title">
+          <span class="en">Connect Channels</span>
+          <span class="th">เชื่อมช่องทาง</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">One-click connect to LINE Official Account, Facebook Messenger, Shopee Chat, Lazada Chat, Instagram DM, and web chat widget. AI starts handling incoming messages across ALL channels from a single dashboard.</span>
+          <span class="th">เชื่อมต่อ LINE Official Account, Facebook Messenger, Shopee Chat, Lazada Chat, Instagram DM และ web chat แค่คลิกเดียว AI เริ่มตอบข้อความทุกช่องทางจากแดชบอร์ดเดียว</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">🚀</div>
+        <div class="wf-title">
+          <span class="en">AI Resolves 80%</span>
+          <span class="th">AI ตอบเอง 80%</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI handles product questions, order status, shipping estimates, return requests, size guides, stock availability — in natural Thai matching your brand voice. Complex issues auto-escalate to human staff with full context. You save 3-5 hours/day.</span>
+          <span class="th">AI ตอบคำถามสินค้า, สถานะออเดอร์, ประมาณการจัดส่ง, คืนสินค้า, คำแนะนำไซส์, สต็อก — ภาษาไทยธรรมชาติตามแบรนด์ เรื่องซับซ้อนส่งต่อให้พนักงานพร้อมบริบทครบ ประหยัด 3-5 ชม./วัน</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">Real AI, not keyword chatbots. Thai-first, not translated.</span>
+      <span class="th">AI จริง ไม่ใช่แชทบอทคีย์เวิร์ด Thai-first ไม่ใช่แปลมา</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">ZWIZ.AI and Oho Chat match keywords. MuteDesk understands meaning. Zendesk costs $155/agent/month. MuteDesk starts at ฿999. That's the gap.</span>
+      <span class="th">ZWIZ.AI และ Oho Chat จับคีย์เวิร์ด MuteDesk เข้าใจความหมาย Zendesk ราคา $155/agent/เดือน MuteDesk เริ่มที่ ฿999 นี่คือช่องว่าง</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🧠</div>
+        <div class="why-panel-title">
+          <span class="en">LLM vs Keyword Matching</span>
+          <span class="th">LLM vs จับคีย์เวิร์ด</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai chatbot tools (ZWIZ.AI, Oho Chat) use keyword matching — pre-programmed responses triggered by specific words. MuteDesk uses actual LLMs (Gemini/GPT) that understand context, handle typos, slang ("มีมั้ยค่ะ"), and complex multi-turn conversations naturally.</span>
+          <span class="th">แชทบอทไทย (ZWIZ.AI, Oho Chat) ใช้การจับคีย์เวิร์ด — คำตอบที่ตั้งไว้ล่วงหน้า MuteDesk ใช้ LLM จริง (Gemini/GPT) ที่เข้าใจบริบท จัดการคำพิมพ์ผิด, สแลง ("มีมั้ยค่ะ") และบทสนทนาหลายรอบได้เป็นธรรมชาติ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💰</div>
+        <div class="why-panel-title">
+          <span class="en">10x Cheaper Than Enterprise</span>
+          <span class="th">ถูกกว่า Enterprise 10 เท่า</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Zendesk + Copilot: $155-209/agent/month. Amity Solutions: enterprise-only pricing. MuteDesk: ฿999/month ($30) for unlimited AI conversations. Designed for Thai SMEs, not Fortune 500s. Same AI quality, 1/10th the price.</span>
+          <span class="th">Zendesk + Copilot: $155-209/agent/เดือน Amity Solutions: ราคา enterprise MuteDesk: ฿999/เดือน ($30) แชท AI ไม่จำกัด ออกแบบมาเพื่อ SME ไทย ไม่ใช่ Fortune 500 คุณภาพ AI เดียวกัน ราคา 1/10</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE + Shopee + Lazada Native</span>
+          <span class="th">LINE + Shopee + Lazada แบบ Native</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Global tools are email/web-first — useless for Thai e-commerce. Thai sellers live on LINE, Shopee Chat, Lazada Chat, and Facebook Messenger. MuteDesk is built for these channels from day one. Not adapted, native.</span>
+          <span class="th">เครื่องมือระดับโลกเน้น email/web — ใช้ไม่ได้กับอีคอมไทย ร้านค้าไทยอยู่บน LINE, Shopee Chat, Lazada Chat, Facebook Messenger MuteDesk สร้างมาเพื่อช่องทางเหล่านี้ตั้งแต่วันแรก ไม่ใช่ดัดแปลง แต่เป็น native</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📈</div>
+        <div class="why-panel-title">
+          <span class="en">Replaces ฿15-25K/mo Staff</span>
+          <span class="th">แทนพนักงานค่าจ้าง ฿15-25K/เดือน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">A Thai CS staff costs ฿15-25K/month, works 8 hours, takes holidays, and can only handle one chat at a time. MuteDesk AI costs ฿999/month, works 24/7, never calls in sick, handles 100 concurrent chats. ROI: 15-25x.</span>
+          <span class="th">พนักงาน CS ไทยค่าจ้าง ฿15-25K/เดือน ทำงาน 8 ชม. มีวันหยุด ตอบได้ทีละแชท MuteDesk AI ราคา ฿999/เดือน ทำงาน 24/7 ไม่ลาป่วย ตอบ 100 แชทพร้อมกัน ROI: 15-25 เท่า</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">B2B SaaS with instant ROI</span>
+      <span class="th">B2B SaaS ที่ ROI ทันที</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Every seller knows the pain of answering "ส่งกี่วันคะ?" for the 500th time. MuteDesk replaces a ฿15-25K/month employee for ฿999/month. The pitch sells itself.</span>
+      <span class="th">ทุกร้านค้ารู้ความเจ็บปวดของการตอบ "ส่งกี่วันคะ?" เป็นครั้งที่ 500 MuteDesk แทนพนักงานค่าจ้าง ฿15-25K/เดือน ด้วยราคา ฿999/เดือน pitch ขายตัวเอง</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Target</div>
+          <div class="rh-title">Path to<br>฿32M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿36M</div>
+          <div class="rh-sub">
+            <span class="en">ARR = $1.12M target</span>
+            <span class="th">ARR = เป้า $1.12M</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">2,000 sellers × ฿999/mo = ฿24M/yr<br>+ 300 Business × ฿2,499/mo = ฿9M/yr<br>+ 30 Enterprise × ฿9,999/mo = ฿3.6M/yr<br>Total: ฿36.6M ($1.14M)</span>
+            <span class="th">2,000 ร้าน × ฿999/เดือน = ฿24M/ปี<br>+ 300 Business × ฿2,499/เดือน = ฿9M/ปี<br>+ 30 Enterprise × ฿9,999/เดือน = ฿3.6M/ปี<br>รวม: ฿36.6M ($1.14M)</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">💬</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc">
+            <span class="en">1 channel (LINE or FB), 500 AI conversations/mo, product catalog up to 100 SKUs, basic analytics, email support.</span>
+            <span class="th">1 ช่องทาง (LINE หรือ FB) 500 แชท AI/เดือน สินค้าสูงสุด 100 SKU รายงานเบื้องต้น support อีเมล</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿999/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(6,182,212,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">🎧</div>
+          <div class="rt-label" style="color:var(--primary-light);">Business ⭐</div>
+          <div class="rt-desc">
+            <span class="en">All channels (LINE, FB, Shopee, Lazada, IG, web), unlimited conversations, unlimited SKUs, order tracking integration, upsell suggestions, priority support.</span>
+            <span class="th">ทุกช่องทาง (LINE, FB, Shopee, Lazada, IG, web) แชทไม่จำกัด SKU ไม่จำกัด เชื่อมติดตามออเดอร์ แนะนำ upsell support ด่วน</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿2,499/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc">
+            <span class="en">Multi-store management, API access, custom AI training, white-label, advanced analytics, CRM integration, dedicated account manager.</span>
+            <span class="th">จัดการหลายร้าน API เทรน AI เฉพาะ white-label รายงานขั้นสูง เชื่อม CRM ผู้จัดการบัญชีเฉพาะ</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿9,999/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <div class="cta-wrap">
+    <div class="cta-chip">🎧 <span class="en">IDEA 47 — AI CUSTOMER SUPPORT</span><span class="th">ไอเดีย 47 — AI ตอบลูกค้า</span></div>
+    <div class="cta-title">
+      <span class="en">Your staff costs <span class="cyan">฿15-25K/mo</span>.<br>MuteDesk costs <span class="purple">฿999/mo</span>.</span>
+      <span class="th">พนักงานค่าจ้าง<span class="cyan">฿15-25K/เดือน</span><br>MuteDesk แค่<span class="purple">฿999/เดือน</span></span>
+    </div>
+    <p class="cta-sub">
+      <span class="en">AI that actually understands your products and customers. Works 24/7, handles 100 chats at once, never takes a day off. Stop answering "ส่งกี่วันคะ?" yourself.</span>
+      <span class="th">AI ที่เข้าใจสินค้าและลูกค้าจริงๆ ทำงาน 24/7 ตอบ 100 แชทพร้อมกัน ไม่มีวันหยุด เลิกตอบ "ส่งกี่วันคะ?" ด้วยตัวเอง</span>
+    </p>
+  </div>
+</div>
+
+<button class="research-btn" onclick="document.querySelector('.research-modal').classList.add('active')">
+  📋 <span class="en">Full Research</span><span class="th">งานวิจัยเต็ม</span>
+</button>
+
+<div class="research-modal" onclick="if(event.target===this)this.classList.remove('active')">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="this.closest('.research-modal').classList.remove('active')">✕</button>
+    <div class="research-modal-header">
+      <div class="research-badge">IDEA #47 — DEEP RESEARCH</div>
+      <h2>MuteDesk — AI Customer Support Agent for Thai E-commerce</h2>
+    </div>
+    <div class="research-modal-body">
+      <div class="research-section">
+        <h3>Market Size</h3>
+        <ul>
+          <li>Thailand e-commerce market: $30B+ GMV (2025), growing 15-20% YoY</li>
+          <li>500K+ active sellers on Shopee Thailand alone; Lazada and TikTok Shop adding more</li>
+          <li>3.2M+ registered Thai SMEs — majority use LINE/Facebook for customer communication</li>
+          <li>Global customer service software market: $21B+ (2025), growing 14%+ CAGR</li>
+          <li>Zendesk: $2.7B revenue. Freshdesk: $500M+. Intercom: $250M+. Model proven at scale.</li>
+          <li>Average Thai SME CS staff cost: ฿15-25K/month for one person, 8hr/day, single-channel</li>
+          <li>40% of customer inquiries come after business hours — lost without automation</li>
+          <li>LINE Thailand: 67M registered users, 56M+ MAU — universal business communication channel</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Competition</h3>
+        <ul>
+          <li><strong>Global:</strong> Zendesk ($155-209/agent/mo), Freshdesk, Intercom — email/web-first, NOT LINE-native, expensive for Thai SMEs</li>
+          <li><strong>Thai chatbots:</strong> ZWIZ.AI (keyword-matching chatbot, has shop features + broadcast + analytics, NOT real AI/LLM), Oho Chat (omnichannel chat management, keyword-matching, 50-300 pre-set responses)</li>
+          <li><strong>Thai enterprise:</strong> Amity Solutions (Bangkok-based, enterprise AI chatbot + voicebot, serves banks/insurance/telcos — NOT SME-accessible)</li>
+          <li><strong>Gap:</strong> ZERO affordable LLM-powered customer support agent for Thai SMEs on LINE/Shopee/Lazada. ZWIZ.AI and Oho Chat are keyword-based (you write IF-THEN rules). Zendesk/Amity are enterprise-priced. The middle ground — real AI at SME prices — is empty.</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Revenue Math</h3>
+        <ul>
+          <li>2,000 sellers × ฿999/mo = ฿24M/yr</li>
+          <li>+ 300 Business × ฿2,499/mo = ฿9M/yr</li>
+          <li>+ 30 Enterprise × ฿9,999/mo = ฿3.6M/yr</li>
+          <li>Total: ฿36.6M ($1.14M) ✅</li>
+          <li>Need only 0.4% of Shopee's 500K Thai sellers + other platforms</li>
+          <li>Time to first $: 2-4 weeks (free trial in Shopee seller Facebook groups → paid conversion)</li>
+          <li>Distribution: Shopee/Lazada seller Facebook groups (100K+ members), YouTube tutorials, referral program</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Risks</h3>
+        <ul>
+          <li><strong>MEDIUM-HIGH:</strong> Shopee/Lazada building native AI chat features — both platforms investing heavily in seller tools and AI</li>
+          <li><strong>MEDIUM:</strong> ZWIZ.AI adding LLM capabilities — they already have distribution (Thai SME market)</li>
+          <li><strong>MEDIUM:</strong> Thai SME price sensitivity — ฿999/mo still feels expensive for micro-sellers (mitigate: free tier with limited conversations)</li>
+          <li><strong>MEDIUM:</strong> AI hallucination risk — wrong product info or pricing could damage seller reputation (mitigate: strict grounding, human approval for sensitive topics)</li>
+          <li><strong>LOW:</strong> LLM API costs — Gemini Flash is cheap enough for profitable unit economics at ฿999/mo</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <div class="research-highlight">
+          <h3>Score: 36/50 ✅ PASS</h3>
+        </div>
+      </div>
+      <div class="research-section">
+        <h3>Scoring Breakdown</h3>
+        <ul>
+          <li><strong>Market Potential: 8/10</strong> — 500K+ sellers on Shopee alone, $30B e-commerce market, $21B global CS software market</li>
+          <li><strong>Problem Severity: 8/10</strong> — Sellers spend 3-5 hrs/day on repetitive questions, lose 40% of after-hours sales, CS staff costs ฿15-25K/mo</li>
+          <li><strong>Competition Gap: 7/10</strong> — Zero LLM-powered Thai CS agent at SME prices. But ZWIZ.AI could add AI, and platforms could build native tools</li>
+          <li><strong>Build Feasibility: 8/10</strong> — LINE/FB/Shopee APIs + Gemini Flash, well-defined use case, 2-3 week MVP</li>
+          <li><strong>Our Advantage: 5/10</strong> — Thai-first + LLM-native + affordable pricing. CTO background helps with API integrations. But no CS/e-commerce domain expertise</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Key Insight</h3>
+        <p>The timing is perfect. LLMs just became good enough AND cheap enough (Gemini Flash: essentially free for Thai text) to power real conversational AI for customer support. Before 2024, building this was impossible — you'd need millions in AI training. Now, any developer can build an AI agent that understands Thai context and handles multi-turn conversations naturally. The Thai chatbot market (ZWIZ.AI, Oho Chat) is stuck in the keyword-matching era because they were built pre-LLM. MuteDesk leapfrogs them entirely. The ROI pitch is dead simple: "You pay a CS staff ฿20K/month to answer 'ส่งกี่วันคะ?' 500 times. MuteDesk does it for ฿999/month, 24/7, across all your channels." That's a 20x cost saving that pays for itself in the first day.</p>
+      </div>
+      <div class="research-section">
+        <h3>Honest Assessment</h3>
+        <p>Score of 36/50 is strong. Market (8) and Problem (8) are the best dimensions — the pain is universal and severe among Thai e-commerce sellers. Build Feasibility (8) is high because LLM APIs and messaging platform integrations are mature. The Competition Gap (7) is good but not unassailable — ZWIZ.AI has distribution and could bolt on LLM features, and Shopee/Lazada are investing in native AI tools. Our Advantage (5) is the weakest dimension — we don't have e-commerce domain expertise or existing seller relationships. The biggest strategic risk: platform lock-in. If Shopee builds great native AI chat, 500K sellers get it for free. However, MuteDesk's multi-channel value (LINE + FB + Shopee + Lazada in one dashboard) is something no single platform will provide.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setLang(l) {
+    document.body.classList.toggle('show-th', l === 'th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === l.toUpperCase()));
+    localStorage.setItem('lang', l);
+  }
+  const saved = localStorage.getItem('lang');
+  if (saved) setLang(saved);
+</script>
+</body>
+</html>
