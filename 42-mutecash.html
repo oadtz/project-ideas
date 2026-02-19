@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCash — AI Accounts Receivable & Payment Collection Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.gold {
+    background: var(--secondary-pale); border-color: rgba(245,158,11,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .green { color: var(--primary); }
+  .hero h1 .gold { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.gold { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .green { color: var(--primary); }
+  .stat-num .gold { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .green { color: var(--primary); }
+  .cta-title .gold { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  .research-btn {
+    position: fixed;
+    bottom: 2rem; right: 2rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #0a0a0f;
+    border: none; border-radius: 980px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    transition: all 0.3s;
+  }
+  .research-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(16,185,129,0.4); }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px);
+    overflow-y: auto; padding: 2rem;
+  }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content {
+    background: #16162a;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative; margin: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1.5rem;
+    color: var(--muted); background: var(--surface2);
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .research-modal-close:hover { background: var(--surface3); color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative;
+  }
+  .research-modal-header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 20px 20px 0 0;
+  }
+  .research-modal-header h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0;
+  }
+  .research-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); background: var(--primary-pale);
+    padding: 0.3rem 0.8rem; border-radius: 980px;
+    border: 1px solid rgba(16,185,129,0.2);
+    width: fit-content; font-weight: 600;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .research-section p, .research-section ul {
+    color: var(--text2); font-size: 0.88rem; line-height: 1.65; margin: 0;
+  }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.4rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+  }
+  .research-highlight h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--primary) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">💸</div>
+        <span>MuteCash</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">3.2M SMEs · ฿2.5T receivables</span>
+        <span class="th">3.2 ล้าน SME · ลูกหนี้การค้า ฿2.5T</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 42</span>
+        <span class="th">ไอเดีย 42</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        💸 <span class="en">IDEA 42 — MUTECASH · AI ACCOUNTS RECEIVABLE</span><span class="th">ไอเดีย 42 — MUTECASH · AI เก็บเงิน</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="green">Collects Your Money</span><br>So <span class="gold">You Don't Have To</span></span>
+        <span class="th">AI <span class="green">เก็บเงินให้</span><br><span class="gold">ไม่ต้องทวงเอง</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered accounts receivable agent</strong> that automates invoice follow-up, payment reminders, and debt collection via LINE, email, and SMS. Thai SMEs lose ฿hundreds of billions yearly to late payments — MuteCash gets your money back, automatically.</span>
+        <span class="th"><strong>AI เก็บเงินอัตโนมัติ</strong> ที่ส่ง follow-up ใบแจ้งหนี้ แจ้งเตือนชำระเงิน และทวงหนี้ผ่าน LINE อีเมล และ SMS SME ไทยสูญเสียเงินหลายแสนล้านต่อปีจากการจ่ายเงินล่าช้า MuteCash เอาเงินคืนให้คุณ อัตโนมัติ</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">37/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 37/50 — PASS</strong>
+              <span class="en">High-ticket B2B with clear ROI</span>
+              <span class="th">B2B มูลค่าสูง ROI ชัดเจน</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num gold">3.2M</div>
+            <div class="score-meta">
+              <strong>🇹🇭 Thai SMEs</strong>
+              <span class="en">97% of all Thai businesses are SMEs</span>
+              <span class="th">97% ของธุรกิจไทยเป็น SME</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Window -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        MuteCash — <span class="en">AI Collection Dashboard</span><span class="th">แดชบอร์ด AI ทวงเงิน</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📤</div>
+          <div class="tc-name"><span class="en">INVOICES SENT</span><span class="th">ใบแจ้งหนี้ที่ส่ง</span></div>
+          <div class="tc-value">1,247</div>
+          <div class="tc-sub"><span class="en">Auto-generated from your data</span><span class="th">สร้างอัตโนมัติจากข้อมูลคุณ</span></div>
+          <div class="tc-badge">✓ <span class="en">LINE + Email</span><span class="th">LINE + อีเมล</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">💰</div>
+          <div class="tc-name"><span class="en">COLLECTED</span><span class="th">เก็บได้แล้ว</span></div>
+          <div class="tc-value">฿2.4M</div>
+          <div class="tc-sub"><span class="en">Recovered this month</span><span class="th">เก็บได้เดือนนี้</span></div>
+          <div class="tc-badge gold">↑ 340% <span class="en">vs manual</span><span class="th">เทียบทำเอง</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">⏱️</div>
+          <div class="tc-name"><span class="en">AVG DSO</span><span class="th">วันเฉลี่ยเก็บเงิน</span></div>
+          <div class="tc-value">28 days</div>
+          <div class="tc-sub"><span class="en">Down from 67 days</span><span class="th">ลดจาก 67 วัน</span></div>
+          <div class="tc-badge">↓ 58% <span class="en">faster</span><span class="th">เร็วขึ้น</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">💸 AI Collection Pipeline</span><span class="th">💸 ขั้นตอน AI ทวงเงิน</span></span>
+          <span style="color:var(--primary);">Polite → Firm → Escalate ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:92%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Invoice</span><span class="th">แจ้งหนี้</span> ✓</span>
+          <span><span class="en">Reminder</span><span class="th">แจ้งเตือน</span> ✓</span>
+          <span><span class="en">Follow-up</span><span class="th">ติดตาม</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Escalate</span><span class="th">ยกระดับ</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏢</div>
+      <div class="stat-num"><span class="green">3.2M</span></div>
+      <div class="stat-label">
+        <span class="en">Registered SMEs in Thailand (97% of all businesses). Most have NO automated AR process — just manual LINE chats and phone calls.</span>
+        <span class="th">SME จดทะเบียนในไทย (97% ของธุรกิจทั้งหมด) ส่วนใหญ่ไม่มีระบบ AR อัตโนมัติ — แค่ LINE กับโทรเอง</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💸</div>
+      <div class="stat-num"><span class="gold">฿2.5T</span></div>
+      <div class="stat-label">
+        <span class="en">Estimated outstanding trade receivables across Thai SME sector. Average payment delay: 45-90 days. Cash flow #1 killer of SMEs.</span>
+        <span class="th">ลูกหนี้การค้าค้างชำระโดยประมาณใน SME ไทย จ่ายช้าเฉลี่ย 45-90 วัน กระแสเงินสด = ฆาตกรอันดับ 1 ของ SME</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📉</div>
+      <div class="stat-num"><span class="green">37%</span></div>
+      <div class="stat-label">
+        <span class="en">Of Thai SMEs report cash flow problems from late payments as their #1 business challenge (SME survey data). Every day late = money lost.</span>
+        <span class="th">ของ SME ไทยรายงานปัญหากระแสเงินสดจากจ่ายช้าเป็นปัญหาอันดับ 1 ทุกวันที่ช้า = เสียเงิน</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌍</div>
+      <div class="stat-num"><span class="gold">$5.8B</span></div>
+      <div class="stat-label">
+        <span class="en">Global restaurant management software market by 2030 (17.4% CAGR). AR automation is a subset growing even faster — $3B+ and 12%+ CAGR.</span>
+        <span class="th">ตลาดซอฟต์แวร์จัดการร้านอาหารโลกปี 2030 AR automation เป็น subset ที่โตเร็วกว่า — $3B+ CAGR 12%+</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">Upload invoices. AI collects. You get paid.</span>
+      <span class="th">อัพโหลดใบแจ้งหนี้ AI ทวง คุณได้เงิน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">MuteCash connects to your accounting software (FlowAccount, PEAK, Excel) and automatically manages your entire collection process — from friendly reminders to firm escalation.</span>
+      <span class="th">MuteCash เชื่อมต่อกับซอฟต์แวร์บัญชีของคุณ (FlowAccount, PEAK, Excel) และจัดการกระบวนการทวงเงินทั้งหมดอัตโนมัติ — ตั้งแต่แจ้งเตือนสุภาพถึงทวงจริงจัง</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📊</div>
+        <div class="wf-title">
+          <span class="en">Import Invoices</span>
+          <span class="th">นำเข้าใบแจ้งหนี้</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Connect FlowAccount, PEAK, or upload Excel/CSV. AI scans all outstanding receivables and prioritizes by amount, days overdue, and risk score.</span>
+          <span class="th">เชื่อมต่อ FlowAccount, PEAK หรืออัพโหลด Excel/CSV AI สแกนลูกหนี้ทั้งหมดและจัดลำดับตามยอด วันค้าง และความเสี่ยง</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title">
+          <span class="en">AI Sends Reminders</span>
+          <span class="th">AI ส่งแจ้งเตือน</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Polite, professional messages via LINE, email, and SMS. AI adjusts tone based on how overdue — friendly at 7 days, firm at 30, serious at 60+.</span>
+          <span class="th">ข้อความสุภาพ มืออาชีพ ผ่าน LINE อีเมล SMS AI ปรับน้ำเสียงตามค้างชำระ — สุภาพ 7 วัน จริงจัง 30 วัน เข้มข้น 60+ วัน</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">💬</div>
+        <div class="wf-title">
+          <span class="en">Negotiate & Track</span>
+          <span class="th">เจรจาและติดตาม</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI handles objections, offers payment plans, and tracks every promise-to-pay. If debtor responds on LINE, AI negotiates in natural Thai 24/7.</span>
+          <span class="th">AI จัดการข้อโต้แย้ง เสนอแผนผ่อนชำระ ติดตามทุกสัญญาจ่าย หากลูกหนี้ตอบใน LINE, AI เจรจาเป็นภาษาไทยธรรมชาติ 24/7</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_04</div>
+        <div class="wf-icon">⚖️</div>
+        <div class="wf-title">
+          <span class="en">Escalate if Needed</span>
+          <span class="th">ยกระดับถ้าจำเป็น</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Auto-generate formal demand letters. Connect to licensed collection agencies and legal partners. You approve — AI executes.</span>
+          <span class="th">สร้างจดหมายทวงถามอัตโนมัติ เชื่อมต่อบริษัทติดตามหนี้และที่ปรึกษากฎหมาย คุณอนุมัติ — AI ทำ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteCash -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบ</span></div>
+    <div class="section-title">
+      <span class="en">Zero AI AR collection tools exist in Thailand</span>
+      <span class="th">ยังไม่มี AI เก็บเงินอัตโนมัติในไทย</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">FlowAccount does accounting. PEAK does accounting. Nobody does AI-powered collection. That's the gap — the ฿2.5T gap.</span>
+      <span class="th">FlowAccount ทำบัญชี PEAK ทำบัญชี ไม่มีใครทำ AI เก็บเงิน นี่คือช่องว่าง — ช่องว่าง ฿2.5T</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">💰</div>
+        <div class="why-panel-title">
+          <span class="en">ROI You Can Prove in 1 Month</span>
+          <span class="th">ROI พิสูจน์ได้ใน 1 เดือน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">If MuteCash recovers just ONE late invoice of ฿50,000, that's 33x ROI on a ฿1,499/mo subscription. The easiest product to sell — "I'll get your money back."</span>
+          <span class="th">ถ้า MuteCash เก็บเงินค้างได้แค่ 1 ใบ ฿50,000 นั่นคือ ROI 33 เท่าจากค่าสมาชิก ฿1,499/เดือน ผลิตภัณฑ์ขายง่ายสุด "เอาเงินคืนให้"</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE-Native = Thai Business Reality</span>
+          <span class="th">LINE-Native = ความจริงธุรกิจไทย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai businesses communicate on LINE. Not email. Global AR tools (Chaser, Gaviti, Tesorio) are email-first — useless in Thailand. MuteCash is LINE-first. That's the moat.</span>
+          <span class="th">ธุรกิจไทยสื่อสารบน LINE ไม่ใช่อีเมล เครื่องมือ AR ต่างชาติ (Chaser, Gaviti, Tesorio) ใช้อีเมลเป็นหลัก ไม่เวิร์คในไทย MuteCash เป็น LINE-first นี่คือ moat</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🤖</div>
+        <div class="why-panel-title">
+          <span class="en">AI Replaces ฿25K+/mo Staff Cost</span>
+          <span class="th">AI แทนค่าพนักงาน ฿25K+/เดือน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Most SMEs have 1 staff doing AR follow-up part-time. That's ฿15-25K/mo in salary for inconsistent results. MuteCash at ฿1,499/mo works 24/7, never forgets, never emotional.</span>
+          <span class="th">SME ส่วนใหญ่มีพนักงาน 1 คนทำ AR part-time ค่าเงินเดือน ฿15-25K/เดือน ผลไม่สม่ำเสมอ MuteCash ฿1,499/เดือน ทำงาน 24/7 ไม่ลืม ไม่อารมณ์</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🔗</div>
+        <div class="why-panel-title">
+          <span class="en">Integrates with What They Already Use</span>
+          <span class="th">เชื่อมต่อกับสิ่งที่ใช้อยู่แล้ว</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">FlowAccount (130K+ businesses), PEAK, Excel. No new workflow to learn — MuteCash plugs in and starts collecting. Zero friction adoption.</span>
+          <span class="th">FlowAccount (130K+ ธุรกิจ), PEAK, Excel ไม่ต้องเรียนรู้ workflow ใหม่ MuteCash เสียบปลั๊กแล้วเก็บเงินเลย ไม่มีแรงเสียดทาน</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">SaaS subscription + success fees</span>
+      <span class="th">SaaS สมาชิกรายเดือน + ค่าความสำเร็จ</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Monthly subscription for automation. Success fee on recovered overdue amounts. The more money we collect, the more we earn. Aligned incentives.</span>
+      <span class="th">สมาชิกรายเดือนสำหรับระบบอัตโนมัติ ค่าความสำเร็จจากยอดที่เก็บได้ ยิ่งเก็บเงินได้มาก ยิ่งได้รับมาก แรงจูงใจตรงกัน</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>$1M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿36M</div>
+          <div class="rh-sub">
+            <span class="en">ARR with 2,000 SMEs (~$1.12M)</span>
+            <span class="th">ARR จาก 2,000 SME (~$1.12M)</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Need only 0.06% of 3.2M Thai SMEs<br>Month 3: 50 pilot SMEs (free trial)<br>Month 6: 300 paying, ฿5.4M ARR<br>Month 12: 1,000 paying, ฿18M ARR<br>Month 18: 2,000 paying = ฿36M ARR</span>
+            <span class="th">ต้องการแค่ 0.06% ของ SME ไทย 3.2 ล้านราย<br>เดือน 3: 50 SME ทดลอง (ฟรี)<br>เดือน 6: 300 จ่ายเงิน, ฿5.4M ARR<br>เดือน 12: 1,000 จ่ายเงิน, ฿18M ARR<br>เดือน 18: 2,000 จ่ายเงิน = ฿36M ARR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🆓</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc">
+            <span class="en">Up to 20 invoices/month. Basic LINE reminders. Dashboard. Perfect for freelancers and micro-businesses.</span>
+            <span class="th">สูงสุด 20 ใบแจ้งหนี้/เดือน แจ้งเตือน LINE พื้นฐาน แดชบอร์ด เหมาะสำหรับฟรีแลนซ์และธุรกิจขนาดเล็ก</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿499/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(16,185,129,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">⭐</div>
+          <div class="rt-label" style="color:var(--primary-light);">Business ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Unlimited invoices. AI negotiation. Multi-channel (LINE + email + SMS). Payment plan offers. Analytics dashboard. Core revenue driver.</span>
+            <span class="th">ใบแจ้งหนี้ไม่จำกัด AI เจรจา หลายช่องทาง (LINE + อีเมล + SMS) เสนอผ่อนชำระ แดชบอร์ดวิเคราะห์ แกนหลักรายได้</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿1,499/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc">
+            <span class="en">Custom integrations. API access. Legal escalation pipeline. Dedicated account manager. White-label option.</span>
+            <span class="th">เชื่อมต่อเฉพาะ API access ยกระดับทางกฎหมาย ผู้จัดการบัญชีเฉพาะ ตัวเลือก white-label</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿4,999/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🎯</div>
+          <div class="rt-label">Success Fee</div>
+          <div class="rt-desc">
+            <span class="en">Optional: 2-5% of overdue amounts recovered over 60 days. Aligned incentives — we only earn when you get paid.</span>
+            <span class="th">ทางเลือก: 2-5% ของยอดค้างเกิน 60 วันที่เก็บได้ แรงจูงใจตรงกัน — เราได้เงินเมื่อคุณได้เงิน</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">2-5%</div>
+            <div class="rt-note"><span class="en">of recovered</span><span class="th">ของยอดเก็บได้</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From MVP to 2,000 SMEs in 18 months</span>
+      <span class="th">จาก MVP สู่ 2,000 SME ใน 18 เดือน</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">💸 MuteCash — Milestone Timeline</span>
+          <span class="th">💸 MuteCash — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">$1M ARR target · Month 18</span>
+          <span class="th">เป้า $1M ARR · เดือนที่ 18</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–3 · MVP + PILOT</span>
+            <span class="th">เดือน 1–3 · MVP + ทดลอง</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Build core AI collection engine + LINE integration</span>
+            <span class="th">สร้างระบบ AI ทวงเงินหลัก + เชื่อมต่อ LINE</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">AI reminder engine (polite→firm→serious). LINE Messaging API integration. Excel/CSV import. Dashboard. 50 pilot SMEs (free 30-day trial). Prove collection rate improvement.</span>
+            <span class="th">ระบบแจ้งเตือน AI (สุภาพ→จริงจัง→เข้มข้น) เชื่อมต่อ LINE Messaging API นำเข้า Excel/CSV แดชบอร์ด 50 SME ทดลอง (ฟรี 30 วัน) พิสูจน์อัตราเก็บเงินที่ดีขึ้น</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Month 1-3</div>
+          <div class="roadmap-metric">50 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 4–6 · GROW + INTEGRATE</span>
+            <span class="th">เดือน 4–6 · เติบโต + เชื่อมต่อ</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">FlowAccount/PEAK integration + AI negotiation</span>
+            <span class="th">เชื่อมต่อ FlowAccount/PEAK + AI เจรจา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Direct integration with FlowAccount API and PEAK. AI negotiation chatbot on LINE (handles responses, offers payment plans). SMS channel. Convert pilots to paid. Target: 300 paying SMEs.</span>
+            <span class="th">เชื่อมต่อ API FlowAccount และ PEAK โดยตรง AI chatbot เจรจาบน LINE (จัดการตอบกลับ เสนอผ่อนชำระ) ช่อง SMS แปลงทดลองเป็นจ่ายเงิน เป้า: 300 SME จ่ายเงิน</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Month 4-6</div>
+          <div class="roadmap-metric">300 paid</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 7–12 · SCALE</span>
+            <span class="th">เดือน 7–12 · ขยาย</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Success fee model + legal escalation pipeline</span>
+            <span class="th">โมเดลค่าความสำเร็จ + ยกระดับทางกฎหมาย</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add success fee revenue stream. Partner with licensed collection agencies and law firms for escalation. Expand to medium enterprises. Target: 1,000 paying SMEs = ฿18M ARR.</span>
+            <span class="th">เพิ่มรายได้ค่าความสำเร็จ พาร์ทเนอร์กับบริษัทติดตามหนี้และสำนักงานกฎหมาย ขยายสู่ธุรกิจขนาดกลาง เป้า: 1,000 SME จ่ายเงิน = ฿18M ARR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Month 7-12</div>
+          <div class="roadmap-metric">฿18M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 13–18 · $1M TARGET</span>
+            <span class="th">เดือน 13–18 · เป้า $1M</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Enterprise tier + regional expansion</span>
+            <span class="th">ระดับ Enterprise + ขยายภูมิภาค</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">White-label for banks and accounting firms. Expand to SEA markets (Vietnam, Indonesia — same late payment problem). 2,000 paying SMEs + enterprise = ฿36M ARR ≈ $1.12M.</span>
+            <span class="th">White-label สำหรับธนาคารและสำนักงานบัญชี ขยายสู่ SEA (เวียดนาม อินโดนีเซีย — ปัญหาจ่ายช้าเหมือนกัน) 2,000 SME + enterprise = ฿36M ARR ≈ $1.12M</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Month 13-18</div>
+          <div class="roadmap-metric">$1.12M ARR</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">💸 <span class="en">MUTECASH · IDEA #42</span><span class="th">MUTECASH · ไอเดีย #42</span></div>
+    <div class="cta-title">
+      <span class="en">Stop Losing Money to<br><span class="green">Late Payments</span></span>
+      <span class="th">หยุดเสียเงินจาก<br><span class="green">การจ่ายเงินล่าช้า</span></span>
+    </div>
+    <p class="cta-sub">
+      <span class="en">AI that gets your money back. Automatically. 24/7. On LINE.</span>
+      <span class="th">AI ที่เอาเงินคืนให้คุณ อัตโนมัติ 24/7 บน LINE</span>
+    </p>
+  </div>
+</div>
+
+<!-- Research Modal Button -->
+<button class="research-btn" onclick="document.getElementById('researchModal').classList.add('active');">
+  📊 <span class="en">Full Research</span><span class="th">งานวิจัยเต็ม</span>
+</button>
+
+<!-- Research Modal -->
+<div id="researchModal" class="research-modal" onclick="if(event.target===this)this.classList.remove('active');">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="document.getElementById('researchModal').classList.remove('active');">✕</button>
+    <div class="research-modal-header">
+      <div class="research-badge">IDEA #42 · Score 37/50 · PASS ✅</div>
+      <h2>MuteCash — AI Accounts Receivable & Payment Collection Agent</h2>
+    </div>
+    <div class="research-modal-body">
+      <div class="research-section">
+        <h3>Market Data</h3>
+        <ul>
+          <li>Thailand has 3.2M+ registered SMEs (97% of all businesses)</li>
+          <li>Estimated ฿2.5T+ in outstanding trade receivables across SME sector</li>
+          <li>Average payment delay for Thai SMEs: 45-90 days (DSO)</li>
+          <li>37% of Thai SMEs cite cash flow from late payments as #1 challenge</li>
+          <li>Global AR automation market: ~$3B (2025), growing 12%+ CAGR</li>
+          <li>Global restaurant management software: $5.79B (2024) → $14.7B by 2030 (17.4% CAGR)</li>
+          <li>Collection agencies in Thailand charge 25-50% commission on recovered amounts</li>
+          <li>Average Thai SME accounting staff salary: ฿15-25K/mo</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Competition Analysis</h3>
+        <ul>
+          <li><strong>Global AR automation:</strong> Chaser (UK), Gaviti, Tesorio, YayPay/Quadient, Invoiced — ALL email-first, US/EU focused, no Thai/LINE support</li>
+          <li><strong>Thai accounting software:</strong> FlowAccount (130K+ businesses, ฿165-249/mo), PEAK — accounting only, no AR collection automation</li>
+          <li><strong>Thai collection agencies:</strong> JMT Network Services (largest, listed SET), Bangkok Collection Center — traditional human-heavy, expensive (25-50% commission)</li>
+          <li><strong>Gap:</strong> ZERO AI-powered, LINE-native AR collection tool in Thailand. The intersection of AI + LINE + Thai language + automated collection = completely empty.</li>
+          <li><strong>Global competitors won't enter easily:</strong> Thai business communication is LINE-first, not email-first. Cultural nuances in Thai debt negotiation. Thai legal frameworks for collection differ.</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Revenue Math</h3>
+        <ul>
+          <li>2,000 SMEs × ฿1,499/mo (blended average) = ฿36M/yr ≈ $1.12M</li>
+          <li>Need only 0.06% of 3.2M Thai SMEs — very achievable</li>
+          <li>Success fee revenue (2-5% on 60+ day overdue): additional ฿6-12M/yr</li>
+          <li>Time to first $: 30-45 days (pilot → paid conversion)</li>
+          <li>Distribution: FlowAccount partnership (130K businesses), accounting firm partnerships, Facebook/LINE Ads to SME owners</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Risks</h3>
+        <ul>
+          <li><strong>MEDIUM:</strong> Debt Collection Act B.E. 2558 (2015) — regulates collection practices in Thailand. Must comply with contact hours, language restrictions, and privacy rules. Mitigate: position as "AR automation" not "debt collection," partner with licensed agencies for escalation.</li>
+          <li><strong>MEDIUM:</strong> FlowAccount/PEAK could build AR features. Mitigate: first-mover advantage, AI depth, collection specialization.</li>
+          <li><strong>LOW-MEDIUM:</strong> Thai SMEs' willingness to pay for SaaS (price-sensitive market). Mitigate: free trial proves ROI immediately, ฿1,499/mo is 1/10th of one recovered invoice.</li>
+          <li><strong>LOW:</strong> AI quality in Thai negotiation. Mitigate: Gemini Pro handles Thai well, can fine-tune with collection conversation data.</li>
+        </ul>
+      </div>
+      <div class="research-section">
+        <h3>Scoring Breakdown</h3>
+        <ul>
+          <li>Market Potential: <strong>8/10</strong> — 3.2M SMEs, ฿2.5T+ in receivables, $3B global AR market</li>
+          <li>Problem Severity: <strong>8/10</strong> — Cash flow kills SMEs. Late payment is existential threat. #1 reported challenge.</li>
+          <li>Competition Gap: <strong>7/10</strong> — Zero AI+LINE AR tools in Thailand, but FlowAccount could add features</li>
+          <li>Build Feasibility: <strong>7/10</strong> — LINE API + AI + accounting integrations. Well-defined logic. MVP in 3-4 weeks.</li>
+          <li>Our Advantage: <strong>7/10</strong> — Thai-first + LINE-native + AI 24/7. CTO background = API integration expertise. Builds on FlowAccount ecosystem.</li>
+        </ul>
+      </div>
+      <div class="research-highlight">
+        <h3>Total Score: 37/50 ✅ PASS</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>
