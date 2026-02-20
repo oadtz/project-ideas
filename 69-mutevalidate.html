@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteValidate — AI Idea-to-Revenue Validation Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .gold { color: var(--primary); }
+  .cta-sub {
+    font-size: 1rem; color: var(--muted); line-height: 1.7;
+    max-width: 550px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 0 1.25rem; }
+    .token-grid, .stats-row { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .revenue-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2rem; }
+    .section-title { font-size: 1.6rem; }
+    .cta-title { font-size: 1.8rem; }
+    .cta-wrap { padding: 2.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← ALL IDEAS</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">M</div>
+        <span class="en">MuteValidate</span>
+        <span class="th">MuteValidate</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span class="en">IDEA #69</span>
+      <span class="th">ไอเดีย #69</span>
+      <span class="topbar-badge">
+        <span class="en">IDEA-TO-EXECUTION</span>
+        <span class="th">ไอเดียสู่การลงมือทำ</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="en">🚀 OUR OWN PAIN POINT — META OPPORTUNITY</span>
+        <span class="th">🚀 ปัญหาที่เราเจอเอง — โอกาสระดับ Meta</span>
+      </div>
+      <h1>
+        <span class="en"><span class="gold">MuteValidate</span> — AI Idea-to-Revenue <span class="purple">Validation Engine</span></span>
+        <span class="th"><span class="gold">MuteValidate</span> — AI เปลี่ยนไอเดีย<span class="purple">เป็นรายได้</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI agent that takes a raw business idea and delivers a <strong>complete validation package in 30 minutes</strong>: market sizing, competitor analysis, revenue model, landing page, and go/no-go score. What takes founders weeks of Googling, we do while they sleep. <strong>Your AI co-founder for Day 0.</strong></span>
+        <span class="th">AI agent ที่เปลี่ยนไอเดียดิบๆ เป็น <strong>ชุดวิเคราะห์ครบภายใน 30 นาที</strong>: ขนาดตลาด คู่แข่ง revenue model, landing page, คะแนน go/no-go สิ่งที่ founder ใช้เวลาหลายสัปดาห์ค้น Google เราทำให้ตอนนอนหลับ <strong>AI co-founder สำหรับวันที่ 0</strong></span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <span class="score-num">35</span>
+          <div class="score-meta">
+            <strong><span class="en">Validation Score</span><span class="th">คะแนนวิเคราะห์</span></strong>
+            <span class="en">out of 50</span><span class="th">จาก 50</span>
+          </div>
+        </div>
+        <div class="score-card">
+          <span class="score-num purple">8</span>
+          <div class="score-meta">
+            <strong><span class="en">Our Advantage</span><span class="th">ข้อได้เปรียบ</span></strong>
+            <span class="en">out of 10</span><span class="th">จาก 10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market Data Terminal -->
+  <div class="token-window">
+    <div class="token-titlebar">
+      <span class="tt-dot tt-close"></span>
+      <span class="tt-dot tt-min"></span>
+      <span class="tt-dot tt-max"></span>
+      <span class="tt-title">market_data_terminal.sh — MuteValidate Intelligence</span>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🌍</div>
+          <div class="tc-name">
+            <span class="en">BUSINESS PLAN SOFTWARE</span>
+            <span class="th">ซอฟต์แวร์แผนธุรกิจ</span>
+          </div>
+          <div class="tc-value">$4.9B</div>
+          <div class="tc-sub">
+            <span class="en">Market by 2030 (18% CAGR)</span>
+            <span class="th">ตลาดปี 2030 (CAGR 18%)</span>
+          </div>
+          <div class="tc-badge">GROWING FAST</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🧠</div>
+          <div class="tc-name">
+            <span class="en">AI AGENTS MARKET</span>
+            <span class="th">ตลาด AI Agents</span>
+          </div>
+          <div class="tc-value">$183B</div>
+          <div class="tc-sub">
+            <span class="en">by 2030 (from $7.6B, 2025)</span>
+            <span class="th">ปี 2030 (จาก $7.6B, 2025)</span>
+          </div>
+          <div class="tc-badge purple">24x GROWTH</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">💡</div>
+          <div class="tc-name">
+            <span class="en">NEW BUSINESSES/YR</span>
+            <span class="th">ธุรกิจใหม่/ปี</span>
+          </div>
+          <div class="tc-value">305M+</div>
+          <div class="tc-sub">
+            <span class="en">Global startups formed annually</span>
+            <span class="th">สตาร์ทอัพทั่วโลกเกิดใหม่ทุกปี</span>
+          </div>
+          <div class="tc-badge">INFINITE TAM</div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">VALIDATION PIPELINE</span><span class="th">สายงานวิเคราะห์</span></span>
+          <span><span class="en">30 MIN END-TO-END</span><span class="th">30 นาทีครบวงจร</span></span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:85%"></div></div>
+        <div class="chain-steps">
+          <span>IDEA INPUT</span>
+          <span>MARKET SCAN</span>
+          <span>COMPETITOR MAP</span>
+          <span>REVENUE MODEL</span>
+          <span>LANDING PAGE</span>
+          <span>GO/NO-GO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⏱️</div>
+      <div class="stat-num"><span class="gold">30</span>min</div>
+      <div class="stat-label">
+        <span class="en">Full validation from idea to decision. Founders spend 2-4 weeks doing this manually.</span>
+        <span class="th">วิเคราะห์ครบจากไอเดียถึงตัดสินใจ Founder ปกติใช้ 2-4 สัปดาห์</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🎯</div>
+      <div class="stat-num"><span class="gold">305</span>M+</div>
+      <div class="stat-label">
+        <span class="en">New businesses formed globally each year. Every one needs validation.</span>
+        <span class="th">ธุรกิจใหม่ทั่วโลกทุกปี ทุกรายต้องวิเคราะห์</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💸</div>
+      <div class="stat-num">$<span class="purple">4.9</span>B</div>
+      <div class="stat-label">
+        <span class="en">Business planning software market by 2030. AI disruption wave incoming.</span>
+        <span class="th">ตลาดซอฟต์แวร์วางแผนธุรกิจปี 2030 คลื่น AI กำลังมา</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="gold">90</span>%</div>
+      <div class="stat-label">
+        <span class="en">Startups fail. Most skip proper validation. This solves that.</span>
+        <span class="th">สตาร์ทอัพล้มเหลว ส่วนใหญ่ข้ามการวิเคราะห์ นี่แก้ปัญหานั้น</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">⚡ HOW IT WORKS</span>
+      <span class="th">⚡ ทำงานอย่างไร</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">From "I have an idea" to "here's the data" — in 30 minutes</span>
+      <span class="th">จาก "มีไอเดีย" สู่ "นี่ข้อมูล" — ภายใน 30 นาที</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">AI agents research, analyze, and package everything a founder needs to make a go/no-go decision. No more weeks of Googling.</span>
+      <span class="th">AI agents ค้นคว้า วิเคราะห์ และรวบรวมทุกอย่างที่ founder ต้องการเพื่อตัดสินใจ ไม่ต้อง Google เป็นสัปดาห์อีกต่อไป</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP 01</div>
+        <div class="wf-icon">💬</div>
+        <div class="wf-title">
+          <span class="en">Describe Your Idea</span>
+          <span class="th">อธิบายไอเดียของคุณ</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Just tell the AI your idea in plain language. "I want to build an AI pet food advisor for Thailand." That's all you need.</span>
+          <span class="th">แค่บอก AI ด้วยภาษาง่ายๆ "อยากสร้าง AI แนะนำอาหารสัตว์เลี้ยงสำหรับไทย" แค่นี้พอ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP 02</div>
+        <div class="wf-icon">🔬</div>
+        <div class="wf-title">
+          <span class="en">AI Deep Research</span>
+          <span class="th">AI วิจัยเชิงลึก</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI agents simultaneously research market size, competitors, pricing, pain points, distribution channels, and risks. Real data, not guesses.</span>
+          <span class="th">AI agents ค้นคว้าพร้อมกัน: ขนาดตลาด คู่แข่ง ราคา pain points ช่องทาง ความเสี่ยง ข้อมูลจริง ไม่ใช่เดา</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP 03</div>
+        <div class="wf-icon">📊</div>
+        <div class="wf-title">
+          <span class="en">Validation Package</span>
+          <span class="th">ชุดวิเคราะห์</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Get a complete report: /50 score, competitor map, revenue model, risk analysis, pitch deck landing page, and actionable next steps.</span>
+          <span class="th">ได้รายงานครบ: คะแนน /50, แผนที่คู่แข่ง, revenue model, วิเคราะห์ความเสี่ยง, landing page, และขั้นตอนต่อไป</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why This Works -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">🎯 WHY THIS WORKS</span>
+      <span class="th">🎯 ทำไมถึงใช้ได้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">We built this for ourselves first</span>
+      <span class="th">เราสร้างให้ตัวเองก่อน</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">MuteValidate was born from our own sprint: 69 ideas researched, scored, and validated by AI agents in 48 hours. Now we're productizing it.</span>
+      <span class="th">MuteValidate เกิดจาก sprint ของเราเอง: 69 ไอเดียถูกค้นคว้า ให้คะแนน และวิเคราะห์โดย AI agents ใน 48 ชั่วโมง ตอนนี้เราทำเป็นผลิตภัณฑ์</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🍽️</div>
+        <div class="why-panel-title">
+          <span class="en">We Eat Our Own Dogfood</span>
+          <span class="th">เราใช้เองก่อนขาย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">This cron job IS MuteValidate v0. We've processed 69 ideas with real market data, built 32+ landing pages, and made investment decisions from the output. It works.</span>
+          <span class="th">cron job นี้คือ MuteValidate v0 เราประมวลผล 69 ไอเดียด้วยข้อมูลตลาดจริง สร้าง 32+ landing pages และตัดสินใจลงทุนจากผลลัพธ์ มันใช้ได้จริง</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">⚡</div>
+        <div class="why-panel-title">
+          <span class="en">Speed as Moat</span>
+          <span class="th">ความเร็วคือปราการ</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Existing tools (ValidatorAI, IdeaBuddy, Bizplanr) offer one-shot questionnaire-style validation. MuteValidate runs autonomous AI agents that do REAL research — web scraping, competitor pricing, market reports — in minutes.</span>
+          <span class="th">เครื่องมือเดิม (ValidatorAI, IdeaBuddy, Bizplanr) ให้แบบสอบถามครั้งเดียว MuteValidate ใช้ AI agents อัตโนมัติค้นคว้าจริง — web scraping, ราคาคู่แข่ง, รายงานตลาด — ในไม่กี่นาที</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🏗️</div>
+        <div class="why-panel-title">
+          <span class="en">Beyond Validation — Execution</span>
+          <span class="th">ไม่ใช่แค่วิเคราะห์ — แต่ลงมือทำ</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">The real differentiator: we don't stop at "is this a good idea?" We generate a landing page, a waitlist, a pitch deck — the first steps of EXECUTION. Validation → Action in one flow.</span>
+          <span class="th">สิ่งที่แตกต่าง: เราไม่หยุดแค่ "นี่เป็นไอเดียดีไหม?" เราสร้าง landing page, waitlist, pitch deck — ก้าวแรกของการลงมือทำ วิเคราะห์ → Action ในครั้งเดียว</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🌏</div>
+        <div class="why-panel-title">
+          <span class="en">Global + Localized</span>
+          <span class="th">ทั่วโลก + Localize</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Unlike Western-focused tools, MuteValidate understands emerging markets — Thai, SEA, LatAm. Bilingual reports, local competitor analysis, region-specific market data.</span>
+          <span class="th">ต่างจากเครื่องมือที่เน้นตะวันตก MuteValidate เข้าใจ emerging markets — ไทย, SEA, LatAm รายงาน 2 ภาษา วิเคราะห์คู่แข่งท้องถิ่น ข้อมูลตลาดเฉพาะภูมิภาค</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Model -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">💰 REVENUE MODEL</span>
+      <span class="th">💰 โมเดลรายได้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Triple revenue stream</span>
+      <span class="th">รายได้ 3 ช่องทาง</span>
+    </h2>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">
+            <span class="en">TARGET MRR BY MONTH 12</span>
+            <span class="th">เป้า MRR เดือนที่ 12</span>
+          </div>
+          <div class="rh-title">
+            <span class="en">SaaS + Credits + Consulting</span>
+            <span class="th">SaaS + Credits + Consulting</span>
+          </div>
+          <div class="rh-num">฿2.5M</div>
+          <div class="rh-sub">
+            <span class="en">~$78K/month recurring revenue</span>
+            <span class="th">~$78K/เดือน รายได้ recurring</span>
+          </div>
+        </div>
+        <div class="rh-note">
+          <span class="en">Path: 200 Pro ($29/mo) + 50 Agency ($99/mo) + 10 Enterprise ($499/mo) + credit top-ups + consulting upsells = ฿2.5M+ MRR</span>
+          <span class="th">เส้นทาง: 200 Pro ($29/เดือน) + 50 Agency ($99/เดือน) + 10 Enterprise ($499/เดือน) + เครดิตเสริม + consulting = ฿2.5M+ MRR</span>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier">
+          <span class="rt-icon">🆓</span>
+          <span class="rt-label">FREE</span>
+          <span class="rt-desc">
+            <span class="en">1 validation/month, basic report, no landing page generation</span>
+            <span class="th">1 วิเคราะห์/เดือน, รายงานพื้นฐาน, ไม่มี landing page</span>
+          </span>
+          <div class="rt-price">
+            <div class="rt-amount">$0</div>
+            <div class="rt-note">forever</div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <span class="rt-icon">⚡</span>
+          <span class="rt-label">PRO</span>
+          <span class="rt-desc">
+            <span class="en">10 validations/mo, deep research, landing page, pitch deck, competitor matrix</span>
+            <span class="th">10 วิเคราะห์/เดือน, วิจัยเชิงลึก, landing page, pitch deck, เทียบคู่แข่ง</span>
+          </span>
+          <div class="rt-price">
+            <div class="rt-amount">$29/mo</div>
+            <div class="rt-note">~฿950</div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <span class="rt-icon">🏢</span>
+          <span class="rt-label">AGENCY</span>
+          <span class="rt-desc">
+            <span class="en">50 validations/mo, white-label reports, client dashboard, API access</span>
+            <span class="th">50 วิเคราะห์/เดือน, white-label, dashboard ลูกค้า, API</span>
+          </span>
+          <div class="rt-price">
+            <div class="rt-amount">$99/mo</div>
+            <div class="rt-note">~฿3,200</div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <span class="rt-icon">🏦</span>
+          <span class="rt-label">ENTERPRISE</span>
+          <span class="rt-desc">
+            <span class="en">Unlimited validations, custom scoring, incubator/accelerator integration, portfolio tracking</span>
+            <span class="th">ไม่จำกัดวิเคราะห์, คะแนนเฉพาะ, เชื่อม incubator/accelerator, ติดตาม portfolio</span>
+          </span>
+          <div class="rt-price">
+            <div class="rt-amount">$499/mo</div>
+            <div class="rt-note">~฿16,000</div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <span class="rt-icon">🪙</span>
+          <span class="rt-label">CREDITS</span>
+          <span class="rt-desc">
+            <span class="en">Pay-per-validation credits for casual users: $5/validation or $39 for 10-pack</span>
+            <span class="th">จ่ายต่อครั้ง: $5/วิเคราะห์ หรือ $39 สำหรับแพ็ค 10</span>
+          </span>
+          <div class="rt-price">
+            <div class="rt-amount">$5 each</div>
+            <div class="rt-note">~฿160</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">🗺️ EXECUTION ROADMAP</span>
+      <span class="th">🗺️ แผนปฏิบัติการ</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">From sprint to product in 4 weeks</span>
+      <span class="th">จาก sprint สู่ product ใน 4 สัปดาห์</span>
+    </h2>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span><span class="en">EXECUTION TIMELINE</span><span class="th">ไทม์ไลน์ปฏิบัติการ</span></span>
+        <span class="roadmap-tag">
+          <span class="en">4-WEEK MVP</span>
+          <span class="th">MVP 4 สัปดาห์</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2)">🔧</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">WEEK 1-2</div>
+          <div class="roadmap-title">
+            <span class="en">Productize the Sprint</span>
+            <span class="th">ทำ Sprint ให้เป็นสินค้า</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Wrap existing research pipeline into API. Web input form → AI agent orchestration → report generation. Deploy on Vercel/Railway.</span>
+            <span class="th">ห่อ pipeline วิจัยที่มีอยู่เป็น API ฟอร์มเว็บ → AI agent → สร้างรายงาน Deploy บน Vercel/Railway</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">2 WEEKS</div>
+          <div class="roadmap-metric">MVP</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--secondary-pale);border:1px solid rgba(139,92,246,0.2)">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">WEEK 3-4</div>
+          <div class="roadmap-title">
+            <span class="en">Launch on Product Hunt + IndieHackers</span>
+            <span class="th">Launch บน Product Hunt + IndieHackers</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Free tier with 1 validation/month to build user base. Content marketing: "We validated 69 ideas in 48 hours — here's what we found."</span>
+            <span class="th">ฟรีเทียร์ 1 วิเคราะห์/เดือนสร้างฐานผู้ใช้ Content: "เราวิเคราะห์ 69 ไอเดียใน 48 ชั่วโมง — นี่คือสิ่งที่เราพบ"</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">2 WEEKS</div>
+          <div class="roadmap-metric">LAUNCH</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2)">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">MONTH 2-3</div>
+          <div class="roadmap-title">
+            <span class="en">Scale & Monetize</span>
+            <span class="th">Scale & สร้างรายได้</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add Pro/Agency tiers, credit system, API for integrations. Target incubators and accelerators ($499/mo enterprise). Partnership with startup communities.</span>
+            <span class="th">เพิ่ม Pro/Agency, ระบบเครดิต, API เข้าหา incubator/accelerator ($499/เดือน) ร่วมมือกับชุมชน startup</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">8 WEEKS</div>
+          <div class="roadmap-metric">฿500K MRR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:var(--secondary-pale);border:1px solid rgba(139,92,246,0.2)">🌍</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">MONTH 6+</div>
+          <div class="roadmap-title">
+            <span class="en">Platform Play — Idea Marketplace</span>
+            <span class="th">Platform Play — ตลาดไอเดีย</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Validated ideas marketplace: connect ideas with builders/investors. "Airbnb for business ideas." Take 5-10% on deals. Revenue flywheel.</span>
+            <span class="th">ตลาดไอเดียที่ผ่านการวิเคราะห์: เชื่อมไอเดียกับ builder/investor "Airbnb ของไอเดียธุรกิจ" ค่าธรรมเนียม 5-10%</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">ONGOING</div>
+          <div class="roadmap-metric">฿2.5M MRR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">
+      <span class="en">✨ BORN FROM OUR OWN SPRINT</span>
+      <span class="th">✨ เกิดจาก SPRINT ของเราเอง</span>
+    </div>
+    <h2 class="cta-title">
+      <span class="en">Stop Googling.<br>Start <span class="gold">Validating.</span></span>
+      <span class="th">หยุด Google<br>เริ่ม<span class="gold">วิเคราะห์</span></span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">Every great business starts with a validated idea. MuteValidate turns gut feelings into data-driven decisions — in 30 minutes, not 30 days.</span>
+      <span class="th">ทุกธุรกิจที่ดีเริ่มจากไอเดียที่ผ่านการวิเคราะห์ MuteValidate เปลี่ยนความรู้สึกเป็นการตัดสินใจจากข้อมูล — ใน 30 นาที ไม่ใช่ 30 วัน</span>
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
