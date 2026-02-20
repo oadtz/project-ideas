@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCOD — AI COD Risk Scoring & Collection for Thai E-Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Header */
+  header {
+    padding: 6rem 0 4rem;
+    text-align: center;
+    position: relative;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border2);
+    padding: 0.35rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    color: var(--primary-light);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 1.5rem;
+  }
+  .badge::before { content: '📦'; }
+  h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+  h1 .highlight {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* Sections */
+  section { padding: 4rem 0; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--primary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin-top: 2rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.8rem;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(16,185,129,0.08);
+  }
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  .card p { color: var(--text2); font-size: 0.92rem; line-height: 1.7; }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin: 2rem 0;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2rem 0;
+    font-size: 0.9rem;
+  }
+  .data-table th {
+    background: var(--surface2);
+    color: var(--primary);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text2);
+  }
+  .data-table tr:hover td { background: var(--primary-pale); }
+
+  /* Score */
+  .score-section {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: 2rem 0;
+  }
+  .score-bar-container { margin: 0.8rem 0; }
+  .score-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.85rem; margin-bottom: 0.3rem;
+  }
+  .score-bar {
+    height: 8px;
+    background: var(--surface3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transition: width 1s ease;
+  }
+  .total-score {
+    font-size: 3.5rem;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    text-align: center;
+    margin: 1.5rem 0 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .score-verdict {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Risks */
+  .risk-item {
+    background: var(--surface);
+    border-left: 3px solid var(--red);
+    border-radius: 0 10px 10px 0;
+    padding: 1.2rem 1.5rem;
+    margin: 0.8rem 0;
+  }
+  .risk-item.medium { border-left-color: var(--amber); }
+  .risk-item.low { border-left-color: var(--green); }
+  .risk-level {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .risk-level.high { color: var(--red); }
+  .risk-level.medium { color: var(--amber); }
+  .risk-level.low { color: var(--green); }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--muted2);
+    font-size: 0.8rem;
+    margin-top: 3rem;
+  }
+
+  /* Revenue section */
+  .revenue-path {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.2rem;
+    margin: 2rem 0;
+  }
+  .revenue-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .revenue-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .revenue-amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .revenue-timeline {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.2rem;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 0 1.2rem; }
+    header { padding: 4rem 0 2.5rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<header>
+  <div class="container">
+    <div class="badge">
+      <span class="en">Idea #64 — E-Commerce / Logistics / FinTech</span>
+      <span class="th">ไอเดีย #64 — อีคอมเมิร์ซ / โลจิสติกส์ / ฟินเทค</span>
+    </div>
+    <h1>
+      <span class="en">MuteCOD<br><span class="highlight">AI COD Risk Scoring<br>& Collection Platform</span></span>
+      <span class="th">MuteCOD<br><span class="highlight">AI วิเคราะห์ความเสี่ยง COD<br>& ระบบเก็บเงินปลายทาง</span></span>
+    </h1>
+    <p class="subtitle">
+      <span class="en">Stop losing money to COD rejections. AI scores every order before you ship, predicts rejection risk, and automates collection — saving Thai e-commerce sellers billions in losses.</span>
+      <span class="th">หยุดเสียเงินจากพัสดุ COD ตีกลับ AI วิเคราะห์ทุกออเดอร์ก่อนจัดส่ง ทำนายความเสี่ยง และติดตามเก็บเงินอัตโนมัติ — ช่วยร้านค้าออนไลน์ไทยลดการสูญเสียมหาศาล</span>
+    </p>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">THE PROBLEM</span>
+      <span class="th">ปัญหา</span>
+    </div>
+    <h2>
+      <span class="en">COD Rejection: Thailand's ฿15B+ Hidden Tax on E-Commerce</span>
+      <span class="th">พัสดุตีกลับ: ภาษีซ่อนเร้นมูลค่า ฿15,000 ล้าน+ ของอีคอมเมิร์ซไทย</span>
+    </h2>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-value">50-65%</div>
+        <div class="stat-label">
+          <span class="en">Thai e-commerce orders are COD</span>
+          <span class="th">ออเดอร์อีคอมเมิร์ซไทยจ่ายเงินปลายทาง</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">8-15%</div>
+        <div class="stat-label">
+          <span class="en">Average COD rejection rate</span>
+          <span class="th">อัตราเฉลี่ยพัสดุ COD ตีกลับ</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">฿80-200</div>
+        <div class="stat-label">
+          <span class="en">Cost per rejection (return shipping + handling)</span>
+          <span class="th">ค่าใช้จ่ายต่อชิ้นตีกลับ (ค่าส่งกลับ + จัดการ)</span>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">$29B+</div>
+        <div class="stat-label">
+          <span class="en">Thai e-commerce market (2024)</span>
+          <span class="th">ตลาดอีคอมเมิร์ซไทย (2024)</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.8; margin-top: 1.5rem;">
+      <span class="en">Thailand's e-commerce is booming at $29B+ — but over half of all orders are Cash on Delivery. When a customer refuses to accept their package, the seller eats the double-shipping cost, handling fees, and sometimes damaged goods. Social commerce sellers (Facebook, LINE, TikTok) suffer the worst: 10-20% rejection rates with ZERO tools to predict or prevent it. This costs the industry an estimated ฿15-30 billion per year.</span>
+      <span class="th">อีคอมเมิร์ซไทยเติบโตมหาศาลที่ $29B+ — แต่มากกว่าครึ่งของออเดอร์เป็น COD เมื่อลูกค้าปฏิเสธรับพัสดุ ผู้ขายต้องแบกรับค่าส่งไปกลับ ค่าจัดการ และบางทีสินค้าเสียหาย ร้านค้าบน Social Commerce (Facebook, LINE, TikTok) เจ็บหนักสุด: อัตราตีกลับ 10-20% โดยไม่มีเครื่องมือใดๆ ช่วยป้องกัน ความเสียหายรวมทั้งอุตสาหกรรมประมาณ ฿15,000-30,000 ล้าน/ปี</span>
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">THE SOLUTION</span>
+      <span class="th">ทางออก</span>
+    </div>
+    <h2>
+      <span class="en">AI-Powered COD Intelligence — Score, Prevent, Collect</span>
+      <span class="th">AI จัดการ COD ครบวงจร — วิเคราะห์, ป้องกัน, เก็บเงิน</span>
+    </h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>
+          <span class="en">Risk Scoring Engine</span>
+          <span class="th">เครื่องมือวิเคราะห์ความเสี่ยง</span>
+        </h3>
+        <p>
+          <span class="en">AI scores every COD order 0-100 before you ship. Uses buyer history, address patterns, order behavior, time signals, and 50+ risk factors. Flag high-risk orders for prepay conversion or phone confirmation.</span>
+          <span class="th">AI ให้คะแนนความเสี่ยงทุกออเดอร์ COD 0-100 ก่อนจัดส่ง ใช้ประวัติผู้ซื้อ, รูปแบบที่อยู่, พฤติกรรมสั่งซื้อ, สัญญาณเวลา และปัจจัยเสี่ยง 50+ ข้อ แจ้งเตือนออเดอร์เสี่ยงสูงให้เปลี่ยนเป็นจ่ายล่วงหน้าหรือยืนยันทางโทรศัพท์</span>
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>
+          <span class="en">Smart Pre-Delivery Confirmation</span>
+          <span class="th">ยืนยันอัจฉริยะก่อนจัดส่ง</span>
+        </h3>
+        <p>
+          <span class="en">Auto-send LINE/SMS confirmation to high-risk buyers before dispatch. "Your order is being prepared — confirm to ship." Converts 30-40% of potential rejections into confirmed deliveries or early cancellations (saving shipping cost).</span>
+          <span class="th">ส่งข้อความยืนยันผ่าน LINE/SMS ให้ผู้ซื้อเสี่ยงสูงก่อนส่งของอัตโนมัติ "ออเดอร์ของคุณกำลังเตรียมจัดส่ง — ยืนยันเพื่อจัดส่ง" เปลี่ยน 30-40% ของพัสดุที่จะตีกลับเป็นการส่งสำเร็จหรือยกเลิกก่อนส่ง (ประหยัดค่าส่ง)</span>
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>
+          <span class="en">COD Collection Automation</span>
+          <span class="th">ระบบเก็บเงิน COD อัตโนมัติ</span>
+        </h3>
+        <p>
+          <span class="en">When packages are rejected, AI automatically follows up via LINE with payment links, installment options, and re-delivery scheduling. Recovers 15-25% of rejected COD orders as completed sales.</span>
+          <span class="th">เมื่อพัสดุถูกตีกลับ AI ติดตามอัตโนมัติผ่าน LINE พร้อมลิงก์ชำระ, ตัวเลือกผ่อนชำระ และนัดส่งใหม่ กู้คืน 15-25% ของพัสดุ COD ที่ถูกตีกลับกลับมาเป็นยอดขายสำเร็จ</span>
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>
+          <span class="en">Seller Analytics Dashboard</span>
+          <span class="th">แดชบอร์ดวิเคราะห์สำหรับร้านค้า</span>
+        </h3>
+        <p>
+          <span class="en">See your COD health at a glance: rejection rate trends, worst provinces, peak rejection times, money saved, recovery rate. Compare your store vs. industry average. Data-driven decisions to reduce losses.</span>
+          <span class="th">ดูสุขภาพ COD ของร้านคุณในมุมมองเดียว: เทรนด์อัตราตีกลับ, จังหวัดที่แย่สุด, ช่วงเวลาตีกลับสูงสุด, เงินที่ประหยัดได้, อัตราการกู้คืน เทียบร้านคุณกับค่าเฉลี่ยอุตสาหกรรม ตัดสินใจด้วยข้อมูล</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">MARKET OPPORTUNITY</span>
+      <span class="th">โอกาสทางตลาด</span>
+    </div>
+    <h2>
+      <span class="en">A Massive Problem Nobody is Solving with AI</span>
+      <span class="th">ปัญหาใหญ่ที่ไม่มีใครแก้ด้วย AI</span>
+    </h2>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th><span class="en">Metric</span><span class="th">ข้อมูล</span></th>
+          <th><span class="en">Value</span><span class="th">มูลค่า</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="en">Thai e-commerce market</span><span class="th">ตลาดอีคอมเมิร์ซไทย</span></td>
+          <td>$29B+ (2024), growing 10-15% YoY</td>
+        </tr>
+        <tr>
+          <td><span class="en">COD transaction volume</span><span class="th">ปริมาณธุรกรรม COD</span></td>
+          <td>~$15-19B/yr (50-65% of total)</td>
+        </tr>
+        <tr>
+          <td><span class="en">Estimated annual COD loss</span><span class="th">ความเสียหาย COD ต่อปีโดยประมาณ</span></td>
+          <td>฿15-30B ($470M-940M)</td>
+        </tr>
+        <tr>
+          <td><span class="en">Active e-commerce sellers (Thailand)</span><span class="th">ร้านค้าออนไลน์ที่ active ในไทย</span></td>
+          <td>500K+ on platforms, 1M+ social commerce</td>
+        </tr>
+        <tr>
+          <td><span class="en">Top platforms (by GMV)</span><span class="th">แพลตฟอร์มหลัก (ตาม GMV)</span></td>
+          <td>Shopee → Lazada → TikTok Shop</td>
+        </tr>
+        <tr>
+          <td><span class="en">Shipping providers</span><span class="th">ผู้ให้บริการขนส่ง</span></td>
+          <td>Flash, Kerry, J&T, Thailand Post, Grab, NIM, Best</td>
+        </tr>
+        <tr>
+          <td><span class="en">COD-heavy segments</span><span class="th">กลุ่มที่ COD สูง</span></td>
+          <td>Fashion (15-20% reject), Beauty, Supplements, Social commerce</td>
+        </tr>
+        <tr>
+          <td><span class="en">AI COD risk scoring competitors in Thai</span><span class="th">คู่แข่ง AI วิเคราะห์ COD ในไทย</span></td>
+          <td style="color: var(--primary); font-weight: 700;">ZERO</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">COMPETITIVE LANDSCAPE</span>
+      <span class="th">ภูมิทัศน์การแข่งขัน</span>
+    </div>
+    <h2>
+      <span class="en">What Exists Today — And What's Missing</span>
+      <span class="th">สิ่งที่มีอยู่ — และสิ่งที่ขาดหายไป</span>
+    </h2>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th><span class="en">Player</span><span class="th">ผู้เล่น</span></th>
+          <th><span class="en">What They Do</span><span class="th">ทำอะไร</span></th>
+          <th><span class="en">COD Risk AI?</span><span class="th">AI วิเคราะห์ COD?</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SHIPPOP</td>
+          <td><span class="en">Shipping aggregator — rate comparison, label printing, COD tracking</span><span class="th">ตัวกลางขนส่ง — เทียบราคา, ปริ้นใบปะหน้า, ติดตาม COD</span></td>
+          <td style="color: var(--red);">❌ No</td>
+        </tr>
+        <tr>
+          <td>Shipnity</td>
+          <td><span class="en">E-commerce management + shipping for social sellers</span><span class="th">ระบบจัดการอีคอมเมิร์ซ + จัดส่งสำหรับร้านค้า social</span></td>
+          <td style="color: var(--red);">❌ No</td>
+        </tr>
+        <tr>
+          <td>Page365</td>
+          <td><span class="en">Facebook/LINE shop management + shipping integration</span><span class="th">จัดการร้าน Facebook/LINE + เชื่อมต่อขนส่ง</span></td>
+          <td style="color: var(--red);">❌ No</td>
+        </tr>
+        <tr>
+          <td>Shopee/Lazada</td>
+          <td><span class="en">Internal COD handling on their platforms only</span><span class="th">จัดการ COD ภายในแพลตฟอร์มตัวเองเท่านั้น</span></td>
+          <td style="color: var(--amber);">⚠️ Internal only</td>
+        </tr>
+        <tr>
+          <td>Cashfree (India)</td>
+          <td><span class="en">COD-to-Prepaid conversion for Indian e-commerce</span><span class="th">เปลี่ยน COD เป็นจ่ายล่วงหน้าสำหรับอีคอมเมิร์ซอินเดีย</span></td>
+          <td style="color: var(--green);">✅ Yes (India)</td>
+        </tr>
+        <tr>
+          <td>Razorpay COD (India)</td>
+          <td><span class="en">COD verification & risk intelligence for Indian market</span><span class="th">ยืนยัน & วิเคราะห์ความเสี่ยง COD สำหรับตลาดอินเดีย</span></td>
+          <td style="color: var(--green);">✅ Yes (India)</td>
+        </tr>
+        <tr>
+          <td style="color: var(--primary); font-weight: 700;">MuteCOD</td>
+          <td style="color: var(--primary);"><span class="en">AI risk scoring + pre-delivery confirmation + collection automation for Thai market</span><span class="th">AI วิเคราะห์ความเสี่ยง + ยืนยันก่อนส่ง + เก็บเงินอัตโนมัติสำหรับตลาดไทย</span></td>
+          <td style="color: var(--primary); font-weight: 700;">✅ FIRST IN THAI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">REVENUE MODEL</span>
+      <span class="th">โมเดลรายได้</span>
+    </div>
+    <h2>
+      <span class="en">Money Math: How MuteCOD Gets to $1M</span>
+      <span class="th">คำนวณเงิน: MuteCOD ไปถึง $1M ได้อย่างไร</span>
+    </h2>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th><span class="en">Plan</span><span class="th">แผน</span></th>
+          <th><span class="en">Price</span><span class="th">ราคา</span></th>
+          <th><span class="en">Target</span><span class="th">กลุ่มเป้าหมาย</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Free</td>
+          <td>฿0 (50 checks/mo)</td>
+          <td><span class="en">Hook — new social sellers</span><span class="th">ดึงดูด — ร้านค้า social ใหม่</span></td>
+        </tr>
+        <tr>
+          <td>Starter</td>
+          <td>฿499/mo (500 checks)</td>
+          <td><span class="en">Small sellers, 50-200 orders/mo</span><span class="th">ร้านค้าเล็ก 50-200 ออเดอร์/เดือน</span></td>
+        </tr>
+        <tr>
+          <td>Pro</td>
+          <td>฿1,499/mo (3,000 checks)</td>
+          <td><span class="en">Growing sellers, 200-1,000 orders/mo</span><span class="th">ร้านค้าที่กำลังเติบโต 200-1,000 ออเดอร์/เดือน</span></td>
+        </tr>
+        <tr>
+          <td>Business</td>
+          <td>฿4,999/mo (15,000 checks)</td>
+          <td><span class="en">Power sellers, 1,000-5,000 orders/mo</span><span class="th">ร้านค้าใหญ่ 1,000-5,000 ออเดอร์/เดือน</span></td>
+        </tr>
+        <tr>
+          <td>Enterprise</td>
+          <td>฿15,000+/mo (custom)</td>
+          <td><span class="en">Brands, aggregators, shipping providers</span><span class="th">แบรนด์, ตัวแทนรวม, บริษัทขนส่ง</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="revenue-path">
+      <div class="revenue-card">
+        <div class="revenue-amount">฿250K MRR</div>
+        <div class="revenue-timeline">MONTH 6</div>
+        <p style="color: var(--text2); font-size: 0.85rem; margin-top: 0.8rem;">
+          <span class="en">500 sellers × ฿500 avg ARPU. Seed via Facebook seller groups, partnerships with SHIPPOP/Shipnity.</span>
+          <span class="th">500 ร้านค้า × ARPU เฉลี่ย ฿500 เริ่มจากกลุ่ม Facebook ร้านค้าออนไลน์ + พาร์ทเนอร์ SHIPPOP/Shipnity</span>
+        </p>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-amount">฿1.5M MRR</div>
+        <div class="revenue-timeline">MONTH 12</div>
+        <p style="color: var(--text2); font-size: 0.85rem; margin-top: 0.8rem;">
+          <span class="en">2,000 sellers × ฿750 avg ARPU + 5 enterprise deals. ฿18M/yr ($563K). Strong path to $1M.</span>
+          <span class="th">2,000 ร้านค้า × ARPU เฉลี่ย ฿750 + 5 ดีล Enterprise ฿18M/ปี ($563K) เส้นทางชัดไป $1M</span>
+        </p>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-amount">฿3M+ MRR</div>
+        <div class="revenue-timeline">MONTH 18-24</div>
+        <p style="color: var(--text2); font-size: 0.85rem; margin-top: 0.8rem;">
+          <span class="en">5,000+ sellers + enterprise + expand to Vietnam/Philippines (COD-heavy markets). ฿36M+/yr ($1.1M+). $1M target achieved.</span>
+          <span class="th">5,000+ ร้านค้า + enterprise + ขยายสู่เวียดนาม/ฟิลิปปินส์ (ตลาด COD หนัก) ฿36M+/ปี ($1.1M+) ถึงเป้า $1M</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">RISKS & HONEST ASSESSMENT</span>
+      <span class="th">ความเสี่ยง & การประเมินตรงไปตรงมา</span>
+    </div>
+    <h2>
+      <span class="en">What Could Go Wrong</span>
+      <span class="th">อะไรที่อาจผิดพลาด</span>
+    </h2>
+
+    <div class="risk-item medium">
+      <div class="risk-level medium">MEDIUM RISK</div>
+      <h3>
+        <span class="en">Data Cold Start</span>
+        <span class="th">ขาดข้อมูลเริ่มต้น</span>
+      </h3>
+      <p style="color: var(--text2); font-size: 0.9rem;">
+        <span class="en">AI risk scoring needs training data — buyer phone numbers, addresses, rejection history. New platform has no data. Mitigate: (1) Start with rule-based scoring (address patterns, province risk maps, phone validation) while collecting data, (2) Partner with shipping providers for anonymized rejection data, (3) Crowdsource — sellers share blacklists (common Thai seller practice already done in Facebook groups).</span>
+        <span class="th">AI ต้องการข้อมูลฝึก — เบอร์โทร, ที่อยู่, ประวัติตีกลับ แพลตฟอร์มใหม่ไม่มีข้อมูล แก้: (1) เริ่มด้วย rule-based scoring (pattern ที่อยู่, แผนที่ความเสี่ยงจังหวัด, ตรวจสอบเบอร์โทร) ขณะสะสมข้อมูล (2) พาร์ทเนอร์กับบริษัทขนส่งเพื่อข้อมูลตีกลับ (3) Crowdsource — ร้านค้าแชร์ blacklist (ทำกันอยู่แล้วในกลุ่ม Facebook)</span>
+      </p>
+    </div>
+
+    <div class="risk-item medium">
+      <div class="risk-level medium">MEDIUM RISK</div>
+      <h3>
+        <span class="en">Platform Integration Dependency</span>
+        <span class="th">พึ่งพาการเชื่อมต่อแพลตฟอร์ม</span>
+      </h3>
+      <p style="color: var(--text2); font-size: 0.9rem;">
+        <span class="en">Need API access to Shopee/Lazada seller portals or shipping APIs. Shopee API exists but restrictive. Social commerce (Facebook/LINE) sellers manage orders manually — easier to integrate via spreadsheet import or LINE bot order entry. Mitigate: Start with social sellers (no API needed), then build platform integrations as we grow.</span>
+        <span class="th">ต้องการ API เชื่อมต่อ Shopee/Lazada หรือ API ขนส่ง Shopee API มีแต่จำกัด ร้านค้า Social Commerce (Facebook/LINE) จัดการออเดอร์ด้วยมือ — เชื่อมต่อง่ายกว่าผ่าน import สเปรดชีตหรือ LINE bot แก้: เริ่มจากร้านค้า social ก่อน (ไม่ต้องใช้ API) แล้วค่อยสร้างการเชื่อมต่อแพลตฟอร์ม</span>
+      </p>
+    </div>
+
+    <div class="risk-item low">
+      <div class="risk-level low">LOW RISK</div>
+      <h3>
+        <span class="en">Shopee/Lazada Building In-House</span>
+        <span class="th">Shopee/Lazada สร้างเอง</span>
+      </h3>
+      <p style="color: var(--text2); font-size: 0.9rem;">
+        <span class="en">Big platforms could build their own COD risk tools — but they have little incentive (they charge sellers COD fees, so rejections = more fees). Also, they won't serve social commerce sellers, which is our primary target. Mitigate: Focus on social commerce and cross-platform sellers that Shopee/Lazada don't serve.</span>
+        <span class="th">แพลตฟอร์มใหญ่อาจสร้างเครื่องมือ COD เอง — แต่ไม่ค่อยมีแรงจูงใจ (เก็บค่าธรรมเนียม COD จากร้านค้า ยิ่งตีกลับยิ่งได้ค่าธรรมเนียม) และไม่ให้บริการร้านค้า social ซึ่งเป็นกลุ่มเป้าหมายหลักของเรา แก้: โฟกัสร้านค้า social commerce และร้านค้าข้ามแพลตฟอร์มที่ Shopee/Lazada ไม่ดูแล</span>
+      </p>
+    </div>
+
+    <div class="risk-item">
+      <div class="risk-level high">HIGH RISK</div>
+      <h3>
+        <span class="en">Privacy & PDPA Compliance</span>
+        <span class="th">ความเป็นส่วนตัว & กฎหมาย PDPA</span>
+      </h3>
+      <p style="color: var(--text2); font-size: 0.9rem;">
+        <span class="en">Collecting buyer phone numbers, addresses, and behavior data requires PDPA compliance. Blacklist sharing could be legally challenged. Mitigate: (1) Full PDPA compliance from day 1, (2) Anonymized/hashed data for shared risk scoring, (3) Legal review before blacklist features, (4) Clear consent flows and data retention policies.</span>
+        <span class="th">การเก็บเบอร์โทร, ที่อยู่ และข้อมูลพฤติกรรมผู้ซื้อต้องปฏิบัติตาม PDPA การแชร์ blacklist อาจถูกฟ้อง แก้: (1) ปฏิบัติตาม PDPA ตั้งแต่วันแรก (2) ข้อมูลที่ anonymized/hashed สำหรับ risk scoring ร่วม (3) ทบทวนกฎหมายก่อนเปิดฟีเจอร์ blacklist (4) consent flows และนโยบายเก็บข้อมูลที่ชัดเจน</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="score-section">
+      <div class="section-label">
+        <span class="en">MUTELAB SCORE</span>
+        <span class="th">คะแนน MUTELAB</span>
+      </div>
+      <h2>
+        <span class="en">Investment Scorecard</span>
+        <span class="th">สรุปคะแนนการลงทุน</span>
+      </h2>
+
+      <div class="score-bar-container">
+        <div class="score-bar-label">
+          <span><span class="en">Market Potential</span><span class="th">ศักยภาพตลาด</span></span>
+          <span>8/10</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="score-bar-container">
+        <div class="score-bar-label">
+          <span><span class="en">Problem Severity</span><span class="th">ความรุนแรงของปัญหา</span></span>
+          <span>9/10</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:90%"></div></div>
+      </div>
+      <div class="score-bar-container">
+        <div class="score-bar-label">
+          <span><span class="en">Competition Gap</span><span class="th">ช่องว่างการแข่งขัน</span></span>
+          <span>8/10</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="score-bar-container">
+        <div class="score-bar-label">
+          <span><span class="en">Build Feasibility</span><span class="th">ความเป็นไปได้ในการสร้าง</span></span>
+          <span>7/10</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%"></div></div>
+      </div>
+      <div class="score-bar-container">
+        <div class="score-bar-label">
+          <span><span class="en">Our Advantage</span><span class="th">ข้อได้เปรียบของเรา</span></span>
+          <span>6/10</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:60%"></div></div>
+      </div>
+
+      <div class="total-score">38/50</div>
+      <div class="score-verdict">
+        <span class="en">✅ STRONG PASS — High-value B2B fintech with zero AI competition in Thai market</span>
+        <span class="th">✅ ผ่านอย่างแข็งแกร่ง — B2B FinTech มูลค่าสูง ไม่มีคู่แข่ง AI ในตลาดไทย</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">
+      <span class="en">KEY INSIGHT</span>
+      <span class="th">ข้อมูลเชิงลึก</span>
+    </div>
+    <h2>
+      <span class="en">Why MuteCOD Could Be a Breakout</span>
+      <span class="th">ทำไม MuteCOD อาจทะยานได้</span>
+    </h2>
+    <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.9;">
+      <span class="en">MuteCOD scores 38/50 — one of the highest in the sprint. The combination of a <strong>massive existing pain point</strong> (฿15-30B annual losses), <strong>zero AI competitors</strong> in Thailand, a <strong>proven model</strong> (Cashfree/Razorpay in India), and <strong>high-ticket B2B pricing</strong> (฿4,999/mo for power sellers) makes this exceptionally attractive. The strongest argument: sellers can immediately calculate ROI. If MuteCOD prevents just 10 rejections/month at ฿150/rejection = ฿1,500 saved — paying for the ฿499 plan 3x over. That's an instant no-brainer sale.<br><br>The honest weakness: build feasibility gets 7/10 because effective risk scoring requires meaningful data, and we start with zero. The cold start problem is real. But the rule-based + crowdsourced blacklist approach (already common in Thai seller communities) gives us a viable day-1 product while AI learns. Thanapat's CTO background helps with the data infrastructure but doesn't give unfair advantage in e-commerce domain (hence 6/10 on advantage).<br><br>Expansion play: Vietnam (70% COD), Philippines (60% COD), Indonesia (40% COD) — the same pain exists across all COD-heavy SEA markets. A working Thai product becomes a SEA play.</span>
+      <span class="th">MuteCOD ได้ 38/50 — สูงสุดกลุ่มหนึ่งในสปรินท์ การรวมกันของ <strong>pain point ที่มีอยู่จริงและใหญ่</strong> (ขาดทุน ฿15,000-30,000 ล้าน/ปี), <strong>ไม่มีคู่แข่ง AI</strong> ในไทย, <strong>โมเดลที่พิสูจน์แล้ว</strong> (Cashfree/Razorpay ในอินเดีย) และ <strong>ราคา B2B สูง</strong> (฿4,999/เดือนสำหรับร้านค้าใหญ่) ทำให้น่าสนใจมาก จุดแข็งที่สุด: ร้านค้าคำนวณ ROI ได้ทันที ถ้า MuteCOD ป้องกันแค่ 10 ชิ้นตีกลับ/เดือน ที่ ฿150/ชิ้น = ประหยัด ฿1,500 — คุ้มค่าแพ็กเกจ ฿499 ถึง 3 เท่า ขายง่ายทันที<br><br>จุดอ่อนตามตรง: Build feasibility ได้ 7/10 เพราะ risk scoring ที่ดีต้องการข้อมูล ซึ่งเราเริ่มจากศูนย์ Cold start เป็นปัญหาจริง แต่ rule-based + crowdsourced blacklist (ทำกันอยู่แล้วในชุมชนร้านค้าไทย) ให้เราผลิตภัณฑ์วันแรกที่ใช้งานได้ขณะที่ AI เรียนรู้ พื้นหลัง CTO ของ Thanapat ช่วยเรื่อง data infrastructure แต่ไม่ได้เปรียบในโดเมนอีคอมเมิร์ซ (จึงได้ 6/10 ข้อได้เปรียบ)<br><br>แผนขยาย: เวียดนาม (70% COD), ฟิลิปปินส์ (60% COD), อินโดนีเซีย (40% COD) — ปัญหาเดียวกันในทุกตลาด SEA ที่ COD หนัก ผลิตภัณฑ์ที่ทำงานได้ในไทยกลายเป็นเกม SEA</span>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>MuteLab Research Sprint — Idea #64 MuteCOD · Score: 38/50 ✅ · February 2026</p>
+    <p style="margin-top: 0.5rem; color: var(--muted2);">This is a research document, not a product commitment. Data sourced from ECDB, TechCrunch, industry reports.</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
