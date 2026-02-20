@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteAds — AI Ad Creative & Campaign Optimizer for Thai SMEs</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(236,72,153,0.15);
+    --border2: rgba(236,72,153,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #ec4899;
+    --primary-light: #f472b6;
+    --primary-pale: rgba(236,72,153,0.08);
+    --primary-glow: rgba(236,72,153,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(236,72,153,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(236,72,153,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(236,72,153,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+  .info-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+  }
+  .info-card:hover { border-color: var(--border2); }
+  .info-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+  .info-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+  .info-card .highlight { color: var(--primary); font-weight: 600; }
+
+  .risk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+  .risk-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+  }
+  .risk-card .level {
+    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-bottom: 0.75rem;
+  }
+  .risk-card .level.high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk-card .level.medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk-card .level.low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .risk-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .price-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem; text-align: center;
+  }
+  .price-card.featured { border-color: var(--primary); box-shadow: 0 0 30px var(--primary-glow); }
+  .price-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .price-card .price { font-size: 2rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; margin-bottom: 0.5rem; }
+  .price-card .price span { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .price-card ul { list-style: none; text-align: left; margin-top: 1rem; }
+  .price-card ul li { font-size: 0.82rem; color: var(--text2); padding: 0.3rem 0; }
+  .price-card ul li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
+  .verdict-box {
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 2.5rem;
+    margin: 3rem 0;
+  }
+  .verdict-box h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; }
+  .verdict-box p { font-size: 0.95rem; color: var(--text2); line-height: 1.8; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .card-grid, .risk-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .score-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← ALL IDEAS</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">📣</div>
+        <span>MuteAds</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>IDEA #72</span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="en">📣 AI AD CREATIVE + CAMPAIGN OPTIMIZER</span>
+        <span class="th">📣 AI สร้างโฆษณา + ปรับแคมเปญอัตโนมัติ</span>
+      </div>
+      <h1>
+        <span class="en"><span class="gold">MuteAds</span> — AI Ad Factory for <span class="purple">Thai SMEs</span></span>
+        <span class="th"><span class="gold">MuteAds</span> — AI สร้างโฆษณาให้ <span class="purple">SME ไทย</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI that generates <strong>scroll-stopping ad creatives</strong> in Thai, optimizes Facebook/LINE/TikTok campaigns, and cuts wasted ad spend by 40%+. The first <strong>Thai-native</strong> AI ad platform built for SMEs who can't afford an agency.</span>
+        <span class="th">AI สร้าง<strong>โฆษณาที่หยุดสกรอล</strong>เป็นภาษาไทย ปรับแคมเปญ Facebook/LINE/TikTok ลดค่าโฆษณาที่สูญเปล่า 40%+ แพลตฟอร์มโฆษณา AI <strong>ภาษาไทยตัวแรก</strong>สำหรับ SME ที่จ้างเอเจนซี่ไม่ไหว</span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">33</div>
+          <div class="score-meta"><strong>Overall Score</strong>/50 — PASS ✅</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num purple">฿50B+</div>
+          <div class="score-meta"><strong class="en">Thai Digital Ad Spend</strong><strong class="th">ค่าโฆษณาดิจิทัลไทย</strong>/year</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num"><span class="gold">฿50B+</span></div>
+      <div class="stat-label">
+        <span class="en">Thai digital ad spend annually. Growing 15-20% YoY. Facebook & TikTok dominate.</span>
+        <span class="th">ค่าโฆษณาดิจิทัลไทยต่อปี โตปีละ 15-20% Facebook & TikTok ครองตลาด</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏪</div>
+      <div class="stat-num">3.2M</div>
+      <div class="stat-label">
+        <span class="en">Thai SMEs. 80%+ use Facebook for marketing. Most create ads manually — copy/paste templates, stock photos.</span>
+        <span class="th">SME ไทย 80%+ ใช้ Facebook ทำตลาด ส่วนใหญ่ทำโฆษณาเอง — copy/paste template ภาพสต็อก</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📉</div>
+      <div class="stat-num"><span class="gold">40-60%</span></div>
+      <div class="stat-label">
+        <span class="en">of SME ad budget wasted on poor creatives and targeting. $1 in → $0.40-0.60 thrown away.</span>
+        <span class="th">งบโฆษณา SME สูญเปล่าจากครีเอทีฟและ targeting แย่ ใส่ ฿1 → ทิ้ง ฿0.40-0.60</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🚫</div>
+      <div class="stat-num">0</div>
+      <div class="stat-label">
+        <span class="en">Thai-native AI ad platforms. Global tools (Pencil, Predis) don't understand Thai language, culture, or LINE Ads.</span>
+        <span class="th">แพลตฟอร์มโฆษณา AI ภาษาไทย เครื่องมือต่างชาติไม่เข้าใจภาษาไทย วัฒนธรรม หรือ LINE Ads</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">📊 MARKET ANALYSIS</div>
+    <h2 class="section-title">
+      <span class="en">A ฿50 Billion Market with Zero Thai-Native AI Players</span>
+      <span class="th">ตลาด ฿50,000 ล้าน ที่ยังไม่มี AI ภาษาไทยเลย</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Thailand's digital advertising market surpassed ฿50 billion in 2025 (DAAT). Facebook, TikTok, and LINE dominate. Yet Thai SMEs — 3.2M businesses — create ads by hand. No AI tool speaks Thai, understands Thai consumer psychology, or integrates with LINE Ads Manager. This gap is enormous.</span>
+      <span class="th">ตลาดโฆษณาดิจิทัลไทยทะลุ ฿50,000 ล้านในปี 2025 (DAAT) Facebook, TikTok และ LINE ครองตลาด แต่ SME ไทย 3.2 ล้านราย ยังทำโฆษณาด้วยมือ ไม่มีเครื่องมือ AI ที่เข้าใจภาษาไทย จิตวิทยาผู้บริโภคไทย หรือเชื่อม LINE Ads ช่องว่างมหาศาล</span>
+    </p>
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>🎯 <span class="en">The Problem</span><span class="th">ปัญหา</span></h3>
+        <p><span class="en">Thai SME owners spend <span class="highlight">3-5 hours/week</span> creating ad creatives manually. They use Canva templates, write Thai copy by guessing, and set targeting based on intuition. Result: high CPA, low ROAS, burned budgets. They need an agency but can't afford ฿20K-50K/month.</span>
+        <span class="th">เจ้าของ SME ไทยใช้เวลา <span class="highlight">3-5 ชม./สัปดาห์</span>ทำครีเอทีฟโฆษณาเอง ใช้ template Canva เขียน copy เดา ตั้ง targeting ตามสัญชาตญาณ ผลลัพธ์: CPA สูง ROAS ต่ำ เผางบ ต้องการเอเจนซี่แต่จ่าย ฿20K-50K/เดือนไม่ไหว</span></p>
+      </div>
+      <div class="info-card">
+        <h3>💡 <span class="en">The Solution</span><span class="th">ทางออก</span></h3>
+        <p><span class="en">MuteAds: Upload your product photo → AI generates <span class="highlight">10 ad variations</span> in Thai (image + copy + CTA) in 60 seconds. Connected to Facebook/TikTok/LINE APIs for one-click launch. AI A/B tests automatically, pauses losers, scales winners. Your ฿500/day AI agency.</span>
+        <span class="th">MuteAds: อัปโหลดรูปสินค้า → AI สร้าง<span class="highlight">โฆษณา 10 แบบ</span>เป็นภาษาไทย (ภาพ + copy + CTA) ใน 60 วินาที เชื่อมกับ Facebook/TikTok/LINE APIs กดลงโฆษณาเลย AI ทดสอบ A/B อัตโนมัติ หยุดตัวแพ้ ปั๊มตัวชนะ เอเจนซี่ AI ราคา ฿500/วัน</span></p>
+      </div>
+      <div class="info-card">
+        <h3>🌏 <span class="en">Competitors</span><span class="th">คู่แข่ง</span></h3>
+        <p><span class="en"><span class="highlight">Global players:</span> Pencil ($14-55/mo) — English-focused, no Thai, no LINE. Predis.ai ($19-212/mo) — social media tool, not ad-specific. AdCreative.ai — enterprise pricing, English copy only. Meta's Advantage+ — basic AI, no creative generation. <strong>NONE speak Thai. NONE integrate LINE Ads.</strong></span>
+        <span class="th"><span class="highlight">คู่แข่งต่างชาติ:</span> Pencil ($14-55/mo) — เน้นอังกฤษ ไม่มีไทย ไม่มี LINE. Predis.ai ($19-212/mo) — social media ไม่เฉพาะโฆษณา. AdCreative.ai — ราคาแพง copy อังกฤษเท่านั้น. Meta Advantage+ — AI พื้นฐาน ไม่สร้างครีเอทีฟ. <strong>ไม่มีตัวไหนเข้าใจไทย ไม่มีตัวไหนเชื่อม LINE Ads</strong></span></p>
+      </div>
+      <div class="info-card">
+        <h3>📐 <span class="en">Revenue Math</span><span class="th">คำนวณรายได้</span></h3>
+        <p><span class="en">Target: 2,000 paying SMEs × ฿1,500/mo average = <span class="highlight">฿3M/mo = ฿36M/yr (~$1.1M)</span>. Thai SMEs already spend ฿5K-50K/mo on ads. ฿1,500/mo for AI optimization is 3-30% of their ad budget — easy ROI justification. Agencies charge 10x more.</span>
+        <span class="th">เป้า: 2,000 SME จ่าย × ฿1,500/เดือนเฉลี่ย = <span class="highlight">฿3M/เดือน = ฿36M/ปี (~$1.1M)</span> SME ไทยใช้ ฿5K-50K/เดือนซื้อโฆษณาอยู่แล้ว ฿1,500/เดือนสำหรับ AI optimization คือ 3-30% ของงบโฆษณา — ROI ชัดเจน เอเจนซี่แพงกว่า 10 เท่า</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">💸 PRICING MODEL</div>
+    <h2 class="section-title">
+      <span class="en">Affordable AI Agency, Not Another Tool</span>
+      <span class="th">เอเจนซี่ AI ราคาเข้าถึง ไม่ใช่แค่เครื่องมือ</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Starter</h3>
+        <div class="price">฿499<span>/mo</span></div>
+        <ul>
+          <li>50 ad creatives/month</li>
+          <li>Thai copywriting AI</li>
+          <li>Facebook Ads integration</li>
+          <li>Basic performance analytics</li>
+          <li>1 brand</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <h3>Growth ⭐</h3>
+        <div class="price">฿1,499<span>/mo</span></div>
+        <ul>
+          <li>200 ad creatives/month</li>
+          <li>Facebook + TikTok + LINE</li>
+          <li>Auto A/B testing</li>
+          <li>AI campaign optimizer</li>
+          <li>3 brands</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Agency</h3>
+        <div class="price">฿4,999<span>/mo</span></div>
+        <ul>
+          <li>Unlimited creatives</li>
+          <li>All platforms + Google Ads</li>
+          <li>White-label for clients</li>
+          <li>Team collaboration</li>
+          <li>Unlimited brands</li>
+          <li>API access</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">⚠️ RISK ANALYSIS</div>
+    <h2 class="section-title">
+      <span class="en">Honest Risk Assessment</span>
+      <span class="th">วิเคราะห์ความเสี่ยงตรงๆ</span>
+    </h2>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <span class="level high">HIGH</span>
+        <h3><span class="en">Global Giants Moving Fast</span><span class="th">ยักษ์ใหญ่ขยับเร็ว</span></h3>
+        <p><span class="en">Meta/TikTok/Google are all adding native AI ad creation. Advantage+ already generates basic creatives. If they nail Thai language support, our moat shrinks. Mitigate: move fast, focus on Thai + LINE (platforms won't optimize for LINE).</span>
+        <span class="th">Meta/TikTok/Google กำลังเพิ่ม AI สร้างโฆษณาในตัว Advantage+ สร้างครีเอทีฟพื้นฐานได้แล้ว ถ้าเขาทำภาษาไทยดี moat เราจะแคบลง แก้: เร็วกว่า เน้นไทย + LINE (แพลตฟอร์มไม่ optimize สำหรับ LINE)</span></p>
+      </div>
+      <div class="risk-card">
+        <span class="level medium">MEDIUM</span>
+        <h3><span class="en">Ad Platform API Changes</span><span class="th">API แพลตฟอร์มเปลี่ยน</span></h3>
+        <p><span class="en">Facebook/TikTok frequently change their APIs and ad policies. Could break integrations. Mitigate: API abstraction layer, fast response team.</span>
+        <span class="th">Facebook/TikTok เปลี่ยน API และนโยบายโฆษณาบ่อย อาจทำให้ integration พัง แก้: API abstraction layer ทีมตอบสนองเร็ว</span></p>
+      </div>
+      <div class="risk-card">
+        <span class="level medium">MEDIUM</span>
+        <h3><span class="en">Thai SME Willingness to Pay</span><span class="th">SME ไทยจ่ายไหม</span></h3>
+        <p><span class="en">Thai SMEs are price-sensitive. ฿1,499/mo seems low but many use ฿0 tools (Canva free + manual). Must prove ROI clearly — "saved ฿X in wasted ads this month."</span>
+        <span class="th">SME ไทยไวราคา ฿1,499/เดือนดูถูก แต่หลายรายใช้เครื่องมือฟรี (Canva + ทำเอง) ต้องพิสูจน์ ROI ชัด — "เดือนนี้ประหยัดค่าโฆษณาที่สูญเปล่า ฿X"</span></p>
+      </div>
+      <div class="risk-card">
+        <span class="level low">LOW</span>
+        <h3><span class="en">Technical Execution</span><span class="th">ความเสี่ยงด้านเทคนิค</span></h3>
+        <p><span class="en">AI image/text generation is mature (DALL-E, Stable Diffusion, GPT-4). Ad platform APIs are well-documented. Main challenge: Thai-specific fine-tuning for copy that converts.</span>
+        <span class="th">AI สร้างภาพ/ข้อความเติบโตแล้ว (DALL-E, SD, GPT-4) API แพลตฟอร์มโฆษณามีเอกสารดี ความท้าทายหลัก: fine-tune ภาษาไทยให้ copy ที่ convert</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-badge">📊 SCORING BREAKDOWN</div>
+    <h2 class="section-title">Score: 33/50</h2>
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>📈 Market Potential: 8/10</h3>
+        <p><span class="en">฿50B+ Thai digital ad market. 3.2M SMEs. Global AI ad market growing 25%+ CAGR. Massive TAM. But Thai-only limits initial addressable market to ~$15-30M.</span>
+        <span class="th">ตลาดโฆษณาดิจิทัลไทย ฿50B+ SME 3.2M ราย ตลาด AI ad โลกโต 25%+ CAGR TAM ใหญ่ แต่เริ่มเฉพาะไทย จำกัด addressable market ที่ ~$15-30M</span></p>
+      </div>
+      <div class="info-card">
+        <h3>🔥 Problem Severity: 7/10</h3>
+        <p><span class="en">Real pain: SMEs burn money on bad ads daily. But it's "slow bleed" not "hair on fire." They're used to wasting money — may not urgently seek a solution until shown the impact.</span>
+        <span class="th">ปัญหาจริง: SME เผาเงินกับโฆษณาแย่ทุกวัน แต่เป็น "เลือดไหลช้า" ไม่ใช่ "ไฟลุกหัว" เขาชินกับการเสียเงิน — อาจไม่เร่งหาทางแก้จนกว่าจะเห็น impact</span></p>
+      </div>
+      <div class="info-card">
+        <h3>🏆 Competition Gap: 6/10</h3>
+        <p><span class="en">ZERO Thai-native players = clear gap. BUT Pencil/Predis could add Thai. Meta's Advantage+ improving rapidly. LINE could build their own. Window is 12-18 months.</span>
+        <span class="th">ไม่มีผู้เล่น Thai-native = ช่องว่างชัด แต่ Pencil/Predis อาจเพิ่มภาษาไทย Meta Advantage+ พัฒนาเร็ว LINE อาจทำเอง หน้าต่างแค่ 12-18 เดือน</span></p>
+      </div>
+      <div class="info-card">
+        <h3>🛠️ Build Feasibility: 7/10</h3>
+        <p><span class="en">AI generation (images + text) is commoditized. Facebook/TikTok APIs well-documented. LINE Ads API exists but less mature. Main effort: Thai copywriting AI fine-tuning + UX that SMEs can actually use. MVP in 6-8 weeks.</span>
+        <span class="th">AI generation เป็น commodity แล้ว Facebook/TikTok APIs เอกสารดี LINE Ads API มีแต่ยังไม่สมบูรณ์ งานหลัก: fine-tune AI copy ไทย + UX ที่ SME ใช้ได้จริง MVP ใน 6-8 สัปดาห์</span></p>
+      </div>
+      <div class="info-card">
+        <h3>⚡ Our Advantage: 5/10</h3>
+        <p><span class="en">We can build it technically. AI agent team is strong. But: no domain expertise in Thai advertising. No existing relationships with Thai SMEs or ad agencies. Founder-market fit is MODERATE — not a natural extension of CTO/blockchain expertise.</span>
+        <span class="th">เราสร้างได้ในเชิงเทคนิค ทีม AI agent แข็งแกร่ง แต่: ไม่มีความเชี่ยวชาญด้านโฆษณาไทย ไม่มีความสัมพันธ์กับ SME หรือเอเจนซี่ไทย Founder-market fit ปานกลาง — ไม่ใช่ส่วนขยายตามธรรมชาติจากความเชี่ยวชาญ CTO/blockchain</span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="verdict-box">
+    <h2>
+      <span class="en">💬 Verdict: Solid B-Tier Opportunity</span>
+      <span class="th">💬 สรุป: โอกาสระดับ B ที่มั่นคง</span>
+    </h2>
+    <p>
+      <span class="en">MuteAds at 33/50 is a legitimate business with a real market gap (zero Thai-native AI ad tools). The revenue math works: 2,000 SMEs at ฿1,500/mo = $1.1M ARR. But three concerns hold it back: (1) Platform risk — Meta/TikTok are actively building AI ad creation features and could close the gap in 12-18 months, (2) Distribution — reaching Thai SMEs requires Thai-language content marketing, LINE OA communities, and local partnerships we don't have yet, (3) Moderate founder-market fit — this is an advertising product, not a blockchain/AI infrastructure play where Thanapat has deep domain expertise. The honest take: if we're looking for something we can build FAST with a clear market gap, MuteAds works. But it's a race against the platforms, and our moat is purely language/culture — which is real but thin. Best suited as a "quick win" business, not a decade-long platform play.</span>
+      <span class="th">MuteAds 33/50 เป็นธุรกิจที่มีโอกาสจริงกับ market gap ชัด (ไม่มี AI โฆษณาภาษาไทยเลย) คำนวณรายได้ได้: 2,000 SME × ฿1,500/เดือน = ฿36M/ปี (~$1.1M) แต่ 3 สิ่งกังวล: (1) Platform risk — Meta/TikTok กำลังสร้าง AI สร้างโฆษณาเองอาจปิดช่องว่างใน 12-18 เดือน (2) Distribution — เข้าถึง SME ไทยต้องคอนเทนต์ไทย LINE OA partnerships ที่เรายังไม่มี (3) Founder-market fit ปานกลาง — นี่คือ product โฆษณา ไม่ใช่ blockchain/AI infrastructure ที่ Thanapat เชี่ยวชาญ ความจริง: ถ้าต้องการอะไรที่สร้างเร็วมี market gap ชัด MuteAds ทำได้ แต่เป็นการแข่งกับแพลตฟอร์ม moat ของเราคือภาษา/วัฒนธรรมเท่านั้น — จริงแต่บาง เหมาะเป็น "quick win" ไม่ใช่ platform play ระยะยาว</span>
+    </p>
+  </div>
+</div>
+
+<footer>
+  MuteLab Research Sprint — Idea #72 — Feb 21, 2026<br>
+  Generated by Sun ☀️ (AI CEO) • Data as of Feb 2026
+</footer>
+
+</body>
+</html>
