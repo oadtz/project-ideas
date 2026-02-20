@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteVoice — AI Voice Receptionist for Thai SMEs</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(245,158,11,0.08), 0 0 0 1px rgba(245,158,11,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; gap: 1.5rem;
+  }
+  .wf-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all 0.2s; position: relative;
+  }
+  .wf-step:hover { border-color: var(--border2); box-shadow: 0 0 24px var(--primary-glow); }
+  .wf-num {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+  }
+  .wf-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .wf-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all 0.2s;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 24px var(--primary-glow); }
+  .why-panel-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .why-panel-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(139,92,246,0.08));
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 1.75rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .rh-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Space Mono', monospace; margin-bottom: 0.5rem; }
+  .rh-title { font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 1.5rem; }
+  .rh-num { font-size: 2.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; margin-bottom: 0.25rem; }
+  .rh-sub { font-size: 0.82rem; color: var(--text2); margin-bottom: 0.75rem; }
+  .rh-note { font-size: 0.72rem; color: var(--muted); line-height: 1.8; }
+  .rev-tiers { display: flex; flex-direction: column; }
+  .rev-tier {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--primary-pale); }
+  .rt-icon { font-size: 1.25rem; flex: 0 0 30px; }
+  .rt-label { font-size: 0.82rem; font-weight: 700; color: var(--text2); flex: 0 0 90px; }
+  .rt-desc { flex: 1; font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+  .rt-price { text-align: right; flex: 0 0 100px; }
+  .rt-amount { font-size: 0.95rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .rt-note { font-size: 0.65rem; color: var(--muted); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    margin: 2rem 0;
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .roadmap-header {
+    background: var(--surface2);
+    padding: 1rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 700; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .roadmap-tag {
+    font-size: 0.65rem; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-item {
+    display: flex; align-items: flex-start; gap: 1.25rem;
+    padding: 1.5rem; border-bottom: 1px solid rgba(245,158,11,0.08);
+    transition: background 0.2s;
+  }
+  .roadmap-item:hover { background: var(--primary-pale); }
+  .roadmap-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--primary);
+    font-family: 'Space Mono', monospace; letter-spacing: 0.08em;
+    margin-bottom: 0.25rem;
+  }
+  .roadmap-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .roadmap-body { font-size: 0.8rem; color: var(--muted); line-height: 1.7; }
+  .roadmap-right { text-align: right; flex: 0 0 80px; }
+  .roadmap-time { font-size: 0.72rem; font-weight: 700; color: var(--text2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric { font-size: 0.72rem; color: var(--primary); font-family: 'Space Mono', monospace; margin-top: 0.25rem; }
+
+  .cta-wrap {
+    text-align: center; padding: 4rem 0 6rem;
+  }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-title {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1rem;
+  }
+  .cta-sub {
+    font-size: 0.95rem; color: var(--muted); max-width: 600px;
+    margin: 0 auto 2rem; line-height: 1.75;
+  }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; }
+  .cta-btn-primary {
+    background: var(--primary); color: #0a0a0f; border: none;
+    padding: 0.75rem 1.5rem; border-radius: 10px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { background: var(--primary-light); }
+  .cta-btn-secondary {
+    background: var(--surface); color: var(--text2); border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem; border-radius: 10px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+  .research-btn {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 90;
+    background: var(--surface); border: 1px solid var(--border2);
+    color: var(--primary); padding: 0.6rem 1.2rem; border-radius: 10px;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: all 0.2s;
+  }
+  .research-btn:hover { background: var(--primary); color: #0a0a0f; }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 2rem;
+  }
+  .research-modal.active { display: flex; }
+  .research-modal-content {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; max-width: 700px; width: 100%;
+    max-height: 85vh; overflow-y: auto; position: relative;
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none; color: var(--muted);
+    font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+  }
+  .research-modal-close:hover { color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .research-modal-header h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+  .research-badge {
+    font-size: 0.72rem; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section h3 {
+    font-size: 0.82rem; color: var(--primary); margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .research-section p, .research-section li {
+    font-size: 0.82rem; color: var(--text2); line-height: 1.7;
+  }
+  .research-section ul { padding-left: 1.25rem; }
+  .research-section li { margin-bottom: 0.3rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px; padding: 1.25rem;
+  }
+  .research-highlight-purple {
+    background: var(--secondary-pale); border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 12px; padding: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    .token-grid, .stats-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .revenue-row { grid-template-columns: 1fr; }
+    .roadmap-item { flex-wrap: wrap; }
+    .roadmap-right { flex: 1 0 100%; text-align: left; margin-top: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← ALL IDEAS</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">MV</div>
+        MuteVoice
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>IDEA #62</span>
+      <span class="topbar-badge">Voice AI · B2B SaaS</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">📞 IDEA #62 — AI VOICE RECEPTIONIST</div>
+      <h1>
+        <span class="en"><span class="gold">MuteVoice</span> — AI Phone<br>Receptionist for <span class="purple">Thai SMEs</span></span>
+        <span class="th"><span class="gold">MuteVoice</span> — AI รับสาย<br>อัตโนมัติสำหรับ <span class="purple">SME ไทย</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI-powered voice agent that answers phone calls in <strong>natural Thai</strong>, books appointments, answers FAQs, and forwards urgent calls — so Thai clinics, restaurants, and salons <strong>never miss a customer again</strong>.</span>
+        <span class="th">AI รับสายโทรศัพท์เป็น<strong>ภาษาไทยธรรมชาติ</strong> จองนัดหมาย ตอบคำถาม และโอนสายด่วน — ให้คลินิก ร้านอาหาร และร้านสปา <strong>ไม่พลาดลูกค้าอีกต่อไป</strong></span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">35</div>
+          <div class="score-meta"><strong>Overall Score</strong>/50 — PASS ✅</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num purple">$155B</div>
+          <div class="score-meta"><strong>Conversational AI</strong>Market by 2035</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Stats -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📞</div>
+      <div class="stat-num"><span class="gold">62%</span></div>
+      <div class="stat-label">
+        <span class="en">of customers hang up if no one answers within 3 rings — lost revenue</span>
+        <span class="th">ของลูกค้าวางสายถ้าไม่มีคนรับภายใน 3 เสียง — สูญเสียรายได้</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏪</div>
+      <div class="stat-num">3.2<span class="gold">M</span></div>
+      <div class="stat-label">
+        <span class="en">Thai SMEs — clinics, restaurants, salons, hotels, legal offices. Most can't afford a full-time receptionist.</span>
+        <span class="th">SME ไทย — คลินิก ร้านอาหาร สปา โรงแรม สำนักงานกฎหมาย ส่วนใหญ่จ้างพนักงานรับสายเต็มเวลาไม่ไหว</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num">฿<span class="purple">15-25K</span></div>
+      <div class="stat-label">
+        <span class="en">/month for a human receptionist in Thailand. MuteVoice starts at ฿1,990/mo — 8-12x cheaper.</span>
+        <span class="th">/เดือน สำหรับพนักงานรับสายในไทย MuteVoice เริ่ม ฿1,990/เดือน — ถูกกว่า 8-12 เท่า</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌙</div>
+      <div class="stat-num"><span class="gold">24/7</span></div>
+      <div class="stat-label">
+        <span class="en">Never sick, never late, never takes a break. AI answers every call, every time, in seconds.</span>
+        <span class="th">ไม่ป่วย ไม่สาย ไม่หยุดพัก AI รับทุกสาย ทุกครั้ง ภายในวินาที</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Token Window = Market Overview -->
+  <div class="token-window">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">mutevoice_market_analysis.json</div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🌍</div>
+          <div class="tc-name">CONVERSATIONAL AI MARKET</div>
+          <div class="tc-value">$19.2B → $155B</div>
+          <div class="tc-sub">2025 → 2035 (23.24% CAGR)</div>
+          <div class="tc-badge">📈 EXPLOSIVE GROWTH</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📱</div>
+          <div class="tc-name">VOICE AI AGENTS</div>
+          <div class="tc-value">300M+ calls/mo</div>
+          <div class="tc-sub">Vapi alone processes 300M+ calls</div>
+          <div class="tc-badge purple">🚀 PROVEN AT SCALE</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🇹🇭</div>
+          <div class="tc-name">THAI MARKET GAP</div>
+          <div class="tc-value">ZERO</div>
+          <div class="tc-sub">Thai-language AI voice agent products</div>
+          <div class="tc-badge">🎯 BLUE OCEAN</div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span>COMPETITIVE MOAT STRENGTH</span>
+          <span>70%</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:70%"></div></div>
+        <div class="chain-steps">
+          <span>Thai language</span>
+          <span>Local SIP infra</span>
+          <span>SME workflows</span>
+          <span>LINE integration</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <section class="section">
+    <div class="section-badge">⚡ <span class="en">HOW IT WORKS</span><span class="th">ทำงานอย่างไร</span></div>
+    <div class="section-title">
+      <span class="en">Setup in 10 minutes, answers calls forever</span>
+      <span class="th">ตั้งค่า 10 นาที รับสายได้ตลอดไป</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">No hardware, no training, no IT department needed. Just forward your business phone to MuteVoice and the AI handles the rest.</span>
+      <span class="th">ไม่ต้องซื้ออุปกรณ์ ไม่ต้องเทรน ไม่ต้องมีฝ่าย IT แค่โอนสายโทรศัพท์ธุรกิจมาที่ MuteVoice แล้ว AI จัดการที่เหลือ</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Tell AI About Your Business</span>
+          <span class="th">บอก AI เกี่ยวกับธุรกิจคุณ</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Fill in business hours, services, pricing, FAQ answers, and booking rules via a simple Thai-language dashboard. AI learns your business in minutes.</span>
+          <span class="th">กรอกเวลาทำการ บริการ ราคา คำตอบ FAQ และกฎการจอง ผ่านแดชบอร์ดภาษาไทยง่ายๆ AI เรียนรู้ธุรกิจคุณในไม่กี่นาที</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">📞</div>
+        <div class="wf-title">
+          <span class="en">Forward Your Phone Line</span>
+          <span class="th">โอนสายโทรศัพท์</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Set up call forwarding from your existing business number to MuteVoice. Works with any Thai carrier (AIS, True, DTAC). No number change needed.</span>
+          <span class="th">ตั้งค่าโอนสายจากเบอร์ธุรกิจเดิมมาที่ MuteVoice ใช้ได้กับทุกค่าย (AIS, True, DTAC) ไม่ต้องเปลี่ยนเบอร์</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title">
+          <span class="en">AI Answers Every Call</span>
+          <span class="th">AI รับทุกสาย</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Natural Thai voice greets callers, answers questions, books appointments, and transfers urgent calls to you on LINE or mobile. You get a transcript + summary after every call.</span>
+          <span class="th">เสียงภาษาไทยธรรมชาติทักทายลูกค้า ตอบคำถาม จองนัดหมาย และโอนสายด่วนไปที่ LINE หรือมือถือ คุณจะได้รับบทสนทนา + สรุปหลังทุกสาย</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteVoice -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">Voice AI exists globally — but NOT in Thai</span>
+      <span class="th">Voice AI มีทั่วโลก — แต่ไม่มีภาษาไทย</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Vapi, Retell AI, Bland AI — $100M+ companies serving the US market. Zero products serve Thai SMEs in Thai language. That's a ฿100B+ gap.</span>
+      <span class="th">Vapi, Retell AI, Bland AI — บริษัทมูลค่า $100M+ ให้บริการตลาดอเมริกา ไม่มีสักผลิตภัณฑ์เดียวให้บริการ SME ไทยเป็นภาษาไทย นี่คือช่องว่างมูลค่า ฿100B+</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🗣️</div>
+        <div class="why-panel-title">
+          <span class="en">Thai Language = Moat</span>
+          <span class="th">ภาษาไทย = ปราการ</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai is tonal (5 tones), has no spaces between words, and uses a unique script. Global AI voice platforms don't support Thai natively. This creates a massive localization moat that protects against foreign competition.</span>
+          <span class="th">ภาษาไทยมีวรรณยุกต์ (5 เสียง) ไม่มีช่องว่างระหว่างคำ และใช้อักษรเฉพาะ แพลตฟอร์ม AI เสียงระดับโลกไม่รองรับภาษาไทยโดยตรง สร้างปราการ localization ที่ป้องกันการแข่งขันจากต่างชาติ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💸</div>
+        <div class="why-panel-title">
+          <span class="en">10x Cheaper Than Human</span>
+          <span class="th">ถูกกว่าคน 10 เท่า</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Human receptionist: ฿15-25K/month + social security + overtime. MuteVoice: ฿1,990/month, works 24/7, never calls in sick, handles multiple calls simultaneously. The ROI is immediate and obvious.</span>
+          <span class="th">พนักงานรับสาย: ฿15-25K/เดือน + ประกันสังคม + ค่าล่วงเวลา MuteVoice: ฿1,990/เดือน ทำงาน 24/7 ไม่ลาป่วย รับหลายสายพร้อมกันได้ ROI ชัดเจนทันที</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE Integration = Distribution</span>
+          <span class="th">เชื่อมต่อ LINE = ช่องทางจำหน่าย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">53M+ Thai LINE users. MuteVoice sends call summaries, appointment confirmations, and urgent alerts via LINE — where Thai business owners ALREADY live. Zero adoption friction.</span>
+          <span class="th">53M+ ผู้ใช้ LINE ในไทย MuteVoice ส่งสรุปสาย ยืนยันนัดหมาย และแจ้งเตือนด่วนผ่าน LINE ที่เจ้าของธุรกิจไทยใช้อยู่แล้ว ไม่มีอุปสรรคในการใช้งาน</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🏗️</div>
+        <div class="why-panel-title">
+          <span class="en">Built on Proven Infrastructure</span>
+          <span class="th">สร้างบน Infrastructure ที่พิสูจน์แล้ว</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Don't build voice infra from scratch. Use Vapi/Retell ($0.07-0.12/min) + Google Cloud Thai TTS (Chirp 3 HD) + Thai SIP trunks. Our value-add is the Thai packaging, workflow, and LINE integration layer.</span>
+          <span class="th">ไม่ต้องสร้าง voice infra เอง ใช้ Vapi/Retell ($0.07-0.12/นาที) + Google Cloud Thai TTS (Chirp 3 HD) + Thai SIP trunks เราเพิ่มมูลค่าด้วยแพ็คเกจภาษาไทย workflow และเลเยอร์ LINE integration</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">B2B SaaS with usage-based upside</span>
+      <span class="th">B2B SaaS พร้อมรายได้ตามการใช้งาน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Subscription + per-minute usage. Every customer is a clinic, restaurant, or salon paying monthly. High LTV, low churn — they can't go back to missed calls.</span>
+      <span class="th">สมัครสมาชิก + จ่ายตามนาที ลูกค้าทุกรายคือคลินิก ร้านอาหาร หรือสปาที่จ่ายรายเดือน LTV สูง churn ต่ำ — เขากลับไปพลาดสายไม่ได้แล้ว</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿32M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿32M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18-24</span>
+            <span class="th">ARR ภายในเดือนที่ 18-24</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 50 pilot customers<br>Month 6: 200 customers × ฿3K = ฿600K MRR<br>Month 12: 800 customers × ฿3.5K = ฿2.8M MRR<br>Month 18-24: 2,500 customers × ฿4K = ฿10M MRR + usage</span>
+            <span class="th">เดือน 3: 50 ลูกค้านำร่อง<br>เดือน 6: 200 ลูกค้า × ฿3K = ฿600K MRR<br>เดือน 12: 800 ลูกค้า × ฿3.5K = ฿2.8M MRR<br>เดือน 18-24: 2,500 ลูกค้า × ฿4K = ฿10M MRR + usage</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">📞</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc">
+            <span class="en">1 phone line, 200 mins/mo, FAQ answering, call transcripts, LINE notifications.</span>
+            <span class="th">1 สาย, 200 นาที/เดือน, ตอบ FAQ, บทสนทนา, แจ้งเตือน LINE</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿1,990/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(245,158,11,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">🏥</div>
+          <div class="rt-label" style="color:var(--primary-light);">Pro ⭐</div>
+          <div class="rt-desc">
+            <span class="en">3 lines, 1,000 mins/mo, appointment booking, CRM sync, call analytics dashboard, priority routing.</span>
+            <span class="th">3 สาย, 1,000 นาที/เดือน, จองนัดหมาย, ซิงค์ CRM, แดชบอร์ดวิเคราะห์สาย, กำหนดเส้นทางสาย</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿4,990/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc">
+            <span class="en">Unlimited lines, custom voice, multilingual (Thai+English+Chinese), API access, white-label option, dedicated support.</span>
+            <span class="th">ไม่จำกัดสาย, เสียงกำหนดเอง, หลายภาษา (ไทย+อังกฤษ+จีน), API, white-label, ซัพพอร์ตเฉพาะ</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿9,990/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">⏱️</div>
+          <div class="rt-label">Overage</div>
+          <div class="rt-desc">
+            <span class="en">Additional minutes beyond plan: ฿1.50/min. Still 80%+ cheaper than human receptionist per minute.</span>
+            <span class="th">นาทีเพิ่มเติมนอกแผน: ฿1.50/นาที ยังถูกกว่าพนักงาน 80%+ ต่อนาที</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿1.50/min</div>
+            <div class="rt-note"><span class="en">per minute</span><span class="th">ต่อนาที</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From pilot to 2,500 customers in 18 months</span>
+      <span class="th">จากนำร่องสู่ 2,500 ลูกค้าใน 18 เดือน</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">📞 MuteVoice — Milestone Timeline</span>
+          <span class="th">📞 MuteVoice — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿32M ARR target · Month 24</span>
+          <span class="th">เป้า ฿32M ARR · เดือนที่ 24</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–2 · MVP + PILOT</span>
+            <span class="th">เดือน 1–2 · MVP + นำร่อง</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Build Thai voice agent on Vapi/Retell + Thai SIP trunk</span>
+            <span class="th">สร้าง voice agent ไทยบน Vapi/Retell + Thai SIP trunk</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Integrate Google Cloud Thai TTS + STT. Build simple web dashboard for business setup. Get Thai virtual phone number. Pilot with 10-20 dental clinics in Bangkok (highest phone call volume + willingness to pay).</span>
+            <span class="th">เชื่อมต่อ Google Cloud Thai TTS + STT สร้างแดชบอร์ดเว็บง่ายๆ ขอเบอร์โทรเสมือนไทย นำร่องกับคลินิกทันตกรรม 10-20 แห่งในกรุงเทพ (สายเข้าเยอะ + ยินดีจ่าย)</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 1–2</div>
+          <div class="roadmap-metric">20 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 3–6 · VERTICAL EXPANSION</span>
+            <span class="th">เดือน 3–6 · ขยาย Vertical</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">200 customers across clinics, restaurants, salons</span>
+            <span class="th">200 ลูกค้าจากคลินิก ร้านอาหาร สปา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add appointment booking integration (Google Calendar, LINE). Expand from dental to beauty clinics, restaurants (reservations), and legal offices. Sales via LINE ads + referrals. ฿600K MRR.</span>
+            <span class="th">เพิ่มการจองนัดหมาย (Google Calendar, LINE) ขยายจากทันตกรรมสู่คลินิกความงาม ร้านอาหาร (จองโต๊ะ) และสำนักงานกฎหมาย ขายผ่าน LINE ads + referrals ฿600K MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 3–6</div>
+          <div class="roadmap-metric">฿600K MRR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 6–12 · SCALE + PRODUCT-LED GROWTH</span>
+            <span class="th">เดือน 6–12 · ขยาย + Product-Led Growth</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">800 customers — self-serve signup + API for developers</span>
+            <span class="th">800 ลูกค้า — สมัครเอง + API สำหรับนักพัฒนา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Self-serve onboarding (no sales call needed). API for POS/CRM integrations. Multi-language (Thai+English+Chinese) for hotels/tourism. Content marketing: "คลินิกนี้ไม่พลาดสายอีกต่อไป" case studies.</span>
+            <span class="th">สมัครด้วยตัวเอง (ไม่ต้องคุยกับเซลล์) API สำหรับ POS/CRM หลายภาษา (ไทย+อังกฤษ+จีน) สำหรับโรงแรม/ท่องเที่ยว Content marketing: case studies "คลินิกนี้ไม่พลาดสายอีกต่อไป"</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 6–12</div>
+          <div class="roadmap-metric">฿2.8M MRR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 12–24 · REGIONAL + OUTBOUND</span>
+            <span class="th">เดือน 12–24 · ภูมิภาค + Outbound</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">2,500 customers + outbound AI calls + SEA expansion</span>
+            <span class="th">2,500 ลูกค้า + AI โทรออก + ขยาย SEA</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add outbound calling (appointment reminders, follow-ups, surveys). Expand to Vietnam, Indonesia, Philippines. White-label for telcos (AIS/True business packages). ฿10M+ MRR.</span>
+            <span class="th">เพิ่มโทรออก (เตือนนัดหมาย, follow-up, สำรวจ) ขยายสู่เวียดนาม อินโดนีเซีย ฟิลิปปินส์ White-label ให้ telco (แพ็คเกจธุรกิจ AIS/True) ฿10M+ MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 12–24</div>
+          <div class="roadmap-metric" style="color:var(--primary-light);">฿10M+ MRR 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">📞 <span class="en">Score: 35/50 — PASS</span><span class="th">Score: 35/50 — ผ่าน</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">3.2 million</span> Thai SMEs<br>miss calls <span class="purple">every single day</span></span>
+      <span class="th"><span class="gold">3.2 ล้าน</span> SME ไทย<br>พลาดสาย<span class="purple">ทุกวัน</span></span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">$155B conversational AI market. Proven globally (Vapi: 300M+ calls). Zero Thai voice agent products. Thai language is a natural moat. B2B SaaS with immediate ROI story.</span>
+      <span class="th">ตลาด conversational AI $155B พิสูจน์แล้วทั่วโลก (Vapi: 300M+ สาย) ไม่มี voice agent ไทยเลย ภาษาไทยเป็นปราการธรรมชาติ B2B SaaS ที่ ROI ชัดเจนทันที</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <a href="61-mutesource.html" class="cta-btn-secondary">
+        <span class="en">MuteSource →</span><span class="th">MuteSource →</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+</script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 MuteVoice — AI Voice Receptionist</h2>
+      <span class="research-badge">Idea #62 · Voice AI · B2B SaaS · Score: 35/50</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3><span class="en">One-liner</span><span class="th">สรุปสั้น</span></h3>
+        <p>
+          <span class="en">AI-powered Thai-language voice agent that answers business phone calls 24/7 — books appointments, answers FAQs, routes urgent calls via LINE. Replaces ฿15-25K/mo receptionist with ฿1,990/mo AI.</span>
+          <span class="th">AI รับสายโทรศัพท์ธุรกิจภาษาไทย 24/7 — จองนัดหมาย ตอบ FAQ โอนสายด่วนผ่าน LINE แทนพนักงานรับสาย ฿15-25K/เดือน ด้วย AI ฿1,990/เดือน</span>
+        </p>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Problem</span><span class="th">ปัญหา</span></h3>
+        <ul>
+          <li><span class="en">62% of customers hang up after 3 rings with no answer — lost revenue for SMEs</span><span class="th">62% ของลูกค้าวางสายหลัง 3 เสียงไม่มีคนรับ — SME เสียรายได้</span></li>
+          <li><span class="en">3.2M Thai SMEs — clinics, restaurants, salons, hotels, legal offices — many can't afford full-time receptionist</span><span class="th">3.2M SME ไทย — คลินิก ร้านอาหาร สปา โรงแรม — หลายแห่งจ้างพนักงานรับสายเต็มเวลาไม่ไหว</span></li>
+          <li><span class="en">ZWIZ.AI does TEXT chatbots, but zero AI VOICE products exist for Thai SMEs</span><span class="th">ZWIZ.AI ทำแชทบอท TEXT แต่ไม่มี AI VOICE สำหรับ SME ไทยเลย</span></li>
+          <li><span class="en">Traditional IVR (กด 1 สำหรับ...) is hated by customers and doesn't solve the problem</span><span class="th">IVR แบบเดิม (กด 1 สำหรับ...) ลูกค้าเกลียดและไม่แก้ปัญหา</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Market Evidence</span><span class="th">หลักฐานตลาด</span></h3>
+        <ul>
+          <li><span class="en">Conversational AI: $19.21B (2025) → $155.23B (2035), 23.24% CAGR</span><span class="th">Conversational AI: $19.21B (2025) → $155.23B (2035), CAGR 23.24%</span></li>
+          <li><span class="en">Gartner: AI in contact centers will save $80B in labor by 2026</span><span class="th">Gartner: AI ใน contact center จะประหยัดค่าแรง $80B ภายในปี 2026</span></li>
+          <li><span class="en">Vapi: 300M+ calls, 500K+ developers, $100M+ raised</span><span class="th">Vapi: 300M+ สาย, 500K+ นักพัฒนา, ระดมทุน $100M+</span></li>
+          <li><span class="en">Retell AI: $0.07+/min, enterprise customers like MDS ($280K/mo collections)</span><span class="th">Retell AI: $0.07+/นาที, ลูกค้าองค์กร เช่น MDS (เก็บเงิน $280K/เดือน)</span></li>
+          <li><span class="en">Thai SME market: 3.2M+ businesses (OSMEP data)</span><span class="th">ตลาด SME ไทย: 3.2M+ ธุรกิจ (ข้อมูล สสว.)</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Competition</span><span class="th">คู่แข่ง</span></h3>
+        <ul>
+          <li><span class="en"><strong>ZWIZ.AI</strong> — Text chatbots only (LINE, Facebook). No voice. ฿3,900-15K/mo.</span><span class="th"><strong>ZWIZ.AI</strong> — แชทบอทข้อความเท่านั้น (LINE, Facebook) ไม่มีเสียง ฿3,900-15K/เดือน</span></li>
+          <li><span class="en"><strong>True/AIS Business</strong> — Basic IVR (press 1 for X). Not AI, not conversational.</span><span class="th"><strong>True/AIS Business</strong> — IVR พื้นฐาน (กด 1 สำหรับ...) ไม่ใช่ AI ไม่ใช่สนทนา</span></li>
+          <li><span class="en"><strong>Vapi/Retell/Bland</strong> — Global platforms, English-first. No Thai localization.</span><span class="th"><strong>Vapi/Retell/Bland</strong> — แพลตฟอร์มโลก ภาษาอังกฤษเป็นหลัก ไม่มี Thai localization</span></li>
+          <li><span class="en">⚡ <strong>Gap: ZERO Thai-language AI voice agent products</strong></span><span class="th">⚡ <strong>ช่องว่าง: ไม่มี AI voice agent ภาษาไทยเลย</strong></span></li>
+        </ul>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>✨ Score: 35/50 — PASS</h3>
+        <p style="margin:0.5rem 0;font-size:0.9rem;opacity:0.8;">Market: 8/10 · Problem: 7/10 · Competition: 7/10 · Build: 6/10 · Advantage: 7/10</p>
+      </section>
+      <section class="research-section research-highlight-purple">
+        <h3>📞 "ไม่พลาดสายอีกต่อไป" — Every missed call is lost revenue</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
+</body>
+</html>
