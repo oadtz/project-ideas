@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MutePay — The Stripe for x402 AI Agent Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(0,200,150,0.15);
+    --border2: rgba(0,200,150,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #00c896;
+    --primary-light: #34d8a8;
+    --primary-pale: rgba(0,200,150,0.08);
+    --primary-glow: rgba(0,200,150,0.2);
+    --secondary: #6366f1;
+    --secondary-light: #818cf8;
+    --secondary-pale: rgba(99,102,241,0.08);
+    --secondary-glow: rgba(99,102,241,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,200,150,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(99,102,241,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  /* ─── Nav ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+  }
+  nav .container { display: flex; justify-content: space-between; align-items: center; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1.3rem; color: var(--primary); text-decoration: none; }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--primary); }
+
+  /* ─── Hero ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 8rem 2rem 4rem;
+  }
+  .hero-content { max-width: 800px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    color: var(--primary);
+    margin-bottom: 2rem;
+    font-weight: 500;
+  }
+  .hero-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--text) 0%, var(--primary) 50%, var(--secondary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto; margin-right: auto;
+  }
+  .hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--primary-glow); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-secondary:hover { border-color: var(--primary); background: var(--primary-pale); }
+
+  /* ─── Stats ─── */
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-family: 'Space Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* ─── Sections ─── */
+  section { padding: 6rem 0; }
+  .section-title {
+    font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--text) 30%, var(--primary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .section-sub { text-align: center; color: var(--text2); font-size: 1.1rem; max-width: 600px; margin: 0 auto 3rem; }
+
+  /* ─── Problem ─── */
+  .problem-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+  }
+  .problem-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .problem-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .problem-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .problem-card h3 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text); }
+  .problem-card p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+  /* ─── How it works ─── */
+  .flow-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+  }
+  .flow-num {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-weight: 700; font-size: 1.2rem;
+    margin: 0 auto 1.2rem;
+    color: white;
+  }
+  .flow-step h3 { font-size: 1.05rem; margin-bottom: 0.75rem; }
+  .flow-step p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  /* ─── Code Block ─── */
+  .code-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 700px; margin: 3rem auto; }
+  .code-section pre {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text2);
+  }
+  .code-section .comment { color: var(--muted); }
+  .code-section .keyword { color: var(--secondary-light); }
+  .code-section .string { color: var(--primary); }
+  .code-section .fn { color: #fbbf24; }
+
+  /* ─── Pricing ─── */
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+  }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .price-card.featured { border-color: var(--primary); background: linear-gradient(180deg, var(--primary-pale), var(--surface)); }
+  .price-card h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .price-card .price { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem; }
+  .price-card .period { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .price-card ul { list-style: none; }
+  .price-card li { padding: 0.4rem 0; font-size: 0.9rem; color: var(--text2); }
+  .price-card li::before { content: '✓ '; color: var(--primary); font-weight: 600; }
+
+  /* ─── Market ─── */
+  .market-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+  }
+  .market-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .market-card .big-num { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+  .market-card p { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ─── Thai ─── */
+  .th { font-family: 'Noto Sans Thai', sans-serif; }
+  .lang-toggle { display: inline-flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .lang-toggle span { padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+  .lang-toggle .active { background: var(--primary); color: white; }
+  .lang-toggle .inactive { background: var(--surface2); color: var(--muted); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .hero { padding: 6rem 1.5rem 3rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-stats { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .stat-num { font-size: 1.3rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 0; }
+    .section-title { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <div class="container">
+    <a href="#" class="nav-logo">Mute<span>Pay</span></a>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#market">Market</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span> x402 Native • Built for AI Agent Commerce</div>
+    <h1>The Stripe for x402 Agent Payments</h1>
+    <p>One dashboard to monetize, analyze, and scale your AI agent's revenue. Accept x402 payments, track earnings, manage subscriptions — all without touching blockchain code.</p>
+    <p class="th" style="font-size:1rem; color:var(--muted); margin-bottom:2rem;">แพลตฟอร์มจัดการรายได้สำหรับ AI Agent — รับชำระเงินผ่าน x402 วิเคราะห์รายได้ จัดการลูกค้า ไม่ต้องเขียนโค้ด blockchain เอง</p>
+    <div class="hero-cta">
+      <a href="#" class="btn-primary">🚀 Start Earning</a>
+      <a href="#how" class="btn-secondary">📖 How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">5,400+</div>
+        <div class="stat-label">x402 GitHub Stars</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">$183B</div>
+        <div class="stat-label">AI Agent Market by 2030</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1 line</div>
+        <div class="stat-label">To Start Earning</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="container">
+    <h2 class="section-title">The Problem</h2>
+    <p class="section-sub">x402 makes payments trivially easy. But monetization is more than payments.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-icon">📊</div>
+        <h3>No Analytics Dashboard</h3>
+        <p>x402 sends payments to your wallet. But how much did you earn this month? Which endpoints are profitable? Which clients pay most? You're flying blind.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🔧</div>
+        <h3>DIY Facilitator Complexity</h3>
+        <p>Running your own x402 facilitator means managing gas, RPCs, wallet security, and settlement. Most devs just want to get paid, not run blockchain infra.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">💸</div>
+        <h3>No Subscription/Tier Management</h3>
+        <p>x402 is per-request. But real businesses need tiers, volume discounts, free trials, and usage caps. There's no subscription layer for x402.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🤖</div>
+        <h3>Agent-to-Agent Discovery</h3>
+        <p>Agents can pay agents via x402 + A2A. But how do agents FIND each other? There's no marketplace, no directory, no reputation system.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Add one line. Get a complete payment business.</p>
+    <div class="flow-grid">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <h3>Install SDK</h3>
+        <p>npm install @mutepay/x402 — wraps the official x402 SDK with analytics, subscriptions, and our managed facilitator.</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <h3>Add Middleware</h3>
+        <p>One line in your Express/Hono/Next.js server. Define endpoints, set prices, done. We handle settlement, gas, and wallet security.</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <h3>Dashboard</h3>
+        <p>Real-time revenue, client analytics, endpoint performance, usage alerts. Export CSV for accounting. Stripe-quality analytics for x402.</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <h3>Scale</h3>
+        <p>Add subscription tiers, volume discounts, API keys, rate limits, and webhooks. List your agent on the MutePay marketplace for discovery.</p>
+      </div>
+    </div>
+
+    <div class="code-section">
+      <pre><code><span class="comment">// That's it. One import, one line.</span>
+<span class="keyword">import</span> { <span class="fn">mutepay</span> } <span class="keyword">from</span> <span class="string">'@mutepay/x402'</span>;
+
+app.<span class="fn">use</span>(<span class="fn">mutepay</span>({
+  <span class="string">"GET /api/analyze"</span>: {
+    price: <span class="string">"0.01"</span>,    <span class="comment">// USDC per request</span>
+    tier: <span class="string">"pro"</span>,       <span class="comment">// optional subscription tier</span>
+    rateLimit: <span class="string">100</span>,   <span class="comment">// requests per hour</span>
+  },
+}));
+
+<span class="comment">// Dashboard: mutepay.io/dashboard</span>
+<span class="comment">// Revenue, clients, endpoints — all in one place</span>
+</code></pre>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <h2 class="section-title">Pricing</h2>
+    <p class="section-sub">Pay as you grow. Start free, scale to millions.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Indie</h3>
+        <div class="price">Free</div>
+        <div class="period">+ 3% transaction fee</div>
+        <ul>
+          <li>Managed facilitator</li>
+          <li>Basic dashboard</li>
+          <li>Up to 1,000 tx/month</li>
+          <li>1 agent endpoint</li>
+          <li>Community support</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <h3>Pro</h3>
+        <div class="price">$49/mo</div>
+        <div class="period">+ 1.5% transaction fee</div>
+        <ul>
+          <li>Everything in Indie</li>
+          <li>Unlimited endpoints</li>
+          <li>Subscription tiers & billing</li>
+          <li>Advanced analytics</li>
+          <li>API keys management</li>
+          <li>Webhook notifications</li>
+          <li>CSV/JSON export</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Enterprise</h3>
+        <div class="price">$499/mo</div>
+        <div class="period">+ 0.5% transaction fee</div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Custom facilitator</li>
+          <li>Multi-chain support</li>
+          <li>White-label dashboard</li>
+          <li>SLA guarantee</li>
+          <li>Marketplace featured listing</li>
+          <li>Dedicated support</li>
+          <li>On-chain analytics</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="market">
+  <div class="container">
+    <h2 class="section-title">Market Opportunity</h2>
+    <p class="section-sub">AI agents need money. x402 is the protocol. MutePay is the platform.</p>
+    <div class="market-grid">
+      <div class="market-card">
+        <div class="big-num">$183B</div>
+        <p>AI Agent Market by 2030 (Grand View Research)</p>
+      </div>
+      <div class="market-card">
+        <div class="big-num">5,400+</div>
+        <p>GitHub stars on x402 — massive developer interest in 12 months</p>
+      </div>
+      <div class="market-card">
+        <div class="big-num">1,135</div>
+        <p>Forks — active ecosystem building on x402 protocol</p>
+      </div>
+      <div class="market-card">
+        <div class="big-num">Google</div>
+        <p>Built A2A x402 extension — agent-to-agent payments are real</p>
+      </div>
+    </div>
+
+    <div style="margin-top:3rem; text-align:center;">
+      <h3 style="color:var(--primary); font-size:1.3rem; margin-bottom:1rem;">Why Now?</h3>
+      <p style="color:var(--text2); max-width:700px; margin:0 auto; line-height:1.8;">
+        x402 launched Feb 2025 and grew to 5,400+ stars in 12 months. Google integrated it into A2A.
+        Coinbase, Base chain, and Solana support it natively. SDKs exist in TypeScript, Python, Go, Rust, and Java.
+        The protocol layer is DONE. What's missing is the business layer — analytics, subscriptions, marketplace.
+        That's MutePay.<br><br>
+        <span class="th">x402 เปิดตัวแค่ 12 เดือน แต่โตเร็วมาก — Google ใช้, Coinbase สร้าง, SDK มีทุกภาษา
+        สิ่งที่ยังขาดคือ "ชั้นธุรกิจ" — dashboard วิเคราะห์รายได้, ระบบ subscription, marketplace สำหรับค้นหา agent
+        MutePay มาเติมเต็มช่องว่างนี้</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section style="padding:4rem 0; text-align:center;">
+  <div class="container">
+    <h2 class="section-title">Founder-Market Fit</h2>
+    <div style="max-width:600px; margin:2rem auto; text-align:left;">
+      <div class="problem-card" style="margin-bottom:1rem;">
+        <div class="problem-icon">⛓️</div>
+        <h3>Blockchain CTO Background</h3>
+        <p>Our founder is CTO of a blockchain company (Water Ledger). Smart contracts, on-chain settlement, wallet infra — this is his wheelhouse.</p>
+      </div>
+      <div class="problem-card" style="margin-bottom:1rem;">
+        <div class="problem-icon">🤖</div>
+        <h3>AI Agent Operators</h3>
+        <p>We run AI agents 24/7 on cloud infrastructure. We understand the pain of monetizing AI services because we live it daily.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🏗️</div>
+        <h3>Full-Stack AI Team</h3>
+        <p>AI CEO + human co-founder. Product, marketing, dev — all handled by AI agents. We ARE the target customer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>MutePay — A MuteLab Product | Built with ☀️ by Sun</p>
+    <p style="margin-top:0.5rem; font-size:0.75rem; color:var(--muted2);">x402 is an open standard by Coinbase. MutePay is not affiliated with Coinbase.</p>
+  </div>
+</footer>
+
+</body>
+</html>
