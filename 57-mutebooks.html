@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteBooks — AI Financial Intelligence for Thai Freelancers & Gig Workers</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(99,102,241,0.15);
+    --border2: rgba(99,102,241,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-pale: rgba(99,102,241,0.08);
+    --primary-glow: rgba(99,102,241,0.2);
+    --secondary: #10b981;
+    --secondary-light: #34d399;
+    --secondary-pale: rgba(16,185,129,0.08);
+    --secondary-glow: rgba(16,185,129,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: white; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .hero { padding: 6rem 0 4rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    padding: 0.4rem 1.1rem; border-radius: 999px;
+    font-size: 0.72rem; font-weight: 600; color: var(--primary-light);
+    letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 800; line-height: 1.08;
+    margin: 1.5rem 0 1.2rem;
+    letter-spacing: -0.03em;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero h1 .highlight2 { color: var(--secondary-light); }
+  .hero .subtitle {
+    font-size: 1.15rem; color: var(--text2);
+    max-width: 700px; margin: 0 auto 2rem;
+    line-height: 1.7; font-weight: 300;
+  }
+
+  .hero-stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .hero-stat {
+    text-align: center; padding: 1.2rem 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .hero-stat .num {
+    font-size: 1.6rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .hero-stat .label {
+    font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: 'Space Mono', monospace;
+  }
+
+  section { padding: 4rem 0; }
+  .section-header { text-align: center; margin-bottom: 3rem; }
+  .section-header h2 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.6rem; }
+  .section-header p { color: var(--text2); font-size: 1rem; max-width: 600px; margin: 0 auto; line-height: 1.7; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2rem; transition: all 0.3s;
+  }
+  .card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.1); }
+  .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .card p { font-size: 0.88rem; color: var(--text2); line-height: 1.7; }
+
+  .score-section { background: var(--bg2); border-radius: 20px; padding: 3rem; margin: 2rem 0; }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .score-item { background: var(--surface); border-radius: 14px; padding: 1.5rem; text-align: center; border: 1px solid var(--border); }
+  .score-item .score-num { font-size: 2rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .score-item .score-max { font-size: 0.85rem; color: var(--muted); }
+  .score-item .score-label { font-size: 0.75rem; color: var(--text2); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Space Mono', monospace; }
+  .total-score { text-align: center; margin-top: 2rem; padding: 2rem; background: var(--primary-pale); border: 2px solid var(--primary); border-radius: 16px; }
+  .total-score .big { font-size: 3.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .total-score .verdict { font-size: 1.1rem; color: var(--primary-light); font-weight: 600; margin-top: 0.3rem; }
+
+  .revenue-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin: 1rem 0; }
+  .revenue-box h4 { color: var(--primary); font-family: 'Space Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .revenue-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .revenue-row:last-child { border: none; }
+  .revenue-label { color: var(--text2); font-size: 0.9rem; }
+  .revenue-val { color: var(--primary); font-weight: 700; font-family: 'Space Mono', monospace; font-size: 0.9rem; }
+
+  .risk-item { padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .risk-item:last-child { border: none; }
+  .risk-level { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+  .risk-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk-low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk-text { color: var(--text2); font-size: 0.88rem; margin-top: 0.3rem; line-height: 1.6; }
+
+  .insight-box {
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2); border-radius: 16px;
+    padding: 2.5rem; margin: 3rem 0; position: relative; overflow: hidden;
+  }
+  .insight-box::before { content: '💡'; position: absolute; top: -10px; right: 20px; font-size: 5rem; opacity: 0.08; }
+  .insight-box h3 { font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary-light); }
+  .insight-box p { color: var(--text2); line-height: 1.8; font-size: 0.95rem; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--muted); font-size: 0.8rem; text-decoration: none;
+    padding: 1.5rem 0; font-family: 'Space Mono', monospace; transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--primary); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 4rem 0 3rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-stats { gap: 1rem; }
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 0 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <a href="index.html" class="back-link">← <span class="en">Back to Dashboard</span><span class="th">กลับไปหน้ารวม</span></a>
+    <div class="hero-badge">📒 <span class="en">Idea #57 — FinTech / Personal Finance / B2C</span><span class="th">ไอเดีย #57 — FinTech / การเงินส่วนบุคคล / B2C</span></div>
+    <h1>
+      <span class="en"><span class="highlight">MuteBooks</span> — AI Financial<br>Intelligence for <span class="highlight2">Thai Gig Workers</span></span>
+      <span class="th"><span class="highlight">MuteBooks</span> — AI จัดการเงิน<br>สำหรับ<span class="highlight2">ฟรีแลนซ์ & Gig</span> ไทย</span>
+    </h1>
+    <p class="subtitle">
+      <span class="en">AI-powered personal finance app on LINE for Thailand's 10M+ freelancers, gig workers, and micro-entrepreneurs. Auto-tracks income from multiple platforms (Grab, Shopee, LINE MAN), categorizes expenses via receipt photos, calculates tax obligations, and helps file ภ.ง.ด.90/91. The Thai YNAB + TurboTax for the gig economy — on LINE, not an app.</span>
+      <span class="th">แอปจัดการเงินอัจฉริยะบน LINE สำหรับฟรีแลนซ์ คนขับ Grab ขายของ Shopee กว่า 10 ล้านคน ติดตามรายได้หลายแพลตฟอร์มอัตโนมัติ จัดหมวดรายจ่ายจากใบเสร็จ คำนวณภาษี ช่วยยื่น ภ.ง.ด.90/91 — ทั้งหมดบน LINE ไม่ต้องโหลดแอป</span>
+    </p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">10M+</div>
+        <div class="label"><span class="en">Gig/Freelance Workers</span><span class="th">ฟรีแลนซ์ & Gig Workers</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">70M+</div>
+        <div class="label"><span class="en">PromptPay Accounts</span><span class="th">บัญชี PromptPay</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">ZERO</div>
+        <div class="label"><span class="en">Thai AI Personal Finance</span><span class="th">AI จัดการเงินส่วนตัวไทย</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">33/50</div>
+        <div class="label"><span class="en">Idea Score</span><span class="th">คะแนนไอเดีย</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">🔥 The Problem</span><span class="th">🔥 ปัญหา</span></h2>
+      <p>
+        <span class="en">Thailand's gig economy is booming — but millions of workers have ZERO financial tools. Income comes from 3-5 platforms, expenses are untracked, and the Revenue Department is cracking down on undeclared income.</span>
+        <span class="th">เศรษฐกิจ Gig ไทยเติบโตสูง — แต่คนทำงานหลายล้านคนไม่มีเครื่องมือจัดการเงินเลย รายได้มาจาก 3-5 แพลตฟอร์ม รายจ่ายไม่ได้บันทึก และสรรพากรเริ่มเข้มงวดกับรายได้ที่ไม่ได้แจ้ง</span>
+      </p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">💸</div>
+        <h3><span class="en">Multi-Platform Income Chaos</span><span class="th">รายได้กระจายจากหลายแพลตฟอร์ม</span></h3>
+        <p><span class="en">A typical gig worker earns from Grab + Shopee seller + freelance design + LINE sticker sales. Income arrives in 3 bank accounts via PromptPay, cash, and platform wallets. Nobody tracks the total. Tax time = panic.</span><span class="th">คนทำ Gig มีรายได้จาก Grab + ขายของ Shopee + ฟรีแลนซ์ออกแบบ + ขายสติกเกอร์ LINE เงินเข้า 3 บัญชีผ่าน PromptPay, เงินสด, และ wallet แพลตฟอร์ม ไม่มีใครรวมยอด เวลาภาษีก็ตกใจ</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏦</div>
+        <h3><span class="en">Revenue Dept Crackdown</span><span class="th">สรรพากรเข้มงวดขึ้น</span></h3>
+        <p><span class="en">Since 2020, Thai Revenue Department can track PromptPay/e-payment data: 3,000+ THB per transaction OR 200K+ THB/year cumulative triggers reporting to tax authorities. Millions of gig workers are unknowingly non-compliant.</span><span class="th">ตั้งแต่ 2020 สรรพากรติดตามข้อมูล PromptPay/e-payment ได้: ธุรกรรม 3,000+ บาท หรือสะสม 200,000+ บาท/ปี ถูกรายงานอัตโนมัติ คนทำ Gig หลายล้านคนไม่รู้ว่าทำผิดกฎหมาย</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3><span class="en">No Tools for This Segment</span><span class="th">ไม่มีเครื่องมือสำหรับกลุ่มนี้</span></h3>
+        <p><span class="en">FlowAccount = for registered businesses, not individuals. YNAB/Copilot = English-only, no Thai banks. Banking apps = show transactions, don't categorize or calculate tax. Generic expense trackers = no Thai tax knowledge, no PromptPay, no LINE.</span><span class="th">FlowAccount = สำหรับธุรกิจจดทะเบียน ไม่ใช่บุคคล YNAB = อังกฤษ ไม่เชื่อมธนาคารไทย แอปธนาคาร = แสดงรายการแต่ไม่จัดหมวดหรือคำนวณภาษี แอปบันทึกรายจ่ายทั่วไป = ไม่รู้ภาษีไทย ไม่มี PromptPay ไม่มี LINE</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">✨ The Solution</span><span class="th">✨ ทางออก</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3><span class="en">Receipt Photo → AI Categorization</span><span class="th">ถ่ายใบเสร็จ → AI จัดหมวด</span></h3>
+        <p><span class="en">Snap a photo of any receipt on LINE. Gemini Vision extracts items, amounts, merchant. AI auto-categorizes into tax-deductible categories. No manual data entry ever again. Works for Thai receipts, handwritten notes, even 7-Eleven slips.</span><span class="th">ถ่ายใบเสร็จส่งใน LINE Gemini Vision อ่านรายการ จำนวนเงิน ร้านค้า AI จัดหมวดค่าใช้จ่ายที่ลดหย่อนภาษีอัตโนมัติ ไม่ต้องกรอกมือ ใช้ได้กับใบเสร็จไทย บิลมือเขียน แม้แต่สลิป 7-Eleven</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3><span class="en">Multi-Platform Income Sync</span><span class="th">ซิงค์รายได้หลายแพลตฟอร์ม</span></h3>
+        <p><span class="en">Connect KBank/SCB via open banking APIs. Import Shopee seller reports. Grab driver earnings CSV. LINE Sticker/LINE Creators Market earnings. AI reconciles everything into one dashboard with real-time income tracking.</span><span class="th">เชื่อมต่อ KBank/SCB ผ่าน open banking API นำเข้ารายงานผู้ขาย Shopee รายได้ Grab CSV LINE Sticker/Creators Market AI รวมทุกอย่างในแดชบอร์ดเดียว ติดตามรายได้แบบ real-time</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧮</div>
+        <h3><span class="en">AI Tax Calculator & Filing Helper</span><span class="th">AI คำนวณภาษี & ช่วยยื่น</span></h3>
+        <p><span class="en">Real-time tax obligation tracker based on actual income. AI suggests optimal deductions (ค่าลดหย่อน). Pre-fills ภ.ง.ด.90/91 forms. Alerts when approaching tax brackets. Year-round planning, not just March panic.</span><span class="th">ติดตามภาระภาษี real-time จากรายได้จริง AI แนะนำค่าลดหย่อนที่ดีที่สุด กรอกแบบ ภ.ง.ด.90/91 ให้ล่วงหน้า แจ้งเตือนเมื่อใกล้ขยับขั้นภาษี วางแผนตลอดปี ไม่ใช่แค่ตื่นตระหนกเดือนมีนาฯ</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3><span class="en">LINE-Native Everything</span><span class="th">ทุกอย่างบน LINE</span></h3>
+        <p><span class="en">Log expenses by texting LINE: "กาแฟ 65 บาท" or "น้ำมัน 1500". Get weekly financial summaries via LINE push. Ask "เดือนนี้ใช้เท่าไหร่?" and get instant AI answer. Zero learning curve — it's just chat.</span><span class="th">บันทึกรายจ่ายพิมพ์ใน LINE: "กาแฟ 65 บาท" หรือ "น้ำมัน 1500" รับสรุปการเงินรายสัปดาห์ผ่าน LINE ถาม "เดือนนี้ใช้เท่าไหร่?" ได้คำตอบทันที ไม่ต้องเรียนรู้อะไร — แค่แชท</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">📈 Market Opportunity</span><span class="th">📈 โอกาสทางตลาด</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">👷</div>
+        <h3><span class="en">10M+ Gig/Freelance Workers</span><span class="th">ฟรีแลนซ์/Gig 10 ล้านคน+</span></h3>
+        <p><span class="en">Thailand has ~39M labor force. ILO estimates 50%+ work in informal/gig economy. Grab drivers (200K+), Shopee/Lazada sellers (500K+), food delivery riders, freelance designers, content creators, tutors, massage therapists — all with multi-source income and zero financial tools.</span><span class="th">แรงงานไทย ~39 ล้านคน ILO ประเมิน 50%+ ทำงานนอกระบบ/Gig คนขับ Grab (200K+), ผู้ขาย Shopee/Lazada (500K+), ไรเดอร์ส่งอาหาร, ฟรีแลนซ์ดีไซน์, content creators, ติวเตอร์ — ทุกคนมีรายได้หลายทางแต่ไม่มีเครื่องมือจัดการเงิน</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3><span class="en">70M+ PromptPay = Tax Trail</span><span class="th">PromptPay 70M+ = ร่องรอยภาษี</span></h3>
+        <p><span class="en">Nearly every Thai adult has PromptPay. Revenue Department tracks e-payment transactions. The 200K THB/year cumulative threshold means most active gig workers are already in the system — they just don't know it. Compliance urgency is rising fast.</span><span class="th">คนไทยเกือบทุกคนมี PromptPay สรรพากรติดตามธุรกรรม e-payment เกณฑ์สะสม 200K บาท/ปี หมายความว่าคนทำ Gig ส่วนใหญ่อยู่ในระบบแล้ว — แค่ไม่รู้ตัว ความเร่งด่วนเรื่องภาษีเพิ่มขึ้นเรื่อยๆ</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌏</div>
+        <h3><span class="en">$1.5B+ Global Personal Finance Software</span><span class="th">ตลาดซอฟต์แวร์การเงินส่วนบุคคล $1.5B+</span></h3>
+        <p><span class="en">YNAB ($109/yr), Copilot Money ($12/mo), Monarch ($10/mo) — proven that consumers pay for finance tools. Thai market is completely unserved. FlowAccount has 130K+ businesses but targets SMEs, not individuals. Zero personal finance AI exists for Thai consumers.</span><span class="th">YNAB ($109/ปี), Copilot Money ($12/เดือน), Monarch ($10/เดือน) — พิสูจน์แล้วว่าผู้บริโภคจ่ายเพื่อเครื่องมือการเงิน ตลาดไทยไม่มีเลย FlowAccount มี 130K+ ธุรกิจแต่เน้น SME ไม่ใช่บุคคล</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">💰 Revenue Model</span><span class="th">💰 โมเดลรายได้</span></h2>
+    </div>
+    <div class="revenue-box">
+      <h4><span class="en">Pricing Tiers</span><span class="th">แพ็คเกจราคา</span></h4>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">Free — Basic expense logging on LINE, manual input, monthly summary</span><span class="th">ฟรี — บันทึกรายจ่ายพื้นฐานบน LINE, กรอกมือ, สรุปรายเดือน</span></span>
+        <span class="revenue-val">฿0</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿99/mo Pro — Bank sync (KBank/SCB), AI auto-categorization, receipt OCR, tax estimation, income vs expense reports</span><span class="th">฿99/เดือน Pro — ซิงค์ธนาคาร, AI จัดหมวดอัตโนมัติ, OCR ใบเสร็จ, ประมาณภาษี, รายงานรายรับ-จ่าย</span></span>
+        <span class="revenue-val">฿99</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿299/mo Premium — Tax filing assistant (ภ.ง.ด.90/91 pre-fill), multi-platform income aggregation, deduction optimizer, accountant export</span><span class="th">฿299/เดือน Premium — ช่วยยื่นภาษี (กรอก ภ.ง.ด.90/91), รวมรายได้หลายแพลตฟอร์ม, แนะนำค่าลดหย่อน, ส่งออกให้นักบัญชี</span></span>
+        <span class="revenue-val">฿299</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">B2B Platform — Grab, Shopee, LINE MAN embed financial wellness tool for their workers — per-user licensing</span><span class="th">B2B แพลตฟอร์ม — Grab, Shopee, LINE MAN ฝัง MuteBooks ให้คนขับ/ผู้ขาย — คิดราคาต่อ user</span></span>
+        <span class="revenue-val">฿29-49/user</span>
+      </div>
+    </div>
+    <div class="revenue-box">
+      <h4><span class="en">Revenue Math → $1M</span><span class="th">คำนวณรายได้ → $1M</span></h4>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">20,000 Pro × ฿99/mo</span></span>
+        <span class="revenue-val">฿23.8M/yr</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">5,000 Premium × ฿299/mo</span></span>
+        <span class="revenue-val">฿17.9M/yr</span>
+      </div>
+      <div class="revenue-row" style="border-top: 2px solid var(--primary); padding-top: 1rem; margin-top: 0.5rem;">
+        <span class="revenue-label" style="font-weight: 700; color: var(--text);"><span class="en">B2C Total</span><span class="th">รวม B2C</span></span>
+        <span class="revenue-val" style="font-size: 1.1rem;">฿41.7M ≈ $1.3M ✅</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">B2B Platform partnerships (Grab, Shopee, LINE MAN)</span></span>
+        <span class="revenue-val">+฿5-15M/yr</span>
+      </div>
+      <div class="revenue-row" style="border-top: 2px solid var(--primary); padding-top: 1rem;">
+        <span class="revenue-label" style="font-weight: 700; color: var(--primary-light);"><span class="en">Need 0.25% of 10M gig workers to pay</span><span class="th">ต้องการแค่ 0.25% ของคนทำ Gig 10 ล้านคน</span></span>
+        <span class="revenue-val" style="color: var(--primary-light);">✅</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">⚔️ Competition</span><span class="th">⚔️ คู่แข่ง</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3><span class="en">Global Tools (Can't Serve Thailand)</span><span class="th">เครื่องมือโลก (ใช้ในไทยไม่ได้)</span></h3>
+        <p><span class="en">YNAB ($109/yr), Copilot Money ($12/mo), Monarch ($10/mo) — ALL English-only, connect to Plaid/US banks only. ZERO support for Thai banks (KBank, SCB, BBL), PromptPay, or Thai tax system (ภ.ง.ด.). Structurally impossible to serve Thai market.</span><span class="th">YNAB ($109/ปี), Copilot Money ($12/เดือน) — อังกฤษทั้งหมด เชื่อมแค่ธนาคารอเมริกา ไม่รองรับ KBank, SCB, PromptPay หรือภาษีไทย (ภ.ง.ด.) โครงสร้างไม่สามารถเข้าไทยได้</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🇹🇭</div>
+        <h3><span class="en">Thai Apps (Wrong Segment)</span><span class="th">แอปไทย (ผิดกลุ่มเป้าหมาย)</span></h3>
+        <p><span class="en">FlowAccount: business accounting for SMEs (invoices, quotations, VAT) — overkill for individuals. Banking apps (K PLUS, SCB EASY): show transactions but no categorization, no tax, no AI insights. Money Wallet/generic trackers: manual input, no Thai tax, no bank sync, no LINE.</span><span class="th">FlowAccount: บัญชีธุรกิจสำหรับ SME (ใบกำกับ, ใบเสนอราคา, VAT) — เกินไปสำหรับบุคคล แอปธนาคาร (K PLUS, SCB EASY): แสดงรายการแต่ไม่จัดหมวด ไม่คำนวณภาษี ไม่มี AI แอปบันทึกทั่วไป: กรอกมือ ไม่รู้ภาษีไทย ไม่ซิงค์ธนาคาร</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3><span class="en">The Gap</span><span class="th">ช่องว่าง</span></h3>
+        <p><span class="en">ZERO Thai AI personal finance app designed for gig workers/freelancers. The intersection of LINE-native + Thai bank sync + multi-platform income + Thai tax (ภ.ง.ด.) + AI categorization is COMPLETELY EMPTY. Nobody serves the 10M+ informal economy workers.</span><span class="th">ไม่มีแอปจัดการเงินส่วนตัว AI ภาษาไทยสำหรับฟรีแลนซ์/Gig จุดตัดของ LINE + ซิงค์ธนาคารไทย + รวมรายได้หลายแพลตฟอร์ม + ภาษีไทย (ภ.ง.ด.) + AI = ว่างเปล่าทั้งหมด ไม่มีใครรับใช้คนทำงานนอกระบบ 10 ล้านคน</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">⚠️ Risks</span><span class="th">⚠️ ความเสี่ยง</span></h2>
+    </div>
+    <div class="card" style="max-width: 800px; margin: 0 auto;">
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM-HIGH</span>
+        <p class="risk-text"><span class="en">B2C monetization at ฿99-299/mo is hard in Thailand — consumers resist subscriptions. 25,000 paying users is ambitious for a personal finance tool. Mitigate: generous free tier as funnel, B2B platform partnerships as primary revenue (Grab/Shopee embed = predictable revenue).</span><span class="th">การหารายได้ B2C ที่ ฿99-299/เดือน ยากในไทย — ผู้บริโภคไม่ชอบ subscription 25,000 คนจ่ายเงินเป็นเป้าที่ท้าทาย แก้: ฟรีเทียร์กว้างเป็น funnel, B2B กับแพลตฟอร์ม (Grab/Shopee ฝังเข้าไป) เป็นรายได้หลัก</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">Bank open API access requires BOT (Bank of Thailand) regulatory approval for financial data aggregation. KBank and SCB have open banking APIs but access is gated. Mitigate: start with CSV/statement import, bank API as Phase 2.</span><span class="th">การเข้าถึง open banking API ต้องได้รับอนุมัติจาก ธปท. KBank และ SCB มี open banking API แต่มีขั้นตอน แก้: เริ่มด้วย CSV/import statement, bank API เป็น Phase 2</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">KBank/SCB or banks launching their own AI finance tools. K PLUS already has basic spending summaries. Mitigate: banks are single-account view, MuteBooks is cross-bank + cross-platform + tax-focused. Different value proposition.</span><span class="th">KBank/SCB อาจสร้าง AI tools เอง K PLUS มีสรุปรายจ่ายพื้นฐานแล้ว แก้: ธนาคารดูแค่บัญชีตัวเอง MuteBooks ดูข้ามธนาคาร + ข้ามแพลตฟอร์ม + เน้นภาษี คุณค่าต่างกัน</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">Tax advice accuracy — wrong tax calculation could cause legal issues. Mitigate: position as "educational/estimation tool" with disclaimers. Partner with licensed accountants for premium tier verification.</span><span class="th">ความถูกต้องของการคำนวณภาษี — คำนวณผิดอาจมีปัญหาทางกฎหมาย แก้: วางตำแหน่งเป็น "เครื่องมือประมาณการ/ให้ความรู้" พร้อม disclaimer ร่วมมือกับนักบัญชีรับอนุญาตสำหรับ premium</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-low">LOW</span>
+        <p class="risk-text"><span class="en">No fintech domain expertise. Mitigate: Thai tax rules are well-documented (rd.go.th), AI can learn them. Receipt OCR = Gemini Vision handles Thai well. Core tech is straightforward.</span><span class="th">ไม่มีความเชี่ยวชาญด้าน fintech แก้: กฎภาษีไทยมีเอกสารชัดเจน (rd.go.th) AI เรียนรู้ได้ Receipt OCR = Gemini Vision อ่านไทยได้ดี เทคโนโลยีหลักไม่ซับซ้อน</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section>
+  <div class="container">
+    <div class="score-section">
+      <div class="section-header">
+        <h2><span class="en">📊 Score Breakdown</span><span class="th">📊 รายละเอียดคะแนน</span></h2>
+      </div>
+      <div class="score-grid">
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Market</span><span class="th">ตลาด</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Problem</span><span class="th">ปัญหา</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Competition Gap</span><span class="th">ช่องว่าง</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Build Feasibility</span><span class="th">สร้างได้</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">5<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Our Advantage</span><span class="th">ข้อได้เปรียบ</span></div>
+        </div>
+      </div>
+      <div class="total-score">
+        <div class="big">33/50</div>
+        <div class="verdict">✅ <span class="en">PASS — Massive underserved market, but B2C monetization risk</span><span class="th">ผ่าน — ตลาดใหญ่ไม่มีคนให้บริการ แต่มีความเสี่ยงเรื่อง B2C monetization</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY INSIGHT -->
+<section>
+  <div class="container">
+    <div class="insight-box">
+      <h3><span class="en">💡 Key Insight</span><span class="th">💡 ข้อมูลเชิงลึก</span></h3>
+      <p>
+        <span class="en">The Revenue Department's PromptPay tracking is the CATALYST that transforms this from "nice-to-have" to "must-have." Before 2020, gig workers could ignore taxes. Now, every PromptPay transaction over ฿3,000 (or cumulative ฿200K/year) is reported to tax authorities. Millions of workers are suddenly non-compliant without knowing it. MuteBooks positions as the "make-it-easy-not-scary" solution — not a tax tool, but a financial companion that happens to keep you compliant. The LINE delivery is key: gig workers don't download new apps. They live on LINE. Texting "กาแฟ 65" to log an expense has ZERO friction. The B2B platform angle (Grab/Shopee embedding MuteBooks for their workers) is potentially bigger than B2C — platforms have regulatory incentive to help workers comply with tax laws, and they have the distribution to deliver it.</span>
+        <span class="th">การติดตาม PromptPay ของสรรพากรคือตัวเร่งที่เปลี่ยนจาก "มีก็ดี" เป็น "ต้องมี" ก่อน 2020 คนทำ Gig ไม่สนภาษีได้ ตอนนี้ทุกธุรกรรม PromptPay เกิน ฿3,000 (หรือสะสม ฿200K/ปี) ถูกรายงาน คนทำงานหลายล้านคนทำผิดกฎหมายโดยไม่รู้ตัว MuteBooks คือทางออกที่ "ง่ายไม่น่ากลัว" — ไม่ใช่แค่เครื่องมือภาษี แต่เป็นเพื่อนจัดการเงินที่ช่วยให้คุณไม่ผิดกฎหมาย LINE คือกุญแจ: คนทำ Gig ไม่โหลดแอปใหม่ พิมพ์ "กาแฟ 65" บันทึกรายจ่ายได้ทันทีไม่มี friction B2B แพลตฟอร์ม (Grab/Shopee ฝัง MuteBooks ให้คนขับ/ผู้ขาย) อาจใหญ่กว่า B2C — แพลตฟอร์มมีแรงจูงใจด้านกฎหมายช่วยคนทำงานเรื่องภาษี และมี distribution พร้อม</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()));
+  localStorage.setItem('lang', lang);
+}
+const saved = localStorage.getItem('lang');
+if (saved) setLang(saved);
+</script>
+</body>
+</html>
