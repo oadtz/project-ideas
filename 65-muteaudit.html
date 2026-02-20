@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteAudit — AI Smart Contract Security Auditor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(245,158,11,0.08), 0 0 0 1px rgba(245,158,11,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .wf-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all 0.2s; position: relative;
+  }
+  .wf-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .wf-num {
+    font-size: 0.65rem; font-weight: 700; color: var(--primary);
+    font-family: 'Space Mono', monospace; margin-bottom: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .wf-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+  .wf-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+  .comp-table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .comp-table th {
+    background: var(--surface2); padding: 0.75rem 1rem;
+    text-align: left; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table td {
+    padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text2);
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .highlight { background: var(--primary-pale); }
+  .comp-table .highlight td { color: var(--primary-light); font-weight: 600; }
+
+  .rev-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .rev-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+    transition: all 0.2s;
+  }
+  .rev-card:hover { border-color: var(--border2); }
+  .rev-tier {
+    font-size: 0.65rem; font-weight: 700; color: var(--primary);
+    font-family: 'Space Mono', monospace; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 0.5rem;
+  }
+  .rev-price { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 0.25rem; font-family: 'Space Mono', monospace; }
+  .rev-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+  .rev-features { list-style: none; }
+  .rev-features li {
+    font-size: 0.78rem; color: var(--text2); padding: 0.3rem 0;
+    padding-left: 1.2rem; position: relative;
+  }
+  .rev-features li::before {
+    content: '✓'; position: absolute; left: 0; color: var(--green);
+    font-weight: 700; font-size: 0.7rem;
+  }
+
+  .risk-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .risk-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+  }
+  .risk-level {
+    font-size: 0.65rem; font-weight: 700;
+    font-family: 'Space Mono', monospace; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 0.5rem;
+  }
+  .risk-level.high { color: var(--red); }
+  .risk-level.medium { color: var(--amber); }
+  .risk-level.low { color: var(--green); }
+  .risk-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .risk-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .verdict {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 3rem;
+    text-align: center; margin: 2rem 0;
+  }
+  .verdict-score { font-size: 4rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .verdict-label { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+  .verdict-text { color: var(--muted); font-size: 0.9rem; line-height: 1.7; max-width: 600px; margin: 0 auto; }
+
+  footer {
+    padding: 3rem 0; text-align: center;
+    color: var(--muted2); font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+  }
+
+  @media (max-width: 768px) {
+    .token-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .score-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← ALL IDEAS</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span class="en">MuteAudit</span>
+        <span class="th">MuteAudit</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span class="en">RESEARCH PHASE</span>
+      <span class="th">ขั้นตอนวิจัย</span>
+      <span class="topbar-badge">#65</span>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="en">🔐 BLOCKCHAIN SECURITY × AI</span>
+        <span class="th">🔐 ความปลอดภัย BLOCKCHAIN × AI</span>
+      </div>
+      <h1>
+        <span class="en"><span class="gold">AI Smart Contract</span> Security Auditor — <span class="purple">10x Faster, 10x Cheaper</span></span>
+        <span class="th"><span class="gold">AI ตรวจสอบ Smart Contract</span> — <span class="purple">เร็วกว่า 10 เท่า ถูกกว่า 10 เท่า</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI-powered smart contract security auditing that finds vulnerabilities in <strong>hours, not weeks</strong>. From <strong>$500 per audit</strong> instead of $50K+. Democratizing blockchain security for every DeFi project.</span>
+        <span class="th">AI ตรวจสอบความปลอดภัย Smart Contract หาช่องโหว่ใน<strong>ชั่วโมง ไม่ใช่สัปดาห์</strong> เริ่มต้น<strong> $500 ต่อ audit</strong> แทนที่จะ $50K+ ทำให้ทุกโปรเจค DeFi เข้าถึงความปลอดภัยได้</span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">36</div>
+          <div class="score-meta">
+            <strong class="en">MuteLab Score</strong>
+            <strong class="th">คะแนน MuteLab</strong>
+            <span>/50 — STRONG PASS</span>
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-num purple">$37.4B</div>
+          <div class="score-meta">
+            <strong class="en">Market by 2029</strong>
+            <strong class="th">มูลค่าตลาดปี 2029</strong>
+            <span>65.5% CAGR</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKET DATA -->
+  <div class="token-window">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        <span class="en">market_intelligence.sol — BLOCKCHAIN SECURITY DATA</span>
+        <span class="th">market_intelligence.sol — ข้อมูลตลาดความปลอดภัย BLOCKCHAIN</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🛡️</div>
+          <div class="tc-name">
+            <span class="en">MARKET SIZE (2029)</span>
+            <span class="th">ขนาดตลาด (2029)</span>
+          </div>
+          <div class="tc-value">$37.4B</div>
+          <div class="tc-sub">Blockchain Security Market</div>
+          <div class="tc-badge">65.5% CAGR ↑</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">💀</div>
+          <div class="tc-name">
+            <span class="en">HACKS PREVENTED</span>
+            <span class="th">แฮ็คที่ป้องกันได้</span>
+          </div>
+          <div class="tc-value">$25B+</div>
+          <div class="tc-sub">Immunefi alone</div>
+          <div class="tc-badge purple">Still billions lost yearly</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">⏳</div>
+          <div class="tc-name">
+            <span class="en">TRADITIONAL AUDIT</span>
+            <span class="th">AUDIT แบบเดิม</span>
+          </div>
+          <div class="tc-value">$50K-500K</div>
+          <div class="tc-sub">4-12 week wait</div>
+          <div class="tc-badge">Most projects can't afford</div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span class="en">DISRUPTION POTENTIAL</span>
+          <span class="th">ศักยภาพในการ DISRUPT</span>
+          <span>36/50</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:72%"></div></div>
+        <div class="chain-steps">
+          <span>Idea</span>
+          <span>Research ✓</span>
+          <span>MVP</span>
+          <span>Launch</span>
+          <span>Scale</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY STATS -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🔍</div>
+      <div class="stat-num"><span class="gold">$180B+</span></div>
+      <div class="stat-label">
+        <span class="en">Protected by Immunefi's ecosystem — shows massive demand for security</span>
+        <span class="th">มูลค่าที่ Immunefi ปกป้อง — แสดงถึงความต้องการด้านความปลอดภัย</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⚡</div>
+      <div class="stat-num"><span class="purple">60K+</span></div>
+      <div class="stat-label">
+        <span class="en">Security researchers in Immunefi ecosystem — fragmented, expensive human labor</span>
+        <span class="th">นักวิจัยความปลอดภัย — แรงงานคนที่กระจัดกระจายและแพง</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏢</div>
+      <div class="stat-num">650<span class="gold">+</span></div>
+      <div class="stat-label">
+        <span class="en">Protocols secured by Immunefi alone — thousands more unaudited</span>
+        <span class="th">โปรโตคอลที่ Immunefi รักษา — อีกเป็นพันยังไม่ได้ตรวจ</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num"><span class="gold">$40B+</span></div>
+      <div class="stat-label">
+        <span class="en">DeFi TVL secured by Cyfrin — auditing is big business</span>
+        <span class="th">DeFi TVL ที่ Cyfrin ดูแล — ธุรกิจ audit ใหญ่มาก</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">⚙️ HOW IT WORKS</span>
+      <span class="th">⚙️ วิธีการทำงาน</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">AI-Powered Security in 3 Steps</span>
+      <span class="th">ความปลอดภัยด้วย AI ใน 3 ขั้นตอน</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Upload your smart contract code → AI analyzes for 200+ vulnerability patterns → Get detailed report with fixes in hours, not weeks.</span>
+      <span class="th">อัปโหลดโค้ด smart contract → AI วิเคราะห์ช่องโหว่กว่า 200 รูปแบบ → รับรายงานละเอียดพร้อมวิธีแก้ไขภายในชั่วโมง</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-card">
+        <div class="wf-num">STEP 01</div>
+        <div class="wf-icon">📤</div>
+        <div class="wf-title">
+          <span class="en">Upload & Scan</span>
+          <span class="th">อัปโหลด & สแกน</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Connect your GitHub repo or paste Solidity/Vyper/Move code. AI instantly begins static analysis + LLM-powered semantic review across 200+ known vulnerability patterns (reentrancy, overflow, access control, etc.)</span>
+          <span class="th">เชื่อมต่อ GitHub repo หรือวาง Solidity/Vyper/Move code AI เริ่มวิเคราะห์ static + semantic review ด้วย LLM ทันที ครอบคลุม 200+ รูปแบบช่องโหว่</span>
+        </div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-num">STEP 02</div>
+        <div class="wf-icon">🧠</div>
+        <div class="wf-title">
+          <span class="en">AI Deep Analysis</span>
+          <span class="th">AI วิเคราะห์เชิงลึก</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Multi-model AI ensemble: static analyzer (Slither-class) + LLM reasoning (business logic flaws) + formal verification for critical paths. Cross-references against database of 10,000+ historical exploits.</span>
+          <span class="th">AI หลายโมเดลทำงานร่วมกัน: static analyzer + LLM reasoning (ตรวจ business logic) + formal verification สำหรับ critical paths เทียบกับฐานข้อมูล 10,000+ exploit ในอดีต</span>
+        </div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-num">STEP 03</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Report & Monitor</span>
+          <span class="th">รายงาน & เฝ้าระวัง</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Detailed PDF report with severity ratings (Critical/High/Medium/Low), specific code line references, remediation suggestions, and optional continuous monitoring for deployed contracts.</span>
+          <span class="th">รายงาน PDF ละเอียดพร้อมระดับความรุนแรง (Critical/High/Medium/Low) อ้างอิงบรรทัดโค้ด คำแนะนำการแก้ไข และเฝ้าระวังต่อเนื่องหลัง deploy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">🏆 COMPETITIVE LANDSCAPE</span>
+      <span class="th">🏆 การแข่งขัน</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Gap: Affordable AI-First Auditing</span>
+      <span class="th">ช่องว่าง: AI Audit ราคาเข้าถึงได้</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">CertiK charges $50K-500K. Cyfrin secures $40B+ TVL. But 90% of DeFi projects launch UNAUDITED because they can't afford traditional audits. That's where MuteAudit fits.</span>
+      <span class="th">CertiK คิด $50K-500K Cyfrin ดูแล $40B+ TVL แต่ 90% ของโปรเจค DeFi เปิดตัว โดยไม่ผ่าน audit เพราะจ่ายไม่ไหว นั่นคือที่ที่ MuteAudit เข้ามา</span>
+    </p>
+    <div class="comp-table-wrap">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th><span class="en">Price</span><span class="th">ราคา</span></th>
+            <th><span class="en">Speed</span><span class="th">ความเร็ว</span></th>
+            <th><span class="en">AI-Powered</span><span class="th">ใช้ AI</span></th>
+            <th><span class="en">Target</span><span class="th">กลุ่มเป้าหมาย</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CertiK</td>
+            <td>$50K-500K</td>
+            <td>4-12 weeks</td>
+            <td>Partial</td>
+            <td>Enterprise DeFi</td>
+          </tr>
+          <tr>
+            <td>OpenZeppelin</td>
+            <td>$50K-200K</td>
+            <td>4-8 weeks</td>
+            <td>Manual + tools</td>
+            <td>Top-tier protocols</td>
+          </tr>
+          <tr>
+            <td>Cyfrin</td>
+            <td>$30K-150K</td>
+            <td>3-6 weeks</td>
+            <td>Manual + Aderyn</td>
+            <td>Mid-Large DeFi</td>
+          </tr>
+          <tr>
+            <td>Immunefi (Bug Bounty)</td>
+            <td>Variable</td>
+            <td>Ongoing</td>
+            <td>Human researchers</td>
+            <td>Post-launch</td>
+          </tr>
+          <tr>
+            <td>Slither (Free tool)</td>
+            <td>Free</td>
+            <td>Minutes</td>
+            <td>Static only</td>
+            <td>Developers (DIY)</td>
+          </tr>
+          <tr class="highlight">
+            <td><strong>MuteAudit</strong></td>
+            <td><strong>$500-5,000</strong></td>
+            <td><strong>Hours-Days</strong></td>
+            <td><strong>AI-First</strong></td>
+            <td><strong>All DeFi projects</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REVENUE -->
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">💰 REVENUE MODEL</span>
+      <span class="th">💰 โมเดลรายได้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">SaaS + Per-Audit Pricing</span>
+      <span class="th">SaaS + คิดราคาต่อ Audit</span>
+    </h2>
+    <div class="rev-grid">
+      <div class="rev-card">
+        <div class="rev-tier">SCAN — FREE</div>
+        <div class="rev-price">$0</div>
+        <div class="rev-desc">
+          <span class="en">Quick vulnerability scan — hook developers</span>
+          <span class="th">สแกนช่องโหว่เร็ว — ดึงดูดนักพัฒนา</span>
+        </div>
+        <ul class="rev-features">
+          <li>Basic static analysis</li>
+          <li>Top 10 vulnerability check</li>
+          <li>Summary report only</li>
+        </ul>
+      </div>
+      <div class="rev-card">
+        <div class="rev-tier">AUDIT — PER REPORT</div>
+        <div class="rev-price">$500-2,000</div>
+        <div class="rev-desc">
+          <span class="en">Full AI audit with detailed report</span>
+          <span class="th">AI audit เต็มรูปแบบพร้อมรายงานละเอียด</span>
+        </div>
+        <ul class="rev-features">
+          <li>200+ vulnerability patterns</li>
+          <li>LLM business logic review</li>
+          <li>Detailed PDF report</li>
+          <li>Remediation suggestions</li>
+        </ul>
+      </div>
+      <div class="rev-card">
+        <div class="rev-tier">PRO — MONTHLY</div>
+        <div class="rev-price">$499/mo</div>
+        <div class="rev-desc">
+          <span class="en">Continuous monitoring + unlimited scans</span>
+          <span class="th">เฝ้าระวังต่อเนื่อง + สแกนไม่จำกัด</span>
+        </div>
+        <ul class="rev-features">
+          <li>Unlimited AI scans</li>
+          <li>CI/CD integration</li>
+          <li>Real-time monitoring</li>
+          <li>Slack/Discord alerts</li>
+        </ul>
+      </div>
+      <div class="rev-card">
+        <div class="rev-tier">ENTERPRISE</div>
+        <div class="rev-price">$2,000-5,000/mo</div>
+        <div class="rev-desc">
+          <span class="en">White-label + human expert review</span>
+          <span class="th">White-label + ตรวจสอบโดยผู้เชี่ยวชาญ</span>
+        </div>
+        <ul class="rev-features">
+          <li>AI + Human expert review</li>
+          <li>White-label reports</li>
+          <li>Custom vulnerability rules</li>
+          <li>Priority SLA</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVENUE MATH -->
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">📊 REVENUE MATH</span>
+      <span class="th">📊 คำนวณรายได้</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Path to $1M ARR</span>
+      <span class="th">เส้นทางสู่ $1M ARR</span>
+    </h2>
+    <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="stat-panel">
+        <div class="stat-icon-wrap">📅</div>
+        <div class="stat-num"><span class="gold">$15K</span></div>
+        <div class="stat-label">
+          <span class="en"><strong>Month 6:</strong> 20 audits × $750 avg = $15K MRR</span>
+          <span class="th"><strong>เดือนที่ 6:</strong> 20 audits × $750 เฉลี่ย = $15K MRR</span>
+        </div>
+      </div>
+      <div class="stat-panel">
+        <div class="stat-icon-wrap">🚀</div>
+        <div class="stat-num"><span class="purple">$50K</span></div>
+        <div class="stat-label">
+          <span class="en"><strong>Month 12:</strong> 50 audits/mo + 20 Pro subs + 5 Enterprise = $50K MRR</span>
+          <span class="th"><strong>เดือนที่ 12:</strong> 50 audits/เดือน + 20 Pro + 5 Enterprise = $50K MRR</span>
+        </div>
+      </div>
+      <div class="stat-panel">
+        <div class="stat-icon-wrap">🎯</div>
+        <div class="stat-num"><span class="gold">$100K+</span></div>
+        <div class="stat-label">
+          <span class="en"><strong>Month 18:</strong> Scale + partnerships + certification badge = $1.2M+ ARR</span>
+          <span class="th"><strong>เดือนที่ 18:</strong> ขยายตัว + พาร์ทเนอร์ + certification badge = $1.2M+ ARR</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section class="section">
+    <div class="section-badge">
+      <span class="en">⚠️ RISK ANALYSIS</span>
+      <span class="th">⚠️ วิเคราะห์ความเสี่ยง</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Honest Risk Assessment</span>
+      <span class="th">ประเมินความเสี่ยงตรงไปตรงมา</span>
+    </h2>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-level high">⬤ HIGH RISK</div>
+        <div class="risk-title">
+          <span class="en">AI False Negatives = Catastrophic</span>
+          <span class="th">AI พลาดช่องโหว่ = หายนะ</span>
+        </div>
+        <div class="risk-desc">
+          <span class="en">If AI misses a critical vulnerability and the project gets hacked, MuteAudit's reputation is destroyed. Smart contract security has ZERO tolerance for error. Mitigate: never claim "100% secure", always recommend additional human review for high-value contracts, clear disclaimers.</span>
+          <span class="th">ถ้า AI พลาดช่องโหว่สำคัญและโปรเจคถูกแฮ็ค ชื่อเสียง MuteAudit พังทันที ต้องไม่อ้างว่า "ปลอดภัย 100%" แนะนำ human review เพิ่มเติมเสมอ</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-level high">⬤ HIGH RISK</div>
+        <div class="risk-title">
+          <span class="en">Trust & Reputation Cold Start</span>
+          <span class="th">ความน่าเชื่อถือเริ่มจากศูนย์</span>
+        </div>
+        <div class="risk-desc">
+          <span class="en">In security, reputation is EVERYTHING. CertiK, OpenZeppelin, Cyfrin have years of track record. A new AI tool asking projects to trust it with security? That's a hard sell. Mitigate: start with free scans, build public track record, publish research, contribute to open-source security.</span>
+          <span class="th">ในด้านความปลอดภัย ชื่อเสียงคือทุกอย่าง คู่แข่งมีประวัติหลายปี ต้องเริ่มจากสแกนฟรี สร้างผลงานสาธารณะ ตีพิมพ์งานวิจัย</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-level medium">⬤ MEDIUM RISK</div>
+        <div class="risk-title">
+          <span class="en">CertiK/Cyfrin Add AI Features</span>
+          <span class="th">CertiK/Cyfrin เพิ่มฟีเจอร์ AI</span>
+        </div>
+        <div class="risk-desc">
+          <span class="en">Established players will add AI capabilities. Cyfrin already has Aderyn (static analyzer). They could build AI-first auditing faster than a startup. Mitigate: move fast, target the underserved (small projects), focus on developer experience and price.</span>
+          <span class="th">คู่แข่งใหญ่จะเพิ่ม AI Cyfrin มี Aderyn แล้ว แก้: เคลื่อนที่เร็ว เน้นโปรเจคเล็ก เน้น DX และราคา</span>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-level medium">⬤ MEDIUM RISK</div>
+        <div class="risk-title">
+          <span class="en">Crypto Market Cyclicality</span>
+          <span class="th">วัฏจักรตลาดคริปโต</span>
+        </div>
+        <div class="risk-desc">
+          <span class="en">Crypto bear markets mean fewer new projects, less demand for audits. Revenue could drop 50-70% in downturns. Mitigate: diversify to traditional web3 companies, build SaaS monitoring revenue (recurring), target compliance requirements.</span>
+          <span class="th">ตลาดหมีหมายถึงโปรเจคใหม่น้อยลง demand ลด 50-70% แก้: กระจายไปบริษัท web3 ปกติ สร้างรายได้ SaaS monitoring (recurring)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <div class="verdict-score">36/50</div>
+    <div class="verdict-label">
+      <span class="en">✅ STRONG PASS — High Founder-Market Fit</span>
+      <span class="th">✅ ผ่านระดับสูง — Founder-Market Fit สูง</span>
+    </div>
+    <div class="verdict-text">
+      <span class="en">MuteAudit scores 36/50 — the strongest founder-market fit idea yet. Thanapat's blockchain CTO background is a DIRECT advantage here (8/10). The $37.4B market growing at 65.5% CAGR is explosive. The gap is clear: affordable AI-first auditing for the 90% of DeFi projects that can't afford $50K+ audits. Risks are real (trust cold start, false negatives), but the upside potential is massive. This could be a $10M+ business if executed well.</span>
+      <span class="th">MuteAudit ได้ 36/50 — ไอเดียที่มี founder-market fit สูงที่สุด ประสบการณ์ CTO blockchain ของธนภัทรเป็นข้อได้เปรียบโดยตรง (8/10) ตลาด $37.4B โตที่ 65.5% CAGR ช่องว่างชัดเจน: AI audit ราคาเข้าถึงได้สำหรับ 90% ของโปรเจค DeFi ที่จ่าย $50K+ ไม่ไหว</span>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p>MuteAudit — Idea #65 / MuteLab Research Sprint / Feb 2026</p>
+    <p style="margin-top: 0.5rem;">AI-powered research. Human decisions. 🛡️</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
