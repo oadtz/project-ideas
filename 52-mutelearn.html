@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteLearn — AI Compliance Training Platform for Thai Businesses</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a070f;
+    --bg2: #0f0b18;
+    --surface: #13101f;
+    --surface2: #1e1530;
+    --surface3: #2a1f3d;
+    --border: rgba(59,130,246,0.15);
+    --border2: rgba(59,130,246,0.25);
+    --text: #f5f0fa;
+    --text2: #d4c8e8;
+    --muted: #8878a8;
+    --muted2: #6a5a82;
+    --primary: #3b82f6;
+    --primary-light: #60a5fa;
+    --primary-pale: rgba(59,130,246,0.08);
+    --primary-glow: rgba(59,130,246,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* Hero */
+  .hero { padding: 7rem 0 5rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.78rem; font-weight: 600; color: var(--primary-light);
+    margin-bottom: 2rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text2);
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+
+  /* Stats */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: 2rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* Sections */
+  .section { padding: 4rem 0; }
+  .section-title {
+    font-size: 1.8rem; font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+  .section-sub { color: var(--text2); font-size: 1rem; margin-bottom: 2.5rem; max-width: 650px; }
+  .section-center { text-align: center; }
+  .section-center .section-sub { margin: 0 auto 2.5rem; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.08); }
+  .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .card p { color: var(--text2); font-size: 0.9rem; line-height: 1.7; }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+  .price-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 32px var(--primary-glow);
+  }
+  .price-card .tier { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); margin-bottom: 0.5rem; font-family: 'Space Mono', monospace; }
+  .price-card .price { font-size: 2rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .price-card .price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+  .price-card .desc { color: var(--text2); font-size: 0.85rem; margin-bottom: 1.2rem; }
+  .price-card ul { list-style: none; }
+  .price-card li { padding: 0.4rem 0; font-size: 0.85rem; color: var(--text2); }
+  .price-card li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
+  /* Competitor table */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+  .comp-table th, .comp-table td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .comp-table th { color: var(--primary); font-weight: 700; font-family: 'Space Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .comp-table td { color: var(--text2); }
+  .comp-table tr:hover td { background: var(--primary-pale); }
+
+  /* Score */
+  .score-section { padding: 4rem 0; text-align: center; }
+  .score-big {
+    font-size: 5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; max-width: 800px; margin: 2rem auto 0; }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .score-item .label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+  .score-item .val { font-size: 1.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+
+  /* Risks */
+  .risk-list { max-width: 800px; }
+  .risk-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+  .risk-badge {
+    flex-shrink: 0; padding: 0.2rem 0.7rem; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    height: fit-content; margin-top: 0.2rem;
+  }
+  .risk-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk-med { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk-low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk-text { color: var(--text2); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Insight */
+  .insight-box {
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .insight-box::before {
+    content: '💡';
+    position: absolute; top: 1rem; right: 1.5rem;
+    font-size: 3rem; opacity: 0.15;
+  }
+  .insight-box h3 { color: var(--primary-light); font-size: 1.1rem; margin-bottom: 1rem; }
+  .insight-box p { color: var(--text2); font-size: 0.95rem; line-height: 1.8; }
+
+  /* Footer */
+  .footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem; }
+  .footer p { color: var(--muted2); font-size: 0.8rem; }
+
+  @media (max-width: 768px) {
+    .stats-bar { gap: 1.5rem; }
+    .hero { padding: 5rem 0 3rem; }
+    .section { padding: 2.5rem 0; }
+    .cards { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .comp-table { font-size: 0.75rem; }
+    .comp-table th, .comp-table td { padding: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">📚 IDEA #52 — REGTECH / CORPORATE TRAINING / B2B SaaS</div>
+    <h1 class="en">MuteLearn</h1>
+    <h1 class="th">MuteLearn</h1>
+    <p class="hero-sub en">AI-Powered Compliance Training Platform for Thai Businesses — Auto-generates mandatory training courses from Thai regulations (PDPA, Safety, Labor Law, AML). Per-employee pricing. Certificates with legal validity. Companies pay because they MUST comply or face fines.</p>
+    <p class="hero-sub th">แพลตฟอร์ม AI อบรมบังคับตามกฎหมายสำหรับธุรกิจไทย — สร้างหลักสูตรอัตโนมัติจากกฎหมายไทย (PDPA, ความปลอดภัย, แรงงาน, AML) ราคาต่อพนักงาน ใบรับรองถูกกฎหมาย บริษัทจ่ายเพราะ "ต้อง" ปฏิบัติตาม ไม่งั้นโดนปรับ</p>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">$96B</div>
+        <div class="stat-label en">Global Digital Education Market (2030)</div>
+        <div class="stat-label th">ตลาดการศึกษาดิจิทัลโลก (2030)</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3.2M+</div>
+        <div class="stat-label en">Thai Registered SMEs</div>
+        <div class="stat-label th">SME จดทะเบียนในไทย</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">ZERO</div>
+        <div class="stat-label en">AI Thai Compliance Training SaaS</div>
+        <div class="stat-label th">AI อบรม Compliance ภาษาไทย</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">฿5M+</div>
+        <div class="stat-label en">PDPA Fine Per Violation</div>
+        <div class="stat-label th">ค่าปรับ PDPA ต่อกรณี</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">⚖️ The Problem</h2>
+    <h2 class="section-title th">⚖️ ปัญหา</h2>
+    <p class="section-sub en">Thai companies face a maze of mandatory compliance training requirements. Failure means fines, lawsuits, and criminal liability. Most wing it with PowerPoint slides and sign-in sheets — or ignore it entirely.</p>
+    <p class="section-sub th">บริษัทไทยเผชิญข้อบังคับอบรมพนักงานมากมาย ไม่ทำ = ปรับ ฟ้อง โทษอาญา ส่วนใหญ่ใช้ PowerPoint กับกระดาษเซ็นชื่อ — หรือไม่ทำเลย</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3 class="en">PDPA — Data Privacy Training</h3>
+        <h3 class="th">PDPA — อบรมคุ้มครองข้อมูล</h3>
+        <p class="en">ALL companies handling personal data must train staff. Fines up to ฿5M per violation, criminal liability up to 1 year. PDPC enforcement accelerating in 2025-2026. Most companies have done ZERO training.</p>
+        <p class="th">ทุกบริษัทที่จัดการข้อมูลส่วนบุคคลต้องอบรมพนักงาน ปรับสูงสุด ฿5M/กรณี โทษอาญา 1 ปี สคส.เข้มงวดขึ้นปี 2025-2026 บริษัทส่วนใหญ่ไม่เคยอบรมเลย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚠️</div>
+        <h3 class="en">Workplace Safety (จป.)</h3>
+        <h3 class="th">ความปลอดภัยในที่ทำงาน (จป.)</h3>
+        <p class="en">Labour Protection Act requires safety training for ALL employees. Companies with 50+ workers need certified Safety Officers (จป.). Accidents trigger government investigation + massive fines. Mandatory 6-hour training annually.</p>
+        <p class="th">กฎหมายคุ้มครองแรงงานบังคับอบรมความปลอดภัยทุกคน บริษัท 50+ คนต้องมี จป. อุบัติเหตุ = สอบสวน + ปรับหนัก บังคับอบรม 6 ชม./ปี</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏦</div>
+        <h3 class="en">AML / Financial Compliance</h3>
+        <h3 class="th">ป้องกันฟอกเงิน / Compliance การเงิน</h3>
+        <p class="en">Banks, insurance, securities firms — ALL must train staff on AML/CFT (AMLO Act). SEC and BOT conduct regular audits. Non-compliance = operating license revocation. Training must be documented and verifiable.</p>
+        <p class="th">ธนาคาร ประกันภัย หลักทรัพย์ — ต้องอบรมพนักงานเรื่อง ปปง. กลต. และ ธปท. ตรวจสอบสม่ำเสมอ ไม่ปฏิบัติตาม = เพิกถอนใบอนุญาต การอบรมต้องบันทึกและตรวจสอบได้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <h3 class="en">Fire Safety & Emergency</h3>
+        <h3 class="th">ดับเพลิง & ฉุกเฉิน</h3>
+        <p class="en">All buildings with 30+ occupants must have fire safety training annually. Building Act + Fire Prevention Act. Failure discovered after a fire = criminal negligence charges against management.</p>
+        <p class="th">อาคารทุกแห่งที่มีคน 30+ ต้องอบรมดับเพลิงทุกปี พ.ร.บ.ควบคุมอาคาร + พ.ร.บ.ป้องกันอัคคีภัย ไม่ทำแล้วเกิดไฟไหม้ = ประมาทอาญาต่อผู้บริหาร</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h3 class="en">Sexual Harassment Prevention</h3>
+        <h3 class="th">ป้องกันการล่วงละเมิดทางเพศ</h3>
+        <p class="en">Gender Equality Act B.E. 2558 + Labour Protection Act amendments. Companies must have policies AND training. Lawsuits and social media exposure = massive brand damage. HR departments struggling.</p>
+        <p class="th">พ.ร.บ.ความเท่าเทียมระหว่างเพศ + แก้ไขกฎหมายคุ้มครองแรงงาน บริษัทต้องมีนโยบาย และ อบรม ฟ้อง + แฉโซเชียล = เสียหายมหาศาล HR ปวดหัว</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3 class="en">Professional CPD Requirements</h3>
+        <h3 class="th">สะสมชั่วโมง CPD วิชาชีพ</h3>
+        <p class="en">Insurance agents, investment advisors, accountants, engineers, lawyers — ALL need Continuing Professional Development (CPD) hours. SkillLane already has CPD for insurance/investment. Adjacent opportunity.</p>
+        <p class="th">ตัวแทนประกัน ที่ปรึกษาการลงทุน นักบัญชี วิศวกร ทนายความ — ทุกคนต้องสะสมชั่วโมง CPD SkillLane มี CPD ประกัน/การลงทุนแล้ว โอกาสข้างเคียง</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">✨ The Solution: MuteLearn</h2>
+    <h2 class="section-title th">✨ ทางออก: MuteLearn</h2>
+    <p class="section-sub en">AI auto-generates compliance training courses from Thai regulations. When laws change, courses update automatically. Per-employee pricing with certificates that satisfy regulators.</p>
+    <p class="section-sub th">AI สร้างหลักสูตรอบรมอัตโนมัติจากกฎหมายไทย กฎหมายเปลี่ยน หลักสูตรอัปเดตอัตโนมัติ ราคาต่อพนักงาน ใบรับรองที่ผ่านการตรวจสอบ</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3 class="en">AI Course Generator</h3>
+        <h3 class="th">AI สร้างหลักสูตร</h3>
+        <p class="en">Feed any Thai regulation → AI generates complete course: video-style narrated slides, interactive quizzes, case studies, and final exam. Thai + English bilingual. Updated automatically when regulations change.</p>
+        <p class="th">ป้อนกฎหมายไทยใดก็ได้ → AI สร้างหลักสูตรครบ: สไลด์บรรยายแบบวิดีโอ, แบบทดสอบ, กรณีศึกษา, สอบปลาย สองภาษา อัปเดตอัตโนมัติเมื่อกฎหมายเปลี่ยน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3 class="en">LINE-Native Learning</h3>
+        <h3 class="th">เรียนผ่าน LINE</h3>
+        <p class="en">Employees take micro-lessons via LINE — 5-10 min bite-sized modules. No app download, no login friction. Push notifications for deadlines. Perfect for factory workers, retail staff, delivery drivers.</p>
+        <p class="th">พนักงานเรียนบทเรียนสั้นผ่าน LINE — 5-10 นาที ไม่ต้องดาวน์โหลดแอป ไม่ต้องล็อกอิน แจ้งเตือนกำหนดส่ง เหมาะกับพนักงานโรงงาน ค้าปลีก ไรเดอร์</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📜</div>
+        <h3 class="en">Legally Valid Certificates</h3>
+        <h3 class="th">ใบรับรองมีผลทางกฎหมาย</h3>
+        <p class="en">AI-generated certificates with unique verification codes, completion timestamps, quiz scores, and digital signatures. Tamper-proof audit trail. Satisfies government inspectors during compliance audits.</p>
+        <p class="th">ใบรับรองที่ AI สร้างพร้อมรหัสยืนยัน เวลาเรียนจบ คะแนนสอบ ลายเซ็นดิจิทัล ระบบตรวจสอบป้องกันการปลอม ผ่านการตรวจจากหน่วยงานรัฐ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">HR Compliance Dashboard</h3>
+        <h3 class="th">แดชบอร์ด Compliance สำหรับ HR</h3>
+        <p class="en">Real-time view: who's trained, who's overdue, which departments are at risk. Automated reminders chase employees who haven't completed training. One-click compliance reports for auditors.</p>
+        <p class="th">เห็นแบบเรียลไทม์: ใครอบรมแล้ว ใครเลยกำหนด แผนกไหนเสี่ยง เตือนอัตโนมัติพนักงานที่ยังไม่เรียน รายงาน compliance ปุ่มเดียวสำหรับผู้ตรวจสอบ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3 class="en">Auto-Update When Laws Change</h3>
+        <h3 class="th">อัปเดตอัตโนมัติเมื่อกฎหมายเปลี่ยน</h3>
+        <p class="en">AI monitors Royal Gazette for regulatory changes. When PDPA amendments pass or new safety standards release, courses update automatically. Staff get re-training notifications. Always current.</p>
+        <p class="th">AI ติดตามราชกิจจานุเบกษา เมื่อ PDPA แก้ไขหรือมาตรฐานความปลอดภัยใหม่ออก หลักสูตรอัปเดตอัตโนมัติ พนักงานได้แจ้งเตือนอบรมซ้ำ ทันสมัยเสมอ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏭</div>
+        <h3 class="en">Industry-Specific Modules</h3>
+        <h3 class="th">โมดูลเฉพาะอุตสาหกรรม</h3>
+        <p class="en">Pre-built compliance packages: Manufacturing (safety + chemicals), Healthcare (patient privacy + medical waste), Finance (AML + fraud), Hospitality (food safety + hygiene), Construction (fall prevention + heavy machinery).</p>
+        <p class="th">แพ็คเกจ compliance สำเร็จรูป: โรงงาน (ความปลอดภัย + สารเคมี), สุขภาพ (ข้อมูลคนไข้ + ขยะการแพทย์), การเงิน (ปปง. + ฉ้อโกง), โรงแรม (อาหารปลอดภัย + สุขอนามัย), ก่อสร้าง (ตกจากที่สูง + เครื่องจักร)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET DATA -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">📈 Market Data</h2>
+    <h2 class="section-title th">📈 ข้อมูลตลาด</h2>
+
+    <table class="comp-table">
+      <tr><th class="en">Metric</th><th class="th">ตัวชี้วัด</th><th class="en">Value</th><th class="th">มูลค่า</th></tr>
+      <tr><td class="en">Global Digital Education Market (2025→2030)</td><td class="th">ตลาดการศึกษาดิจิทัลโลก</td><td>$32B → $96B (24.2% CAGR)</td></tr>
+      <tr><td class="en">Global LMS Market (2025→2032)</td><td class="th">ตลาด LMS โลก</td><td>Growing to $101B (18.4% CAGR)</td></tr>
+      <tr><td class="en">Thai Registered SMEs</td><td class="th">SME จดทะเบียนในไทย</td><td>3.2M+ (OSMEP)</td></tr>
+      <tr><td class="en">Thai Large Companies (100+ employees)</td><td class="th">บริษัทใหญ่ในไทย (100+ คน)</td><td>~30,000</td></tr>
+      <tr><td class="en">PDPA Max Fine Per Violation</td><td class="th">ค่าปรับ PDPA สูงสุด/กรณี</td><td>฿5M administrative + criminal</td></tr>
+      <tr><td class="en">PDPA Breach Investigations Triggered</td><td class="th">สอบสวนละเมิด PDPA</td><td>5,273 cases</td></tr>
+      <tr><td class="en">Workplace Accidents Reported (est.)</td><td class="th">อุบัติเหตุในที่ทำงาน (ประมาณ)</td><td>80,000+ / yr</td></tr>
+      <tr><td class="en">Avg Corporate Training Spend / Employee</td><td class="th">ค่าใช้จ่ายอบรมเฉลี่ย/พนักงาน</td><td>฿3,000-8,000 / yr</td></tr>
+      <tr><td class="en">In-Person Compliance Training Cost</td><td class="th">ค่าอบรม Compliance แบบมีวิทยากร</td><td>฿15,000-50,000 / session</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">🥊 Competition Landscape</h2>
+    <h2 class="section-title th">🥊 แผนที่การแข่งขัน</h2>
+
+    <table class="comp-table">
+      <tr><th>Player</th><th class="en">Focus</th><th class="th">จุดเน้น</th><th class="en">Gap vs MuteLearn</th><th class="th">ช่องว่างเทียบ MuteLearn</th></tr>
+      <tr><td>Cornerstone OnDemand</td><td>Enterprise LMS (US, NASDAQ)</td><td>English, $6+/user/mo, no Thai compliance content</td></tr>
+      <tr><td>Docebo</td><td>AI Learning Platform (Canada)</td><td>English, enterprise pricing, no Thai regulation courses</td></tr>
+      <tr><td>SkillLane</td><td>Thai Online Learning + CPD</td><td>MARKETPLACE model (pre-made courses), NOT AI-generated compliance. Has CPD for insurance/investment but not enterprise compliance training.</td></tr>
+      <tr><td>PDPA Thailand (DBC)</td><td>PDPA Consulting + e-Learning</td><td>PDPA-only, consulting-heavy (฿100K+ projects), NOT self-serve SaaS. Has e-learning but not AI-powered or auto-updating.</td></tr>
+      <tr><td>Thai Training Centers</td><td>In-person safety training</td><td>฿15-50K/session, requires venue + instructor, no scalability, no tracking</td></tr>
+      <tr><td style="color: var(--primary); font-weight: 700">🇹🇭 Thai Market</td><td colspan="2" style="color: var(--primary)">ZERO AI-powered, multi-regulation, auto-updating compliance training SaaS in Thai</td></tr>
+    </table>
+
+    <div class="insight-box" style="margin-top: 2rem;">
+      <h3 class="en">The Gap</h3>
+      <h3 class="th">ช่องว่าง</h3>
+      <p class="en">Global LMS platforms (Cornerstone, Docebo, SAP Litmos) have enterprise pricing ($6+/user/mo), zero Thai compliance content, and require massive implementation projects. SkillLane is a course marketplace — they sell pre-made courses, not an automated compliance management system. Thai training centers charge ฿15-50K per in-person session for 20-30 people, can't scale, and produce paper certificates that get lost. The gap: an affordable, AI-powered platform that auto-generates Thai-specific compliance courses, delivers via LINE (zero friction), tracks completion, and produces legally valid certificates. Nobody does this.</p>
+      <p class="th">แพลตฟอร์ม LMS ระดับโลก (Cornerstone, Docebo) ราคาแพง ($6+/คน/เดือน) ไม่มีเนื้อหา compliance ไทย ต้องใช้เวลาติดตั้งนาน SkillLane เป็นตลาดคอร์ส ไม่ใช่ระบบจัดการ compliance สถาบันอบรมไทยคิด ฿15-50K/ครั้ง สำหรับ 20-30 คน ขยายไม่ได้ ใบรับรองกระดาษหาย ช่องว่าง: แพลตฟอร์ม AI ราคาถูกที่สร้างหลักสูตร compliance ไทยอัตโนมัติ ส่งผ่าน LINE ติดตามผลเสร็จ ออกใบรับรองตามกฎหมาย ยังไม่มีใครทำ</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section">
+  <div class="container section-center">
+    <h2 class="section-title en">💎 Revenue Model</h2>
+    <h2 class="section-title th">💎 โมเดลรายได้</h2>
+    <p class="section-sub en">Per-employee pricing with annual contracts. Mandatory training = predictable, recurring revenue with near-zero churn (companies can't cancel compliance).</p>
+    <p class="section-sub th">ราคาต่อพนักงานสัญญารายปี อบรมบังคับ = รายได้ที่คาดการณ์ได้ เกือบไม่มี churn (บริษัทยกเลิก compliance ไม่ได้)</p>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="tier">Starter</div>
+        <div class="price">฿49 <span>/ employee / mo</span></div>
+        <div class="desc en">Up to 50 employees</div>
+        <div class="desc th">สูงสุด 50 พนักงาน</div>
+        <ul>
+          <li class="en">PDPA training module</li><li class="th">โมดูลอบรม PDPA</li>
+          <li class="en">Workplace safety basics</li><li class="th">ความปลอดภัยพื้นฐาน</li>
+          <li class="en">LINE-based micro-lessons</li><li class="th">บทเรียนสั้นผ่าน LINE</li>
+          <li class="en">Digital certificates</li><li class="th">ใบรับรองดิจิทัล</li>
+          <li class="en">Basic completion tracking</li><li class="th">ติดตามผลเสร็จพื้นฐาน</li>
+        </ul>
+      </div>
+
+      <div class="price-card featured">
+        <div class="tier">⭐ Business</div>
+        <div class="price">฿99 <span>/ employee / mo</span></div>
+        <div class="desc en">51-500 employees</div>
+        <div class="desc th">51-500 พนักงาน</div>
+        <ul>
+          <li class="en">All compliance modules (PDPA, safety, fire, harassment)</li><li class="th">ทุกโมดูล compliance (PDPA, ความปลอดภัย, ดับเพลิง, ล่วงละเมิด)</li>
+          <li class="en">Industry-specific packages</li><li class="th">แพ็คเกจเฉพาะอุตสาหกรรม</li>
+          <li class="en">HR compliance dashboard</li><li class="th">แดชบอร์ด compliance HR</li>
+          <li class="en">Auto-reminders for overdue staff</li><li class="th">เตือนอัตโนมัติพนักงานเลยกำหนด</li>
+          <li class="en">Audit-ready compliance reports</li><li class="th">รายงานพร้อมตรวจสอบ</li>
+          <li class="en">Custom company branding</li><li class="th">แบรนด์บริษัทกำหนดเอง</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="tier">Enterprise</div>
+        <div class="price">฿199 <span>/ employee / mo</span></div>
+        <div class="desc en">500+ employees</div>
+        <div class="desc th">500+ พนักงาน</div>
+        <ul>
+          <li class="en">Everything in Business</li><li class="th">ทุกอย่างใน Business</li>
+          <li class="en">Custom course builder (upload your policies)</li><li class="th">สร้างหลักสูตรกำหนดเอง (อัปโหลดนโยบาย)</li>
+          <li class="en">AML/CFT financial compliance modules</li><li class="th">โมดูล ปปง./CFT</li>
+          <li class="en">Multi-branch management</li><li class="th">จัดการหลายสาขา</li>
+          <li class="en">API & HRIS integration</li><li class="th">เชื่อมต่อ API & HRIS</li>
+          <li class="en">Dedicated compliance advisor</li><li class="th">ที่ปรึกษา compliance เฉพาะ</li>
+          <li class="en">SLA + priority support</li><li class="th">SLA + ซัพพอร์ตเร่งด่วน</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE MATH -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">🧮 Revenue Math to $1M</h2>
+    <h2 class="section-title th">🧮 คำนวณรายได้ถึง $1M</h2>
+
+    <table class="comp-table">
+      <tr><th class="en">Scenario</th><th class="th">สถานการณ์</th><th class="en">Calculation</th><th class="th">การคำนวณ</th><th>Revenue</th></tr>
+      <tr><td>SME Focus</td><td>200 companies × 50 employees × ฿99/mo</td><td>฿11.9M / yr ≈ $371K</td></tr>
+      <tr><td>Blended Mix</td><td>300 SMEs (avg 40 emp × ฿49) + 100 mid (avg 200 emp × ฿99) + 20 enterprise (avg 800 emp × ฿199)</td><td>฿34.2M / yr ≈ $1.07M ✅</td></tr>
+      <tr><td>Enterprise Focus</td><td>50 companies × 500 employees × ฿199/mo</td><td>฿59.7M / yr ≈ $1.87M ✅</td></tr>
+      <tr><td colspan="2" style="color: var(--primary)">Market penetration needed</td><td style="color: var(--primary)">420 companies out of 30K+ (1.4%)</td></tr>
+      <tr><td colspan="2" style="color: var(--green)">Time to first $</td><td style="color: var(--green)">45-60 days (pilot → annual contract)</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section class="score-section">
+  <div class="container">
+    <h2 class="section-title en" style="margin-bottom: 1.5rem;">📊 Idea Score</h2>
+    <h2 class="section-title th" style="margin-bottom: 1.5rem;">📊 คะแนนไอเดีย</h2>
+    <div class="score-big">34/50</div>
+    <p style="color: var(--green); font-weight: 700; font-family: 'Space Mono', monospace; margin-bottom: 0.5rem;">✅ PASS</p>
+
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="label">Market Potential</div>
+        <div class="val">7/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Problem Severity</div>
+        <div class="val">7/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Competition Gap</div>
+        <div class="val">7/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Build Feasibility</div>
+        <div class="val">8/10</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Our Advantage</div>
+        <div class="val">5/10</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title en">⚠️ Risks & Mitigations</h2>
+    <h2 class="section-title th">⚠️ ความเสี่ยง & การบรรเทา</h2>
+
+    <div class="risk-list">
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>Regulatory acceptance of AI-generated training.</strong> Government inspectors may question whether AI-generated courses satisfy legal training requirements. Mitigate: partner with certified Thai trainers/lawyers to review and co-sign course content. Use AI for generation, humans for certification stamp.</span>
+          <span class="th"><strong>ภาครัฐยอมรับการอบรมที่ AI สร้างหรือไม่</strong> ผู้ตรวจสอบอาจตั้งคำถามว่าหลักสูตร AI ผ่านข้อกำหนดทางกฎหมายหรือไม่ บรรเทา: ร่วมมือกับวิทยากร/ทนายความที่มีใบรับรองตรวจสอบและลงนามร่วม AI สร้างเนื้อหา คนรับรอง</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>SkillLane expanding into compliance training.</strong> They have distribution and brand awareness. Mitigate: SkillLane is a marketplace (sells individual courses), NOT an enterprise compliance management system. Different product entirely — like comparing Netflix to a corporate video training platform. We manage the compliance workflow, not just content.</span>
+          <span class="th"><strong>SkillLane ขยายเข้ามาในอบรม compliance</strong> มีช่องทางจำหน่ายและแบรนด์แล้ว บรรเทา: SkillLane เป็นตลาดคอร์ส (ขายคอร์สทีละชิ้น) ไม่ใช่ระบบจัดการ compliance องค์กร สินค้าต่างกัน — เหมือนเทียบ Netflix กับระบบอบรมวิดีโอองค์กร เราจัดการ workflow compliance ไม่ใช่แค่เนื้อหา</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>B2B enterprise sales cycle.</strong> Large companies take 3-6 months to procure new SaaS tools. Mitigate: start with SMEs (50-200 employees) who decide in 1-2 weeks. Free compliance audit as lead magnet. Annual contracts for revenue predictability.</span>
+          <span class="th"><strong>วงจรขาย B2B องค์กรใหญ่</strong> บริษัทใหญ่ใช้เวลา 3-6 เดือนจัดซื้อ SaaS ใหม่ บรรเทา: เริ่มจาก SME (50-200 คน) ตัดสินใจ 1-2 สัปดาห์ ตรวจ compliance ฟรีเป็นตัวดึงดูด สัญญารายปีเพื่อรายได้ที่คาดการณ์ได้</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-med">MED</span>
+        <div class="risk-text">
+          <span class="en"><strong>Content accuracy — AI-generated legal training must be correct.</strong> Wrong compliance advice = liability. Mitigate: partner with Thai law firms to review AI-generated content. Disclaimer + human-reviewed certification layer. Start with well-established regulations (PDPA, basic safety) where content is clear-cut.</span>
+          <span class="th"><strong>ความถูกต้องของเนื้อหา — อบรมกฎหมายที่ AI สร้างต้องถูกต้อง</strong> คำแนะนำ compliance ผิด = ความรับผิด บรรเทา: ร่วมมือกับสำนักงานกฎหมายไทยตรวจสอบ ข้อจำกัดความรับผิดชอบ + ชั้นรับรองโดยมนุษย์ เริ่มจากกฎหมายที่ชัดเจน (PDPA, ความปลอดภัยพื้นฐาน)</span>
+        </div>
+      </div>
+      <div class="risk-item">
+        <span class="risk-badge risk-low">LOW</span>
+        <div class="risk-text">
+          <span class="en"><strong>No compliance/legal domain expertise.</strong> Mitigate: AI generates from source regulations (text of the law itself), not interpretation. Partner with 2-3 law firms for content review. Compliance requirements are well-documented in Thai government publications.</span>
+          <span class="th"><strong>ไม่มีความเชี่ยวชาญด้าน compliance/กฎหมาย</strong> บรรเทา: AI สร้างจากตัวบทกฎหมาย ไม่ใช่การตีความ ร่วมมือกับสำนักงานกฎหมาย 2-3 แห่งตรวจสอบ ข้อกำหนด compliance มีเอกสารชัดเจนจากหน่วยงานรัฐ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY INSIGHT -->
+<section class="section">
+  <div class="container">
+    <div class="insight-box">
+      <h3 class="en">💡 Key Insight</h3>
+      <h3 class="th">💡 ข้อมูลเชิงลึกสำคัญ</h3>
+      <p class="en">Compliance training is the ULTIMATE "boring but mandatory" business. Companies don't WANT training — they MUST have it or face fines and criminal liability. This creates near-zero churn: you can't cancel compliance. When PDPC fines a company ฿5M for not training staff on PDPA, every other company scrambles to buy training. Fear-based selling is the most effective B2B motion in existence. The AI auto-generation angle is the moat: traditional training companies hire instructors, rent venues, create PowerPoints manually. MuteLearn generates courses from the text of the law itself, at near-zero marginal cost. When a regulation changes, courses update in hours, not months. The LINE delivery channel is the hidden gem — factory workers, retail staff, and service employees don't have corporate email or laptops, but they ALL have LINE. Per-employee pricing means revenue scales linearly with company size, and annual contracts mean predictable cash flow. The MuteSafe (#46) cross-sell is effortless: "Your PDPA compliance tool + your PDPA training tool in one bundle."</p>
+      <p class="th">อบรม compliance คือธุรกิจ "น่าเบื่อแต่บังคับ" ที่สุด บริษัทไม่ "อยาก" อบรม แต่ "ต้อง" ทำ ไม่งั้นปรับ + โทษอาญา สร้าง churn เกือบเป็นศูนย์: ยกเลิก compliance ไม่ได้ เมื่อ สคส. ปรับบริษัท ฿5M ที่ไม่อบรมพนักงาน PDPA ทุกบริษัทรีบซื้อ การขายด้วยความกลัวคือ B2B motion ที่ทรงพลังที่สุด AI สร้างหลักสูตรอัตโนมัติคือคูป้องกัน: บริษัทอบรมทั่วไปจ้างวิทยากร เช่าห้อง ทำ PowerPoint ด้วยมือ MuteLearn สร้างจากตัวบทกฎหมาย ต้นทุนเกือบศูนย์ กฎหมายเปลี่ยน หลักสูตรอัปเดตในชั่วโมง ไม่ใช่เดือน LINE คือช่องทางลับ — พนักงานโรงงาน ค้าปลีก ไรเดอร์ไม่มีอีเมลบริษัทหรือแล็ปท็อป แต่ทุกคนมี LINE ราคาต่อพนักงานหมายความว่ารายได้โตตามขนาดบริษัท สัญญารายปี = กระแสเงินสดที่คาดการณ์ได้ การขาย MuteSafe (#46) ร่วมง่ายมาก: "เครื่องมือ PDPA + อบรม PDPA ในแพ็คเกจเดียว"</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>MuteLearn — Idea #52 | MuteLab Research Sprint | February 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.7rem;">Research by Sun ☀️ AI CEO</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()));
+}
+</script>
+</body>
+</html>
