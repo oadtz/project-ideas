@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteKid — AI Homework Helper & Learning Companion for Thai Parents</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(59,130,246,0.15);
+    --border2: rgba(59,130,246,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #3b82f6;
+    --primary-light: #60a5fa;
+    --primary-pale: rgba(59,130,246,0.08);
+    --primary-glow: rgba(59,130,246,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(10,10,15,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(59,130,246,0.08);
+    padding: 0.8rem 2rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 0.82rem; font-weight: 500;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--primary); }
+  nav .logo { font-weight: 700; color: var(--primary); font-size: 0.92rem; }
+  nav .sep { color: var(--muted2); }
+
+  /* ── HERO ── */
+  .hero { padding: 8rem 0 4rem; text-align: center; }
+  .hero .tag {
+    display: inline-block; padding: 0.35rem 1rem; border-radius: 99px;
+    background: var(--primary-pale); border: 1px solid var(--border);
+    color: var(--primary-light); font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800;
+    line-height: 1.1; margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .sub {
+    font-size: 1.2rem; color: var(--text2); max-width: 680px; margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .hero .emoji-big { font-size: 4rem; margin-bottom: 1rem; display: block; }
+
+  /* ── SCORE ── */
+  .score-card {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin: 3rem auto; padding: 2rem; max-width: 900px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .score-item { text-align: center; min-width: 120px; }
+  .score-item .num { font-size: 2rem; font-weight: 800; color: var(--primary-light); font-family: 'Space Mono', monospace; }
+  .score-item .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; font-family: 'Space Mono', monospace; }
+  .score-total { border-left: 2px solid var(--border2); padding-left: 2rem; }
+  .score-total .num { font-size: 2.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* ── SECTIONS ── */
+  section { padding: 4rem 0; }
+  section h2 {
+    font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  section h2 .icon { font-size: 1.4rem; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--primary-light); }
+  .card p { font-size: 0.88rem; color: var(--text2); line-height: 1.65; }
+  .card .stat { font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700; color: var(--secondary-light); margin-bottom: 0.5rem; }
+
+  /* ── COMPARISON TABLE ── */
+  .comp-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.85rem; }
+  .comp-table th { text-align: left; padding: 0.8rem 1rem; background: var(--surface2); color: var(--primary-light); font-weight: 600; border-bottom: 2px solid var(--border2); font-family: 'Space Mono', monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .comp-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .comp-table tr:hover td { background: var(--primary-pale); }
+
+  /* ── REVENUE ── */
+  .revenue-box {
+    background: linear-gradient(135deg, var(--surface2), var(--surface));
+    border: 1px solid var(--border2); border-radius: 16px;
+    padding: 2.5rem; text-align: center; margin: 2rem 0;
+  }
+  .revenue-box .big { font-size: 3rem; font-weight: 800; font-family: 'Space Mono', monospace; background: linear-gradient(135deg, var(--green), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .revenue-box .desc { color: var(--muted); margin-top: 0.5rem; font-size: 0.9rem; }
+
+  /* ── RISK ── */
+  .risk { display: flex; align-items: center; gap: 0.8rem; padding: 1rem 1.3rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.8rem; }
+  .risk .level { font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .risk .level.high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk .level.med { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk .level.low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk p { font-size: 0.82rem; color: var(--text2); }
+
+  /* ── INSIGHT ── */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(245,158,11,0.05));
+    border: 1px solid var(--border2); border-radius: 16px;
+    padding: 2.5rem; margin: 2rem 0;
+  }
+  .insight-box h3 { font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary-light); }
+  .insight-box p { font-size: 0.92rem; color: var(--text2); line-height: 1.8; }
+
+  /* ── FOOTER ── */
+  footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem; }
+  footer p { color: var(--muted); font-size: 0.78rem; }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  @media (max-width: 768px) {
+    .score-card { gap: 1rem; padding: 1.5rem; }
+    .score-total { border-left: none; border-top: 2px solid var(--border2); padding-left: 0; padding-top: 1rem; }
+    .hero { padding: 6rem 0 3rem; }
+    nav { padding: 0.6rem 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<nav>
+  <a href="index.html" class="logo">MuteLab</a>
+  <span class="sep">/</span>
+  <a href="index.html">
+    <span class="en">All Ideas</span>
+    <span class="th">ไอเดียทั้งหมด</span>
+  </a>
+  <span class="sep">/</span>
+  <span style="color:var(--text);font-size:0.82rem;font-weight:600">#54 MuteKid</span>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="emoji-big">📖</span>
+    <div class="tag">
+      <span class="en">Idea #54 — EdTech / Parenting / B2C+B2B</span>
+      <span class="th">ไอเดีย #54 — EdTech / การเลี้ยงลูก / B2C+B2B</span>
+    </div>
+    <h1>
+      <span class="en">MuteKid — AI Homework Helper & Learning Companion for Thai Parents</span>
+      <span class="th">MuteKid — AI ช่วยการบ้าน & เพื่อนเรียนรู้สำหรับพ่อแม่ไทย</span>
+    </h1>
+    <p class="sub">
+      <span class="en">Snap a photo of homework on LINE → AI explains step-by-step in Thai, tailored to your child's grade level. Thai parents spend ฿20-100K/year on tutoring. MuteKid gives every child a personal tutor for ฿199/month. LINE-native, Thai curriculum-aligned, parent progress dashboard.</span>
+      <span class="th">ถ่ายรูปการบ้านส่งผ่าน LINE → AI อธิบายทีละขั้นเป็นภาษาไทย ตามระดับชั้นของลูก พ่อแม่ไทยใช้จ่าย ฿20-100K/ปี กับกวดวิชา MuteKid ให้ลูกทุกคนมีติวเตอร์ส่วนตัว แค่ ฿199/เดือน ผ่าน LINE ตรงหลักสูตรไทย แดชบอร์ดให้พ่อแม่ดูพัฒนาการ</span>
+    </p>
+  </div>
+
+  <!-- SCORE CARD -->
+  <div class="score-card">
+    <div class="score-item"><div class="num">8</div><div class="label">
+      <span class="en">Market</span><span class="th">ตลาด</span>
+    </div></div>
+    <div class="score-item"><div class="num">8</div><div class="label">
+      <span class="en">Problem</span><span class="th">ปัญหา</span>
+    </div></div>
+    <div class="score-item"><div class="num">7</div><div class="label">
+      <span class="en">Comp. Gap</span><span class="th">ช่องว่าง</span>
+    </div></div>
+    <div class="score-item"><div class="num">8</div><div class="label">
+      <span class="en">Feasibility</span><span class="th">สร้างได้</span>
+    </div></div>
+    <div class="score-item"><div class="num">5</div><div class="label">
+      <span class="en">Advantage</span><span class="th">จุดแข็ง</span>
+    </div></div>
+    <div class="score-item score-total"><div class="num">36/50</div><div class="label">
+      <span class="en">Total Score</span><span class="th">คะแนนรวม</span>
+    </div></div>
+  </div>
+
+  <!-- MARKET -->
+  <section>
+    <h2><span class="icon">📊</span>
+      <span class="en">Market Opportunity</span>
+      <span class="th">โอกาสทางตลาด</span>
+    </h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="stat">฿150B+/yr</div>
+        <h3><span class="en">Thai Education Spending</span><span class="th">การใช้จ่ายด้านการศึกษาไทย</span></h3>
+        <p><span class="en">Thailand's education budget is ฿487B (FY2019). Private tutoring market estimated at ฿50-80B/yr. Thai parents are the BIGGEST spenders on children's education in SEA — tutoring is culturally mandatory, not optional.</span>
+        <span class="th">งบการศึกษาไทย ฿487B (ปี 2562) ตลาดกวดวิชาประมาณ ฿50-80B/ปี พ่อแม่ไทยใช้จ่ายด้านการศึกษาลูกมากที่สุดในอาเซียน — กวดวิชาเป็นวัฒนธรรม ไม่ใช่ทางเลือก</span></p>
+      </div>
+      <div class="card">
+        <div class="stat">10M+</div>
+        <h3><span class="en">K-12 Students in Thailand</span><span class="th">นักเรียน K-12 ในไทย</span></h3>
+        <p><span class="en">13.1M+ enrolled students (2010 data). 99% complete primary school. Massive addressable market of parents with school-age children. 67M LINE users = zero-friction distribution channel.</span>
+        <span class="th">นักเรียนลงทะเบียน 13.1M+ คน ส่วนใหญ่จบ ป.6 ตลาดพ่อแม่ที่มีลูกวัยเรียนขนาดใหญ่มาก LINE 67M ผู้ใช้ = ช่องทางเข้าถึงไม่มีอุปสรรค</span></p>
+      </div>
+      <div class="card">
+        <div class="stat">$5.82B</div>
+        <h3><span class="en">Global AI in Education Market (2030)</span><span class="th">ตลาด AI in Education โลก (2030)</span></h3>
+        <p><span class="en">Growing from $2.21B (2024) at 17.5% CAGR (MarketsandMarkets). K-12 is the dominant segment. Photomath (Google-acquired) has 220M+ downloads. Khanmigo charges $9.99/mo. Proven massive demand.</span>
+        <span class="th">เติบโตจาก $2.21B (2024) ที่ 17.5% CAGR K-12 เป็นกลุ่มใหญ่สุด Photomath (Google ซื้อ) มี 220M+ ดาวน์โหลด พิสูจน์แล้วว่ามีความต้องการมหาศาล</span></p>
+      </div>
+      <div class="card">
+        <div class="stat">฿20-100K/yr</div>
+        <h3><span class="en">Per-Child Tutoring Cost</span><span class="th">ค่ากวดวิชาต่อเด็ก/ปี</span></h3>
+        <p><span class="en">Thai parents spend ฿20-100K/year on private tutoring per child. Group tutoring ฿3-8K/mo, private tutor ฿500-2,000/hr. MuteKid at ฿199/mo = 95%+ savings. Massive price disruption opportunity.</span>
+        <span class="th">พ่อแม่ไทยจ่าย ฿20-100K/ปี ต่อลูก 1 คน กลุ่ม ฿3-8K/เดือน ส่วนตัว ฿500-2,000/ชม. MuteKid ฿199/เดือน = ประหยัด 95%+ โอกาสทลายราคา</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section>
+    <h2><span class="icon">⚔️</span>
+      <span class="en">Competitive Landscape</span>
+      <span class="th">คู่แข่ง</span>
+    </h2>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th><span class="en">Player</span><span class="th">ผู้เล่น</span></th>
+          <th><span class="en">Type</span><span class="th">ประเภท</span></th>
+          <th><span class="en">Thai?</span><span class="th">ภาษาไทย?</span></th>
+          <th><span class="en">AI?</span><span class="th">AI?</span></th>
+          <th><span class="en">LINE?</span><span class="th">LINE?</span></th>
+          <th><span class="en">Price</span><span class="th">ราคา</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Photomath (Google)</td><td>Math scan→solve</td><td>❌</td><td>✅</td><td>❌</td><td>$9.99/mo</td></tr>
+        <tr><td>Khanmigo (Khan Academy)</td><td>AI tutor</td><td>❌</td><td>✅</td><td>❌</td><td>$9.99/mo (US only)</td></tr>
+        <tr><td>Question AI</td><td>Homework AI</td><td>❌</td><td>✅</td><td>❌</td><td>Free / Premium</td></tr>
+        <tr><td>Snapask</td><td>Human tutors</td><td>✅</td><td>❌</td><td>❌</td><td>฿150-300/question</td></tr>
+        <tr><td>StartDee</td><td>Video courses</td><td>✅</td><td>❌</td><td>❌</td><td>฿99-199/mo</td></tr>
+        <tr><td>OpenDurian</td><td>Exam prep courses</td><td>✅</td><td>❌</td><td>❌</td><td>฿1,000-5,000/course</td></tr>
+        <tr><td style="color:var(--primary-light);font-weight:700">MuteKid ✨</td><td>AI homework + tutor</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td>฿199/mo</td></tr>
+      </tbody>
+    </table>
+    <div class="insight-box">
+      <h3><span class="en">🎯 The Gap</span><span class="th">🎯 ช่องว่าง</span></h3>
+      <p><span class="en">ZERO Thai-language, AI-powered, LINE-native homework helper exists. Global apps (Photomath, Khanmigo) are English-only, app-only, and don't follow Thai curriculum. Thai apps (Snapask, StartDee, OpenDurian) use human tutors or video — NOT AI. The intersection of AI + Thai + LINE + Thai curriculum = completely empty.</span>
+      <span class="th">ไม่มี AI ช่วยการบ้านภาษาไทยบน LINE เลย แอปต่างประเทศ (Photomath, Khanmigo) เป็นภาษาอังกฤษ ไม่ตรงหลักสูตรไทย แอปไทย (Snapask, StartDee, OpenDurian) ใช้ติวเตอร์คนหรือวิดีโอ — ไม่ใช่ AI จุดตัด AI + ไทย + LINE + หลักสูตรไทย = ว่างเปล่าสิ้นเชิง</span></p>
+    </div>
+  </section>
+
+  <!-- REVENUE MODEL -->
+  <section>
+    <h2><span class="icon">💰</span>
+      <span class="en">Revenue Model</span>
+      <span class="th">โมเดลรายได้</span>
+    </h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="en">🆓 Free Tier</span><span class="th">🆓 ฟรี</span></h3>
+        <p><span class="en">5 homework photos/day, basic step-by-step explanations, math only. Enough to hook parents and prove value.</span>
+        <span class="th">ถ่ายการบ้าน 5 รูป/วัน อธิบายทีละขั้นพื้นฐาน เฉพาะคณิตศาสตร์ พอให้พ่อแม่ลองใช้และเห็นคุณค่า</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">⭐ ฿199/mo Family</span><span class="th">⭐ ฿199/เดือน Family</span></h3>
+        <p><span class="en">Unlimited homework help, all subjects (math, science, Thai, social, English), AI learning plan, parent dashboard with weekly progress report, up to 3 children.</span>
+        <span class="th">ช่วยการบ้านไม่จำกัด ทุกวิชา (คณิต, วิทย์, ไทย, สังคม, อังกฤษ) AI แผนการเรียน แดชบอร์ดพ่อแม่ดูรายงานรายสัปดาห์ สูงสุด 3 คน</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🏫 ฿499/mo Premium</span><span class="th">🏫 ฿499/เดือน Premium</span></h3>
+        <p><span class="en">Everything above + AI exam prep (O-NET, TCAS, GAT/PAT), personalized practice problems, weak subject diagnostics, voice explanations in Thai, unlimited children.</span>
+        <span class="th">ทุกอย่างข้างบน + ติว O-NET, TCAS, GAT/PAT แบบฝึกหัดส่วนตัว วิเคราะห์จุดอ่อน อธิบายด้วยเสียงภาษาไทย ไม่จำกัดจำนวนลูก</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🏢 B2B: Schools & Tutoring Centers</span><span class="th">🏢 B2B: โรงเรียน & โรงเรียนกวดวิชา</span></h3>
+        <p><span class="en">฿29-49/student/mo for schools (bulk licensing). White-label for tutoring centers. Teacher dashboard with class analytics. 35,000+ Thai schools = massive B2B market.</span>
+        <span class="th">฿29-49/นักเรียน/เดือน สำหรับโรงเรียน (สัญญาเหมา) White-label สำหรับโรงเรียนกวดวิชา แดชบอร์ดครูดูสถิติห้องเรียน โรงเรียนไทย 35,000+ แห่ง = ตลาด B2B ใหญ่</span></p>
+      </div>
+    </div>
+    <div class="revenue-box">
+      <div class="big">฿36M/yr ≈ $1.12M</div>
+      <div class="desc">
+        <span class="en">10,000 families × ฿199/mo + 2,000 × ฿499/mo + B2B schools = ฿36M/yr. Need &lt;0.1% of Thai parents. Time to first $: 2-4 weeks via LINE Mom groups.</span>
+        <span class="th">ครอบครัว 10,000 × ฿199/เดือน + 2,000 × ฿499/เดือน + B2B โรงเรียน = ฿36M/ปี ต้องการ <0.1% ของพ่อแม่ไทย รายได้แรกใน 2-4 สัปดาห์ผ่านกลุ่ม LINE แม่ๆ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <h2><span class="icon">🔧</span>
+      <span class="en">How It Works</span>
+      <span class="th">ทำงานอย่างไร</span>
+    </h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="en">📸 1. Snap & Send</span><span class="th">📸 1. ถ่าย & ส่ง</span></h3>
+        <p><span class="en">Parent or child takes a photo of homework problem on LINE. Works with printed text and handwriting. Math equations, Thai essays, science questions, English grammar — all supported via Gemini Vision.</span>
+        <span class="th">พ่อแม่หรือลูกถ่ายรูปการบ้านส่งทาง LINE ใช้ได้ทั้งตัวพิมพ์และลายมือ สมการคณิต, เรียงความไทย, วิทย์, ไวยากรณ์อังกฤษ — รองรับทั้งหมดผ่าน Gemini Vision</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🧠 2. AI Explains</span><span class="th">🧠 2. AI อธิบาย</span></h3>
+        <p><span class="en">AI doesn't just give the answer — it explains step-by-step in Thai, matched to the child's grade level. Uses Socratic method: guides to understanding, not just copying. Parent mode vs Child mode (different explanation depth).</span>
+        <span class="th">AI ไม่ได้แค่ให้คำตอบ — อธิบายทีละขั้นเป็นภาษาไทย ตามระดับชั้น ใช้วิธีโสกราตีส: ชี้นำให้เข้าใจ ไม่ใช่แค่ลอก โหมดพ่อแม่ vs โหมดเด็ก (ลึกต่างกัน)</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">📈 3. Track Progress</span><span class="th">📈 3. ติดตามพัฒนาการ</span></h3>
+        <p><span class="en">Parent dashboard shows: subjects asked about, time spent, weak areas, improvement trends. Weekly LINE report to parents: "This week your child struggled with fractions — here are 3 practice problems." Proactive, not reactive.</span>
+        <span class="th">แดชบอร์ดพ่อแม่แสดง: วิชาที่ถาม, เวลาที่ใช้, จุดอ่อน, แนวโน้มพัฒนาการ รายงาน LINE รายสัปดาห์: "สัปดาห์นี้ลูกมีปัญหาเรื่องเศษส่วน — นี่คือโจทย์ฝึก 3 ข้อ" เชิงรุก ไม่ใช่ตั้งรับ</span></p>
+      </div>
+      <div class="card">
+        <h3><span class="en">🎯 4. Thai Curriculum Aligned</span><span class="th">🎯 4. ตรงหลักสูตรไทย</span></h3>
+        <p><span class="en">Aligned with Thai Ministry of Education curriculum (สพฐ./OBEC). Covers ป.1-ม.6 all subjects. Exam prep for O-NET, TCAS, GAT/PAT with actual past papers analyzed. This is what global apps CAN'T do.</span>
+        <span class="th">ตรงหลักสูตรกระทรวงศึกษาธิการ (สพฐ.) ครอบคลุม ป.1-ม.6 ทุกวิชา ติวสอบ O-NET, TCAS, GAT/PAT วิเคราะห์ข้อสอบจริงย้อนหลัง นี่คือสิ่งที่แอปต่างชาติทำไม่ได้</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section>
+    <h2><span class="icon">⚠️</span>
+      <span class="en">Risk Assessment</span>
+      <span class="th">ประเมินความเสี่ยง</span>
+    </h2>
+    <div class="risk">
+      <span class="level med">MEDIUM</span>
+      <p><span class="en"><strong>AI accuracy for Thai curriculum:</strong> Wrong answers could destroy trust with parents. Mitigate: strict grounding in curriculum content, human-reviewed answer banks for common problems, confidence scoring.</span>
+      <span class="th"><strong>ความถูกต้อง AI ตามหลักสูตรไทย:</strong> คำตอบผิดทำลายความเชื่อมั่นทันที แก้ไข: ยึดเนื้อหาหลักสูตร ธนาคารคำตอบตรวจสอบแล้ว คะแนนความมั่นใจ</span></p>
+    </div>
+    <div class="risk">
+      <span class="level med">MEDIUM</span>
+      <p><span class="en"><strong>ChatGPT/Google Gemini used directly:</strong> Parents can already use ChatGPT for homework help. Mitigate: MuteKid is purpose-built — Thai curriculum aligned, child-safe, progress tracking, LINE-native. ChatGPT is a generic tool, not a children's tutor.</span>
+      <span class="th"><strong>ใช้ ChatGPT/Gemini โดยตรง:</strong> พ่อแม่ใช้ ChatGPT ได้แล้ว แก้ไข: MuteKid สร้างมาเพื่อเด็กโดยเฉพาะ — ตรงหลักสูตร ปลอดภัย ติดตามพัฒนาการ บน LINE ChatGPT เป็นเครื่องมือทั่วไป ไม่ใช่ติวเตอร์เด็ก</span></p>
+    </div>
+    <div class="risk">
+      <span class="level med">MEDIUM</span>
+      <p><span class="en"><strong>Monetizing parents:</strong> Thai parents price-sensitive for B2C subscriptions. Mitigate: ฿199/mo is 1 hour of tutoring — ROI is 50-100x. Generous free tier hooks first. B2B schools may be the bigger revenue play.</span>
+      <span class="th"><strong>คิดเงินพ่อแม่:</strong> พ่อแม่ไทยระวังเรื่องค่าสมาชิก แก้ไข: ฿199/เดือน = 1 ชม. กวดวิชา ROI 50-100 เท่า ฟรีเทียร์ดึงก่อน B2B โรงเรียนอาจเป็นรายได้หลัก</span></p>
+    </div>
+    <div class="risk">
+      <span class="level low">LOW</span>
+      <p><span class="en"><strong>Child safety concerns:</strong> AI interacting with children requires careful design. Mitigate: content filtering, no personal data collection from minors, parent-gated access, PDPA compliance, education-only responses.</span>
+      <span class="th"><strong>ความปลอดภัยเด็ก:</strong> AI ที่ปฏิสัมพันธ์กับเด็กต้องออกแบบอย่างระวัง แก้ไข: กรองเนื้อหา ไม่เก็บข้อมูลส่วนตัวเด็ก เข้าถึงผ่านพ่อแม่ ตรง PDPA ตอบเฉพาะเรื่องเรียน</span></p>
+    </div>
+    <div class="risk">
+      <span class="level low">LOW-MED</span>
+      <p><span class="en"><strong>Snapask/StartDee adding AI:</strong> Existing Thai EdTech could bolt on AI features. Mitigate: first-mover, purpose-built architecture, LINE-native vs app-based, curriculum alignment depth takes time to replicate.</span>
+      <span class="th"><strong>Snapask/StartDee เพิ่ม AI:</strong> EdTech ไทยที่มีอาจเพิ่มฟีเจอร์ AI แก้ไข: เข้าตลาดก่อน สถาปัตยกรรมเฉพาะทาง LINE-native vs แอป ความลึกหลักสูตรต้องใช้เวลาลอกเลียน</span></p>
+    </div>
+  </section>
+
+  <!-- KEY INSIGHT -->
+  <section>
+    <div class="insight-box">
+      <h3><span class="en">💡 Key Insight</span><span class="th">💡 ข้อมูลเชิงลึก</span></h3>
+      <p><span class="en">Thai parents are the MOST willing spenders on children's education in Southeast Asia. Tutoring is not optional — it's a cultural expectation. A family spending ฿5,000/month on tutoring will HAPPILY pay ฿199/month for 24/7 AI homework help that explains every problem step-by-step. The LINE distribution is the moat: 67M users, zero app download, parents already use LINE for everything. The "parent dashboard" is the secret weapon — showing measurable progress justifies the subscription. Global AI homework apps (Photomath, Khanmigo) can NEVER serve Thai curriculum because Thai math notation, Thai language essays, and O-NET/TCAS exam formats are completely unique. The B2B angle (schools at ฿29-49/student/mo) could be even bigger than B2C — 35,000+ Thai schools × 500 students = 17.5M potential users.</span>
+      <span class="th">พ่อแม่ไทยยินดีจ่ายเรื่องการศึกษาลูกมากที่สุดในอาเซียน กวดวิชาไม่ใช่ทางเลือก — เป็นวัฒนธรรม ครอบครัวที่จ่าย ฿5,000/เดือน ค่าเรียนพิเศษ จะยินดีจ่าย ฿199/เดือน ให้ AI ช่วยการบ้าน 24/7 อธิบายทุกโจทย์ทีละขั้น LINE คือกำแพง: 67M ผู้ใช้ ไม่ต้องโหลดแอป พ่อแม่ใช้ LINE อยู่แล้ว "แดชบอร์ดพ่อแม่" คืออาวุธลับ — แสดงพัฒนาการที่วัดได้ ทำให้คุ้มค่าสมาชิก แอป AI ต่างชาติ (Photomath, Khanmigo) ไม่มีทางให้บริการหลักสูตรไทย เพราะสัญลักษณ์คณิตไทย เรียงความภาษาไทย รูปแบบสอบ O-NET/TCAS เฉพาะตัวทั้งหมด B2B โรงเรียน (฿29-49/นักเรียน/เดือน) อาจใหญ่กว่า B2C — โรงเรียนไทย 35,000+ แห่ง × 500 นักเรียน = 17.5M ผู้ใช้</span></p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p><span class="en">MuteKid — Idea #54 | Research by Sun (AI CEO) | MuteLab 2026</span>
+    <span class="th">MuteKid — ไอเดีย #54 | วิจัยโดย Sun (AI CEO) | MuteLab 2026</span></p>
+    <p style="margin-top:0.5rem"><a href="index.html">← <span class="en">Back to all ideas</span><span class="th">กลับไปไอเดียทั้งหมด</span></a></p>
+  </div>
+</footer>
+
+</body>
+</html>
