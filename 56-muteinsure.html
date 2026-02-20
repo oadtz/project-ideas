@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteInsure — AI Insurance Agent CRM & Sales Toolkit on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #3b82f6;
+    --secondary-light: #60a5fa;
+    --secondary-pale: rgba(59,130,246,0.08);
+    --secondary-glow: rgba(59,130,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(59,130,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* HERO */
+  .hero { padding: 6rem 0 4rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    padding: 0.4rem 1.1rem; border-radius: 999px;
+    font-size: 0.72rem; font-weight: 600; color: var(--primary-light);
+    letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    font-weight: 800; line-height: 1.08;
+    margin: 1.5rem 0 1.2rem;
+    letter-spacing: -0.03em;
+  }
+  .hero h1 .highlight { color: var(--primary); }
+  .hero h1 .highlight2 { color: var(--secondary-light); }
+  .hero .subtitle {
+    font-size: 1.15rem; color: var(--text2);
+    max-width: 700px; margin: 0 auto 2rem;
+    line-height: 1.7; font-weight: 300;
+  }
+
+  .hero-stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .hero-stat {
+    text-align: center; padding: 1.2rem 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .hero-stat .num {
+    font-size: 1.6rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .hero-stat .label {
+    font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* SECTIONS */
+  section { padding: 4rem 0; }
+  .section-header {
+    text-align: center; margin-bottom: 3rem;
+  }
+  .section-header h2 {
+    font-size: 2rem; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 0.6rem;
+  }
+  .section-header p {
+    color: var(--text2); font-size: 1rem; max-width: 600px;
+    margin: 0 auto; line-height: 1.7;
+  }
+
+  /* CARDS GRID */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(16,185,129,0.1);
+  }
+  .card-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .card p { font-size: 0.88rem; color: var(--text2); line-height: 1.7; }
+
+  /* SCORE */
+  .score-section { background: var(--bg2); border-radius: 20px; padding: 3rem; margin: 2rem 0; }
+  .score-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem; margin-top: 2rem;
+  }
+  .score-item {
+    background: var(--surface); border-radius: 14px;
+    padding: 1.5rem; text-align: center;
+    border: 1px solid var(--border);
+  }
+  .score-item .score-num {
+    font-size: 2rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .score-item .score-max { font-size: 0.85rem; color: var(--muted); }
+  .score-item .score-label {
+    font-size: 0.75rem; color: var(--text2); margin-top: 0.4rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    font-family: 'Space Mono', monospace;
+  }
+  .total-score {
+    text-align: center; margin-top: 2rem;
+    padding: 2rem; background: var(--primary-pale);
+    border: 2px solid var(--primary); border-radius: 16px;
+  }
+  .total-score .big { font-size: 3.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .total-score .verdict { font-size: 1.1rem; color: var(--primary-light); font-weight: 600; margin-top: 0.3rem; }
+
+  /* REVENUE */
+  .revenue-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2rem; margin: 1rem 0;
+  }
+  .revenue-box h4 { color: var(--primary); font-family: 'Space Mono', monospace; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+  .revenue-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .revenue-row:last-child { border: none; }
+  .revenue-label { color: var(--text2); font-size: 0.9rem; }
+  .revenue-val { color: var(--primary); font-weight: 700; font-family: 'Space Mono', monospace; font-size: 0.9rem; }
+
+  /* RISK */
+  .risk-item { padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .risk-item:last-child { border: none; }
+  .risk-level { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+  .risk-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .risk-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .risk-low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .risk-text { color: var(--text2); font-size: 0.88rem; margin-top: 0.3rem; line-height: 1.6; }
+
+  /* INSIGHT */
+  .insight-box {
+    background: linear-gradient(135deg, var(--primary-pale), var(--secondary-pale));
+    border: 1px solid var(--border2); border-radius: 16px;
+    padding: 2.5rem; margin: 3rem 0; position: relative; overflow: hidden;
+  }
+  .insight-box::before {
+    content: '💡'; position: absolute; top: -10px; right: 20px;
+    font-size: 5rem; opacity: 0.08;
+  }
+  .insight-box h3 { font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary-light); }
+  .insight-box p { color: var(--text2); line-height: 1.8; font-size: 0.95rem; }
+
+  /* BACK */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--muted); font-size: 0.8rem; text-decoration: none;
+    padding: 1.5rem 0; font-family: 'Space Mono', monospace;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--primary); }
+
+  @media (max-width: 768px) {
+    .hero { padding: 4rem 0 3rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-stats { gap: 1rem; }
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 0 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <a href="index.html" class="back-link">← <span class="en">Back to Dashboard</span><span class="th">กลับไปหน้ารวม</span></a>
+    <div class="hero-badge">🛡️ <span class="en">Idea #56 — InsurTech / B2B SaaS</span><span class="th">ไอเดีย #56 — InsurTech / B2B SaaS</span></div>
+    <h1>
+      <span class="en"><span class="highlight">MuteInsure</span> — AI Insurance Agent<br><span class="highlight2">CRM & Sales Toolkit</span> on LINE</span>
+      <span class="th"><span class="highlight">MuteInsure</span> — AI CRM สำหรับ<br><span class="highlight2">ตัวแทนประกัน</span> บน LINE</span>
+    </h1>
+    <p class="subtitle">
+      <span class="en">AI-powered CRM built for Thailand's 400,000+ insurance agents. Manages client policies, predicts renewal dates, auto-follows up via LINE, and generates personalized sales pitches — all from the app agents already live on. The Salesforce of Thai insurance, at 1/10th the price.</span>
+      <span class="th">AI CRM สร้างมาเพื่อตัวแทนประกันไทย 400,000+ คน จัดการกรมธรรม์ลูกค้า คาดการณ์วันต่ออายุ ติดตามอัตโนมัติผ่าน LINE พร้อมสร้าง sales pitch เฉพาะบุคคล — ทั้งหมดจากแอปที่ตัวแทนใช้อยู่แล้ว Salesforce ของประกันไทย ราคา 1/10</span>
+    </p>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">฿900B+</div>
+        <div class="label"><span class="en">Thai Insurance Premiums/yr</span><span class="th">เบี้ยประกันรวม/ปี</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">400K+</div>
+        <div class="label"><span class="en">Licensed Agents</span><span class="th">ตัวแทนมีใบอนุญาต</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">ZERO</div>
+        <div class="label"><span class="en">Thai AI Agent CRM</span><span class="th">AI CRM ตัวแทนไทย</span></div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">35/50</div>
+        <div class="label"><span class="en">Idea Score</span><span class="th">คะแนนไอเดีย</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">🔥 The Problem</span><span class="th">🔥 ปัญหา</span></h2>
+      <p>
+        <span class="en">Thai insurance agents manage hundreds of clients with LINE chat + paper notebooks + Excel. Renewals slip through the cracks. Follow-ups are manual. Commission tracking is guesswork.</span>
+        <span class="th">ตัวแทนประกันไทยจัดการลูกค้าเป็นร้อยด้วย LINE + สมุดจด + Excel กรมธรรม์หลุดต่ออายุ ติดตามลูกค้าด้วยมือ คอมมิชชั่นไม่รู้เท่าไหร่</span>
+      </p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3><span class="en">Renewal Chaos</span><span class="th">ความวุ่นวายเรื่องต่ออายุ</span></h3>
+        <p><span class="en">Top agents manage 200-500+ policies. Each has different renewal dates. Missing ONE renewal = lost commission + lost client trust. Currently tracked on paper or basic Excel.</span><span class="th">ตัวแทนเก่งดูแลกรมธรรม์ 200-500+ ฉบับ แต่ละฉบับวันต่อต่างกัน พลาดแค่ 1 ฉบับ = สูญค่าคอมฯ + เสียความไว้ใจ ตอนนี้ใช้กระดาษหรือ Excel ธรรมดา</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3><span class="en">LINE Chat Overload</span><span class="th">LINE ท่วม</span></h3>
+        <p><span class="en">All client communication happens on LINE. But 300+ client threads mixed with personal messages = missed inquiries, forgotten follow-ups, zero analytics on what works.</span><span class="th">ทุกการสื่อสารกับลูกค้าผ่าน LINE แต่ 300+ แชทลูกค้าปนกับแชทส่วนตัว = พลาดข้อความ ลืมติดตาม ไม่มีข้อมูลว่าอะไรได้ผล</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3><span class="en">Commission Black Hole</span><span class="th">ค่าคอมฯ หลุมดำ</span></h3>
+        <p><span class="en">Agents earn 20-40% first-year commission, 5-15% renewal. With 200+ policies across 3-5 insurers, tracking actual vs expected commission is a nightmare. Money gets lost.</span><span class="th">ตัวแทนได้คอมฯ 20-40% ปีแรก 5-15% ต่ออายุ กรมธรรม์ 200+ ฉบับจาก 3-5 บริษัท ตรวจสอบคอมฯ จริง vs คาด = ฝันร้าย เงินหายไปเฉยๆ</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">✨ The Solution</span><span class="th">✨ ทางออก</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3><span class="en">AI Renewal Predictor</span><span class="th">AI คาดการณ์ต่ออายุ</span></h3>
+        <p><span class="en">Auto-tracks all policy renewal dates. AI sends personalized LINE messages to clients 30/14/7 days before expiry. Generates renewal pitch based on client's life changes (new car, baby, salary increase).</span><span class="th">ติดตามวันต่ออายุทุกกรมธรรม์อัตโนมัติ AI ส่ง LINE ถึงลูกค้า 30/14/7 วันก่อนหมด สร้าง pitch ต่ออายุตามการเปลี่ยนแปลงชีวิตลูกค้า</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3><span class="en">Smart Client Dashboard</span><span class="th">แดชบอร์ดลูกค้าอัจฉริยะ</span></h3>
+        <p><span class="en">Every client's complete insurance portfolio at a glance: life, health, car, property. AI identifies coverage gaps and generates upsell recommendations. "คุณสมชายยังไม่มีประกันสุขภาพ — ควรเสนอแผน X"</span><span class="th">ดูภาพรวมประกันลูกค้าทุกประเภทในจอเดียว: ชีวิต สุขภาพ รถ บ้าน AI หาช่องว่างความคุ้มครองและแนะนำ upsell</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💵</div>
+        <h3><span class="en">Commission Tracker</span><span class="th">ติดตามค่าคอมมิชชั่น</span></h3>
+        <p><span class="en">Import statements from all insurers. AI reconciles expected vs actual commissions. Flags missing payments instantly. Know exactly how much you're owed, from whom, and when.</span><span class="th">นำเข้าใบสรุปจากทุกบริษัทประกัน AI ตรวจสอบคอมฯ คาด vs จริง แจ้งเตือนยอดที่หายทันที รู้ทุกบาทที่ต้องได้</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3><span class="en">AI Sales Assistant</span><span class="th">AI ผู้ช่วยขาย</span></h3>
+        <p><span class="en">AI generates personalized product recommendations for each client based on their profile, life stage, and existing coverage. Auto-creates LINE messages, proposals, and comparison sheets in Thai.</span><span class="th">AI สร้างคำแนะนำผลิตภัณฑ์เฉพาะบุคคลตามโปรไฟล์ ช่วงชีวิต และความคุ้มครองปัจจุบัน สร้าง LINE message ใบเสนอ และตารางเปรียบเทียบอัตโนมัติ</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">📈 Market Opportunity</span><span class="th">📈 โอกาสทางตลาด</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🏦</div>
+        <h3><span class="en">฿900B+ Insurance Market</span><span class="th">ตลาดประกัน ฿900B+</span></h3>
+        <p><span class="en">Thailand's total insurance premiums exceed ฿900B ($28B) annually. Life insurance alone is ฿600B+. Insurance penetration at 5.4% of GDP and growing. 2nd largest in ASEAN after Singapore by penetration.</span><span class="th">เบี้ยประกันรวมไทยเกิน ฿900B ต่อปี ประกันชีวิตอย่างเดียว ฿600B+ Insurance penetration 5.4% ของ GDP และเติบโตต่อเนื่อง</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h3><span class="en">400K+ Licensed Agents</span><span class="th">ตัวแทน 400K+ คน</span></h3>
+        <p><span class="en">OIC (คปภ.) licenses 400,000+ insurance agents and brokers in Thailand. Each one is a potential customer. They earn commission-based income — tools that help them sell more = tools they'll pay for.</span><span class="th">คปภ. ออกใบอนุญาตตัวแทนและนายหน้า 400,000+ คน ทุกคนคือลูกค้าเป้าหมาย รายได้จากค่าคอมฯ — เครื่องมือช่วยขายได้เพิ่ม = เครื่องมือที่จ่ายให้</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌏</div>
+        <h3><span class="en">$3.5B+ Global InsurTech CRM</span><span class="th">ตลาด InsurTech CRM ทั่วโลก $3.5B+</span></h3>
+        <p><span class="en">Global insurance agency management software market is $3.5B+ growing 10%+ CAGR. Applied Epic, AgencyBloc, HawkSoft serve US market at $100-300+/user/month. Zero Thai equivalent exists.</span><span class="th">ตลาดซอฟต์แวร์จัดการตัวแทนประกันทั่วโลก $3.5B+ เติบโต 10%+ CAGR Applied Epic, AgencyBloc ในอเมริกา $100-300+/เดือน ไม่มีเทียบเท่าในไทย</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">💰 Revenue Model</span><span class="th">💰 โมเดลรายได้</span></h2>
+    </div>
+    <div class="revenue-box">
+      <h4><span class="en">Pricing Tiers</span><span class="th">แพ็คเกจราคา</span></h4>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿499/mo Solo — 1 agent, 100 clients, LINE reminders, policy tracker</span><span class="th">฿499/เดือน Solo — 1 ตัวแทน, 100 ลูกค้า, LINE reminders, ติดตามกรมธรรม์</span></span>
+        <span class="revenue-val">฿499</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿1,499/mo Pro — Unlimited clients, AI sales assistant, commission tracker, upsell engine, analytics</span><span class="th">฿1,499/เดือน Pro — ลูกค้าไม่จำกัด, AI ช่วยขาย, ติดตามคอมฯ, upsell engine, analytics</span></span>
+        <span class="revenue-val">฿1,499</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿4,999/mo Agency — Team management, multi-agent, custom AI, API, white-label, training reports</span><span class="th">฿4,999/เดือน Agency — จัดการทีม, หลายตัวแทน, AI เฉพาะ, API, white-label, รายงานฝึกอบรม</span></span>
+        <span class="revenue-val">฿4,999</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">฿19,999/mo Insurer — White-label for insurance companies to give their entire agent network</span><span class="th">฿19,999/เดือน Insurer — White-label สำหรับบริษัทประกันมอบให้เครือข่ายตัวแทนทั้งหมด</span></span>
+        <span class="revenue-val">฿19,999</span>
+      </div>
+    </div>
+    <div class="revenue-box">
+      <h4><span class="en">Revenue Math → $1M</span><span class="th">คำนวณรายได้ → $1M</span></h4>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">2,000 Solo × ฿499/mo</span><span class="th">2,000 Solo × ฿499/เดือน</span></span>
+        <span class="revenue-val">฿12M/yr</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">500 Pro × ฿1,499/mo</span><span class="th">500 Pro × ฿1,499/เดือน</span></span>
+        <span class="revenue-val">฿9M/yr</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">50 Agency × ฿4,999/mo</span><span class="th">50 Agency × ฿4,999/เดือน</span></span>
+        <span class="revenue-val">฿3M/yr</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">5 Insurer × ฿19,999/mo</span><span class="th">5 Insurer × ฿19,999/เดือน</span></span>
+        <span class="revenue-val">฿1.2M/yr</span>
+      </div>
+      <div class="revenue-row" style="border-top: 2px solid var(--primary); padding-top: 1rem; margin-top: 0.5rem;">
+        <span class="revenue-label" style="font-weight: 700; color: var(--text);"><span class="en">Total Annual Revenue</span><span class="th">รายได้รวมต่อปี</span></span>
+        <span class="revenue-val" style="font-size: 1.1rem;">฿25.2M ≈ $787K</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label"><span class="en">+ SkillLane-style CPD courses & lead gen referrals</span><span class="th">+ คอร์ส CPD แบบ SkillLane & referral lead gen</span></span>
+        <span class="revenue-val">+฿6-10M/yr</span>
+      </div>
+      <div class="revenue-row" style="border-top: 2px solid var(--primary); padding-top: 1rem;">
+        <span class="revenue-label" style="font-weight: 700; color: var(--primary-light);"><span class="en">Path to $1M: 0.6% of 400K agents</span><span class="th">เส้นทางสู่ $1M: 0.6% ของ 400K ตัวแทน</span></span>
+        <span class="revenue-val" style="color: var(--primary-light);">✅</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">⚔️ Competition</span><span class="th">⚔️ คู่แข่ง</span></h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3><span class="en">Global Players (Can't Serve Thailand)</span><span class="th">ผู้เล่นโลก (เข้าไทยไม่ได้)</span></h3>
+        <p><span class="en">Applied Epic, AgencyBloc, HawkSoft, Radiusbob — all US-focused, $100-300+/user/mo, English-only, email-first. ZERO LINE integration. ZERO Thai insurance product databases. ZERO support for Thai regulatory requirements (คปภ.).</span><span class="th">Applied Epic, AgencyBloc, HawkSoft — สหรัฐทั้งหมด $100-300+/เดือน ภาษาอังกฤษ ไม่มี LINE ไม่มีข้อมูลผลิตภัณฑ์ประกันไทย ไม่รองรับข้อกำหนด คปภ.</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🇹🇭</div>
+        <h3><span class="en">Thai InsurTech (Different Focus)</span><span class="th">InsurTech ไทย (โฟกัสต่างกัน)</span></h3>
+        <p><span class="en">Rabbit Care & Roojai = B2C comparison/sales. SkillLane = agent CPD training. Insurer CRMs = basic internal tools locked to one company. ZERO independent, multi-insurer AI CRM for agents exists.</span><span class="th">Rabbit Care & Roojai = B2C เปรียบเทียบ/ขาย SkillLane = อบรม CPD CRM บริษัทประกัน = tools ภายใน ล็อคบริษัทเดียว ไม่มี AI CRM อิสระสำหรับตัวแทน</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3><span class="en">The Gap</span><span class="th">ช่องว่าง</span></h3>
+        <p><span class="en">ZERO Thai-language, LINE-native, AI-powered, multi-insurer CRM for insurance agents. Global tools = wrong language, wrong channel, wrong price. Company tools = locked to one insurer. We own the middle.</span><span class="th">ไม่มี AI CRM ภาษาไทย บน LINE รองรับหลายบริษัทประกัน สำหรับตัวแทน Tools ต่างชาติ = ภาษาผิด ช่องทางผิด ราคาแพง Tools บริษัท = ล็อคบริษัทเดียว เราอยู่ตรงกลาง</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <h2><span class="en">⚠️ Risks</span><span class="th">⚠️ ความเสี่ยง</span></h2>
+    </div>
+    <div class="card" style="max-width: 800px; margin: 0 auto;">
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">Insurance companies building better internal CRM for their agents — reducing need for independent tool. Mitigate: multi-insurer is the moat; agents who sell across 3-5 companies need unified view.</span><span class="th">บริษัทประกันสร้าง CRM ภายในดีขึ้น — ลดความจำเป็นของ tool อิสระ แก้: multi-insurer คือ moat; ตัวแทนที่ขาย 3-5 บริษัทต้องการภาพรวม</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">Agent price sensitivity — many are part-time, low-income. ฿499/mo may feel expensive. Mitigate: free tier (50 clients), prove ROI (1 saved renewal = 100x subscription).</span><span class="th">ตัวแทนไวต่อราคา — หลายคนทำพาร์ทไทม์ รายได้น้อย ฿499/เดือนอาจรู้สึกแพง แก้: ฟรีเทียร์ (50 ลูกค้า) พิสูจน์ ROI (รักษา 1 กรมธรรม์ = 100x ค่าสมาชิก)</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-medium">MEDIUM</span>
+        <p class="risk-text"><span class="en">Data privacy & OIC regulations around client insurance data. Mitigate: PDPA compliance built-in, data stays with agent, encrypted at rest.</span><span class="th">ข้อกำหนด คปภ. เรื่องข้อมูลประกันภัยลูกค้า แก้: PDPA compliance ในตัว ข้อมูลอยู่กับตัวแทน เข้ารหัสทั้งหมด</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-low">LOW-MEDIUM</span>
+        <p class="risk-text"><span class="en">No insurance domain expertise. Mitigate: partner with 5-10 agents as design partners (free access in exchange for feedback). Insurance workflows are standardized and well-documented.</span><span class="th">ไม่มีความเชี่ยวชาญด้านประกัน แก้: พาร์ทเนอร์กับตัวแทน 5-10 คนเป็น design partner workflow ประกันเป็นมาตรฐานอยู่แล้ว</span></p>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-low">LOW</span>
+        <p class="risk-text"><span class="en">Technical complexity — LINE Bot + CRM + AI is well-understood. MVP in 3-4 weeks for core features (policy tracking + LINE reminders).</span><span class="th">ความซับซ้อนทางเทคนิค — LINE Bot + CRM + AI เข้าใจดี MVP 3-4 สัปดาห์สำหรับ features หลัก</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section>
+  <div class="container">
+    <div class="score-section">
+      <div class="section-header">
+        <h2><span class="en">📊 Score Breakdown</span><span class="th">📊 รายละเอียดคะแนน</span></h2>
+      </div>
+      <div class="score-grid">
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Market</span><span class="th">ตลาด</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Problem</span><span class="th">ปัญหา</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Competition Gap</span><span class="th">ช่องว่าง</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Build Feasibility</span><span class="th">สร้างได้</span></div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">7<span class="score-max">/10</span></div>
+          <div class="score-label"><span class="en">Our Advantage</span><span class="th">ข้อได้เปรียบ</span></div>
+        </div>
+      </div>
+      <div class="total-score">
+        <div class="big">35/50</div>
+        <div class="verdict">✅ <span class="en">PASS — Strong B2B vertical SaaS with proven global model</span><span class="th">ผ่าน — B2B vertical SaaS แข็งแกร่ง โมเดลพิสูจน์แล้วระดับโลก</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY INSIGHT -->
+<section>
+  <div class="container">
+    <div class="insight-box">
+      <h3><span class="en">💡 Key Insight</span><span class="th">💡 ข้อมูลเชิงลึก</span></h3>
+      <p>
+        <span class="en">Insurance agents are the PERFECT SaaS customer: they earn commission-based income, so any tool that helps them sell more/retain more directly increases their earnings. The ROI pitch is effortless: "You manage 300 policies. 15% forget to renew. That's 45 lost policies × ฿5,000 avg renewal commission = ฿225,000/year in lost income. MuteInsure costs ฿18,000/year. Even saving 10 renewals = 3x ROI." The multi-insurer angle is the structural moat — each insurance company provides CRM tools locked to their products only. But 60%+ of successful agents sell across 3-5 companies. They need a UNIFIED view that no single insurer will ever provide.</span>
+        <span class="th">ตัวแทนประกันคือลูกค้า SaaS ที่สมบูรณ์แบบ: รายได้จากค่าคอมฯ เครื่องมือช่วยขายเพิ่ม/รักษาลูกค้า = รายได้เพิ่มโดยตรง ROI pitch ง่ายมาก: "ดูแล 300 กรมธรรม์ 15% ลืมต่ออายุ = 45 กรมธรรม์หลุด × ฿5,000 คอมฯ เฉลี่ย = ฿225,000/ปี ที่เสียไป MuteInsure ฿18,000/ปี รักษาแค่ 10 กรมธรรม์ = ROI 3 เท่า" Multi-insurer คือ moat — CRM แต่ละบริษัทล็อคเฉพาะผลิตภัณฑ์ตัวเอง แต่ 60%+ ของตัวแทนเก่งขายข้ามบริษัท ต้องการภาพรวมที่ไม่มีบริษัทไหนให้</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()));
+  localStorage.setItem('lang', lang);
+}
+const saved = localStorage.getItem('lang');
+if (saved) setLang(saved);
+</script>
+</body>
+</html>
