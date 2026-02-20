@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCoach — AI Fitness & Nutrition Coach on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: all 0.25s;
+  }
+  .token-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+  .token-label {
+    font-size: 0.65rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-value {
+    font-size: 1.6rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .token-sub {
+    font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .hero { padding: 5rem 0 3rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale);
+    border: 1px solid var(--border2);
+    border-radius: 50px; padding: 0.4rem 1rem;
+    font-size: 0.75rem; color: var(--primary-light);
+    margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 640px;
+    margin: 0 auto 2rem;
+  }
+
+  .section { padding: 4rem 0; }
+  .section-title {
+    font-size: 2rem; font-weight: 700; margin-bottom: 2rem;
+    text-align: center;
+  }
+  .section-title .gradient {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+  }
+  .feature-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(16,185,129,0.1);
+  }
+  .feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .feature-card h3 {
+    font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;
+  }
+  .feature-card p {
+    font-size: 0.88rem; color: var(--text2); line-height: 1.6;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .pricing-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 40px var(--primary-glow);
+  }
+  .pricing-card.featured::before {
+    content: 'POPULAR';
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--primary); color: #0a0a0f;
+    padding: 0.2rem 1rem; border-radius: 50px;
+    font-size: 0.65rem; font-weight: 800;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.05em;
+  }
+  .pricing-name {
+    font-size: 0.75rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .pricing-price {
+    font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;
+  }
+  .pricing-price .currency { font-size: 1.2rem; }
+  .pricing-price .period { font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+  .pricing-features {
+    list-style: none; text-align: left; margin: 1.5rem 0;
+  }
+  .pricing-features li {
+    padding: 0.4rem 0;
+    font-size: 0.88rem; color: var(--text2);
+    display: flex; align-items: start; gap: 0.5rem;
+  }
+  .pricing-features li::before {
+    content: '✓'; color: var(--primary); font-weight: 700; flex-shrink: 0;
+  }
+
+  .score-bar {
+    display: flex; gap: 0.5rem; justify-content: center; margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .score-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    min-width: 120px;
+  }
+  .score-label {
+    font-size: 0.6rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 0.3rem;
+  }
+  .score-num {
+    font-size: 1.5rem; font-weight: 800;
+    color: var(--primary);
+  }
+
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+  .comp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+  .comp-card h4 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .comp-card p { font-size: 0.8rem; color: var(--text2); }
+  .comp-card .price { color: var(--secondary); font-weight: 700; font-family: 'Space Mono', monospace; }
+  .comp-card .gap { color: var(--red); font-size: 0.72rem; margin-top: 0.3rem; font-family: 'Space Mono', monospace; }
+
+  .risk-list {
+    max-width: 700px; margin: 2rem auto 0;
+  }
+  .risk-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    display: flex; gap: 0.75rem; align-items: start;
+  }
+  .risk-level {
+    font-size: 0.6rem; font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    flex-shrink: 0; margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+  }
+  .risk-high { background: rgba(239,68,68,0.15); color: var(--red); }
+  .risk-med { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .risk-low { background: rgba(16,185,129,0.15); color: var(--green); }
+  .risk-text { font-size: 0.85rem; color: var(--text2); }
+
+  .insight-box {
+    background: var(--primary-pale);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 3rem;
+    max-width: 800px;
+    margin-left: auto; margin-right: auto;
+  }
+  .insight-box h3 { font-size: 1.2rem; margin-bottom: 1rem; }
+  .insight-box p { font-size: 0.92rem; color: var(--text2); line-height: 1.7; }
+
+  footer {
+    padding: 3rem 0; text-align: center;
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+  footer p { font-size: 0.75rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  @media (max-width: 768px) {
+    .container { padding: 0 1.25rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .token-grid { grid-template-columns: 1fr 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .comp-grid { grid-template-columns: 1fr; }
+    .score-bar { gap: 0.3rem; }
+    .score-item { min-width: 90px; padding: 0.5rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← All Ideas</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🏋️</div>
+        MuteCoach
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span> IDEA #58
+      <span class="topbar-badge">SCORE: 35/50</span>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-badge">💪 <span class="en">AI Health & Fitness Coach</span><span class="th">AI โค้ชฟิตเนสและโภชนาการ</span></div>
+    <h1>
+      <span class="en"><span class="gradient">MuteCoach</span><br>AI Fitness & Nutrition<br>Coach on LINE</span>
+      <span class="th"><span class="gradient">MuteCoach</span><br>AI โค้ชฟิตเนส & โภชนาการ<br>บน LINE</span>
+    </h1>
+    <p class="hero-sub">
+      <span class="en">Your 24/7 personal trainer + nutritionist on LINE. Snap food photos for instant calorie tracking with Thai food database. AI workout plans adapted to your gym, equipment, and goals. Behavioral coaching (CBT-based) for lasting habit change. ฿199/mo vs ฿5,000+/mo human trainer.</span>
+      <span class="th">โค้ชส่วนตัว + นักโภชนาการ 24/7 บน LINE ถ่ายรูปอาหารวิเคราะห์แคลอรี่ทันทีด้วยฐานข้อมูลอาหารไทย AI วางแผนออกกำลังกายตามยิม อุปกรณ์ และเป้าหมาย โค้ชพฤติกรรม (CBT) เพื่อสร้างนิสัยถาวร ฿199/เดือน vs โค้ชจริง ฿5,000+/เดือน</span>
+    </p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="token-window">
+      <div class="token-titlebar">
+        <div class="tt-dot tt-close"></div>
+        <div class="tt-dot tt-min"></div>
+        <div class="tt-dot tt-max"></div>
+        <div class="tt-title">market_intelligence.json</div>
+      </div>
+      <div class="token-body">
+        <div class="token-grid">
+          <div class="token-card">
+            <div class="token-label"><span class="en">Global Fitness App Market</span><span class="th">ตลาด Fitness App โลก</span></div>
+            <div class="token-value">$12.1B</div>
+            <div class="token-sub">2025 → $33.6B by 2033 (13.4% CAGR)</div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">Thai Fitness/Wellness</span><span class="th">ตลาดฟิตเนสไทย</span></div>
+            <div class="token-value">$2B+</div>
+            <div class="token-sub"><span class="en">Gyms + supplements + wellness services</span><span class="th">ฟิตเนส + อาหารเสริม + บริการสุขภาพ</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">Thai Gym Memberships</span><span class="th">สมาชิกฟิตเนสไทย</span></div>
+            <div class="token-value">3M+</div>
+            <div class="token-sub"><span class="en">Growing 15-20% YoY, post-COVID boom</span><span class="th">เติบโต 15-20% ต่อปี หลัง COVID</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">Noom Revenue (Proof)</span><span class="th">รายได้ Noom (พิสูจน์โมเดล)</span></div>
+            <div class="token-value">$400M</div>
+            <div class="token-sub"><span class="en">2020 revenue — CBT + nutrition coaching</span><span class="th">รายได้ 2020 — CBT + โค้ชโภชนาการ</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">Personal Trainer Cost (Thai)</span><span class="th">ค่าเทรนเนอร์ส่วนตัว (ไทย)</span></div>
+            <div class="token-value">฿5-15K</div>
+            <div class="token-sub"><span class="en">Per month — prohibitive for most Thais</span><span class="th">ต่อเดือน — แพงเกินสำหรับคนส่วนใหญ่</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">LINE Thailand Users</span><span class="th">ผู้ใช้ LINE ไทย</span></div>
+            <div class="token-value">67M</div>
+            <div class="token-sub"><span class="en">56M+ MAU — zero app download needed</span><span class="th">56M+ MAU — ไม่ต้องโหลดแอป</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">📊 <span class="gradient">Scoring Breakdown</span></span>
+      <span class="th">📊 <span class="gradient">คะแนนรายหมวด</span></span>
+    </h2>
+    <div class="score-bar">
+      <div class="score-item">
+        <div class="score-label">Market</div>
+        <div class="score-num">7</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Problem</div>
+        <div class="score-num">7</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Comp Gap</div>
+        <div class="score-num">7</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Build</div>
+        <div class="score-num">8</div>
+      </div>
+      <div class="score-item">
+        <div class="score-label">Advantage</div>
+        <div class="score-num">6</div>
+      </div>
+      <div class="score-item" style="border-color: var(--primary);">
+        <div class="score-label">TOTAL</div>
+        <div class="score-num">35</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">🏋️ <span class="gradient">Core Features</span></span>
+      <span class="th">🏋️ <span class="gradient">ฟีเจอร์หลัก</span></span>
+    </h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h3><span class="en">Thai Food Photo Analysis</span><span class="th">วิเคราะห์อาหารจากรูปถ่าย</span></h3>
+        <p><span class="en">Snap a photo of your meal → AI identifies Thai dishes (ข้าวผัด, ส้มตำ, กะเพรา) + ingredients + portions. Calculates calories, protein, carbs, fat with a Thai food database of 5,000+ dishes. No more manual logging.</span><span class="th">ถ่ายรูปอาหาร → AI รู้จักอาหารไทย (ข้าวผัด, ส้มตำ, กะเพรา) + ส่วนผสม + ปริมาณ คำนวณแคลอรี่ โปรตีน คาร์บ ไขมัน จากฐานข้อมูลอาหารไทย 5,000+ เมนู ไม่ต้อง log เอง</span></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏃</div>
+        <h3><span class="en">AI Workout Plans</span><span class="th">AI วางแผนออกกำลังกาย</span></h3>
+        <p><span class="en">Personalized workout programs based on your goal (lose fat, gain muscle, general fitness), equipment available, gym or home, experience level. Adjusts weekly based on progress. Video demos for every exercise.</span><span class="th">โปรแกรมออกกำลังกายเฉพาะคุณ ตามเป้าหมาย (ลดไขมัน เพิ่มกล้ามเนื้อ ฟิตทั่วไป) อุปกรณ์ที่มี ยิมหรือบ้าน ระดับประสบการณ์ ปรับทุกสัปดาห์ตามความก้าวหน้า มีวิดีโอสาธิตทุกท่า</span></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3><span class="en">Behavioral Coaching (CBT)</span><span class="th">โค้ชพฤติกรรม (CBT)</span></h3>
+        <p><span class="en">Noom-style behavioral psychology built into daily LINE conversations. Micro-lessons on emotional eating, habit formation, motivation, stress management. This is why Noom made $400M — behavior change, not just calorie counting.</span><span class="th">จิตวิทยาพฤติกรรมแบบ Noom ในบทสนทนา LINE ประจำวัน บทเรียนสั้นเรื่องกินตามอารมณ์ สร้างนิสัย แรงจูงใจ จัดการความเครียด นี่คือเหตุผลที่ Noom ทำ $400M — เปลี่ยนพฤติกรรม ไม่ใช่แค่นับแคลอรี่</span></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3><span class="en">Progress Dashboard</span><span class="th">แดชบอร์ดความก้าวหน้า</span></h3>
+        <p><span class="en">Weekly body metrics tracking (weight, measurements, photos). AI trend analysis: "You're losing 0.5kg/week — on track for 60kg by April." Motivational nudges when plateau detected. Share progress with friends for accountability.</span><span class="th">ติดตามร่างกายรายสัปดาห์ (น้ำหนัก สัดส่วน ภาพถ่าย) AI วิเคราะห์แนวโน้ม: "คุณลด 0.5 กก./สัปดาห์ — ถึง 60 กก. ภายในเมษายน" กระตุ้นเมื่อน้ำหนักนิ่ง แชร์ความก้าวหน้ากับเพื่อนเพื่อความรับผิดชอบ</span></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🍱</div>
+        <h3><span class="en">Thai Meal Plans</span><span class="th">แผนอาหารไทย</span></h3>
+        <p><span class="en">AI generates weekly meal plans using ACTUAL Thai food — not generic "chicken breast + broccoli." ข้าวมันไก่ with portion control, ส้มตำ for low-cal high-fiber, ต้มยำ for protein. Includes 7-11 and street food options.</span><span class="th">AI สร้างแผนอาหารรายสัปดาห์จากอาหารไทยจริง — ไม่ใช่ "อกไก่ + บร็อคโคลี่" ข้าวมันไก่คุมปริมาณ, ส้มตำ low-cal high-fiber, ต้มยำ เน้นโปรตีน รวมตัวเลือกจาก 7-11 และอาหารริมทาง</span></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3><span class="en">24/7 LINE Chat Coach</span><span class="th">โค้ชแชท LINE 24/7</span></h3>
+        <p><span class="en">"Can I eat this?" → instant answer. "I skipped gym 3 days" → no judgment, just a recovery plan. "อ้วนมากเลย" → understanding + actionable advice. Always available, never judges, costs 1/25th of a human trainer.</span><span class="th">"กินนี่ได้มั้ย?" → ตอบทันที "ขาดยิม 3 วัน" → ไม่ตัดสิน แค่แผนกลับมา "อ้วนมากเลย" → เข้าใจ + คำแนะนำทำได้จริง อยู่ตลอด 24 ชม. ไม่ตัดสิน ราคา 1/25 ของเทรนเนอร์จริง</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">💰 <span class="gradient">Pricing Model</span></span>
+      <span class="th">💰 <span class="gradient">รูปแบบราคา</span></span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-name">FREE</div>
+        <div class="pricing-price"><span class="currency">฿</span>0<span class="period">/mo</span></div>
+        <ul class="pricing-features">
+          <li><span class="en">3 food photo scans/day</span><span class="th">สแกนอาหาร 3 ครั้ง/วัน</span></li>
+          <li><span class="en">Basic calorie tracking</span><span class="th">ติดตามแคลอรี่พื้นฐาน</span></li>
+          <li><span class="en">Weight logging</span><span class="th">บันทึกน้ำหนัก</span></li>
+          <li><span class="en">Weekly summary</span><span class="th">สรุปรายสัปดาห์</span></li>
+        </ul>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-name">FIT</div>
+        <div class="pricing-price"><span class="currency">฿</span>199<span class="period">/mo</span></div>
+        <ul class="pricing-features">
+          <li><span class="en">Unlimited food scans</span><span class="th">สแกนอาหารไม่จำกัด</span></li>
+          <li><span class="en">AI workout plans</span><span class="th">แผนออกกำลังกาย AI</span></li>
+          <li><span class="en">Thai meal plans</span><span class="th">แผนอาหารไทย</span></li>
+          <li><span class="en">Behavioral coaching (CBT)</span><span class="th">โค้ชพฤติกรรม (CBT)</span></li>
+          <li><span class="en">Progress analytics</span><span class="th">วิเคราะห์ความก้าวหน้า</span></li>
+          <li><span class="en">Body measurement tracking</span><span class="th">ติดตามสัดส่วนร่างกาย</span></li>
+        </ul>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-name">PRO</div>
+        <div class="pricing-price"><span class="currency">฿</span>499<span class="period">/mo</span></div>
+        <ul class="pricing-features">
+          <li><span class="en">Everything in Fit</span><span class="th">ทุกอย่างใน Fit</span></li>
+          <li><span class="en">Advanced body composition AI</span><span class="th">AI วิเคราะห์องค์ประกอบร่างกาย</span></li>
+          <li><span class="en">Supplement recommendations</span><span class="th">แนะนำอาหารเสริม</span></li>
+          <li><span class="en">Gym integration (Jetts, Fitness First)</span><span class="th">เชื่อมฟิตเนส (Jetts, Fitness First)</span></li>
+          <li><span class="en">1-on-1 video consultation/mo</span><span class="th">ปรึกษาวิดีโอ 1 ครั้ง/เดือน</span></li>
+          <li><span class="en">Family plan (up to 4)</span><span class="th">แพ็กครอบครัว (สูงสุด 4 คน)</span></li>
+        </ul>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:1.5rem; color:var(--muted); font-size:0.85rem;">
+      <span class="en"><strong>B2B Corporate Wellness:</strong> ฿49-99/employee/mo for companies. Anonymized health reports for HR.</span>
+      <span class="th"><strong>B2B สุขภาพองค์กร:</strong> ฿49-99/พนักงาน/เดือน สำหรับบริษัท รายงานสุขภาพรวมสำหรับ HR</span>
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">⚔️ <span class="gradient">Competition Landscape</span></span>
+      <span class="th">⚔️ <span class="gradient">สภาพการแข่งขัน</span></span>
+    </h2>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <h4>Noom 🇺🇸</h4>
+        <p><span class="en">CBT-based weight loss. $400M revenue. 2,700 human coaches.</span><span class="th">ลดน้ำหนักด้วย CBT $400M รายได้ โค้ชคน 2,700 คน</span></p>
+        <div class="price">$70/mo ($59 annual)</div>
+        <div class="gap">❌ English only · No Thai food · No LINE · No workout plans</div>
+      </div>
+      <div class="comp-card">
+        <h4>MyFitnessPal 🇺🇸</h4>
+        <p><span class="en">World's largest food database. 14M+ foods. Calorie tracking pioneer.</span><span class="th">ฐานข้อมูลอาหารใหญ่ที่สุดในโลก 14M+ รายการ ผู้บุกเบิกนับแคลอรี่</span></p>
+        <div class="price">$8-25/mo</div>
+        <div class="gap">❌ Tiny Thai food database · No LINE · No AI coach · Manual logging</div>
+      </div>
+      <div class="comp-card">
+        <h4>FitJoy / Thai Apps 🇹🇭</h4>
+        <p><span class="en">Basic Thai fitness apps — step counters, generic workout videos, basic calorie logs.</span><span class="th">แอปฟิตเนสไทยพื้นฐาน — นับก้าว วิดีโอออกกำลังทั่วไป บันทึกแคลอรี่เบื้องต้น</span></p>
+        <div class="price">Free / ฿99-299</div>
+        <div class="gap">❌ No AI · No photo scan · No Thai food DB · Not on LINE · No coaching</div>
+      </div>
+      <div class="comp-card" style="border-color: var(--primary);">
+        <h4>MuteCoach 🏋️</h4>
+        <p><span class="en">AI fitness + nutrition + behavioral coach. Thai food database. On LINE. 24/7.</span><span class="th">AI ฟิตเนส + โภชนาการ + โค้ชพฤติกรรม ฐานข้อมูลอาหารไทย บน LINE 24/7</span></p>
+        <div class="price" style="color: var(--primary);">฿199/mo</div>
+        <div class="gap" style="color: var(--primary);">✅ Thai AI · Photo scan · LINE-native · CBT coaching · Workout plans</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">💵 <span class="gradient">Revenue Math</span></span>
+      <span class="th">💵 <span class="gradient">คำนวณรายได้</span></span>
+    </h2>
+    <div class="token-window">
+      <div class="token-titlebar">
+        <div class="tt-dot tt-close"></div>
+        <div class="tt-dot tt-min"></div>
+        <div class="tt-dot tt-max"></div>
+        <div class="tt-title">revenue_model.py</div>
+      </div>
+      <div class="token-body">
+        <div class="token-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+          <div class="token-card">
+            <div class="token-label"><span class="en">B2C Path</span><span class="th">เส้นทาง B2C</span></div>
+            <div class="token-value">฿33.6M/yr</div>
+            <div class="token-sub"><span class="en">10K Free×฿0 + 8K Fit×฿199 + 2K Pro×฿499 = $1.05M</span><span class="th">10K ฟรี + 8K Fit×฿199 + 2K Pro×฿499 = $1.05M</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">B2B Corporate</span><span class="th">B2B องค์กร</span></div>
+            <div class="token-value">฿12M/yr</div>
+            <div class="token-sub"><span class="en">20 companies × 500 emp × ฿99/mo</span><span class="th">20 บริษัท × 500 พนง. × ฿99/เดือน</span></div>
+          </div>
+          <div class="token-card">
+            <div class="token-label"><span class="en">Affiliate Revenue</span><span class="th">รายได้ Affiliate</span></div>
+            <div class="token-value">฿5M/yr</div>
+            <div class="token-sub"><span class="en">Supplement + gym + food delivery referrals</span><span class="th">อาหารเสริม + ฟิตเนส + อาหารเดลิเวอรี่</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">
+      <span class="en">⚠️ <span class="gradient">Risk Assessment</span></span>
+      <span class="th">⚠️ <span class="gradient">ประเมินความเสี่ยง</span></span>
+    </h2>
+    <div class="risk-list">
+      <div class="risk-item">
+        <span class="risk-level risk-med">MED-HIGH</span>
+        <span class="risk-text"><span class="en"><strong>B2C subscription resistance</strong> — Thai consumers notoriously resist paying for apps. ฿199/mo is cheap vs trainer but still a subscription. Mitigate: generous free tier, affiliate monetization as backup.</span><span class="th"><strong>คนไทยไม่ชอบจ่ายแอป</strong> — ฿199/เดือน ถูกเทียบเทรนเนอร์ แต่ยังเป็น subscription. แก้: free tier กว้าง, affiliate เป็นรายได้สำรอง</span></span>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-med">MEDIUM</span>
+        <span class="risk-text"><span class="en"><strong>Global competitors localizing</strong> — Noom or MyFitnessPal could add Thai food database and LINE. Mitigate: LINE-native architecture + Thai cultural food knowledge = deep moat. Noom has never localized for Thailand in 18 years.</span><span class="th"><strong>คู่แข่งโลก localize</strong> — Noom หรือ MFP อาจเพิ่มอาหารไทยและ LINE. แก้: สถาปัตยกรรม LINE + ความรู้อาหารไทย = moat ลึก Noom ไม่เคย localize ไทยใน 18 ปี</span></span>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-med">MEDIUM</span>
+        <span class="risk-text"><span class="en"><strong>AI food recognition accuracy</strong> — Thai food is complex (mixed dishes, shared plates, sauces). Wrong calorie counts destroy trust. Mitigate: Gemini Vision + curated Thai food database + user correction feedback loop.</span><span class="th"><strong>ความแม่นยำ AI วิเคราะห์อาหาร</strong> — อาหารไทยซับซ้อน (จานรวม, แชร์, น้ำจิ้ม) แคลอรี่ผิดทำลายความเชื่อใจ. แก้: Gemini Vision + ฐานข้อมูลอาหารไทย + feedback จากผู้ใช้</span></span>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-low">LOW-MED</span>
+        <span class="risk-text"><span class="en"><strong>No fitness domain expertise</strong> — We're not certified trainers or nutritionists. Mitigate: partner with Thai fitness influencers and certified nutritionists for content validation.</span><span class="th"><strong>ไม่มีความเชี่ยวชาญฟิตเนส</strong> — เราไม่ใช่เทรนเนอร์หรือนักโภชนาการ. แก้: พาร์ทเนอร์กับ influencer ฟิตเนสและนักโภชนาการเพื่อตรวจสอบเนื้อหา</span></span>
+      </div>
+      <div class="risk-item">
+        <span class="risk-level risk-low">LOW</span>
+        <span class="risk-text"><span class="en"><strong>Technical complexity</strong> — LINE Bot + Gemini Vision + food database + workout engine. Well-understood stack, MVP in 2-3 weeks.</span><span class="th"><strong>ความซับซ้อนเทคนิค</strong> — LINE Bot + Gemini Vision + ฐานข้อมูลอาหาร + ระบบออกกำลังกาย Stack ที่เข้าใจดี MVP ใน 2-3 สัปดาห์</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="insight-box">
+      <h3>💡 <span class="en">Key Insight</span><span class="th">Insight สำคัญ</span></h3>
+      <p>
+        <span class="en">Noom proved that <strong>behavioral coaching > calorie counting</strong> — that's why they made $400M while MyFitnessPal stagnated. But Noom uses 2,700 human coaches at $70/month. MuteCoach delivers the same CBT-based behavioral coaching with AI at ฿199/month (1/11th the price). The Thai food angle is the killer moat: global apps have 14M Western foods but almost zero Thai dishes. When a Thai user logs "ข้าวผัดกะเพราไก่" on MyFitnessPal, they get frustrated and quit. MuteCoach knows exactly what that is — 550 calories, 28g protein, high sodium. LINE delivery means zero friction: no app download, just add a friend. The B2B corporate wellness angle (฿49-99/employee) could be bigger than B2C — Thai companies increasingly invest in employee wellness programs.</span>
+        <span class="th">Noom พิสูจน์แล้วว่า <strong>โค้ชพฤติกรรม > นับแคลอรี่</strong> — นั่นคือเหตุผลที่ทำ $400M ในขณะที่ MyFitnessPal ไม่โต แต่ Noom ใช้โค้ชคน 2,700 คนที่ $70/เดือน MuteCoach ให้ CBT coaching เดียวกันด้วย AI ที่ ฿199/เดือน (ถูกกว่า 11 เท่า) จุดแข็งคืออาหารไทย: แอปโลกมี 14M อาหารฝรั่งแต่แทบไม่มีอาหารไทย เมื่อคนไทย log "ข้าวผัดกะเพราไก่" บน MyFitnessPal จะผิดหวังและเลิกใช้ MuteCoach รู้ทันที — 550 แคลอรี่, 28g โปรตีน, โซเดียมสูง LINE delivery = ไม่ต้องโหลดแอป แค่ add friend B2B สุขภาพองค์กร (฿49-99/พนง.) อาจใหญ่กว่า B2C — บริษัทไทยลงทุนสุขภาพพนักงานมากขึ้น</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>MuteLab Research Sprint — Idea #58 MuteCoach — Score: 35/50 ✅ PASS</p>
+    <p style="margin-top:0.5rem;">Generated by Sun (AI CEO) · February 2026</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
