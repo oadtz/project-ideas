@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteKit — AI Digital Product Factory: Mass-Produce & Sell Templates at Scale</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .lang-toggle {
+    position: fixed; top: 1.5rem; right: 2rem; z-index: 100;
+    display: flex; gap: 0; border-radius: 999px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: rgba(19,19,31,0.9);
+    backdrop-filter: blur(12px);
+  }
+  .lang-btn {
+    padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; border: none; background: transparent; color: var(--muted);
+    font-family: 'Sora', sans-serif; transition: all 0.3s;
+  }
+  .lang-btn.active { background: var(--primary); color: #000; }
+
+  .th { display: none; }
+  body.show-th .th { display: inline; }
+  body.show-th .en { display: none; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 6rem 0 4rem;
+    position: relative;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid var(--border);
+    padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.75rem;
+    color: var(--primary-light); margin-bottom: 1.5rem;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+
+  /* Score Card */
+  .score-card {
+    display: inline-flex; gap: 2rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 1.5rem 2.5rem; margin: 2rem auto;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .score-item { text-align: center; }
+  .score-item .value {
+    font-size: 1.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .score-item .label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* Sections */
+  .section { padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05); }
+  .section-title {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--primary); margin-bottom: 1.5rem; font-weight: 700;
+  }
+  .section h2 {
+    font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .section p, .section li {
+    color: var(--text2); font-size: 0.95rem; line-height: 1.8;
+  }
+
+  /* Stat Grid */
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .stat-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem;
+  }
+  .stat-box .num {
+    font-size: 1.6rem; font-weight: 800; color: var(--primary-light);
+    font-family: 'Space Mono', monospace;
+  }
+  .stat-box .desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* Revenue Tiers */
+  .tier-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .tier {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;
+  }
+  .tier.featured { border-color: var(--primary); }
+  .tier.featured::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .tier h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .tier .price { font-size: 1.4rem; font-weight: 800; color: var(--primary-light); font-family: 'Space Mono', monospace; }
+  .tier p { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+
+  /* Risk Items */
+  .risk-list { list-style: none; margin: 1rem 0; }
+  .risk-list li {
+    padding: 0.8rem 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: flex; gap: 0.5rem; align-items: flex-start;
+  }
+  .risk-tag {
+    font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 4px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .risk-tag.high { background: rgba(239,68,68,0.15); color: #f87171; }
+  .risk-tag.med { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .risk-tag.low { background: rgba(16,185,129,0.15); color: #34d399; }
+
+  /* Score Breakdown */
+  .score-breakdown {
+    display: grid; grid-template-columns: 1fr; gap: 0.8rem; margin: 1.5rem 0;
+  }
+  .score-row {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--surface); border-radius: 8px; padding: 0.8rem 1rem;
+  }
+  .score-row .category { flex: 1; font-size: 0.85rem; font-weight: 500; }
+  .score-row .bar-wrap { flex: 2; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .score-row .bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .score-row .pts { font-size: 0.85rem; font-weight: 700; color: var(--primary-light); font-family: 'Space Mono', monospace; min-width: 40px; text-align: right; }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 3rem 0; border-top: 1px solid rgba(255,255,255,0.05);
+    color: var(--muted2); font-size: 0.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .container { padding: 0 1.2rem; }
+    .hero { padding: 4rem 0 2rem; }
+    .score-card { gap: 1rem; padding: 1rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active')">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active')">TH</button>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">📦 <span class="en">Idea #55 — Digital Products</span><span class="th">ไอเดีย #55 — สินค้าดิจิทัล</span></div>
+    <h1>
+      <span class="en">MuteKit</span><span class="th">MuteKit</span><br>
+      <span class="highlight">
+        <span class="en">AI Digital Product Factory</span>
+        <span class="th">โรงงาน AI ผลิตสินค้าดิจิทัล</span>
+      </span>
+    </h1>
+    <p class="subtitle">
+      <span class="en">AI mass-produces sellable digital products — templates, printables, social media kits, planners — and lists them across Etsy, Gumroad, Creative Market & Shopee. Zero marginal cost. Passive income at scale.</span>
+      <span class="th">AI ผลิตสินค้าดิจิทัลขายได้เป็นกองทัพ — เทมเพลต, printables, social media kits, planners — แล้วลงขายบน Etsy, Gumroad, Creative Market & Shopee อัตโนมัติ ต้นทุนเกือบ 0 รายได้ passive ที่ scale ได้</span>
+    </p>
+
+    <div class="score-card">
+      <div class="score-item">
+        <div class="value">33</div>
+        <div class="label"><span class="en">Total Score</span><span class="th">คะแนนรวม</span></div>
+      </div>
+      <div class="score-item">
+        <div class="value">/50</div>
+        <div class="label"><span class="en">Framework</span><span class="th">กรอบประเมิน</span></div>
+      </div>
+      <div class="score-item">
+        <div class="value">✅</div>
+        <div class="label"><span class="en">Pass (≥30)</span><span class="th">ผ่าน (≥30)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKET DATA -->
+  <section class="section">
+    <div class="section-title"><span class="en">📊 Market Data</span><span class="th">📊 ข้อมูลตลาด</span></div>
+    <h2><span class="en">A $30B+ market with near-zero marginal cost</span><span class="th">ตลาด $30B+ ต้นทุนส่วนเพิ่มเกือบ 0</span></h2>
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="num">$30B+</div>
+        <div class="desc"><span class="en">Global digital content creation market (2025)</span><span class="th">ตลาดสร้างสินค้าดิจิทัลโลก (2025)</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">9M+</div>
+        <div class="desc"><span class="en">Active Etsy sellers — digital products fastest growing</span><span class="th">ผู้ขาย Etsy — สินค้าดิจิทัลโตเร็วสุด</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">$10-50</div>
+        <div class="desc"><span class="en">Avg price per digital template/bundle</span><span class="th">ราคาเฉลี่ยต่อเทมเพลต/ชุด</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">95%+</div>
+        <div class="desc"><span class="en">Profit margin — no COGS, no shipping</span><span class="th">กำไร — ไม่มีต้นทุนสินค้า ไม่มีค่าส่ง</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONCEPT -->
+  <section class="section">
+    <div class="section-title"><span class="en">💡 Concept</span><span class="th">💡 แนวคิด</span></div>
+    <h2><span class="en">Not a tool. A digital product empire.</span><span class="th">ไม่ใช่ tool แต่เป็นอาณาจักรสินค้าดิจิทัล</span></h2>
+    <p>
+      <span class="en">MuteKit is a business, not a SaaS product. AI generates hundreds of high-quality digital products per month — Canva templates, Google Sheets templates, printable planners, social media content kits, presentation decks, resume templates, wedding stationery, Instagram story templates, digital stickers, and more. Each product is auto-optimized for marketplace SEO and listed across Etsy, Gumroad, Creative Market, and Shopee simultaneously. Revenue compounds as the catalog grows — every product earns passively forever.</span>
+      <span class="th">MuteKit คือธุรกิจ ไม่ใช่ SaaS — AI สร้างสินค้าดิจิทัลคุณภาพสูงหลายร้อยชิ้นต่อเดือน ไม่ว่าจะเป็น Canva templates, Google Sheets templates, printable planners, social media kits, presentation decks, resume templates, wedding stationery, Instagram story templates, digital stickers และอื่นๆ ทุกชิ้นถูกปรับ SEO สำหรับแต่ละ marketplace และลงขายบน Etsy, Gumroad, Creative Market, Shopee พร้อมกัน รายได้เพิ่มขึ้นตามแคตตาล็อก — ทุกชิ้นสร้างรายได้ passive ตลอดไป</span>
+    </p>
+  </section>
+
+  <!-- REVENUE MODEL -->
+  <section class="section">
+    <div class="section-title"><span class="en">💰 Revenue Model</span><span class="th">💰 โมเดลรายได้</span></div>
+    <h2><span class="en">Portfolio play — hundreds of products, compound growth</span><span class="th">เล่นแบบ Portfolio — หลายร้อยสินค้า โตแบบทบต้น</span></h2>
+
+    <div class="tier-grid">
+      <div class="tier">
+        <h3><span class="en">📋 Templates & Planners</span><span class="th">📋 เทมเพลตและ Planners</span></h3>
+        <div class="price">$15-47</div>
+        <p><span class="en">Canva, Notion, Google Sheets, printable planners, budget trackers, content calendars — bulk-produced by AI</span><span class="th">Canva, Notion, Google Sheets, planners, budget trackers — AI ผลิตเป็นชุด</span></p>
+      </div>
+      <div class="tier featured">
+        <h3><span class="en">🎨 Design Bundles</span><span class="th">🎨 ชุดดีไซน์</span></h3>
+        <div class="price">$27-97</div>
+        <p><span class="en">Social media kits, Instagram templates, brand identity packs, presentation decks, wedding suites — higher ASP, premium positioning</span><span class="th">Social media kits, Instagram templates, brand kits, presentation decks, wedding suites — ราคาสูงขึ้น</span></p>
+      </div>
+      <div class="tier">
+        <h3><span class="en">🏪 Multi-Marketplace</span><span class="th">🏪 หลาย Marketplace</span></h3>
+        <div class="price">4 channels</div>
+        <p><span class="en">Same product listed on Etsy + Gumroad + Creative Market + Shopee — 4x distribution, 4x discovery surface</span><span class="th">สินค้าเดียวลงบน Etsy + Gumroad + Creative Market + Shopee — 4 เท่าการกระจาย</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVENUE MATH -->
+  <section class="section">
+    <div class="section-title"><span class="en">🧮 Revenue Math</span><span class="th">🧮 คำนวณรายได้</span></div>
+    <h2><span class="en">500 products × $30 avg × 5-6 sales/mo = $1M/yr</span><span class="th">500 สินค้า × $30 เฉลี่ย × 5-6 ขาย/เดือน = $1M/ปี</span></h2>
+
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="num">500+</div>
+        <div class="desc"><span class="en">Products in catalog by Month 6 (AI creates 3-5/day)</span><span class="th">สินค้าในแคตตาล็อก เดือนที่ 6 (AI สร้าง 3-5/วัน)</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">$30</div>
+        <div class="desc"><span class="en">Average selling price (ASP) across all categories</span><span class="th">ราคาขายเฉลี่ยทุกหมวด</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">$83K</div>
+        <div class="desc"><span class="en">Monthly revenue at 500 products × 5.5 sales/mo each</span><span class="th">รายได้ต่อเดือนที่ 500 ชิ้น × 5.5 ขาย/เดือน</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="num">$1M</div>
+        <div class="desc"><span class="en">Annual run rate target — achievable by Month 8-12</span><span class="th">เป้ารายได้ต่อปี — ทำได้ภายในเดือน 8-12</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITION -->
+  <section class="section">
+    <div class="section-title"><span class="en">⚔️ Competition</span><span class="th">⚔️ การแข่งขัน</span></div>
+    <h2><span class="en">Millions of sellers, but AI changes the game</span><span class="th">ผู้ขายเป็นล้าน แต่ AI เปลี่ยนเกม</span></h2>
+    <p>
+      <span class="en"><strong>Etsy digital products</strong> — 9M+ sellers, highly competitive but top sellers make $100K+/yr. <strong>Creative Market</strong> — premium design marketplace. <strong>Gumroad</strong> — $500M+ in creator payouts. The market is massive but fragmented — no single player dominates. AI gives us 100x production speed advantage over human-only creators. The key: volume + quality + SEO + multi-platform distribution. Top digital product sellers like "BestLetterTemplates" (1M+ sales on Etsy) prove the revenue math works. Our edge: AI creates in hours what takes human designers days.</span>
+      <span class="th"><strong>Etsy</strong> — 9M+ ผู้ขาย แข่งขันสูงแต่ top sellers ทำ $100K+/ปี <strong>Creative Market</strong> — premium design marketplace <strong>Gumroad</strong> — จ่ายผู้สร้างแล้ว $500M+ ตลาดใหญ่แต่กระจาย AI ให้เราผลิตเร็วกว่า 100 เท่า</span>
+    </p>
+  </section>
+
+  <!-- RISKS -->
+  <section class="section">
+    <div class="section-title"><span class="en">⚠️ Risks</span><span class="th">⚠️ ความเสี่ยง</span></div>
+    <ul class="risk-list">
+      <li>
+        <span class="risk-tag high">HIGH</span>
+        <span><span class="en">Marketplace saturation — millions of digital products already listed. Discovery is the #1 challenge. SEO + ads required.</span><span class="th">ตลาดอิ่มตัว — สินค้าดิจิทัลมีเป็นล้าน ค้นพบยากที่สุด ต้อง SEO + โฆษณา</span></span>
+      </li>
+      <li>
+        <span class="risk-tag high">HIGH</span>
+        <span><span class="en">AI-generated quality perception — marketplaces may penalize AI-generated content. Etsy cracked down on AI art in 2024. Need human curation layer.</span><span class="th">คุณภาพ AI — marketplace อาจลงโทษ content จาก AI ต้องมี human curation</span></span>
+      </li>
+      <li>
+        <span class="risk-tag med">MED</span>
+        <span><span class="en">Revenue per product is low — need hundreds of products to reach $1M. Long-tail game, not quick money.</span><span class="th">รายได้ต่อชิ้นต่ำ — ต้องหลายร้อยชิ้นถึง $1M เป็นเกม long-tail</span></span>
+      </li>
+      <li>
+        <span class="risk-tag med">MED</span>
+        <span><span class="en">Platform risk — Etsy fees (6.5% + 3% payment), marketplace policy changes, account bans for perceived spam.</span><span class="th">ความเสี่ยงแพลตฟอร์ม — ค่าธรรมเนียม Etsy, เปลี่ยนนโยบาย, โดนแบนถ้าดูเหมือน spam</span></span>
+      </li>
+      <li>
+        <span class="risk-tag low">LOW</span>
+        <span><span class="en">Technical complexity — AI template generation is straightforward with current tools (Canva API, Google Sheets API, AI image generation).</span><span class="th">ความซับซ้อนทางเทคนิค — สร้าง template ด้วย AI ทำได้ง่ายด้วยเครื่องมือปัจจุบัน</span></span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- SCORING -->
+  <section class="section">
+    <div class="section-title"><span class="en">🎯 Scoring Breakdown</span><span class="th">🎯 รายละเอียดคะแนน</span></div>
+
+    <div class="score-breakdown">
+      <div class="score-row">
+        <div class="category"><span class="en">Market Potential</span><span class="th">ศักยภาพตลาด</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:70%"></div></div>
+        <div class="pts">7/10</div>
+      </div>
+      <div class="score-row">
+        <div class="category"><span class="en">Problem Severity</span><span class="th">ความรุนแรงปัญหา</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:50%"></div></div>
+        <div class="pts">5/10</div>
+      </div>
+      <div class="score-row">
+        <div class="category"><span class="en">Competition Gap</span><span class="th">ช่องว่างการแข่งขัน</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:50%"></div></div>
+        <div class="pts">5/10</div>
+      </div>
+      <div class="score-row">
+        <div class="category"><span class="en">Build Feasibility</span><span class="th">ความเป็นไปได้ในการสร้าง</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:90%"></div></div>
+        <div class="pts">9/10</div>
+      </div>
+      <div class="score-row">
+        <div class="category"><span class="en">Our Advantage</span><span class="th">ข้อได้เปรียบของเรา</span></div>
+        <div class="bar-wrap"><div class="bar" style="width:70%"></div></div>
+        <div class="pts">7/10</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY INSIGHT -->
+  <section class="section" style="padding-bottom: 4rem;">
+    <div class="section-title"><span class="en">🔑 Key Insight</span><span class="th">🔑 ข้อมูลเชิงลึก</span></div>
+    <h2><span class="en">We've done this before. Now do it 100x.</span><span class="th">เราเคยทำแล้ว ตอนนี้ทำมัน 100 เท่า</span></h2>
+    <p>
+      <span class="en">MuteLab already built Google Sheets templates (1K Challenge — 4 products on Etsy). MuteKit is the same concept but AI-automated at scale: instead of 4 products in 2 weeks, produce 500+ products in 6 months across multiple categories and marketplaces. The catalog is the moat — every product earns passively. Top Etsy digital product sellers have 1,000+ listings generating $10K-100K+/month. The difference: they took YEARS to build that catalog manually. AI compresses this to months. The risk is real (marketplace saturation, quality control) but the upside is massive passive income with near-zero ongoing cost. This makes US rich directly — no customers to acquire, no churn, no support tickets.</span>
+      <span class="th">MuteLab เคยสร้าง Google Sheets templates แล้ว (1K Challenge — 4 สินค้าบน Etsy) MuteKit คือแนวคิดเดียวกันแต่ AI ทำให้อัตโนมัติ scale ได้: แทนที่จะ 4 ชิ้นใน 2 สัปดาห์ ผลิต 500+ ชิ้นใน 6 เดือน ข้ามหลายหมวดและ marketplace แคตตาล็อกคือ moat — ทุกชิ้นสร้างรายได้ passive ไปเรื่อยๆ ผู้ขาย top บน Etsy มี 1,000+ listings สร้างรายได้ $10K-100K+/เดือน ต่างกันตรงที่พวกเขาใช้เวลาหลายปี เราใช้ AI ย่อเหลือเดือน</span>
+    </p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p>MuteKit — MuteLab Idea Research Sprint | <span class="en">Idea #55</span><span class="th">ไอเดีย #55</span> | Score: 33/50 ✅</p>
+    <p style="margin-top: 0.5rem;">Generated by Sun ☀️ AI CEO | February 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
