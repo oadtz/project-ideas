@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteNanny — AI Parenting & Child Development Companion on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(245,158,11,0.08), 0 0 0 1px rgba(245,158,11,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; gap: 1.5rem;
+  }
+  .wf-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all 0.2s; position: relative;
+  }
+  .wf-step:hover { border-color: var(--border2); box-shadow: 0 0 24px var(--primary-glow); }
+  .wf-num {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+  }
+  .wf-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .wf-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: all 0.2s;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 24px var(--primary-glow); }
+  .why-panel-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .why-panel-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 1.5fr;
+    gap: 1.5rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(139,92,246,0.08));
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 1.75rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .rh-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Space Mono', monospace; margin-bottom: 0.5rem; }
+  .rh-title { font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 1.5rem; }
+  .rh-num { font-size: 2.5rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; margin-bottom: 0.25rem; }
+  .rh-sub { font-size: 0.82rem; color: var(--text2); margin-bottom: 0.75rem; }
+  .rh-note { font-size: 0.72rem; color: var(--muted); line-height: 1.8; }
+  .rev-tiers { display: flex; flex-direction: column; }
+  .rev-tier {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--primary-pale); }
+  .rt-icon { font-size: 1.25rem; flex: 0 0 30px; }
+  .rt-label { font-size: 0.82rem; font-weight: 700; color: var(--text2); flex: 0 0 90px; }
+  .rt-desc { flex: 1; font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+  .rt-price { text-align: right; flex: 0 0 100px; }
+  .rt-amount { font-size: 0.95rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .rt-note { font-size: 0.65rem; color: var(--muted); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    margin: 2rem 0;
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .roadmap-header {
+    background: var(--surface2);
+    padding: 1rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem; font-weight: 700; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .roadmap-tag {
+    font-size: 0.65rem; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-item {
+    display: flex; align-items: flex-start; gap: 1.25rem;
+    padding: 1.5rem; border-bottom: 1px solid rgba(245,158,11,0.08);
+    transition: background 0.2s;
+  }
+  .roadmap-item:hover { background: var(--primary-pale); }
+  .roadmap-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--primary);
+    font-family: 'Space Mono', monospace; letter-spacing: 0.08em;
+    margin-bottom: 0.25rem;
+  }
+  .roadmap-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .roadmap-body { font-size: 0.8rem; color: var(--muted); line-height: 1.7; }
+  .roadmap-right { text-align: right; flex: 0 0 80px; }
+  .roadmap-time { font-size: 0.72rem; font-weight: 700; color: var(--text2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric { font-size: 0.72rem; color: var(--primary); font-family: 'Space Mono', monospace; margin-top: 0.25rem; }
+
+  .cta-wrap {
+    text-align: center; padding: 4rem 0 6rem;
+  }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-title {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 1rem;
+  }
+  .cta-sub {
+    font-size: 0.95rem; color: var(--muted); max-width: 600px;
+    margin: 0 auto 2rem; line-height: 1.75;
+  }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; }
+  .cta-btn-primary {
+    background: var(--primary); color: #0a0a0f; border: none;
+    padding: 0.75rem 1.5rem; border-radius: 10px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { background: var(--primary-light); }
+  .cta-btn-secondary {
+    background: var(--surface); color: var(--text2); border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem; border-radius: 10px;
+    font-weight: 700; font-size: 0.85rem; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+  .research-btn {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 90;
+    background: var(--surface); border: 1px solid var(--border2);
+    color: var(--primary); padding: 0.6rem 1.2rem; border-radius: 10px;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: all 0.2s;
+  }
+  .research-btn:hover { background: var(--primary); color: #0a0a0f; }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 2rem;
+  }
+  .research-modal.active { display: flex; }
+  .research-modal-content {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; max-width: 700px; width: 100%;
+    max-height: 85vh; overflow-y: auto; position: relative;
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none; color: var(--muted);
+    font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+  }
+  .research-modal-close:hover { color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .research-modal-header h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+  .research-badge {
+    font-size: 0.72rem; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section h3 {
+    font-size: 0.82rem; color: var(--primary); margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .research-section p, .research-section li {
+    font-size: 0.82rem; color: var(--text2); line-height: 1.7;
+  }
+  .research-section ul { padding-left: 1.25rem; }
+  .research-section li { margin-bottom: 0.3rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px; padding: 1.25rem;
+  }
+  .research-highlight-purple {
+    background: var(--secondary-pale); border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 12px; padding: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    .token-grid, .stats-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .revenue-row { grid-template-columns: 1fr; }
+    .roadmap-item { flex-wrap: wrap; }
+    .roadmap-right { flex: 1 0 100%; text-align: left; margin-top: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← ALL IDEAS</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">MV</div>
+        MuteNanny
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>IDEA #63</span>
+      <span class="topbar-badge">Voice AI · B2B SaaS</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">👶 IDEA #63 — AI PARENTING COMPANION</div>
+      <h1>
+        <span class="en"><span class="gold">MuteNanny</span> — AI Parenting<br>Companion on <span class="purple">LINE</span></span>
+        <span class="th"><span class="gold">MuteNanny</span> — AI ผู้ช่วย<br>เลี้ยงลูกบน <span class="purple">LINE</span></span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">AI-powered child development companion on LINE that answers <strong>parenting questions in Thai 24/7</strong>, tracks milestones, suggests age-appropriate activities, and calms first-time parent anxiety — the <strong>pediatrician in your pocket</strong>.</span>
+        <span class="th">AI ผู้ช่วยพัฒนาการเด็กบน LINE ตอบ<strong>คำถามเลี้ยงลูกเป็นภาษาไทย 24/7</strong> ติดตาม milestone แนะนำกิจกรรมตามวัย คลายกังวลพ่อแม่มือใหม่ — <strong>กุมารแพทย์ในมือถือ</strong></span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">33</div>
+          <div class="score-meta"><strong>Overall Score</strong>/50 — PASS ✅</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num purple">$35.2B</div>
+          <div class="score-meta"><strong>AI Childcare</strong>Market by 2034</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Stats -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">👶</div>
+      <div class="stat-num">$<span class="gold">4.7B</span></div>
+      <div class="stat-label">
+        <span class="en">AI in Childcare & Parenting market (2024) — growing 22.4% CAGR to $35.2B by 2034</span>
+        <span class="th">ตลาด AI ดูแลเด็กและเลี้ยงลูก (2024) — เติบโต 22.4% CAGR ไปสู่ $35.2B ภายในปี 2034</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏪</div>
+      <div class="stat-num"><span class="gold">500K</span></div>
+      <div class="stat-label">
+        <span class="en">Thai births per year (declining). Fewer kids = parents invest MORE per child. Premium spending per head is UP.</span>
+        <span class="th">ทารกเกิดใหม่ต่อปีในไทย (ลดลง) ลูกน้อยลง = พ่อแม่ลงทุนต่อคนมากขึ้น การใช้จ่ายพรีเมียมต่อหัวสูงขึ้น</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💬</div>
+      <div class="stat-num"><span class="purple">53M+</span></div>
+      <div class="stat-label">
+        <span class="en">LINE users in Thailand. Every parent already uses LINE daily. Zero friction distribution channel.</span>
+        <span class="th">ผู้ใช้ LINE ในไทย พ่อแม่ทุกคนใช้ LINE อยู่แล้ว ช่องทางเข้าถึงแบบไม่มีอุปสรรค</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌙</div>
+      <div class="stat-num"><span class="gold">3AM</span></div>
+      <div class="stat-label">
+        <span class="en">When parents panic most. "Is this normal?" "Why won't baby sleep?" No AI answers this in Thai. Until now.</span>
+        <span class="th">เวลาที่พ่อแม่กังวลที่สุด "นี่ปกติไหม?" "ทำไมลูกไม่ยอมนอน?" ไม่มี AI ตอบคำถามนี้เป็นภาษาไทย จนถึงตอนนี้</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Token Window = Market Overview -->
+  <div class="token-window">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">mutenanny_market_analysis.json</div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🌍</div>
+          <div class="tc-name">AI CHILDCARE MARKET</div>
+          <div class="tc-value">$4.7B → $35.2B</div>
+          <div class="tc-sub">2024 → 2034 (22.4% CAGR)</div>
+          <div class="tc-badge">📈 EXPLOSIVE GROWTH</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📱</div>
+          <div class="tc-name">PARENTING APPS</div>
+          <div class="tc-value">$2B → $7B</div>
+          <div class="tc-sub">2025 → 2033 global parenting app market</div>
+          <div class="tc-badge purple">🚀 PROVEN MODEL</div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🇹🇭</div>
+          <div class="tc-name">THAI AI GAP</div>
+          <div class="tc-value">ZERO</div>
+          <div class="tc-sub">AI parenting bots in Thai language</div>
+          <div class="tc-badge">🎯 BLUE OCEAN</div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span>COMPETITIVE MOAT STRENGTH</span>
+          <span>60%</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:60%"></div></div>
+        <div class="chain-steps">
+          <span>Thai language</span>
+          <span>LINE platform</span>
+          <span>Local health data</span>
+          <span>Cultural context</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <section class="section">
+    <div class="section-badge">⚡ <span class="en">HOW IT WORKS</span><span class="th">ทำงานอย่างไร</span></div>
+    <div class="section-title">
+      <span class="en">Add on LINE, enter baby's birthday, get personalized AI parenting</span>
+      <span class="th">เพิ่มเพื่อนบน LINE ใส่วันเกิดลูก ได้ AI ช่วยเลี้ยงลูกแบบ personalized</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">No app download, no account creation. Just add MuteNanny on LINE — the platform every Thai parent already uses daily.</span>
+      <span class="th">ไม่ต้องโหลดแอป ไม่ต้องสมัครสมาชิก แค่แอดเพื่อน MuteNanny บน LINE — แพลตฟอร์มที่พ่อแม่ไทยใช้อยู่ทุกวัน</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Tell AI About Your Business</span>
+          <span class="th">บอก AI เกี่ยวกับธุรกิจคุณ</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Add MuteNanny as LINE friend, enter baby's name and birthday. AI calibrates everything to your child's exact developmental stage.</span>
+          <span class="th">แอดเพื่อน MuteNanny บน LINE ใส่ชื่อและวันเกิดลูก AI ปรับทุกอย่างตามช่วงพัฒนาการของลูกคุณ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">💬</div>
+        <div class="wf-title">
+          <span class="en">Ask Anything, Anytime</span>
+          <span class="th">ถามอะไรก็ได้ ตอนไหนก็ได้</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Text or voice message in Thai. "ลูก 8 เดือนยังไม่คลาน ปกติไหม?" — Get instant, evidence-based answers with context for YOUR child.</span>
+          <span class="th">พิมพ์หรือส่งเสียงเป็นภาษาไทย "ลูก 8 เดือนยังไม่คลาน ปกติไหม?" — ได้คำตอบทันทีจากหลักฐานทางการแพทย์ เฉพาะสำหรับลูกคุณ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">📊</div>
+        <div class="wf-title">
+          <span class="en">Track & Get Proactive Alerts</span>
+          <span class="th">ติดตามและรับการแจ้งเตือน</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI sends weekly development milestones, vaccination reminders, age-appropriate activity suggestions, and nutrition tips — all personalized to your baby's exact age.</span>
+          <span class="th">AI ส่ง milestone พัฒนาการรายสัปดาห์ แจ้งเตือนวัคซีน แนะนำกิจกรรมตามวัย และเคล็ดลับโภชนาการ — ปรับแต่งเฉพาะตามอายุลูกของคุณ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteNanny -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">Parenting apps exist globally — but ZERO AI in Thai</span>
+      <span class="th">แอปเลี้ยงลูกมีทั่วโลก — แต่ไม่มี AI ภาษาไทย</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Kinedu ($11.2M funded), Wonder Weeks ($500K/mo revenue), BabySparks — global winners serving English markets. KhunLook (คุณลูก) is free but NO AI. Zero intelligent parenting companions exist in Thai.</span>
+      <span class="th">Kinedu (ระดมทุน $11.2M), Wonder Weeks (รายได้ $500K/เดือน), BabySparks — ผู้ชนะระดับโลกบริการตลาดอังกฤษ คุณลูก ฟรีแต่ไม่มี AI ไม่มี AI ช่วยเลี้ยงลูกอัจฉริยะในภาษาไทย</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🧒</div>
+        <div class="why-panel-title">
+          <span class="en">Thai Parenting Culture = Moat</span>
+          <span class="th">วัฒนธรรมเลี้ยงลูกไทย = ปราการ</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai parenting culture is deeply specific — baby naming traditions, food introduction practices (ข้าวต้ม), temple blessings, and Thai pediatric guidelines differ from Western standards. Global apps like Kinedu can't localize this. Thai language + cultural context = unbreakable moat.</span>
+          <span class="th">ภาษาไทยมีวรรณยุกต์ (5 เสียง) ไม่มีช่องว่างระหว่างคำ และใช้อักษรเฉพาะ แพลตฟอร์ม AI เสียงระดับโลกไม่รองรับภาษาไทยโดยตรง สร้างปราการ localization ที่ป้องกันการแข่งขันจากต่างชาติ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💸</div>
+        <div class="why-panel-title">
+          <span class="en">Pediatrician on Demand, 24/7</span>
+          <span class="th">กุมารแพทย์ 24 ชม. ในมือถือ</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Pediatrician visit: ฿500-2,000 per trip + travel + waiting time. MuteNanny: ฿99/mo for instant answers, milestone tracking, and vaccination reminders. Answers the "3AM panic questions" that Google can't personalize.</span>
+          <span class="th">พาลูกไปหาหมอ: ฿500-2,000/ครั้ง + เดินทาง + รอคิว MuteNanny: ฿99/เดือน ได้คำตอบทันที ติดตามพัฒนาการ แจ้งเตือนวัคซีน ตอบ "คำถามตอนตี 3" ที่ Google ตอบแบบเฉพาะตัวไม่ได้</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE = Zero Friction Distribution</span>
+          <span class="th">LINE = ช่องทางเข้าถึงแบบไร้อุปสรรค</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">53M+ Thai LINE users. No app to download, no account to create. Just scan QR code and add friend. Thai moms share LINE friends in Facebook parenting groups — viral distribution built in.</span>
+          <span class="th">53M+ ผู้ใช้ LINE ในไทย ไม่ต้องโหลดแอป ไม่ต้องสมัคร แค่สแกน QR แอดเพื่อน แม่ไทยแชร์ LINE ในกลุ่ม Facebook แม่ๆ — viral distribution ในตัว</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🏗️</div>
+        <div class="why-panel-title">
+          <span class="en">Proven Global Model, Local Execution</span>
+          <span class="th">โมเดลพิสูจน์แล้วระดับโลก ลงมือทำแบบท้องถิ่น</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Kinedu raised $11.2M, Wonder Weeks makes $500K/month. The parenting companion model is PROVEN. We just need to build the Thai-language + LINE + Thai medical standards version. LINE Bot API + LLM + Thai pediatric guidelines = MVP in 2-3 weeks.</span>
+          <span class="th">Kinedu ระดมทุน $11.2M, Wonder Weeks ทำรายได้ $500K/เดือน โมเดลผู้ช่วยเลี้ยงลูกพิสูจน์แล้ว เราแค่สร้างเวอร์ชันภาษาไทย + LINE + มาตรฐานการแพทย์ไทย LINE Bot API + LLM + แนวทางกุมารเวชศาสตร์ไทย = MVP ใน 2-3 สัปดาห์</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">Freemium B2C with Premium Upsell + B2B Expansion</span>
+      <span class="th">Freemium B2C พร้อม Premium Upsell + ขยายไป B2B</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Free basic milestone tracking hooks parents in → Premium AI Q&A + personalized activities at ฿99-299/mo → B2B partnerships with hospitals, baby brands, and insurance companies for real scale.</span>
+      <span class="th">ติดตามพัฒนาการพื้นฐานฟรีดึงพ่อแม่เข้ามา → Premium AI ถาม-ตอบ + กิจกรรม personalized ที่ ฿99-299/เดือน → B2B partnership กับ รพ. แบรนด์เด็ก และประกัน สำหรับ scale จริง</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿32M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿32M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18-24</span>
+            <span class="th">ARR ภายในเดือนที่ 18-24</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 50 pilot customers<br>Month 6: 200 customers × ฿3K = ฿600K MRR<br>Month 12: 800 customers × ฿3.5K = ฿2.8M MRR<br>Month 18-24: 2,500 customers × ฿4K = ฿10M MRR + usage</span>
+            <span class="th">เดือน 3: 50 ลูกค้านำร่อง<br>เดือน 6: 200 ลูกค้า × ฿3K = ฿600K MRR<br>เดือน 12: 800 ลูกค้า × ฿3.5K = ฿2.8M MRR<br>เดือน 18-24: 2,500 ลูกค้า × ฿4K = ฿10M MRR + usage</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🆓</div>
+          <div class="rt-label">Free</div>
+          <div class="rt-desc">
+            <span class="en">Basic milestone tracking, vaccination schedule, 3 AI questions/day, weekly development tips.</span>
+            <span class="th">ติดตามพัฒนาการพื้นฐาน, ตารางวัคซีน, ถาม AI 3 ครั้ง/วัน, เคล็ดลับพัฒนาการรายสัปดาห์</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿0/mo</div>
+            <div class="rt-note"><span class="en">forever free</span><span class="th">ฟรีตลอด</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(245,158,11,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">⭐</div>
+          <div class="rt-label" style="color:var(--primary-light);">Premium ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Unlimited AI Q&A, personalized activity plans, photo-based development assessment, nutrition analysis, sleep tracking, multi-child support.</span>
+            <span class="th">ถาม AI ไม่จำกัด, แผนกิจกรรม personalized, ประเมินพัฒนาการจากรูป, วิเคราะห์โภชนาการ, ติดตามการนอน, รองรับหลายคน</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿99/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">👨‍⚕️</div>
+          <div class="rt-label">Pro Family</div>
+          <div class="rt-desc">
+            <span class="en">Everything in Premium + pediatrician-reviewed reports, developmental delay early detection alerts, family sharing, export to doctor, curated product recommendations.</span>
+            <span class="th">ทุกอย่างใน Premium + รายงานที่กุมารแพทย์ตรวจสอบ, แจ้งเตือนพัฒนาการล่าช้า, แชร์กับครอบครัว, ส่งออกให้หมอ, แนะนำสินค้าคัดสรร</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿299/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏥</div>
+          <div class="rt-label">B2B / Hospital</div>
+          <div class="rt-desc">
+            <span class="en">White-label for hospitals, clinics, baby brands. Integrate MuteNanny into patient care. Co-branded parenting companion for new parents.</span>
+            <span class="th">White-label สำหรับ รพ. คลินิก แบรนด์เด็ก ผนวก MuteNanny เข้ากับการดูแลผู้ป่วย ผู้ช่วยเลี้ยงลูก co-branded สำหรับพ่อแม่มือใหม่</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿15K+/mo</div>
+            <div class="rt-note"><span class="en">per facility</span><span class="th">ต่อสถานพยาบาล</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From LINE bot to 50K users in 12 months</span>
+      <span class="th">จากนำร่องสู่ 2,500 ลูกค้าใน 18 เดือน</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">👶 MuteNanny — Milestone Timeline</span>
+          <span class="th">👶 MuteNanny — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿32M ARR target · Month 24</span>
+          <span class="th">เป้า ฿32M ARR · เดือนที่ 24</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–2 · MVP + PILOT</span>
+            <span class="th">เดือน 1–2 · MVP + นำร่อง</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Build LINE Bot + LLM parenting AI with Thai pediatric data</span>
+            <span class="th">สร้าง LINE Bot + AI เลี้ยงลูกด้วยข้อมูลกุมารเวชศาสตร์ไทย</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">LINE Bot + GPT/Claude for Thai parenting Q&A. Integrate Thai vaccination schedule + WHO growth charts. Pilot with 500 parents from Facebook parenting groups. Free tier to build user base.</span>
+            <span class="th">เชื่อมต่อ Google Cloud Thai TTS + STT สร้างแดชบอร์ดเว็บง่ายๆ ขอเบอร์โทรเสมือนไทย นำร่องกับคลินิกทันตกรรม 10-20 แห่งในกรุงเทพ (สายเข้าเยอะ + ยินดีจ่าย)</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 1–2</div>
+          <div class="roadmap-metric">20 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 3–6 · VERTICAL EXPANSION</span>
+            <span class="th">เดือน 3–6 · ขยาย Vertical</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">5,000 users, launch Premium tier ฿99/mo</span>
+            <span class="th">200 ลูกค้าจากคลินิก ร้านอาหาร สปา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add photo-based development assessment, sleep tracking, nutrition analysis. Launch referral program (แม่บอกแม่). Viral growth in Facebook parenting groups. 10% conversion to Premium = ฿49.5K MRR.</span>
+            <span class="th">เพิ่มการจองนัดหมาย (Google Calendar, LINE) ขยายจากทันตกรรมสู่คลินิกความงาม ร้านอาหาร (จองโต๊ะ) และสำนักงานกฎหมาย ขายผ่าน LINE ads + referrals ฿600K MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 3–6</div>
+          <div class="roadmap-metric">฿600K MRR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 6–12 · SCALE + PRODUCT-LED GROWTH</span>
+            <span class="th">เดือน 6–12 · ขยาย + Product-Led Growth</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">800 customers — self-serve signup + API for developers</span>
+            <span class="th">800 ลูกค้า — สมัครเอง + API สำหรับนักพัฒนา</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Launch Pro Family tier (฿299/mo) with pediatrician-reviewed reports. B2B hospital partnerships. Expand to Vietnam + Philippines (higher birth rates). Content marketing: "แม่มือใหม่ไม่ต้องกังวลอีกต่อไป" testimonials.</span>
+            <span class="th">สมัครด้วยตัวเอง (ไม่ต้องคุยกับเซลล์) API สำหรับ POS/CRM หลายภาษา (ไทย+อังกฤษ+จีน) สำหรับโรงแรม/ท่องเที่ยว Content marketing: case studies "คลินิกนี้ไม่พลาดสายอีกต่อไป"</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 6–12</div>
+          <div class="roadmap-metric">฿2.8M MRR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 12–24 · REGIONAL + OUTBOUND</span>
+            <span class="th">เดือน 12–24 · ภูมิภาค + Outbound</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">50K users + B2B hospital deals + SEA expansion</span>
+            <span class="th">2,500 ลูกค้า + AI โทรออก + ขยาย SEA</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">White-label for hospital chains (Bumrungrad, Bangkok Hospital). Baby brand partnerships (affiliate). Insurance co-branding. Expand to 3+ SEA markets. ฿2M+ MRR target.</span>
+            <span class="th">เพิ่มโทรออก (เตือนนัดหมาย, follow-up, สำรวจ) ขยายสู่เวียดนาม อินโดนีเซีย ฟิลิปปินส์ White-label ให้ telco (แพ็คเกจธุรกิจ AIS/True) ฿10M+ MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 12–24</div>
+          <div class="roadmap-metric" style="color:var(--primary-light);">฿10M+ MRR 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">📞 <span class="en">Score: 35/50 — PASS</span><span class="th">Score: 35/50 — ผ่าน</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">3.2 million</span> Thai SMEs<br>miss calls <span class="purple">every single day</span></span>
+      <span class="th"><span class="gold">3.2 ล้าน</span> SME ไทย<br>พลาดสาย<span class="purple">ทุกวัน</span></span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">$155B conversational AI market. Proven globally (Vapi: 300M+ calls). Zero Thai voice agent products. Thai language is a natural moat. B2B SaaS with immediate ROI story.</span>
+      <span class="th">ตลาด conversational AI $155B พิสูจน์แล้วทั่วโลก (Vapi: 300M+ สาย) ไม่มี voice agent ไทยเลย ภาษาไทยเป็นปราการธรรมชาติ B2B SaaS ที่ ROI ชัดเจนทันที</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <a href="61-mutesource.html" class="cta-btn-secondary">
+        <span class="en">MuteSource →</span><span class="th">MuteSource →</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+</script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 MuteNanny — AI Voice Receptionist</h2>
+      <span class="research-badge">Idea #63 · Voice AI · B2B SaaS · Score: 35/50</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3><span class="en">One-liner</span><span class="th">สรุปสั้น</span></h3>
+        <p>
+          <span class="en">AI-powered child development companion on LINE that answers parenting questions in Thai 24/7, tracks milestones, suggests age-appropriate activities, and calms first-time parent anxiety.</span>
+          <span class="th">AI ผู้ช่วยพัฒนาการเด็กบน LINE ตอบคำถามเลี้ยงลูกเป็นภาษาไทย 24/7 ติดตาม milestone แนะนำกิจกรรมตามวัย คลายกังวลพ่อแม่มือใหม่</span>
+        </p>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Problem</span><span class="th">ปัญหา</span></h3>
+        <ul>
+          <li><span class="en">First-time parents panic at 3AM: "Is this normal? Why won't baby sleep? Is this fever dangerous?" — no AI tool answers this in Thai</span><span class="th">พ่อแม่มือใหม่ตื่นตกใจตอนตี 3: "นี่ปกติไหม? ทำไมลูกไม่ยอมนอน? ไข้แบบนี้อันตรายไหม?" — ไม่มี AI ตอบคำถามนี้เป็นภาษาไทย</span></li>
+          <li><span class="en">KhunLook (government app) covers basics but NO AI — just checklists and growth charts. No personalized advice.</span><span class="th">คุณลูก (แอปรัฐ) ครอบคลุมพื้นฐานแต่ไม่มี AI — แค่ checklist กับกราฟการเติบโต ไม่มีคำแนะนำเฉพาะบุคคล</span></li>
+          <li><span class="en">Thai parents spend ฿3,000-10,000/mo on child development classes, books, and pediatrician visits</span><span class="th">พ่อแม่ไทยใช้จ่าย ฿3,000-10,000/เดือน กับคลาสพัฒนาการ หนังสือ และพาไปหาหมอเด็ก</span></li>
+          <li><span class="en">Declining birth rate (<500K/yr) = fewer children, MORE investment per child — premium market</span><span class="th">อัตราเกิดลดลง (<500K/ปี) = ลูกน้อยลง ลงทุนต่อคนมากขึ้น — ตลาดพรีเมียม</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Market Evidence</span><span class="th">หลักฐานตลาด</span></h3>
+        <ul>
+          <li><span class="en">AI in Childcare & Parenting: $4.7B (2024) → $35.2B (2034), 22.4% CAGR</span><span class="th">AI ดูแลเด็ก & เลี้ยงลูก: $4.7B (2024) → $35.2B (2034), CAGR 22.4%</span></li>
+          <li><span class="en">Parenting Apps Market: $2B (2025) → $7B by 2033</span><span class="th">ตลาดแอปเลี้ยงลูก: $2B (2025) → $7B ภายในปี 2033</span></li>
+          <li><span class="en">Kinedu: Series B, $11.2M funding, 123 competitors tracked</span><span class="th">Kinedu: Series B, ระดมทุน $11.2M, มี 123 คู่แข่ง</span></li>
+          <li><span class="en">Wonder Weeks: ~$500K/month revenue, 70K downloads/month</span><span class="th">Wonder Weeks: รายได้ ~$500K/เดือน, ดาวน์โหลด 70K/เดือน</span></li>
+          <li><span class="en">Thailand Bot Market: $125.5M (2024), 23.6% CAGR — LINE bots are BOOMING</span><span class="th">ตลาดบอทไทย: $125.5M (2024), CAGR 23.6% — LINE bots กำลังบูม</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Competition</span><span class="th">คู่แข่ง</span></h3>
+        <ul>
+          <li><span class="en"><strong>KhunLook (คุณลูก)</strong> — Government-backed, free. Growth charts + checklists. NO AI, no personalization.</span><span class="th"><strong>คุณลูก</strong> — รัฐสนับสนุน ฟรี กราฟการเติบโต + checklist ไม่มี AI ไม่มี personalization</span></li>
+          <li><span class="en"><strong>KidDiary</strong> — Thai development tracking platform. Basic, not AI-powered.</span><span class="th"><strong>KidDiary</strong> — แพลตฟอร์มติดตามพัฒนาการไทย พื้นฐาน ไม่ได้ใช้ AI</span></li>
+          <li><span class="en"><strong>theAsianparent</strong> — Content platform (articles, forums). Not an AI companion.</span><span class="th"><strong>theAsianparent</strong> — แพลตฟอร์มเนื้อหา (บทความ, ฟอรั่ม) ไม่ใช่ AI companion</span></li>
+          <li><span class="en">⚡ <strong>Gap: ZERO AI parenting companions in Thai language</strong></span><span class="th">⚡ <strong>ช่องว่าง: ไม่มี AI ช่วยเลี้ยงลูกในภาษาไทยเลย</strong></span></li>
+        </ul>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>✨ Score: 33/50 — PASS</h3>
+        <p style="margin:0.5rem 0;font-size:0.9rem;opacity:0.8;">Market: 7/10 · Problem: 7/10 · Competition: 6/10 · Build: 8/10 · Advantage: 5/10</p>
+      </section>
+      <section class="research-section research-highlight-purple">
+        <h3>👶 "ลูก 8 เดือนยังไม่คลาน ปกติไหม?" — The 3AM question every Thai parent asks</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
+</body>
+</html>
