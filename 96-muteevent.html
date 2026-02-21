@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteEvent — AI Event Website Builder with PromptPay Digital ซอง</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a14;
+    --bg2: #120c18;
+    --surface: #180f20;
+    --surface2: #201628;
+    --surface3: #281e32;
+    --border: rgba(168,85,247,0.15);
+    --border2: rgba(168,85,247,0.28);
+    --text: #f5f0ff;
+    --text2: #d0c0e8;
+    --muted: #806898;
+    --muted2: #605078;
+    --primary: #a855f7;
+    --primary-light: #c084fc;
+    --primary-pale: rgba(168,85,247,0.08);
+    --primary-glow: rgba(168,85,247,0.22);
+    --secondary: #f472b6;
+    --secondary-light: #f9a8d4;
+    --secondary-pale: rgba(244,114,182,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --gold: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(168,85,247,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(244,114,182,0.05) 0%, transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(15,10,20,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 700px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--gold); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media(max-width:768px) { .two-col, .three-col, .four-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .event-type { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; text-align: center; }
+  .event-emoji { font-size: 2rem; margin-bottom: 0.4rem; }
+  .event-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem; }
+  .event-thai { font-size: 0.78rem; color: var(--muted); }
+  .highlight-box { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(244,114,182,0.1)); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+  .highlight-title { font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; margin-bottom: 0.8rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--gold); background: var(--surface2); box-shadow: 0 0 30px rgba(251,191,36,0.08); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; }
+  .score-table .bar-cell { width: 120px; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--gold)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--gold); background: var(--surface2); }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--gold); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--gold); font-size: 1rem; }
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--gold)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #96</span>
+  <span class="nav-badge en">🎊 EVENT WEBSITE · DIGITAL ซอง</span>
+  <span class="nav-badge th">🎊 เว็บงาน · ซองดิจิทัล</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🎊 AI EVENT WEBSITE · DIGITAL ซอง · PromptPay</span>
+      <span class="hero-tag th">🎊 AI เว็บงาน · ซองดิจิทัล · PromptPay</span>
+      <span class="idea-num">SPRINT #96 — FEB 21, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Event</span></span><span class="th">Mute<span class="accent">Event</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Event Website Builder with PromptPay Digital ซอง for Thai Life Events</span>
+      <span class="th">AI สร้างเว็บงานอีเวนต์พร้อมซองดิจิทัล PromptPay สำหรับงานไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand has 300,000+ weddings per year, plus 200,000+ funerals, plus ordinations, graduations, housewarmings — each with ซอง (cash envelope) culture. Zola raised $140M and is valued at $600M for US weddings alone. But zero Thai-native event website platform exists. MuteEvent: chat on LINE → AI generates a beautiful event website in 5 minutes → guests RSVP via LINE → send ซอง digitally via PromptPay QR → host sees live gift tracking → automatic thank-you messages. The Zola of Thailand — for ALL life events, not just weddings.</span>
+      <span class="th">ไทยมีงานแต่ง 300,000+ งาน/ปี งานศพ 200,000+ งาน รวมงานบวช รับปริญญา ขึ้นบ้านใหม่ — ทุกงานมีวัฒนธรรมซอง Zola ระดมทุน $140M มูลค่า $600M สำหรับงานแต่ง US อย่างเดียว แต่ไม่มีแพลตฟอร์มเว็บงานไทยเลย MuteEvent: คุยบน LINE → AI สร้างเว็บงานสวยใน 5 นาที → แขกตอบรับ RSVP ผ่าน LINE → ส่งซองดิจิทัลผ่าน PromptPay QR → เจ้าภาพเห็นของขวัญ real-time → ข้อความขอบคุณอัตโนมัติ Zola ของไทย — สำหรับทุกงานในชีวิต ไม่ใช่แค่งานแต่ง</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">300K+</span><span class="stat-label en">Thai weddings/year</span><span class="stat-label th">งานแต่งไทย/ปี</span></div>
+      <div class="stat"><span class="stat-val">$600M</span><span class="stat-label en">Zola valuation (US only)</span><span class="stat-label th">มูลค่า Zola (US เท่านั้น)</span></div>
+      <div class="stat"><span class="stat-val">฿500K+</span><span class="stat-label en">avg wedding ซอง total</span><span class="stat-label th">ยอดซองงานแต่ง avg</span></div>
+      <div class="stat"><span class="stat-val">฿0</span><span class="stat-label en">Thai event website platforms</span><span class="stat-label th">แพลตฟอร์มเว็บงานไทย</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">40</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:80%"></div></div>
+        <div style="font-size:0.7rem;color:var(--gold);margin-top:0.4rem;font-family:'Space Mono',monospace;">🏆 TIED #1 HIGHEST SCORE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ EVENTS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THAI LIFE EVENTS — EVERY ONE HAS ซอง</div>
+    <div class="section-label th">งานชีวิตไทย — ทุกงานมีซอง</div>
+    <h2><span class="en">Not Just Weddings — Every Major Thai Life Event Needs This</span><span class="th">ไม่ใช่แค่งานแต่ง — ทุกงานใหญ่ในชีวิตคนไทยต้องการสิ่งนี้</span></h2>
+    <div class="four-col" style="margin-bottom: 2rem;">
+      <div class="event-type"><div class="event-emoji">💒</div><div class="event-name en">Wedding</div><div class="event-name th">งานแต่งงาน</div><div class="event-thai">300K+/year · ซอง ฿1K–10K</div></div>
+      <div class="event-type"><div class="event-emoji">🙏</div><div class="event-name en">Ordination</div><div class="event-name th">งานบวช</div><div class="event-thai">100K+/year · ซอง ฿500–5K</div></div>
+      <div class="event-type"><div class="event-emoji">🪦</div><div class="event-name en">Funeral/Memorial</div><div class="event-name th">งานศพ/อาลัย</div><div class="event-thai">200K+/year · ซองเงินช่วย ฿500–5K</div></div>
+      <div class="event-type"><div class="event-emoji">🎓</div><div class="event-name en">Graduation</div><div class="event-name th">รับปริญญา</div><div class="event-thai">500K+/year · ซอง ฿500–3K</div></div>
+      <div class="event-type"><div class="event-emoji">🎂</div><div class="event-name en">Birthday Party</div><div class="event-name th">งานวันเกิด</div><div class="event-thai">Unlimited · ซอง ฿300–2K</div></div>
+      <div class="event-type"><div class="event-emoji">🏠</div><div class="event-name en">Housewarming</div><div class="event-name th">ขึ้นบ้านใหม่</div><div class="event-thai">200K+/year · ซอง ฿500–5K</div></div>
+      <div class="event-type"><div class="event-emoji">🛕</div><div class="event-name en">Temple Fundraising</div><div class="event-name th">ทอดกฐิน/ผ้าป่า</div><div class="event-thai">50K+/year · ซองผ้าป่า ฿100–10K</div></div>
+      <div class="event-type"><div class="event-emoji">👶</div><div class="event-name en">Baby Shower</div><div class="event-name th">ฉลองลูกน้อย</div><div class="event-thai">Growing trend · ซอง ฿500–3K</div></div>
+    </div>
+    <p style="color:var(--text2);font-size:0.95rem;text-align:center;max-width:700px;margin:0 auto;"><span class="en"><strong>The key insight:</strong> Every major Thai life event involves ซอง (cash gift envelopes). This is not optional — it's a deep cultural obligation. Thais meticulously track who gave how much, because they must reciprocate at future events. A digital ซอง platform with automatic tracking solves a universal Thai cultural need.</span><span class="th"><strong>Insight สำคัญ:</strong> ทุกงานสำคัญในชีวิตคนไทยมีซอง (ซองเงินให้ของขวัญ) ไม่ใช่ทางเลือก — เป็นหน้าที่ทางวัฒนธรรมที่ลึกซึ้ง คนไทยจดจำอย่างละเอียดว่าใครให้เท่าไร เพราะต้องให้คืนในงานอนาคต แพลตฟอร์มซองดิจิทัลที่ติดตามอัตโนมัติแก้ปัญหาวัฒนธรรมไทยสากล</span></p>
+  </div>
+</section>
+
+<!-- ═══ KILLER FEATURE ═══ -->
+<section>
+  <div class="container">
+    <div class="highlight-box">
+      <div class="highlight-title">🏆 KILLER FEATURE: DIGITAL ซอง VIA PROMPTPAY</div>
+      <h2 style="color:var(--gold);margin-bottom:1rem;"><span class="en">PromptPay Digital ซอง — The Feature That Changes Everything</span><span class="th">ซองดิจิทัล PromptPay — ฟีเจอร์ที่เปลี่ยนทุกอย่าง</span></h2>
+      <div class="two-col">
+        <div>
+          <h3 style="color:var(--red);margin-bottom:0.6rem;" class="en">❌ Without MuteEvent (Today)</h3>
+          <h3 style="color:var(--red);margin-bottom:0.6rem;" class="th">❌ ไม่มี MuteEvent (ปัจจุบัน)</h3>
+          <ul style="color:var(--text2);font-size:0.9rem;list-style:none;line-height:2;">
+            <li class="en">• Guest can't attend → sends PromptPay to random number via LINE</li>
+            <li class="th">• แขกไปไม่ได้ → ส่ง PromptPay ไปเลขที่สุ่มทาง LINE</li>
+            <li class="en">• Host manually counts cash envelopes at end of night</li>
+            <li class="th">• เจ้าภาพนับเงินสดในซองตอนดึก</li>
+            <li class="en">• No record of who gave what → reciprocity tracking impossible</li>
+            <li class="th">• ไม่มีบันทึกว่าใครให้เท่าไร → ไม่สามารถติดตามการให้คืน</li>
+            <li class="en">• Thank-you messages sent manually one-by-one</li>
+            <li class="th">• ข้อความขอบคุณส่งทีละคนด้วยมือ</li>
+            <li class="en">• Physical ซอง gets lost, miscounted, or stolen</li>
+            <li class="th">• ซองจริงหาย นับผิด หรือถูกขโมย</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--green);margin-bottom:0.6rem;" class="en">✅ With MuteEvent</h3>
+          <h3 style="color:var(--green);margin-bottom:0.6rem;" class="th">✅ กับ MuteEvent</h3>
+          <ul style="color:var(--text2);font-size:0.9rem;list-style:none;line-height:2;">
+            <li class="en">• Guest opens event website → taps "Send ซอง" → PromptPay QR</li>
+            <li class="th">• แขกเปิดเว็บงาน → แตะ "ส่งซอง" → QR PromptPay</li>
+            <li class="en">• Payment auto-verified → recorded with guest name & amount</li>
+            <li class="th">• ชำระเงินยืนยันอัตโนมัติ → บันทึกชื่อแขก & ยอดเงิน</li>
+            <li class="en">• Host sees live dashboard: total received, per-guest breakdown</li>
+            <li class="th">• เจ้าภาพเห็น dashboard สด: ยอดรวมรับ, รายละเอียดต่อแขก</li>
+            <li class="en">• One-click thank-you messages via LINE to all gift-givers</li>
+            <li class="th">• ขอบคุณ 1 คลิกผ่าน LINE ถึงทุกคนที่ให้ซอง</li>
+            <li class="en">• Lifetime ซอง history → "I gave ฿3,000 at Ploy's wedding, she should give ฿3,000+ at mine"</li>
+            <li class="th">• ประวัติซองตลอดชีวิต → "ฉันให้ ฿3,000 ที่งานแต่งพลอย เธอควรให้ ฿3,000+ ที่งานฉัน"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PAIN ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN POINTS</div>
+    <div class="section-label th">ปัญหาที่แท้จริง</div>
+    <h2><span class="en">Planning a Thai Event in 2026 = LINE Chaos + Cash Counting at Midnight</span><span class="th">จัดงานไทยในปี 2569 = ความโกลาหล LINE + นับเงินสดตอนเที่ยงคืน</span></h2>
+    <div class="pain-item">
+      <div class="pain-emoji">📱</div>
+      <div class="pain-text">
+        <h3 class="en">RSVP via LINE Group = Chaos</h3>
+        <h3 class="th">RSVP ผ่าน LINE Group = วุ่นวาย</h3>
+        <p class="en">Host creates a LINE group, posts Google Form for RSVP. Half the guests don't fill it out. The other half reply directly in LINE chat with "มาแน่ค่ะ 3 คน" buried in 500 messages. Venue needs final count 2 weeks early — host manually counts across LINE messages, Google Forms, and phone calls. Always wrong. Always stressful.</p>
+        <p class="th">เจ้าภาพสร้างกลุ่ม LINE โพสต์ Google Form สำหรับ RSVP ครึ่งหนึ่งไม่กรอก อีกครึ่งตอบใน LINE chat ว่า "มาแน่ค่ะ 3 คน" จมอยู่ใน 500 ข้อความ สถานที่ต้องการจำนวนสุดท้ายล่วงหน้า 2 สัปดาห์ — เจ้าภาพนับเอง</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">💰</div>
+      <div class="pain-text">
+        <h3 class="en">Cash ซอง Counting = 2AM Nightmare</h3>
+        <h3 class="th">นับซองเงินสด = ฝันร้ายตี 2</h3>
+        <p class="en">After a Thai wedding with 300 guests, the couple sits down at 2AM to open 300 envelopes, count cash, and record "นายสมชาย ฿3,000" in a notebook. Envelopes without names: mystery money. Cash miscounted: happens constantly. Envelopes forgotten in the car: happens. For funerals, the family does this while grieving. There is no dignity in this process.</p>
+        <p class="th">หลังงานแต่งไทยที่มีแขก 300 คน คู่บ่าวสาวนั่งตอนตี 2 เปิดซอง 300 ใบ นับเงินสด จด "นายสมชาย ฿3,000" ในสมุด ซองไม่มีชื่อ: เงินปริศนา นับผิด: เกิดขึ้นตลอด ซองลืมในรถ: เกิดขึ้น สำหรับงานศพ ครอบครัวทำสิ่งนี้ขณะเศร้าโศก ไม่มีศักดิ์ศรีในกระบวนการนี้</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📝</div>
+      <div class="pain-text">
+        <h3 class="en">Reciprocity Tracking = The Unspoken Social Obligation</h3>
+        <h3 class="th">ติดตามการให้คืน = หน้าที่ทางสังคมที่ไม่พูดถึง</h3>
+        <p class="en">Thai culture demands reciprocity: if someone gives ฿5,000 at your wedding, you must give ≥฿5,000 at theirs. Families keep handwritten notebooks tracking decades of ซอง exchanges. Lose the notebook → social humiliation. Give too little → relationship damaged. No digital solution exists for this critical cultural need.</p>
+        <p class="th">วัฒนธรรมไทยเรียกร้องการให้คืน: ถ้าใครให้ ฿5,000 ที่งานแต่งคุณ คุณต้องให้ ≥฿5,000 ที่งานเขา ครอบครัวเก็บสมุดบันทึกจดซองแลกเปลี่ยนมาหลายสิบปี สมุดหาย → อับอายทางสังคม ให้น้อยไป → เสียความสัมพันธ์ ไม่มีโซลูชันดิจิทัลสำหรับความต้องการทางวัฒนธรรมที่สำคัญนี้</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUTION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2><span class="en">MuteEvent: Beautiful Event Websites + Digital ซอง + LINE RSVP — in 5 Minutes</span><span class="th">MuteEvent: เว็บงานสวย + ซองดิจิทัล + LINE RSVP — ใน 5 นาที</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">AI Event Website Generator via LINE</h3>
+          <h3 class="th">AI สร้างเว็บงานผ่าน LINE</h3>
+          <p class="en">Chat with MuteEvent on LINE: "งานแต่ง 15 มี.ค. ที่โรงแรมเซ็นทารา" → AI generates a beautiful bilingual event website with photos, timeline, venue directions (Google Maps embedded), dress code, and custom domain (somchai-ploy.muteevent.com). Choose from Thai-cultural templates: wedding (สีทอง), ordination (สีขาว), funeral (สีดำ), birthday (colorful).</p>
+          <p class="th">คุยกับ MuteEvent บน LINE: "งานแต่ง 15 มี.ค. ที่โรงแรมเซ็นทารา" → AI สร้างเว็บงานสองภาษาสวยพร้อมรูปภาพ timeline แผนที่ (Google Maps) dress code และ domain กำหนดเอง เลือกจาก template วัฒนธรรมไทย: งานแต่ง (สีทอง) งานบวช (สีขาว) งานศพ (สีดำ) วันเกิด (สีสัน)</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">LINE Smart RSVP — Zero Google Forms</h3>
+          <h3 class="th">LINE Smart RSVP — ไม่ต้องมี Google Forms</h3>
+          <p class="en">Guest taps RSVP link in LINE → clean interface: attending/not attending, number of guests, meal preference, dietary restrictions. Host sees real-time count dashboard. Automatic reminders to non-responders 7 days before deadline. Export guest list to Excel for venue. Never chase RSVPs manually again.</p>
+          <p class="th">แขกแตะลิงก์ RSVP ใน LINE → interface สะอาด: มา/ไม่มา จำนวนแขก อาหาร ข้อจำกัดอาหาร เจ้าภาพเห็น dashboard จำนวน real-time เตือนอัตโนมัติถึงคนที่ยังไม่ตอบ 7 วันก่อน deadline export รายชื่อแขก Excel สำหรับสถานที่</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Digital ซอง via PromptPay</h3>
+          <h3 class="th">ซองดิจิทัล ผ่าน PromptPay</h3>
+          <p class="en">Event website has elegant "ส่งซอง" button. Guest taps → enters amount → PromptPay QR appears → pays from any Thai banking app → auto-verified via Opn Payments webhook → recorded with guest name + amount + personal message. Host sees live total. Works for guests who can't attend physically — they send ซอง from anywhere in Thailand.</p>
+          <p class="th">เว็บงานมีปุ่ม "ส่งซอง" สวยงาม แขกแตะ → กรอกยอด → QR PromptPay ขึ้น → จ่ายจาก app ธนาคาร → ยืนยันอัตโนมัติ → บันทึกชื่อแขก + ยอด + ข้อความส่วนตัว เจ้าภาพเห็นยอดรวม real-time แขกที่ไปไม่ได้ส่งซองจากที่ไหนก็ได้ในไทย</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">ซอง Reciprocity Tracker — Lifetime History</h3>
+          <h3 class="th">ระบบติดตามซองตลอดชีวิต</h3>
+          <p class="en">Every ซอง given and received is recorded permanently in user's MuteEvent account. "Ploy gave me ฿3,000 at my wedding → remind me to give ≥฿3,000 at her daughter's graduation." Replaces the handwritten notebook that Thai families maintain for decades. Cross-event, cross-year tracking. Never forget, never underpay.</p>
+          <p class="th">ทุกซองที่ให้และรับบันทึกถาวรในบัญชี MuteEvent "พลอยให้ฉัน ฿3,000 ที่งานแต่ง → เตือนฉันให้ ≥฿3,000 ที่รับปริญญาลูกสาวเธอ" แทนที่สมุดจดที่ครอบครัวไทยเก็บรักษามาหลายสิบปี ติดตามข้ามงาน ข้ามปี ไม่มีลืม ไม่มีให้น้อย</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Photo Gallery + Digital Guestbook</h3>
+          <h3 class="th">แกลเลอรี่รูปภาพ + สมุดเยี่ยมดิจิทัล</h3>
+          <p class="en">Guests upload photos from the event directly to the event website gallery. Digital guestbook: guests leave messages, blessings, and memories. Funeral memorial: permanent online tribute page with photo timeline, condolence messages, and donation tracking. Every event creates a digital memory that lasts forever.</p>
+          <p class="th">แขกอัปโหลดรูปจากงานไปยังแกลเลอรี่เว็บงานโดยตรง สมุดเยี่ยมดิจิทัล: แขกฝากข้อความ คำอวยพร ความทรงจำ งานศพ: หน้า tribute ออนไลน์ถาวรพร้อมไทม์ไลน์รูปภาพ ข้อความแสดงความเสียใจ ติดตามเงินบริจาค ทุกงานสร้างความทรงจำดิจิทัลที่คงอยู่ตลอดไป</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Auto Thank-You Messages via LINE</h3>
+          <h3 class="th">ข้อความขอบคุณอัตโนมัติผ่าน LINE</h3>
+          <p class="en">After the event, one-click sends personalized thank-you messages to every guest via LINE: "ขอบคุณพี่สมชายที่มาร่วมงานแต่งเราค่ะ 🙏" — customized with guest name, attendance status, and ซอง acknowledgment. Saves 3–5 hours of manual thank-you messages that Thai hosts are culturally obligated to send.</p>
+          <p class="th">หลังงาน กดเดียวส่งข้อความขอบคุณส่วนตัวถึงทุกแขกผ่าน LINE: "ขอบคุณพี่สมชายที่มาร่วมงานแต่งเราค่ะ 🙏" — กำหนดเองตามชื่อแขก สถานะการเข้าร่วม และการรับทราบซอง ประหยัด 3–5 ชั่วโมงของข้อความขอบคุณที่เจ้าภาพไทยต้องส่งตามวัฒนธรรม</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MARKET ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">MARKET DATA</div>
+    <div class="section-label th">ข้อมูลตลาด</div>
+    <h2><span class="en">Zola Proved This at $600M — Thailand's ซอง Culture Makes It Even Bigger</span><span class="th">Zola พิสูจน์ที่ $600M — วัฒนธรรมซองไทยทำให้มันใหญ่กว่า</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">💒</div>
+        <h3 class="en">Zola: $140M Raised, $600M Valuation</h3>
+        <h3 class="th">Zola: ระดมทุน $140M มูลค่า $600M</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Zola (founded 2013) proved that event websites + digital registry = massive business. Revenue from selling wedding gifts and planning tools. Joy, TheKnot, WeddingWire form a multi-billion-dollar global category. But ALL are English-only, USD-only, wedding-only, no PromptPay, no ซอง concept. Thailand is completely unserved.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Zola (ก่อตั้ง 2013) พิสูจน์ว่า event websites + digital registry = ธุรกิจมหึมา Zola Joy TheKnot WeddingWire สร้างหมวดหลายพันล้านดอลลาร์ แต่ทั้งหมดภาษาอังกฤษ USD เท่านั้น แค่งานแต่ง ไม่มี PromptPay ไม่มีแนวคิดซอง ไทยไม่ถูก serve เลย</p>
+      </div>
+      <div class="card"><div class="card-icon">🇹🇭</div>
+        <h3 class="en">Thailand: 1M+ Life Events Per Year with ซอง</h3>
+        <h3 class="th">ไทย: 1M+ งานชีวิต/ปี ที่มีซอง</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">300K+ weddings + 200K+ funerals + 100K+ ordinations + 500K+ graduations + housewarmings + birthdays + temple events = 1M+ annual events with ซอง culture. Average event: 100–500 guests. Average ซอง: ฿1,000–3,000 per guest. Total ซอง money flowing annually in Thailand: estimated ฿50B–100B+. This is a massive, culturally embedded cash flow that no platform currently captures.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">งานแต่ง 300K+ งานศพ 200K+ งานบวช 100K+ รับปริญญา 500K+ ขึ้นบ้านใหม่ วันเกิด งานวัด = 1M+ งานต่อปีที่มีวัฒนธรรมซอง งาน avg: แขก 100–500 ซอง avg: ฿1,000–3,000/แขก เงินซองรวมในไทย: ประมาณ ฿50B–100B+/ปี กระแสเงินสดมหึมาที่ไม่มีแพลตฟอร์มจับ</p>
+      </div>
+      <div class="card"><div class="card-icon">💳</div>
+        <h3 class="en">PromptPay: 80M+ Accounts, Thai Standard</h3>
+        <h3 class="th">PromptPay: 80M+ บัญชี มาตรฐานไทย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">PromptPay has 80M+ registered accounts — near-universal adoption in Thailand. Every Thai adult can send and receive money instantly. Digital ซอง via PromptPay is already happening informally (guests who can't attend transfer money via LINE). MuteEvent formalizes this into an elegant, trackable experience. The infrastructure already exists — we just build the experience layer.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">PromptPay มี 80M+ บัญชี — ใช้เกือบทุกคนในไทย คนไทยทุกคนส่งและรับเงินได้ทันที ซองดิจิทัลผ่าน PromptPay เกิดขึ้นแล้วอย่างไม่เป็นทางการ MuteEvent ทำให้เป็นประสบการณ์ที่สวยงามและติดตามได้ โครงสร้างพื้นฐานมีอยู่แล้ว — เราแค่สร้าง experience layer</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2><span class="en">Absolute Zero Competition in Thai Event Websites</span><span class="th">ไม่มีคู่แข่งเลยในเว็บงานไทย</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead><tr><th>PLATFORM</th><th>Thai Language</th><th>Digital ซอง</th><th>PromptPay</th><th>LINE RSVP</th><th>All Event Types</th><th>Price</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Zola</strong></td><td class="no">❌ English</td><td class="no">❌ Gift registry (USD)</td><td class="no">❌ No</td><td class="no">❌ No</td><td class="no">❌ Weddings only</td><td class="partial">Free + paid</td></tr>
+          <tr><td><strong>Joy (WithJoy)</strong></td><td class="no">❌ English</td><td class="partial">⚡ Cash fund (USD)</td><td class="no">❌ No</td><td class="no">❌ No</td><td class="no">❌ Weddings only</td><td class="yes">Free</td></tr>
+          <tr><td><strong>TheKnot</strong></td><td class="no">❌ English</td><td class="partial">⚡ Cash fund (USD)</td><td class="no">❌ No</td><td class="no">❌ No</td><td class="no">❌ Weddings only</td><td class="partial">Free + paid</td></tr>
+          <tr><td><strong>LINE Group + Google Forms</strong></td><td class="yes">✅ Thai</td><td class="no">❌ No</td><td class="partial">⚡ Manual transfer</td><td class="partial">⚡ Manual chaos</td><td class="yes">✅ Any event</td><td class="yes">Free (hours of work)</td></tr>
+          <tr class="highlight-row"><td><strong>MuteEvent ✦</strong></td><td class="yes">✅ Thai-native</td><td class="yes">✅ Digital ซอง</td><td class="yes">✅ Auto-verify</td><td class="yes">✅ LINE RSVP</td><td class="yes">✅ All Thai events</td><td class="yes">฿0–1,999</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2><span class="en">Freemium + Transaction Fee on Digital ซอง — Zola Model Adapted for Thailand</span><span class="th">Freemium + ค่าธรรมเนียม ซองดิจิทัล — โมเดล Zola สำหรับไทย</span></h2>
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE</div>
+        <div class="pricing-tier th">ฟรี</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">basic event website</div>
+        <div class="pricing-unit th">เว็บงานพื้นฐาน</div>
+        <div class="pricing-desc en">1 event website, RSVP tracking (50 guests max), photo gallery (20 photos), basic templates. No digital ซอง. MuteEvent branding.</div>
+        <div class="pricing-desc th">เว็บงาน 1 งาน, RSVP (แขก 50 คนสูงสุด), แกลเลอรี่ (20 รูป), template พื้นฐาน ไม่มีซองดิจิทัล มีโลโก้ MuteEvent</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">🏆 POPULAR</div>
+        <div class="pricing-tier en">PREMIUM</div>
+        <div class="pricing-tier th">พรีเมียม</div>
+        <div class="pricing-price">฿999</div>
+        <div class="pricing-unit en">per event</div>
+        <div class="pricing-unit th">ต่องาน</div>
+        <div class="pricing-desc en">Custom domain, unlimited guests, digital ซอง (PromptPay), unlimited photos, AI website builder, LINE RSVP, auto thank-you, guestbook, no MuteEvent branding. ซอง fee: 1.5% of amount received.</div>
+        <div class="pricing-desc th">domain กำหนดเอง, แขกไม่จำกัด, ซองดิจิทัล (PromptPay), รูปไม่จำกัด, AI สร้างเว็บ, LINE RSVP, ขอบคุณอัตโนมัติ, สมุดเยี่ยม, ไม่มีโลโก้ MuteEvent ค่าซอง: 1.5% ของยอดรับ</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">WEDDING DELUXE</div>
+        <div class="pricing-tier th">แต่ง Deluxe</div>
+        <div class="pricing-price">฿1,999</div>
+        <div class="pricing-unit en">per wedding</div>
+        <div class="pricing-unit th">ต่องานแต่ง</div>
+        <div class="pricing-desc en">Everything in Premium + seating chart planner, multi-event pages (engagement + wedding + after-party), vendor directory, budget tracker, ซอง fee: 1% of amount received. VIP support.</div>
+        <div class="pricing-desc th">ทุกอย่างใน Premium + planner ที่นั่ง, หลายหน้า (หมั้น + แต่ง + after-party), directory vendor, ติดตามงบ, ค่าซอง: 1% support VIP</div>
+      </div>
+    </div>
+
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE MATH — DUAL ENGINE</p>
+      <div class="revenue-row"><span class="en">10,000 Premium events × ฿999</span><span class="th">Premium 10,000 งาน × ฿999</span><span class="revenue-val">฿10M/yr</span></div>
+      <div class="revenue-row"><span class="en">2,000 Wedding Deluxe × ฿1,999</span><span class="th">แต่ง Deluxe 2,000 งาน × ฿1,999</span><span class="revenue-val">฿4M/yr</span></div>
+      <div class="revenue-row"><span class="en">Digital ซอง 1.5% fee on ฿500M flow</span><span class="th">ซองดิจิทัล 1.5% จาก ฿500M</span><span class="revenue-val">฿7.5M/yr</span></div>
+      <div class="revenue-row"><span class="en"><strong>Total Year 1</strong></span><span class="th"><strong>รวมปีที่ 1</strong></span><span class="revenue-val"><strong>฿21.5M/yr</strong></span></div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;"><span class="en">Year 3 at scale (5% of Thai events): ฿120M+ ARR. The ซอง transaction fee scales with event size — bigger events = more revenue per event.</span><span class="th">ปีที่ 3 ที่ scale (5% ของงานไทย): ฿120M+ ARR ค่าซอง scale ตามขนาดงาน — งานใหญ่ = รายได้มากกว่าต่องาน</span><span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TIMELINE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">BUILD TIMELINE</div>
+    <div class="section-label th">ไทม์ไลน์การสร้าง</div>
+    <h2><span class="en">5-Week MVP → Launch Before Thai Wedding Season (Nov–Feb)</span><span class="th">5 สัปดาห์ MVP → เปิดตัวก่อนฤดูงานแต่งไทย (พ.ย.–ก.พ.)</span></h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 1–2</div><div class="tl-title en">AI Event Website Generator + Templates</div><div class="tl-title th">AI สร้างเว็บงาน + Templates</div><div class="tl-desc en">LINE OA chatbot → AI generates event website from description. Thai-cultural templates: wedding gold, ordination white, funeral black, birthday colorful. Photo upload, Google Maps embed, custom domain routing.</div><div class="tl-desc th">LINE OA chatbot → AI สร้างเว็บงานจากคำอธิบาย Template วัฒนธรรมไทย: แต่ง (ทอง) บวช (ขาว) ศพ (ดำ) วันเกิด (สีสัน) อัปโหลดรูป Google Maps domain กำหนดเอง</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 3</div><div class="tl-title en">LINE RSVP + Guest Management</div><div class="tl-title th">LINE RSVP + จัดการแขก</div><div class="tl-desc en">Smart RSVP via LINE: attend/decline, plus-ones, meal choice. Real-time guest count dashboard. Auto-reminders. Excel export for venue. Seating chart builder for premium tier.</div><div class="tl-desc th">Smart RSVP ผ่าน LINE: มา/ไม่มา จำนวนแขกเพิ่ม อาหาร Dashboard จำนวนแขก real-time เตือนอัตโนมัติ Export Excel สำหรับสถานที่</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 4</div><div class="tl-title en">Digital ซอง via PromptPay</div><div class="tl-title th">ซองดิจิทัล PromptPay</div><div class="tl-desc en">Opn Payments API integration: unique PromptPay QR per guest per event. Auto-verification webhook. Live ซอง dashboard: total received, per-guest breakdown. Elegant "ส่งซอง" button on event website. Personal message with each ซอง.</div><div class="tl-desc th">Opn Payments API: QR PromptPay รายแขก ยืนยันอัตโนมัติ Dashboard ซอง real-time: ยอดรวม, รายละเอียดต่อแขก ปุ่ม "ส่งซอง" สวยงาม ข้อความส่วนตัวกับทุกซอง</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 5</div><div class="tl-title en">Beta Launch — 20 Free Weddings</div><div class="tl-title th">Beta Launch — 20 งานแต่งฟรี</div><div class="tl-desc en">Target: 20 couples planning weddings in the next 2 months. Offer free Premium plan. Get real wedding data: RSVP rates, ซอง adoption, user feedback. Post in Thai wedding Facebook groups (100K+ members). Word of mouth from 20 successful weddings = 200+ organic leads.</div><div class="tl-desc th">เป้าหมาย: 20 คู่ที่กำลังวางแผนแต่งงานใน 2 เดือน เสนอ Premium ฟรี ได้ข้อมูลจริง: อัตรา RSVP การใช้ซอง feedback โพสต์ในกลุ่ม Facebook งานแต่งไทย (100K+ สมาชิก)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยงและการแก้ไข</div>
+    <h2><span class="en">Key Question: Do Thais Actually Want Event Websites?</span><span class="th">คำถามสำคัญ: คนไทยต้องการเว็บงานจริงหรือ?</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3 class="en">"LINE Group Is Good Enough" Mindset</h3><h3 class="th">ทัศนคติ "กลุ่ม LINE ก็พอแล้ว"</h3></div>
+          <p class="en">Most Thais plan events entirely through LINE. They may not see the need for a dedicated event website. Mitigation: The website isn't the main sell — the <strong>digital ซอง</strong> is. Lead with PromptPay digital ซอง as the hook. The event website is the vehicle for delivering ซอง. Once they see the ซอง tracking dashboard, the website becomes obvious value.</p>
+          <p class="th">คนไทยส่วนใหญ่วางแผนงานผ่าน LINE ทั้งหมด อาจไม่เห็นความจำเป็นของเว็บงาน แก้ไข: เว็บไม่ใช่สิ่งขายหลัก — <strong>ซองดิจิทัล</strong>คือ hook นำด้วย PromptPay ซองดิจิทัล เว็บงานเป็นพาหนะสำหรับซอง เมื่อเห็น dashboard ติดตามซอง เว็บกลายเป็นคุณค่าที่ชัดเจน</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-med">MED</span><h3 class="en">Cultural Sensitivity Around Digital ซอง</h3><h3 class="th">ความอ่อนไหวทางวัฒนธรรมเรื่องซองดิจิทัล</h3></div>
+          <p class="en">Some Thais may feel digital ซอง is "ไม่สุภาพ" (impolite) — money should be given in person. Mitigation: Position as "สำหรับแขกที่ไปร่วมงานไม่ได้" (for guests who can't attend). This is already happening informally via PromptPay transfer. We just make it elegant and trackable.</p>
+          <p class="th">คนไทยบางคนอาจรู้สึกว่าซองดิจิทัล "ไม่สุภาพ" — เงินควรให้ด้วยตัวเอง แก้ไข: วางตำแหน่งเป็น "สำหรับแขกที่ไปร่วมงานไม่ได้" ซึ่งเกิดขึ้นอยู่แล้วผ่าน PromptPay เราแค่ทำให้สวยงามและติดตามได้</p>
+        </div>
+      </div>
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-med">MED</span><h3 class="en">Seasonal Revenue (Weddings Peak Nov–Feb)</h3><h3 class="th">รายได้ตามฤดูกาล (งานแต่งสูง พ.ย.–ก.พ.)</h3></div>
+          <p class="en">Thai weddings concentrate in cool season (Nov–Feb). Revenue could be seasonal. Mitigation: MuteEvent covers ALL life events. Funerals (year-round), birthdays (year-round), ordinations (summer), graduations (Mar–Jun), temple events (year-round). Multi-event coverage smooths seasonality.</p>
+          <p class="th">งานแต่งไทยกระจุกฤดูหนาว (พ.ย.–ก.พ.) รายได้อาจตามฤดู แก้ไข: MuteEvent ครอบคลุมทุกงาน งานศพ (ทั้งปี) วันเกิด (ทั้งปี) งานบวช (ร้อน) รับปริญญา (มี.ค.–มิ.ย.) งานวัด (ทั้งปี) ครอบคลุมหลายงานลดความเป็นฤดูกาล</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-low">LOW</span><h3 class="en">Zola/Joy Enter Thailand</h3><h3 class="th">Zola/Joy เข้าไทย</h3></div>
+          <p class="en">Global platforms could localize for Thailand. Mitigation: Digital ซอง via PromptPay, Thai cultural event types (งานบวช, ผ้าป่า), and LINE integration are deeply Thai-specific moats. Zola adding PromptPay is like Facebook adding PromptPay — possible but extremely unlikely as a priority for a US-focused company.</p>
+          <p class="th">แพลตฟอร์มโลกอาจ localize สำหรับไทย แก้ไข: ซองดิจิทัล PromptPay ประเภทงานไทย (บวช ผ้าป่า) LINE integration เป็นคูเมืองไทยลึก Zola เพิ่ม PromptPay เหมือน Facebook เพิ่ม PromptPay — เป็นไปได้แต่ไม่น่าจะเป็น priority</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">40/50 — 🏆 TIED #1 HIGHEST SCORE IN SPRINT</span><span class="th">40/50 — 🏆 เสมอ #1 คะแนนสูงสุดในสปรินท์</span></h2>
+    <table class="score-table">
+      <tr><td class="dim en">Market Potential</td><td class="dim th">ศักยภาพตลาด</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim en">Problem Severity</td><td class="dim th">ความรุนแรงของปัญหา</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim en">Competition Gap</td><td class="dim th">ช่องว่างการแข่งขัน</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td><td class="pts">9/10</td></tr>
+      <tr><td class="dim en">Build Feasibility</td><td class="dim th">ความเป็นไปได้ในการสร้าง</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim en">Our Advantage</td><td class="dim th">ข้อได้เปรียบของเรา</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr class="total-row"><td class="en"><strong>TOTAL</strong></td><td class="th"><strong>รวม</strong></td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts"><strong>40/50 🏆</strong></td></tr>
+    </table>
+    <div style="margin-top:2rem;padding:1.5rem;background:linear-gradient(135deg, rgba(168,85,247,0.08), rgba(251,191,36,0.08));border:1px solid rgba(251,191,36,0.3);border-radius:14px;">
+      <h3 style="color:var(--gold);margin-bottom:0.8rem;">🏆 CEO Assessment: Why This Ties for #1</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;">
+        <span class="en">
+        <strong>Competition Gap 9/10:</strong> The gap is absolute. Zero Thai-native event website platform exists. Zola ($140M raised, $600M valuation) proves the category is massive globally, but it's English/USD/wedding-only. Thai ซอง culture has no digital solution. No competitor even understands งานบวช or ผ้าป่า. This is the widest competition gap in the entire sprint.<br><br>
+        <strong>Market Potential 8/10:</strong> 1M+ Thai life events per year with ซอง culture. ฿50B–100B+ in ซอง money flowing annually. Even capturing 1.5% of ฿500M in digital ซอง flow = ฿7.5M/yr in transaction revenue alone. Add event website fees (฿999–1,999 per event × 12K events = ฿14M). Total: ฿21.5M year 1.<br><br>
+        <strong>Our Advantage 8/10:</strong> Thai language, PromptPay integration, LINE RSVP, Thai cultural understanding (ซอง, น้ำสังข์, สินสอด, ทอดกฐิน) — these are deep cultural moats that no global competitor can replicate. AI website generation via LINE conversation is founder-market fit for Thanapat's CTO background.<br><br>
+        <strong>Build Feasibility 8/10:</strong> Template-based event websites + Opn Payments PromptPay API + LINE OA + photo gallery + guest tracking. Standard stack. MVP in 5 weeks. The AI generation angle adds delight but core functionality is proven.<br><br>
+        <strong>Problem Severity 7/10:</strong> This is the one area where the score is "good, not great." People DO muddle through with LINE groups + cash envelopes. The pain is real but not acute like PDPA fines (MuteLaw) or labor law violations. However, the digital ซอง for guests who can't attend IS a genuine unmet need — and the reciprocity tracking problem is a universal Thai anxiety. The real hook: "Never count cash envelopes at 2AM again."
+        </span>
+        <span class="th">
+        <strong>Competition Gap 9/10:</strong> ช่องว่างสมบูรณ์ ไม่มีแพลตฟอร์มเว็บงานไทย Zola ($140M, $600M) พิสูจน์หมวดมหึมา แต่ภาษาอังกฤษ/USD/แค่งานแต่ง วัฒนธรรมซองไทยไม่มีโซลูชันดิจิทัล คู่แข่งไม่เข้าใจงานบวชหรือผ้าป่า<br><br>
+        <strong>Market Potential 8/10:</strong> 1M+ งานชีวิตไทย/ปี เงินซอง ฿50B–100B+ ต่อปี จับ 1.5% ของ ฿500M = ฿7.5M/ปี + ค่าเว็บงาน = ฿21.5M ปีที่ 1<br><br>
+        <strong>Our Advantage 8/10:</strong> ภาษาไทย PromptPay LINE RSVP ความเข้าใจวัฒนธรรมไทย (ซอง น้ำสังข์ สินสอด ทอดกฐิน) เป็นคูเมืองลึกที่คู่แข่งโลกทำไม่ได้<br><br>
+        <strong>Build Feasibility 8/10:</strong> เว็บ template + Opn Payments + LINE OA + แกลเลอรี่ + ติดตามแขก stack มาตรฐาน MVP 5 สัปดาห์<br><br>
+        <strong>Problem Severity 7/10:</strong> คนไม่ถึงกับ "วิกฤต" กับ LINE groups + ซองเงินสด แต่ซองดิจิทัลสำหรับแขกที่ไปไม่ได้เป็นความต้องการจริง ปัญหาติดตามการให้คืนเป็นความวิตกสากลของคนไทย Hook จริง: "ไม่ต้องนับซองเงินสดตอนตี 2 อีกต่อไป"
+        </span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #96 Complete — 🏆 Tied #1 Highest Score</span><span class="th">ไอเดีย #96 เสร็จ — 🏆 เสมอ #1 สูงสุด</span></h2>
+    <p style="color:var(--text2);max-width:600px;margin:0 auto 2rem;"><span class="en">MuteEvent scored 40/50 — tied with MuteClub (#88) for the highest score in the sprint. Zola ($600M) proves event websites work. Thailand's ซอง culture + PromptPay + LINE RSVP + ALL life events (not just weddings) = the Zola of Thailand.</span><span class="th">MuteEvent ได้ 40/50 — เสมอกับ MuteClub (#88) คะแนนสูงสุดในสปรินท์ Zola ($600M) พิสูจน์ว่าเว็บงานใช้ได้ วัฒนธรรมซองไทย + PromptPay + LINE RSVP + ทุกงานชีวิต = Zola ของไทย</span></p>
+    <a href="index.html" class="back-link"><span class="en">← Back to All Ideas</span><span class="th">← กลับไปดูไอเดียทั้งหมด</span></a>
+  </div>
+</section>
+
+<footer><p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #96 · MUTEEVENT · 🏆 TIED #1</p></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');}</script>
+</body>
+</html>
