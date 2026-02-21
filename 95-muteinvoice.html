@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteInvoice — AI Invoicing & Payment Collection for Thai Freelancers</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --bg2: #0a0d14;
+    --surface: #0e1218;
+    --surface2: #141a22;
+    --surface3: #1a222c;
+    --border: rgba(56,189,248,0.12);
+    --border2: rgba(56,189,248,0.25);
+    --text: #f0f4f8;
+    --text2: #c8d4e0;
+    --muted: #6880a0;
+    --muted2: #506080;
+    --primary: #38bdf8;
+    --primary-light: #7dd3fc;
+    --primary-pale: rgba(56,189,248,0.08);
+    --secondary: #a78bfa;
+    --secondary-light: #c4b5fd;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(56,189,248,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.02) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 0%, rgba(56,189,248,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(167,139,250,0.04) 0%, transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(8,10,15,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--primary-light); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; }
+  .score-table .bar-cell { width: 120px; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--secondary)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--text); background: var(--surface2); }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--primary-light); }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid var(--border2); border-radius: 10px; transition: all 0.2s; }
+  .back-link:hover { background: var(--primary-pale); }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #95</span>
+  <span class="nav-badge en">INVOICING · FREELANCER</span>
+  <span class="nav-badge th">ใบแจ้งหนี้ · ฟรีแลนซ์</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">💼 SOLOPRENEUR TOOLS · INVOICING</span>
+      <span class="hero-tag th">💼 Solopreneur Tools · ใบแจ้งหนี้</span>
+      <span class="idea-num">SPRINT #95 — FEB 21, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Invoice</span></span><span class="th">Mute<span class="accent">Invoice</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Invoicing & Payment Collection for Thai Freelancers</span>
+      <span class="th">AI ใบแจ้งหนี้และการเก็บเงินสำหรับฟรีแลนซ์ไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai freelancers (100,000+) send invoices via LINE, get paid via PromptPay, and spend 2–4 hours/month manually verifying payment screenshots, sending reminders, and reconciling their books. FreshBooks and Wave don't have Thai PromptPay integration. MuteInvoice: Generate Thai invoice → send via LINE → PromptPay auto-verification → auto-receipt → expense tracking → tax-ready P&L report.</span>
+      <span class="th">ฟรีแลนซ์ไทย (100,000+) ส่งใบแจ้งหนี้ผ่าน LINE รับเงินผ่าน PromptPay ใช้เวลา 2–4 ชม./เดือนตรวจสลิป ส่งเตือน และกระทบบัญชี FreshBooks Wave ไม่มี PromptPay MuteInvoice: สร้างใบแจ้งหนี้ไทย → ส่ง LINE → ตรวจ PromptPay อัตโนมัติ → ใบเสร็จอัตโนมัติ → ติดตามค่าใช้จ่าย → รายงาน P&L พร้อมภาษี</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">100K+</span><span class="stat-label en">Thai freelancers</span><span class="stat-label th">ฟรีแลนซ์ไทย</span></div>
+      <div class="stat"><span class="stat-val">2–4hr</span><span class="stat-label en">monthly payment admin</span><span class="stat-label th">admin การชำระ/เดือน</span></div>
+      <div class="stat"><span class="stat-val">฿0</span><span class="stat-label en">Thai invoicing tools w/ PromptPay</span><span class="stat-label th">เครื่องมือใบแจ้งหนี้ไทย + PromptPay</span></div>
+      <div class="stat"><span class="stat-val">฿599</span><span class="stat-label en">/mo saves 4 hours</span><span class="stat-label th">/เดือน ประหยัด 4 ชม.</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">35</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:70%"></div></div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.4rem;font-family:'Space Mono',monospace;">TIER-MID ✅</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PAIN ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN POINT</div>
+    <div class="section-label th">ปัญหาที่แท้จริง</div>
+    <h2><span class="en">Thai Freelancers Drown in Payment Admin Chaos</span><span class="th">ฟรีแลนซ์ไทยจมอยู่กับความโกลาหล admin การชำระ</span></h2>
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">PromptPay Screenshot Verification — Every Single Payment</h3>
+        <h3 class="th">ตรวจสลิป PromptPay — ทุกครั้งที่รับเงิน</h3>
+        <p class="en">Client pays ฿15,000 via PromptPay, sends screenshot to freelancer's LINE. Freelancer opens banking app, verifies amount/name/date, marks "paid" in Google Sheets or notebook. For 10 clients paying monthly = 10 manual verifications × 5 minutes = 50 minutes/month. Multiply by 12 months = 10 hours/year of pure screenshot verification.</p>
+        <p class="th">ลูกค้าจ่าย ฿15,000 ผ่าน PromptPay ส่งสลิปมา LINE ฟรีแลนซ์เปิด app ธนาคาร ตรวจยอด/ชื่อ/วันที่ ทำเครื่องหมาย "ชำระแล้ว" ใน Google Sheets 10 ลูกค้า × 5 นาที = 50 นาที/เดือน 12 เดือน = 10 ชม./ปี ตรวจสลิปอย่างเดียว</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📱</div>
+      <div class="pain-text">
+        <h3 class="en">Chasing Unpaid Invoices — Awkward LINE Messages</h3>
+        <h3 class="th">ไล่ตามใบแจ้งหนี้ค้าง — ข้อความ LINE อึดอัด</h3>
+        <p class="en">Thai freelancers hate chasing payments. They send awkward "รบกวนชำระค่างานนะครับ" messages via LINE, often waiting days for response. Some clients ghost entirely. The freelancer has no systematic way to track who paid, who's overdue, or when to follow up. Money leaks through the cracks.</p>
+        <p class="th">ฟรีแลนซ์ไทยเกลียดการไล่ตามเงิน ส่งข้อความ "รบกวนชำระค่างานนะครับ" ผ่าน LINE รอหลายวัน บางลูกค้าหายไปเลย ไม่มีระบบติดตามว่าใครจ่ายแล้ว ใครเกินกำหนด เงินรั่วออกไปตามรอยแตก</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📊</div>
+      <div class="pain-text">
+        <h3 class="en">No Tax-Ready P&L — Scrambling at Tax Filing Season</h3>
+        <h3 class="th">ไม่มี P&L พร้อมภาษี — โกลาหลฤดูยื่นภาษี</h3>
+        <p class="en">Thai freelancers earning from Thai clients must file income tax. They scramble at tax season: "How much did I earn? What expenses can I deduct?" No organized income/expense tracking. End up either overpaying taxes (missing deductions) or risking audit (incomplete records). Accountant fees: ฿5,000-15,000/year.</p>
+        <p class="th">ฟรีแลนซ์ไทยที่รับเงินจากลูกความไทยต้องยื่นภาษีเงินได้ โกลาหลฤดูยื่นภาษี: "เท่าไหร่? หักอะไรได้?" ไม่มี organized income/expense tracking จบด้วยการจ่ายภาษีเกิน หรือเสี่ยงถูกตรวจสอบ ค่าที่ปรึกษาภาษี: ฿5,000-15,000/ปี</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUTION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2><span class="en">MuteInvoice: PromptPay Auto-Collection + Thai Tax-Ready Books</span><span class="th">MuteInvoice: PromptPay อัตโนมัติ + บัญชีพร้อมภาษีไทย</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Thai Invoice Generator — 30 Seconds</h3>
+          <h3 class="th">สร้างใบแจ้งหนี้ไทย — 30 วินาที</h3>
+          <p class="en">Enter client name, amount, description → system generates professional Thai tax invoice (ใบกำกับภาษี) with freelancer's tax ID, line items, and payment terms. PDF sent to client via LINE in one tap. Thai Revenue Department compliant format.</p>
+          <p class="th">กรอกชื่อลูกค้า ยอด รายละเอียด → ระบบสร้างใบกำกับภาษีไทยมืออาชีพ พร้อมเลขประจำตัวผู้เสียภาษี line items เงื่อนไข ส่ง PDF ให้ลูกค้าผ่าน LINE 1 แตะ รูปแบบตรงตามกรมสรรพากร</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">PromptPay Auto-Verification — Zero Screenshots</h3>
+          <h3 class="th">ตรวจ PromptPay อัตโนมัติ — ไม่ต้องมีสลิป</h3>
+          <p class="en">Invoice includes unique PromptPay QR + reference code. Client pays → bank webhook confirms → system marks "paid" instantly → auto-generates receipt (ใบเสร็จรับเงิน) → sends confirmation to client. Freelancer never opens a screenshot. 4 hours/month saved.</p>
+          <p class="th">ใบแจ้งหนี้มี QR PromptPay + รหัสอ้างอิง ลูกค้าจ่าย → bank webhook ยืนยัน → ระบบทำเครื่องหมาย "ชำระแล้ว" ทันที → ออกใบเสร็จรับเงินอัตโนมัติ → ส่งยืนยันให้ลูกค้า ฟรีแลนซ์ไม่ต้องเปิดสลิป ประหยัด 4 ชม./เดือน</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Auto Payment Reminders — No Awkward LINE</h3>
+          <h3 class="th">เตือนชำระอัตโนมัติ — ไม่ต้อง LINE อึดอัด</h3>
+          <p class="en">Invoice due in 3 days → system sends friendly LINE reminder to client automatically. Overdue 7 days → second reminder. Overdue 14 days → final notice with "unpaid" status. Freelancer never has to write "รบกวนชำระ" manually. Client pays → system auto-reconciles.</p>
+          <p class="th">ใบแจ้งหนี้ครบกำหนด 3 วัน → ระบบส่งเตือน LINE อัตโนมัติ เกิน 7 วัน → เตือนครั้งที่ 2 เกิน 14 วัน → แจ้งครั้งสุดท้าย ฟรีแลนซ์ไม่ต้องพิมพ์ "รบกวนชำระ" เอง ลูกค้าจ่าย → ระบบกระทบบัญชีอัตโนมัติ</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Expense Tracking — Thai Tax Categories</h3>
+          <h3 class="th">ติดตามค่าใช้จ่าย — หมวดภาษีไทย</h3>
+          <p class="en">Log expenses in Thai tax categories: ค่าอุปกรณ์, ค่าเดินทาง, ค่าสำนักงาน, ค่าอินเทอร์เน็ต, etc. System auto-calculates deductible expenses per Thai tax law. Snap photo of receipt → OCR extracts amount → auto-categorizes. Year-end: one-click P&L report ready for tax filing.</p>
+          <p class="th">บันทึกค่าใช้จ่ายตามหมวดภาษีไทย: ค่าอุปกรณ์ ค่าเดินทาง ค่าสำนักงาน ค่าอินเทอร์เน็ต ฯลฯ ระบบคำนวณค่าใช้จ่ายหักภาษีได้อัตโนมัติ ถ่ายรูปใบเสร็จ → OCR ดึงยอด → จัดหมวดอัตโนมัติ สิ้นปี: รายงาน P&L 1 คลิก พร้อมยื่นภาษี</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Tax-Ready P&L Report — Export for Accountant</h3>
+          <h3 class="th">รายงาน P&L พร้อมภาษี — Export ให้ที่ปรึกษา</h3>
+          <p class="en">Monthly P&L: total income, expenses by category, net profit. Annual summary: one-click export in Thai Revenue Department format (PND 90/91 ready). Save ฿5,000-15,000 accountant fees. File taxes yourself or hand report to accountant — either way, organized records.</p>
+          <p class="th">P&L รายเดือน: รายได้รวม ค่าใช้จ่ายตามหมวด กำไรสุทธิ สรุปรายปี: 1 คลิก export รูปแบบกรมสรรพากร (พร้อม ภงด.90/91) ประหยัดค่าที่ปรึกษาภาษี ฿5,000-15,000 ยื่นภาษีเองหรือส่งรายงานให้ที่ปรึกษา</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Multi-Currency for International Clients</h3>
+          <h3 class="th">หลายสกุลเงินสำหรับลูกค้าต่างประเทศ</h3>
+          <p class="en">Thai freelancers working with Upwork/Fiverr clients get paid in USD. MuteInvoice tracks USD income, auto-converts to THB at prevailing rate, and flags foreign income for IBP (International Business Package) tax treatment. Both Thai-client and foreign-client income in one dashboard.</p>
+          <p class="th">ฟรีแลนซ์ไทยที่ทำงานกับลูกค้า Upwork/Fiverr รับเงิน USD MuteInvoice ติดตามรายได้ USD แปลงเป็น THB อัตโนมัติ แจ้งรายได้ต่างประเทศสำหรับ IBP รายได้ลูกค้าไทยและต่างประเทศใน dashboard เดียว</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MARKET ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">MARKET DATA</div>
+    <div class="section-label th">ข้อมูลตลาด</div>
+    <h2><span class="en">100,000+ Thai Freelancers, Zero Thai-Native Invoicing with PromptPay</span><span class="th">ฟรีแลนซ์ไทย 100,000+ ไม่มีเครื่องมือใบแจ้งหนี้ไทยที่มี PromptPay</span></h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">💼</div>
+        <h3 class="en">Thai Freelancer Market: 100,000–500,000</h3>
+        <h3 class="th">ตลาดฟรีแลนซ์ไทย: 100,000–500,000</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Thailand's gig economy includes designers, developers, writers, translators, tutors, photographers, consultants, event planners. Most invoice manually via LINE/Excel. Global freelancing projected to reach 40% of US workforce by 2028 — Thailand following same trend. Freelancers pay 2–4 hours/month on payment admin = real pain with real time cost.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Gig economy ไทย: ดีไซน์เนอร์ dev นักเขียน ล่าม ติวเตอร์ ช่างภาพ ที่ปรึกษา event planner ส่วนใหญ่แจ้งหนี้ผ่าน LINE/Excel ใช้เวลา 2–4 ชม./เดือน admin การชำระ = เจ็บปวดจริง เสียเวลาจริง</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌎</div>
+        <h3 class="en">Global Invoicing Tools: No Thai PromptPay</h3>
+        <h3 class="th">เครื่องมือโลก: ไม่มี PromptPay ไทย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">FreshBooks ($70M ARR), Wave (free, ad-supported), QuickBooks Self-Employed, Zoho Invoice — all excellent but built for US/EU payment rails. None integrate with Thai PromptPay. Thai freelancers using these tools still manually verify PromptPay screenshots. The local payment integration gap is the wedge.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">FreshBooks Wave QuickBooks Zoho Invoice — ดีทั้งนั้นแต่สร้างสำหรับ US/EU ไม่มี PromptPay ไทย ฟรีแลนซ์ไทยใช้แล้วก็ยังต้องตรวจสลิป PromptPay ด้วยมือ integration gap คือช่องทาง</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3 class="en">Willingness to Pay: ฿299–999/mo</h3>
+        <h3 class="th">ความเต็มใจจ่าย: ฿299–999/เดือน</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Thai freelancers earning ฿30,000–150,000/month will pay ฿299–999/mo for a tool that saves 3–4 hours of admin work and provides tax-ready records. 4 hours × ฿500/hour opportunity cost = ฿2,000/month value. At ฿599/mo, 70%+ ROI is clear. Lower ARPU than B2B but higher volume potential.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ฟรีแลนซ์ไทยรับ ฿30,000–150,000/เดือน ยอมจ่าย ฿299–999/เดือนสำหรับเครื่องมือประหยัดเวลา 3–4 ชม. 4 ชม. × ฿500/ชม. = ฿2,000/เดือน value ราคา ฿599/เดือน = ROI 70%+</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2><span class="en">Complete Whitespace for Thai-Native Invoicing with PromptPay</span><span class="th">ช่องว่างสมบูรณ์สำหรับใบแจ้งหนี้ไทยที่มี PromptPay</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead><tr><th>PLATFORM</th><th>Thai Language</th><th>PromptPay</th><th>Thai Tax</th><th>LINE Integration</th><th>Price</th></tr></thead>
+        <tbody>
+          <tr><td><strong>FreshBooks</strong></td><td class="no">❌ English</td><td class="no">❌ No</td><td class="no">❌ US tax</td><td class="no">❌ No</td><td class="no">$19+/mo</td></tr>
+          <tr><td><strong>Wave</strong></td><td class="no">❌ English</td><td class="no">❌ No</td><td class="no">❌ US/CA</td><td class="no">❌ No</td><td class="yes">Free (ads)</td></tr>
+          <tr><td><strong>QuickBooks SE</strong></td><td class="no">❌ English</td><td class="no">❌ No</td><td class="no">❌ US tax</td><td class="no">❌ No</td><td class="no">$15/mo</td></tr>
+          <tr><td><strong>Zoho Invoice</strong></td><td class="partial">⚡ Partial</td><td class="no">❌ No</td><td class="no">❌ Generic</td><td class="no">❌ No</td><td class="yes">Free tier</td></tr>
+          <tr><td><strong>LINE/Excel</strong></td><td class="yes">✅ Thai</td><td class="partial">⚡ Manual</td><td class="no">❌ None</td><td class="yes">✅ Manual</td><td class="yes">Free (4hr/mo)</td></tr>
+          <tr class="highlight-row"><td><strong>MuteInvoice ✦</strong></td><td class="yes">✅ Thai-native</td><td class="yes">✅ Auto-verify</td><td class="yes">✅ Thai tax</td><td class="yes">✅ LINE OA</td><td class="yes">฿299–599/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2><span class="en">B2C SaaS — Low ARPU, High Volume</span><span class="th">B2C SaaS — ARPU ต่ำ ปริมาณสูง</span></h2>
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER</div>
+        <div class="pricing-tier th">เริ่มต้น</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit en">/month · up to 10 invoices</div>
+        <div class="pricing-unit th">/เดือน · สูงสุด 10 ใบแจ้งหนี้</div>
+        <div class="pricing-desc en">Invoice generation, PromptPay QR, LINE delivery, 5 payment verifications/mo. For freelancers starting out.</div>
+        <div class="pricing-desc th">สร้างใบแจ้งหนี้ QR PromptPay ส่ง LINE ตรวจ 5 ครั้ง/เดือน สำหรับฟรีแลนซ์มือใหม่</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier en">FREELANCER</div>
+        <div class="pricing-tier th">ฟรีแลนซ์</div>
+        <div class="pricing-price">฿599</div>
+        <div class="pricing-unit en">/month · unlimited invoices</div>
+        <div class="pricing-unit th">/เดือน · ใบแจ้งหนี้ไม่จำกัด</div>
+        <div class="pricing-desc en">Everything + unlimited PromptPay verification, auto-reminders, expense tracking, monthly P&L, tax-ready reports.</div>
+        <div class="pricing-desc th">ทุกอย่าง + ตรวจ PromptPay ไม่จำกัด เตือนอัตโนมัติ ติดตามค่าใช้จ่าย P&L รายเดือน รายงานพร้อมภาษี</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">PRO</div>
+        <div class="pricing-tier th">โปร</div>
+        <div class="pricing-price">฿999</div>
+        <div class="pricing-unit en">/month · multi-currency</div>
+        <div class="pricing-unit th">/เดือน · หลายสกุลเงิน</div>
+        <div class="pricing-desc en">Everything + USD/EUR income tracking, IBP tax treatment, accountant export, priority support. For international freelancers.</div>
+        <div class="pricing-desc th">ทุกอย่าง + ติดตาม USD/EUR ภาษี IBP export ให้ที่ปรึกษา support ด่วน สำหรับฟรีแลนซ์ต่างประเทศ</div>
+      </div>
+    </div>
+
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE MATH</p>
+      <div class="revenue-row"><span class="en">500 Starter (฿299/mo)</span><span class="th">Starter 500 คน (฿299/เดือน)</span><span class="revenue-val">฿150K/mo</span></div>
+      <div class="revenue-row"><span class="en">1,000 Freelancer (฿599/mo)</span><span class="th">Freelancer 1,000 คน (฿599/เดือน)</span><span class="revenue-val">฿599K/mo</span></div>
+      <div class="revenue-row"><span class="en">200 Pro (฿999/mo)</span><span class="th">Pro 200 คน (฿999/เดือน)</span><span class="revenue-val">฿200K/mo</span></div>
+      <div class="revenue-row"><span class="en"><strong>Total MRR (Year 1)</strong></span><span class="th"><strong>MRR รวม (ปีที่ 1)</strong></span><span class="revenue-val"><strong>฿949K/mo = ฿11.4M ARR</strong></span></div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;"><span class="en">Conservative: 200 Starter + 500 Freelancer + 100 Pro = ฿448K MRR = ฿5.4M ARR</span><span class="th">อนุรักษ์นิยม: 200 Starter + 500 Freelancer + 100 Pro = ฿448K MRR = ฿5.4M ARR</span><span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">35/50 — Tier-Mid ✅</span><span class="th">35/50 — Tier-Mid ✅</span></h2>
+    <table class="score-table">
+      <tr><td class="dim en">Market Potential</td><td class="dim th">ศักยภาพตลาด</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:60%"></div></div></td><td class="pts">6/10</td></tr>
+      <tr><td class="dim en">Problem Severity</td><td class="dim th">ความรุนแรงของปัญหา</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim en">Competition Gap</td><td class="dim th">ช่องว่างการแข่งขัน</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim en">Build Feasibility</td><td class="dim th">ความเป็นไปได้ในการสร้าง</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim en">Our Advantage</td><td class="dim th">ข้อได้เปรียบของเรา</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:60%"></div></div></td><td class="pts">6/10</td></tr>
+      <tr class="total-row"><td class="en"><strong>TOTAL</strong></td><td class="th"><strong>รวม</strong></td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts"><strong>35/50</strong></td></tr>
+    </table>
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;">
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="en">CEO Assessment: Why B2C Limits Score</h3>
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="th">CEO Assessment: ทำไม B2C จำกัดคะแนน</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="en">
+        <strong>Market Potential 6/10:</strong> 100K+ freelancers is good, but B2C ARPU is low (฿400-600 avg vs B2B ฿3,000-10,000). Need 1,700+ customers to reach ฿10M ARR. Customer acquisition cost per B2C user is similar to B2B, but revenue per user is 5-10x lower.<br><br>
+        <strong>Problem Severity 8/10:</strong> PromptPay screenshot verification is acute, recurring pain. 2-4 hours/month wasted is real time cost. Chasing unpaid invoices via awkward LINE messages is universally hated. Tax scrambling at year-end affects every Thai freelancer.<br><br>
+        <strong>Competition Gap 8/10:</strong> FreshBooks/Wave/QuickBooks are excellent but zero Thai PromptPay integration. The gap is structural — global tools won't add Thai payment rails. Complete whitespace for Thai-native invoicing with PromptPay.<br><br>
+        <strong>Build Feasibility 7/10:</strong> Invoice generator + PromptPay QR + LINE webhook + expense tracking = standard SaaS stack. 4-5 weeks MVP. PromptPay verification via Opn Payments API. No regulatory risk.<br><br>
+        <strong>Our Advantage 6/10:</strong> Thai language, PromptPay, LINE OA, Thai tax categories = structural moats. But B2C means lower switching costs than B2B. Freelancers can switch to any tool easily. Retention harder to maintain than B2B SaaS.
+      </p>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="th">
+        <strong>Market Potential 6/10:</strong> ฟรีแลนซ์ 100K+ ดี แต่ B2C ARPU ต่ำ (฿400-600 เฉลี่ย vs B2B ฿3,000-10,000) ต้องการ 1,700+ ลูกค้าถึง ฿10M ARR CAC ต่อ B2C user ใกล้เคียง B2B แต่รายได้ต่อคนต่ำกว่า 5-10x<br><br>
+        <strong>Problem Severity 8/10:</strong> ตรวจสลิป PromptPay เจ็บปวด เสียเวลา 2-4 ชม./เดือน ไล่เงินผ่าน LINE อึดอัดทุกคนเกลียด โกลาหลฤดูภาษี<br><br>
+        <strong>Competition Gap 8/10:</strong> FreshBooks Wave QuickBooks ดีมากแต่ไม่มี PromptPay เลย เครื่องมือโลกไม่เพิ่ม Thai payment rails<br><br>
+        <strong>Build Feasibility 7/10:</strong> สร้างใบแจ้งหนี้ + QR PromptPay + LINE webhook + ติดตามค่าใช้จ่าย = stack มาตรฐาน MVP 4-5 สัปดาห์<br><br>
+        <strong>Our Advantage 6/10:</strong> ภาษาไทย PromptPay LINE OA หมวดภาษีไทย = คูเมืองโครงสร้าง แต่ B2C = switching cost ต่ำกว่า B2B
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #95 Complete</span><span class="th">ไอเดีย #95 เสร็จสมบูรณ์</span></h2>
+    <p class="en">MuteInvoice scored 35/50 — Tier-Mid. First Solopreneur Tools idea. Thai freelancers (100,000+) waste 2-4 hrs/month on PromptPay verification. Global invoicing tools have zero Thai PromptPay integration. B2C limits ARPU but high volume potential.</p>
+    <p class="th">MuteInvoice ได้ 35/50 — Tier-Mid ไอเดีย Solopreneur Tools แรก ฟรีแลนซ์ไทย (100,000+) เสียเวลา 2-4 ชม./เดือนตรวจ PromptPay เครื่องมือโลกไม่มี PromptPay ไทย B2C จำกัด ARPU แต่ปริมาณสูง</p>
+    <a href="index.html" class="back-link"><span class="en">← Back to All Ideas</span><span class="th">← กลับไปดูไอเดียทั้งหมด</span></a>
+  </div>
+</section>
+
+<footer><p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #95 · MUTEINVOICE</p></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');}</script>
+</body>
+</html>
