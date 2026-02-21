@@ -500,6 +500,32 @@
     </div>
   </section>
 
+  <!-- DEEP DIVE SECTION -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444;">⚠️ <span class="en">DEEP DIVE FINDINGS</span><span class="th">ผลวิจัยเชิงลึก</span></div>
+    <div class="section-title"><span class="en">Critical updates from deep dive research</span><span class="th">ข้อค้นพบสำคัญจากวิจัยเชิงลึก</span></div>
+    <p class="section-sub"><span class="en">Deep dive completed Feb 2026. Score revised from 36/50 to 33/50. Three critical findings change the risk profile.</span><span class="th">วิจัยเชิงลึกเสร็จ ก.พ. 2569 ปรับคะแนนจาก 36/50 เป็น 33/50 พบ 3 ประเด็นสำคัญที่เปลี่ยนความเสี่ยง</span></p>
+    <div class="why-panels" style="grid-template-columns:1fr;">
+      <div class="why-panel" style="border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.03);">
+        <div class="why-panel-icon" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">❌</div>
+        <div class="why-panel-title" style="color:#ef4444;"><span class="en">Casino Bill ABANDONED (July 2025)</span><span class="th">ร่าง พ.ร.บ. คาสิโนถูกยกเลิก (ก.ค. 2568)</span></div>
+        <div class="why-panel-desc"><span class="en">The Entertainment Complex Bill was shelved after large-scale public protests and PM Paetongtarn's suspension/removal. The "gambling sector opening up" narrative is FALSE. Thailand is NOT loosening gambling regulation — if anything, anti-gambling sentiment is stronger.</span><span class="th">ร่างกฎหมายถูกเลื่อนออกหลังการประท้วงขนาดใหญ่ และ นายกฯ แพทองธาร ถูกพักงาน/ปลด "ภาคการพนันเปิดกว้าง" เป็นข้อมูลเก่า ไทยไม่ได้ผ่อนคลายกฎระเบียบการพนัน</span></div>
+      </div>
+      <div class="why-panel" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.03);">
+        <div class="why-panel-icon" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);">⚠️</div>
+        <div class="why-panel-title" style="color:#f59e0b;"><span class="en">ถูกหวย Already Has Our Feature Set</span><span class="th">ถูกหวย มีฟีเจอร์เราแล้ว</span></div>
+        <div class="why-panel-desc"><span class="en">GoMang Studio's ถูกหวย (4.6★) already has: AI analysis, AI dream interpreter, custom formula builder, community prediction game with leaderboard, multi-lottery support. This is NOT a green field. Our edge must be UX quality, real Gemini AI, and LINE integration — not features.</span><span class="th">ถูกหวย ของ GoMang Studio (4.6★) มีแล้ว: AI วิเคราะห์, ทำนายฝัน AI, สูตรกำหนดเอง, เกมทายผลชุมชน, รองรับหลายหวย ไม่ใช่ตลาดว่าง ต้องชนะด้วยคุณภาพ UX, Gemini AI จริง, LINE integration</span></div>
+      </div>
+      <div class="why-panel" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.03);">
+        <div class="why-panel-icon" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);">💰</div>
+        <div class="why-panel-title" style="color:#f59e0b;"><span class="en">Realistic Revenue: $135K-$445K (not $1M)</span><span class="th">รายได้จริง: $135K-$445K (ไม่ใช่ $1M)</span></div>
+        <div class="why-panel-desc"><span class="en">Thai lottery apps are overwhelmingly FREE. Subscription conversion unproven in this market. Conservative: ฿4.7M/yr ($135K). Moderate: ฿15.5M/yr ($445K). $1M requires aggressive 1M MAU scenario. Better suited as lifestyle business or combined with MuteMoo (#22) for a "Thai luck" super-app.</span><span class="th">แอปหวยไทยส่วนใหญ่ฟรี subscription ยังไม่พิสูจน์ในตลาดนี้ ระมัดระวัง: ฿4.7M/ปี ปานกลาง: ฿15.5M/ปี $1M ต้องใช้สถานการณ์รุนแรง 1M MAU เหมาะเป็นธุรกิจ lifestyle หรือรวมกับ MuteMoo (#22)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <div class="video-placeholder animate d2">
     <div class="vp-icon">🎬</div>
     <h3 class="vp-title"><span class="en">Product Demo — Coming Soon</span><span class="th">Demo สินค้า — เร็วๆ นี้</span></h3>
@@ -521,7 +547,7 @@
   </div>
 </div>
 
-<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research + Deep Dive</button>
 
 <div id="researchModal" class="research-modal">
   <div class="research-modal-content">
@@ -535,68 +561,77 @@
         <h3>One-liner</h3>
         <p>AI-powered lottery statistics & analytics platform for Thai government lottery — 30+ years data, pattern detection, dream AI, community prediction game. "วิเคราะห์ ไม่ใช่ทำนาย"</p>
       </section>
-      <section class="research-section">
-        <h3>Market Data</h3>
+
+      <section class="research-section" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);padding:1rem;border-radius:12px;">
+        <h3 style="color:#ef4444 !important;border-bottom-color:rgba(239,68,68,0.3);">⚠️ Deep Dive — Critical Findings (Feb 2026)</h3>
         <ul>
-          <li>19.2M+ Thais play government lottery regularly (28.6% of population, 2014 data)</li>
-          <li>Annual spend: ฿76B+ on government lottery alone (2014 figures)</li>
-          <li>Underground lottery estimated: ฿150-300B+/yr additional</li>
-          <li>GLO annual budget: ฿8B ($267M)</li>
-          <li>Draws: 1st and 16th of every month — creates natural traffic spikes</li>
-          <li>Ticket price: ฿80 each (pairs ฿160) — accessible to all income levels</li>
-          <li>61.3% of lottery players are low-income bracket — emotional spending</li>
-          <li>Women play slightly more than men (52.6% vs 47.4%)</li>
-          <li>Casino legalization bill approved Jan 2025 — sector opening up</li>
-          <li>Online lottery: Paotang app (Krungthai) enables digital lottery purchases</li>
-          <li>Global lottery analytics market: $1.1B+ (2025)</li>
-          <li>Multiple lottery types: government, Lao, Hanoi, stock lottery, ยี่กี (underground-turned-online)</li>
+          <li><strong style="color:#ef4444;">Casino bill ABANDONED (July 2025):</strong> The Entertainment Complex Bill was shelved after public protests and PM Paetongtarn's removal. Thailand is NOT opening up gambling regulation. The "sector opening up" narrative is dead.</li>
+          <li><strong style="color:#ef4444;">ถูกหวย already has our features:</strong> GoMang Studio's 4.6★ app already has AI analysis, dream interpreter, community prediction game, multi-lottery — almost exactly MuteHuay's planned feature set. NOT a green field.</li>
+          <li><strong style="color:#f59e0b;">Score revised: 36→33/50:</strong> Still PASS but weaker. Competition gap narrower than believed (-1), casino bill dead (-1), problem value is entertainment not prediction (-1).</li>
+          <li><strong style="color:#f59e0b;">$1M ARR requires aggressive scenario:</strong> 1M MAU with 1.5% conversion. More realistic: $300-700K ARR as lifestyle business.</li>
+          <li><strong style="color:#f59e0b;">Ethical tension:</strong> 61.3% of players are low-income. Profiting from "better number" promises to this demographic needs careful handling.</li>
+        </ul>
+      </section>
+
+      <section class="research-section">
+        <h3>Market Data (Verified)</h3>
+        <ul>
+          <li>19.2M+ Thais play government lottery regularly (28.6% of population)</li>
+          <li>Annual spend: ฿76B+ official (2014), estimated ฿100-120B+ current</li>
+          <li>Underground lottery: ฿150-300B+/yr (2-4x official market)</li>
+          <li>GLO: 38M tickets per draw, 24 draws/year, ฿80/ticket</li>
+          <li>Revenue split: 60% prizes, 28% govt revenue, 12% admin</li>
+          <li>Demographics: Women 52.6%, Working age 21-50, 61.3% low-income</li>
+          <li>Casino bill: Draft approved Jan 2025 → ABANDONED July 2025</li>
+          <li>Paotang app: First legal online lottery purchase channel</li>
+          <li>Other lotteries (Lao/Hanoi/Stock/ยี่กี): ALL illegal in Thailand</li>
         </ul>
       </section>
       <section class="research-section">
-        <h3>Competition</h3>
+        <h3>Competition (Deep Dive)</h3>
         <ul>
-          <li><strong>Thai Lotto Pro (BD IT POINT):</strong> Result checker + basic predictions + chart papers + prediction game. Most comprehensive existing app but basic UI, no real AI.</li>
-          <li><strong>AI ใบ้หวย (tapgabee):</strong> Claims "AI" but just basic statistical lookup from 30yr data. No real ML.</li>
-          <li><strong>ถูกหวย (GoMang Studio):</strong> Best Thai competitor — has AI analysis, AI dream interpreter, custom formulas, community prediction game with leaderboard. Covers multiple lotteries (Thai, Lao, Hanoi, stock). 4.6★ rating. THIS is the benchmark to beat.</li>
-          <li><strong>หวยแม่นๆ AI (R Concept):</strong> Random generator branded as AI.</li>
-          <li><strong>AI649 (XLB):</strong> Global lottery AI analysis — not Thai-focused.</li>
-          <li><strong>Ruay.com:</strong> Full gambling platform (casino + lottery + sports). Massive but illegal/grey area. Not a statistics tool.</li>
-          <li><strong>Gap:</strong> ถูกหวย is the closest competitor with real features. But: no modern AI (uses basic statistical formulas, not ML), basic UX, no rich data visualization. Room for a superior product.</li>
+          <li><strong>ถูกหวย (GoMang Studio) ⚠️ KEY:</strong> 4.6★ rating. Has AI analysis, dream interpreter AI, custom formula builder, community prediction game with leaderboard, multi-lottery (Thai/Lao/Hanoi/Stock). This is our direct competitor with near feature-parity.</li>
+          <li><strong>ถูกหวย weaknesses:</strong> Basic UX design, "AI" likely basic formulas not ML, no LINE integration, no interactive heatmaps, app-only (no web SEO)</li>
+          <li><strong>Thai Lotto Pro:</strong> Result checker + chart papers + prediction game. Basic UI.</li>
+          <li><strong>AI ใบ้หวย:</strong> Basic statistical lookup branded as "AI". Not ML.</li>
+          <li><strong>Web sites (Sanook, Thairath, MThai):</strong> Own SEO for lottery keywords. Hard to outrank.</li>
+          <li><strong>Illegal platforms (Lottovip, Huay, Ruay):</strong> Gambling platforms, not analytics competitors.</li>
+          <li><strong>Our winning edge:</strong> Modern UX, genuine Gemini AI, interactive D3.js visualizations, LINE bot integration, web PWA for SEO</li>
         </ul>
       </section>
       <section class="research-section">
-        <h3>Revenue Math</h3>
+        <h3>Revenue (Realistic Math)</h3>
         <ul>
-          <li>B2C Premium: 15K users × ฿99/mo + 5K users × ฿299/mo = ฿2.98M/mo = ฿35.7M/yr</li>
-          <li>Display Ads: 1M+ free users × ฿2-5 CPM × 24 draws/yr peak traffic = ฿5-10M/yr</li>
-          <li>Affiliate: Lottery purchase referrals via Paotang/Krungthai (estimated 2-5% commission)</li>
-          <li>Data API: B2B for media/news sites (Sanook, Thairath, etc.) = ฿1-2M/yr</li>
-          <li>Total realistic path: ฿32M+ ARR in 18 months ≈ $1M ✅</li>
-          <li>Need: 20K paying users out of 19.2M lottery players (0.1%) — very achievable</li>
+          <li><strong>Conservative:</strong> 200K MAU, 1.4K paying (0.7%), ฿390K/mo → ฿4.7M/yr ($135K)</li>
+          <li><strong>Moderate:</strong> 500K MAU, 5K paying (1%), ฿1.29M/mo → ฿15.5M/yr ($445K)</li>
+          <li><strong>Aggressive:</strong> 1M MAU, 15K paying (1.5%), ฿3.33M/mo → ฿40M/yr ($1.15M)</li>
+          <li>Key risk: Thai lottery apps are overwhelmingly FREE. ถูกหวย is free + ads. Subscription conversion unproven in this market.</li>
+          <li>Ad revenue at scale: ฿30 CPM × 3.6M impressions = ฿108K/mo per 100K MAU</li>
+          <li>B2B data API: Marginal (media sites already scrape GLO data)</li>
         </ul>
       </section>
       <section class="research-section">
-        <h3>Risks</h3>
+        <h3>Risks (Revised)</h3>
         <ul>
-          <li><strong>MEDIUM:</strong> Ethical concern — profiting from low-income gamblers. Mitigate: position as "educational/entertainment", responsible gambling messaging, never promise wins.</li>
-          <li><strong>MEDIUM:</strong> ถูกหวย app already has AI features + community. Not a green field. Must be SIGNIFICANTLY better in UX + AI quality + data viz.</li>
-          <li><strong>LOW-MEDIUM:</strong> Regulatory grey area for "AI predictions". Mitigate: always call it "statistics" and "analysis", never "prediction". Include strong disclaimers.</li>
-          <li><strong>LOW:</strong> Technical complexity minimal. GLO data is public. Web scraping + ML + modern frontend = well-understood stack.</li>
-          <li><strong>LOW:</strong> No founder domain expertise in lottery. But the product is essentially data analytics — CTO background fits perfectly.</li>
+          <li><strong style="color:#ef4444;">HIGH:</strong> Ethical — profiting from low-income gamblers (61.3%). Must position as entertainment, never promise wins.</li>
+          <li><strong style="color:#f59e0b;">MEDIUM:</strong> ถูกหวย has feature parity + established user base. Must win on UX + real AI quality.</li>
+          <li><strong style="color:#f59e0b;">MEDIUM:</strong> Casino bill failure signals conservative regulatory environment. No tailwind.</li>
+          <li><strong style="color:#f59e0b;">MEDIUM:</strong> Subscription model unproven — Thai lottery apps are all free. May need ad-first model.</li>
+          <li><strong style="color:#10b981;">LOW:</strong> Technical — well-understood stack, public data, standard AI/ML.</li>
         </ul>
       </section>
       <section class="research-section">
-        <h3>Scoring</h3>
+        <h3>Scoring (Revised After Deep Dive)</h3>
         <ul>
-          <li><strong>Market: 8/10</strong> — ฿76B+ annual lottery spend, 19.2M+ regular players, culturally embedded, recession-proof demand</li>
-          <li><strong>Problem: 7/10</strong> — Real desire for "better numbers", but lottery is fundamentally random. Value = entertainment + statistical education + community, not actual prediction.</li>
-          <li><strong>Competition Gap: 6/10</strong> — ถูกหวย (GoMang Studio) already has AI features, dream interpreter, community prediction game, 4.6★. NOT a wide-open gap. Must win on UX + AI quality + data visualization.</li>
-          <li><strong>Build Feasibility: 8/10</strong> — Public GLO data, standard web/mobile stack, Gemini for dream AI, statistical analysis well-understood. MVP in 2-3 weeks.</li>
-          <li><strong>Our Advantage: 7/10</strong> — CTO = data analytics fit. AI agent = 24/7 development. Modern UX vs basic existing apps. No specific lottery domain expertise needed — it's pure data.</li>
+          <li><strong>Market: 8/10</strong> — Massive, culturally bulletproof. No change.</li>
+          <li><strong>Problem: 6/10 (↓1)</strong> — Value is entertainment, not prediction. Lottery is random.</li>
+          <li><strong>Competition Gap: 5/10 (↓1)</strong> — ถูกหวย already has most features. Gap narrower than believed.</li>
+          <li><strong>Build Feasibility: 8/10</strong> — Easy to build. No change.</li>
+          <li><strong>Our Advantage: 6/10 (↓1)</strong> — No lottery domain expertise. Casino bill dead. Ethical concerns.</li>
         </ul>
       </section>
-      <section class="research-highlight">
-        <h3>Total: 36/50 ✅ PASS</h3>
+      <section class="research-highlight" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);">
+        <h3 style="color:#f59e0b !important;">Revised: 33/50 ✅ PASS (with caveats)</h3>
       </section>
     </div>
   </div>
