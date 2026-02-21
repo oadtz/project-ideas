@@ -645,62 +645,128 @@
   <div class="research-modal-content">
     <button class="research-modal-close" onclick="this.closest('.research-modal').classList.remove('active')">×</button>
     <div class="research-modal-header">
-      <div class="research-badge">OPUS DEEP RESEARCH · FEB 2026</div>
+      <div class="research-badge">OPUS DEEP DIVE RESEARCH · FEB 21, 2026</div>
       <h2>MuteSell — AI Outbound Sales Agent for Thai B2B</h2>
+      <p style="color:#ef4444;font-weight:700;margin-top:0.5rem;">🚨 CRITICAL FINDING: LINE cannot do cold outbound — model pivot required</p>
     </div>
     <div class="research-modal-body">
-      <div class="research-section">
-        <h3>Market Size & Opportunity</h3>
+      <div class="research-section" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+        <h3 style="color:#ef4444;">🚨 Critical Discovery: LINE Cold Outbound is IMPOSSIBLE</h3>
         <ul>
-          <li><strong>AI SDR global market:</strong> Estimated $1B+ category. 11x raised $50M+ (valued at $350M+). Artisan raised $12M+. AiSDR has 250+ customers. Regie.ai, Reply.io, Instantly.ai all in this space.</li>
-          <li><strong>Thai SMEs:</strong> 3.2M registered SMEs in Thailand. Most rely on manual sales — LINE chat, walk-ins, referrals, trade shows.</li>
-          <li><strong>SDR salary in Thailand:</strong> ฿25,000-50,000/mo for a junior sales rep. MuteSell at ฿15K replaces this at 40-60% the cost, running 24/7.</li>
-          <li><strong>LINE dominance:</strong> 53M Thai LINE users. B2B sales in Thailand overwhelmingly happens via LINE Official Accounts, not cold email.</li>
-          <li><strong>Salesforce in Thailand:</strong> Active with Agentforce World Tour Bangkok 2026 planned. Shows Thai B2B is adopting CRM/sales automation.</li>
+          <li><strong>LINE API requires opt-in:</strong> Push messages can ONLY be sent to users who have already added your LINE Official Account as a friend. You CANNOT cold-message strangers.</li>
+          <li><strong>No user discovery:</strong> There is NO way to find a LINE user by phone number or email and message them. The user must initiate the relationship.</li>
+          <li><strong>Anti-spam enforcement:</strong> LINE explicitly prohibits mass messaging to same user, mass requests, and attempting to identify user attributes. Violations = account suspension.</li>
+          <li><strong>Impact on thesis:</strong> The original positioning ("AI cold outbound via LINE where Thai B2B happens") is fundamentally broken. Must pivot to email-first cold outreach with LINE as warm engagement channel.</li>
+          <li><strong>Score impact:</strong> Adjusted from 35/50 down to 33/50. Competition Gap reduced because email-first model is closer to what global AI SDRs already do.</li>
         </ul>
       </div>
+
       <div class="research-section">
-        <h3>Competitor Analysis</h3>
+        <h3>🔬 Deep Dive: AI SDR Market Analysis</h3>
         <ul>
-          <li><strong>11x (Alice):</strong> AI SDR. Raised $50M+. Enterprise-focused, $2K-5K+/mo estimated. English-only, email + LinkedIn. No LINE, no Thai. Claims $100M+ revenue generated for customers.</li>
-          <li><strong>Artisan (Ava):</strong> AI BDR. Raised $12M+. 300M+ B2B contact database. Email + LinkedIn. English-only. No LINE, no Thai language support.</li>
-          <li><strong>AiSDR:</strong> $900-2,500/mo. 250+ companies. 1,200-4,500 messages/mo. Email + LinkedIn. Quarterly billing. English-only. No LINE.</li>
-          <li><strong>Instantly.ai:</strong> Email automation, $37-97/mo. Lower tier — more tool than agent. Unlimited email accounts. No AI SDR agent, more DIY.</li>
-          <li><strong>Regie.ai:</strong> Enterprise AI prospecting. 220M+ contacts. Custom pricing. English/Western market only.</li>
-          <li><strong>Thai market:</strong> ZERO AI SDR tools for Thai language. Some basic chatbot builders (AIYA, Chatchamp) but these are customer support, not outbound sales.</li>
+          <li><strong>11x.ai (Alice + Julian):</strong> Raised $50M+ (valued ~$350M+). Enterprise AI SDR + Phone Agent. Claims >$100M revenue generated for customers. +30% meetings/AE, +80% meeting-to-opportunity. Email + calls. $2K-5K+/mo estimated. English-only.</li>
+          <li><strong>Artisan (Ava):</strong> YC-backed, raised $12M+. AI BDR with 300M+ B2B contacts database. Email + LinkedIn. Personalization waterfall with 10+ tone options. E-commerce & local business data. Custom volume-based pricing.</li>
+          <li><strong>AiSDR:</strong> 250+ companies. $900/mo (1,200 messages, ~3 meetings) to $2,500/mo (4,500 messages, ~11 meetings). Quarterly billing. Real metrics: 11.8% positive response rate, 26.6% email reply rate, 78.95% LinkedIn connection rate. HubSpot/Salesforce integration.</li>
+          <li><strong>Instantly.ai:</strong> $37-97/mo. Email-only. Unlimited accounts + warmup. More DIY tool than AI agent. Large user base, bottom of market.</li>
+          <li><strong>Regie.ai:</strong> $45M+ raised. 220M+ contacts. AI dialer + agents. 100+ intent signals. Enterprise pricing. Full-stack platform.</li>
+          <li><strong>Market verdict:</strong> PROVEN but EARLY. Real revenue, real customers, high valuations. Category is validated. Key risk: high churn (3-6 month customer lifecycles).</li>
         </ul>
       </div>
+
       <div class="research-section">
-        <h3>Risks</h3>
+        <h3>🇹🇭 Thai B2B Sales Culture Deep Dive</h3>
         <ul>
-          <li><strong>HIGH: LINE API limitations.</strong> LINE Official Account API has messaging quotas and anti-spam rules. Outbound cold messaging at scale may violate LINE's terms. Mitigate: Focus on warm outreach (people who've interacted with LINE OA), permission-based prospecting, email as primary cold channel with LINE for warm follow-up.</li>
-          <li><strong>MEDIUM: Thai SME price sensitivity.</strong> ฿9,900/mo is significant for small Thai businesses. Many SMEs operate on thin margins. Mitigate: Clear ROI messaging ("if we book you 3 meetings worth ฿50K+ in deals, ฿9.9K is nothing"), offer per-meeting pricing option, free trial.</li>
-          <li><strong>MEDIUM: Building Thai-quality AI messaging.</strong> Thai business communication has nuances (formality levels, relationship building, indirect selling). AI needs to get this right or messages feel spammy. Mitigate: Extensive prompt engineering with Thai sales experts, A/B testing, human review during early phase.</li>
-          <li><strong>LOW-MEDIUM: Global players could localize.</strong> 11x or Artisan could add Thai/LINE support. But: SEA localization is low priority for VC-backed companies focused on US/EU enterprise. We have 12-24 month runway before they'd consider this.</li>
-          <li><strong>LOW: Sales cycle for B2B SaaS in Thailand.</strong> Thai companies are slower to adopt new SaaS tools. 3-6 month sales cycles common. Mitigate: Direct sales approach, partnerships with Thai B2B communities, case studies with early adopters.</li>
+          <li><strong>Relationship-first:</strong> 60-70% of Thai B2B comes from referrals. "เป็นคนรู้จัก" (being someone who knows someone) is critical. Trust before transaction.</li>
+          <li><strong>Cold outreach is culturally weak:</strong> Pure American-style cold email blasting will likely fail. Thai business culture values warm introductions over cold pitches. Expected response rate: 3-5% (vs 10-15% globally).</li>
+          <li><strong>LINE usage:</strong> 53M Thai LINE users. LINE is used for B2B communication AFTER relationship established, not for cold outreach. LINE OA = customer engagement, not prospecting.</li>
+          <li><strong>LinkedIn:</strong> ~5-6M Thai accounts but very low daily usage. Meaningful only for multinational/tech companies. Nearly irrelevant for Thai SME sales.</li>
+          <li><strong>CRM adoption:</strong> Very low. Most Thai SMEs use LINE chats + Excel as "CRM." Salesforce = large enterprise only. HubSpot growing in mid-market. Local alternatives: R-CRM (Readyplanet), Wisible.</li>
+          <li><strong>Price sensitivity:</strong> ฿9,900/mo is significant for most Thai SMEs. ฿15K/mo = mid-market+ only. Need ฿4,900/mo starter tier.</li>
         </ul>
       </div>
+
       <div class="research-section">
-        <h3>Build Plan</h3>
+        <h3>📱 LINE API Technical Analysis</h3>
         <ul>
-          <li><strong>Week 1-4:</strong> Core AI engine — prospect research (scrape Thai business registries, LinkedIn), Thai message generation (fine-tune on Thai business communication patterns), email sending infrastructure.</li>
-          <li><strong>Week 5-8:</strong> LINE OA integration — connect to LINE Messaging API, build conversation flows for Thai B2B, reply handling, meeting booking.</li>
-          <li><strong>Week 9-12:</strong> Dashboard + analytics — campaign management, response tracking, CRM sync (HubSpot/Salesforce). Beta launch with 10-20 companies.</li>
-          <li><strong>Month 4-6:</strong> LinkedIn channel, paid launch, Thai B2B community marketing.</li>
-          <li><strong>Tech stack:</strong> Next.js dashboard, Python AI engine, LINE Messaging API, SendGrid/Mailgun for email, Claude/GPT for message generation, PostgreSQL, Redis queues.</li>
+          <li><strong>Push messages:</strong> Can send to friends at any time. Counts against monthly quota. User ID required (obtained when user adds OA as friend).</li>
+          <li><strong>Reply messages:</strong> Unlimited and FREE. Only triggered by user's incoming message.</li>
+          <li><strong>Narrowcast:</strong> Segment friends by age, gender, OS, region. Useful for targeting warm leads WITHIN friend list.</li>
+          <li><strong>Thailand pricing (estimated):</strong> Free: ~200-500 msgs/mo. Light: ~฿1,500-2,000/mo for 5,000 msgs. Standard: ~฿5,000-8,000/mo for 30,000+ msgs.</li>
+          <li><strong>Rate limits:</strong> 100,000 requests/minute (generous). Up to 5 message objects per request.</li>
+          <li><strong>Prohibited:</strong> Mass messages to same user, mass requests, identifying user attributes. Violations = suspension.</li>
+          <li><strong>Verdict:</strong> LINE is excellent for warm engagement/nurturing. IMPOSSIBLE for cold outbound. Must pivot model.</li>
         </ul>
       </div>
-      <div class="research-highlight">
-        <h3>Score: 35/50 — PASS ✅</h3>
+
+      <div class="research-section">
+        <h3>🏢 Thai Competition Landscape</h3>
+        <ul>
+          <li><strong>AI outbound tools in Thailand:</strong> ZERO. Confirmed gap. No Thai-language AI SDR exists anywhere.</li>
+          <li><strong>Thai chatbot builders (AIYA, Chatchamp):</strong> Inbound customer support only. No outbound capabilities.</li>
+          <li><strong>Thai CRMs (R-CRM, Wisible, MyCustomer):</strong> Contact management only. No outbound automation.</li>
+          <li><strong>Global players in Thailand:</strong> Salesforce active (enterprise). HubSpot growing (mid-market). None of the AI SDR startups have SEA presence.</li>
+          <li><strong>Threat assessment:</strong> 11x/Artisan entering Thailand = very unlikely in 12-24mo. Local copycat = possible in 6-12mo.</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3>💰 Cost & ROI Analysis</h3>
+        <ul>
+          <li><strong>Monthly operating costs:</strong> ฿17,500-44,000/mo (~$550-1,375/mo) including LLM inference, email infrastructure, LINE OA, hosting, data enrichment.</li>
+          <li><strong>Break-even:</strong> 3 paying customers (excl. founder salary). 25 customers (with ฿80K founder salary equivalent).</li>
+          <li><strong>Conservative 18mo:</strong> 80 customers, ฿960K MRR, ~฿8.1M cumulative revenue, ~฿4.6M net ($144K).</li>
+          <li><strong>Moderate 18mo:</strong> 180 customers, ฿2.7M MRR ($1M ARR), ~฿19.8M cumulative revenue, ~฿14.8M net ($463K).</li>
+          <li><strong>Aggressive 18mo:</strong> 400 customers, ฿7.2M MRR ($2.7M ARR), ~฿45M cumulative revenue, ~฿37M net ($1.16M).</li>
+          <li><strong>Unit economics:</strong> LTV/CAC ratio 4.8-9.6x ✅. Payback period 1.25-2.5 months ✅. Gross margin ~75-80% ✅.</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3>⚠️ Risks (Updated with Deep Dive Findings)</h3>
+        <ul>
+          <li><strong>🔴 CRITICAL: LINE cold outbound impossible.</strong> Confirmed — LINE API requires opt-in. Must pivot to email-first model. Reduces differentiation from global AI SDRs.</li>
+          <li><strong>🟡 HIGH: Thai culture vs cold outreach.</strong> Thai B2B is relationship-first. Cold email response rates expected 3-5% (low). Mitigate: Warm-cold hybrid messaging, value-first approach, reference mutual connections.</li>
+          <li><strong>🟡 HIGH: Thai SME price sensitivity.</strong> ฿15K/mo too high for most SMEs. Mitigate: Add ฿4,900/mo starter tier. Focus on mid-market+ companies.</li>
+          <li><strong>🟡 HIGH: Complex platform build.</strong> Full AI SDR = 6+ months. Mitigate: Email-only MVP in 6-8 weeks. Add LINE/LinkedIn later.</li>
+          <li><strong>🟡 MEDIUM: No Thai B2B contact database.</strong> Thailand lacks a ZoomInfo equivalent. Building one is hard but could be the real moat.</li>
+          <li><strong>🟡 MEDIUM: Low founder-market fit (6/10).</strong> No B2B sales background. Mitigate: Hire Thai sales advisor.</li>
+          <li><strong>🟢 LOW: Global players enter Thailand.</strong> 12-24mo window. They're focused on US/EU enterprise.</li>
+        </ul>
+      </div>
+
+      <div class="research-section">
+        <h3>🛠️ Revised Build Plan</h3>
+        <ul>
+          <li><strong>Week 1-2:</strong> Thai prospect research engine (DBD scraping, LinkedIn data, Thai directories).</li>
+          <li><strong>Week 3-4:</strong> AI Thai message generator (prompt engineering for business Thai, personalization pipeline).</li>
+          <li><strong>Week 5-6:</strong> Email sending infrastructure (SendGrid, domain warmup, sequence automation).</li>
+          <li><strong>Week 7-8:</strong> Dashboard + analytics + reply inbox. MVP LAUNCH with 10-20 beta companies.</li>
+          <li><strong>Week 9-16:</strong> LINE OA warm channel integration. CRM sync (HubSpot/Salesforce). A/B testing.</li>
+          <li><strong>Month 5-6:</strong> LinkedIn automation. Thai B2B database. Full platform.</li>
+          <li><strong>Tech stack:</strong> Next.js, Python/FastAPI AI engine, SendGrid, LINE Messaging API, PostgreSQL (Supabase), Redis queues, Claude/GPT-4.</li>
+        </ul>
+      </div>
+
+      <div class="research-highlight" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);">
+        <h3>Revised Score: 33/50 — CONDITIONAL PASS ✅</h3>
+        <p style="color:#c8c8d8;font-size:0.85rem;margin-top:0.5rem;">Down from 35/50 after LINE limitation discovery. Still viable with model pivot.</p>
       </div>
       <div class="research-section">
-        <h3>Scoring Breakdown</h3>
+        <h3>Revised Scoring Breakdown</h3>
         <ul>
-          <li><strong>Market: 8/10</strong> — AI SDR is a proven $1B+ category. 11x valued at $350M+. Thai B2B market is 3.2M SMEs. LINE as a channel creates a genuine localization moat. Deducting 2 for Thai SME price sensitivity and slower B2B adoption.</li>
-          <li><strong>Problem: 7/10</strong> — Thai SMEs genuinely struggle with outbound sales. Most rely on word-of-mouth and LINE chat. Hiring an SDR costs ฿25-50K/mo and is hard to scale. Pain is real. Deducting 3 because many Thai SMEs don't know they have this problem (education required) and inbound/referral works "well enough" for many.</li>
-          <li><strong>Competition Gap: 8/10</strong> — ZERO Thai-language AI SDR tools. Global players are 100% English/email-centric. LINE as a B2B sales channel is completely unserved. The gap is massive and structural. Deducting 2 because global players COULD localize (unlikely in 12mo but possible in 24mo).</li>
-          <li><strong>Build Feasibility: 6/10</strong> — AI message generation is proven tech. LINE API integration is doable. But: building a full AI SDR platform is complex (prospecting, multi-channel outreach, reply handling, meeting booking, CRM sync, analytics). This is a 6-month MVP minimum. Deducting 4 for significant engineering complexity, LINE API anti-spam challenges, and Thai NLP quality requirements.</li>
-          <li><strong>Our Advantage: 6/10</strong> — We can build it technically (AI agent team, cloud infra). Thai language/market knowledge. But: no existing B2B sales network, no sales community access, and Thanapat's blockchain/CTO background isn't directly relevant to sales tools. Deducting 4 for low founder-market fit in sales domain and no distribution advantage in B2B.</li>
+          <li><strong>Market: 7/10</strong> (was 8) — AI SDR proven $1B+ category. But Thai SME price sensitivity and slow B2B SaaS adoption reduce addressable market. Need lower entry price.</li>
+          <li><strong>Problem: 7/10</strong> (unchanged) — Pain is real but education-heavy. Most Thai SMEs don't know they need outbound automation.</li>
+          <li><strong>Competition Gap: 7/10</strong> (was 8) — Still zero Thai AI SDR competitors. But LINE cold outbound broken = less differentiation from global email-centric players.</li>
+          <li><strong>Build Feasibility: 6/10</strong> (unchanged) — Complex multi-channel platform. 6-8 week MVP (email-only), 6 months for full product.</li>
+          <li><strong>Our Advantage: 6/10</strong> (unchanged) — Thai market knowledge, AI building capability. But low founder-market fit in sales domain, no B2B network.</li>
+        </ul>
+      </div>
+
+      <div class="research-section" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:1.25rem;">
+        <h3 style="color:#10b981;">✅ Recommended Next Step</h3>
+        <ul>
+          <li><strong>Manual validation test (1 week):</strong> Send 100 personalized Thai cold emails manually to B2B prospects. Measure response rate. If >3%, proceed to build. If <1%, kill the idea.</li>
+          <li><strong>Pre-sell test:</strong> Can we find 5 Thai B2B companies willing to pay ฿5K+/mo for this? If yes, build. If no, reconsider.</li>
         </ul>
       </div>
     </div>
