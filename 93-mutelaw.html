@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteLaw — AI Thai Legal Assistant for SMEs & Citizens</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --bg2: #0b100c;
+    --surface: #0f1610;
+    --surface2: #141e15;
+    --surface3: #1a261b;
+    --border: rgba(13,148,136,0.15);
+    --border2: rgba(13,148,136,0.28);
+    --text: #f0f5f0;
+    --text2: #c0d0c0;
+    --muted: #708070;
+    --muted2: #526052;
+    --primary: #0d9488;
+    --primary-light: #2dd4bf;
+    --primary-pale: rgba(13,148,136,0.08);
+    --primary-glow: rgba(13,148,136,0.22);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(13,148,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, rgba(13,148,136,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    padding: 1.1rem 2rem;
+    background: rgba(10,15,10,0.85);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700;
+    padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2);
+    color: var(--primary-light); background: var(--primary-pale);
+  }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--primary-light); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 99px; }
+
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(13,148,136,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+
+  .alert-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+  .alert-title { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--secondary-light); font-weight: 700; margin-bottom: 0.5rem; }
+
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+
+  .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+  @media(max-width:900px) { .pricing-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:500px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; white-space: nowrap; }
+  .score-table .bar-cell { width: 120px; padding-right: 0; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--secondary)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--text); background: var(--surface2); }
+
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+
+  .revenue-block { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:1.5rem; }
+  .revenue-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .revenue-row:last-child { border-bottom:none; font-weight:700; color:var(--primary-light); }
+  .revenue-val { font-family:'Space Mono',monospace; color:var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color:var(--primary-light); font-size:1rem; }
+
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .cta-section h2 { font-size:2rem; margin-bottom:1rem; }
+  .cta-section p { color:var(--text2); max-width:520px; margin:0 auto 2rem; }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #93</span>
+  <span class="nav-badge en">AI LEGAL TECH</span>
+  <span class="nav-badge th">เทคโนโลยีกฎหมาย AI</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">⚖️ LEGAL TECH · AI · PDPA</span>
+      <span class="hero-tag th">⚖️ Legal Tech · AI · PDPA</span>
+      <span class="idea-num">SPRINT #93 — FEB 21, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Law</span></span><span class="th">Mute<span class="accent">Law</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Thai Legal Assistant for SMEs & Citizens</span>
+      <span class="th">AI ที่ปรึกษากฎหมายไทยสำหรับ SME และประชาชน</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai lawyers charge ฿3,000–15,000 per consultation. Most Thais avoid legal help entirely — until it's too late. Thai PDPA (2022) mandates compliance for every business collecting customer data; violations carry ฿5M fines + criminal penalties. MuteLaw: chat with an AI trained on Thai law via LINE OA, get instant answers on labor rights, PDPA compliance, contracts, disputes — for ฿499/mo instead of ฿15,000/consultation.</span>
+      <span class="th">ทนายความไทยคิด ฿3,000–15,000 ต่อการปรึกษา คนไทยส่วนใหญ่หลีกเลี่ยงความช่วยเหลือทางกฎหมาย — จนกว่าจะสายเกินไป PDPA ไทย (2565) บังคับทุกธุรกิจที่เก็บข้อมูลลูกค้า ฝ่าฝืน = โทษปรับ ฿5M + คุก MuteLaw: คุยกับ AI ที่เข้าใจกฎหมายไทยผ่าน LINE OA รู้สิทธิ์แรงงาน PDPA สัญญา ข้อพิพาท — ฿499/เดือน แทน ฿15,000/ครั้ง</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">3M+</span><span class="stat-label en">businesses must comply PDPA</span><span class="stat-label th">ธุรกิจต้อง comply PDPA</span></div>
+      <div class="stat"><span class="stat-val">฿5M</span><span class="stat-label en">max PDPA civil fine</span><span class="stat-label th">โทษปรับ PDPA สูงสุด</span></div>
+      <div class="stat"><span class="stat-val">฿15K</span><span class="stat-label en">avg lawyer consultation</span><span class="stat-label th">ปรึกษาทนาย avg</span></div>
+      <div class="stat"><span class="stat-val">$3B+</span><span class="stat-label en">Harvey.ai valuation</span><span class="stat-label th">มูลค่า Harvey.ai</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">39</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:78%"></div></div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.4rem;font-family:'Space Mono',monospace;">TIER-HIGH ✅</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REGULATORY URGENCY ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">⚠️ REGULATORY FORCING FUNCTION</div>
+    <div class="section-label th">⚠️ บังคับโดยกฎหมาย</div>
+    <h2>
+      <span class="en">Thai PDPA: Every Business Must Comply — or Face Criminal Penalties</span>
+      <span class="th">PDPA ไทย: ทุกธุรกิจต้อง comply — หรือรับโทษอาญา</span>
+    </h2>
+    <div class="alert-box">
+      <div class="alert-title">⚠️ THAI PDPA (พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล BE 2562) — EFFECTIVE JUNE 2022</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Thailand's Personal Data Protection Act applies to <strong>every business</strong> that collects, uses, or discloses personal data of Thai residents — that includes every shop with a LINE OA, every restaurant collecting delivery addresses, every SME with customer lists. Penalties: <strong>civil fines up to ฿5M per violation</strong>, criminal penalties up to <strong>1 year imprisonment</strong>. Compliance consultants charge <strong>฿50,000–500,000</strong> per company. 3M+ Thai businesses need PDPA compliance help. 90% have no idea if they're compliant.</span>
+        <span class="th">PDPA ไทยใช้กับ<strong>ทุกธุรกิจ</strong>ที่เก็บ ใช้ หรือเปิดเผยข้อมูลส่วนบุคคลของคนไทย รวมถึงร้านค้าที่มี LINE OA ร้านอาหารที่เก็บที่อยู่ส่งอาหาร SME ที่มีรายชื่อลูกค้า โทษ: <strong>ปรับแพ่งสูงสุด ฿5M ต่อการละเมิด</strong> โทษอาญา<strong>จำคุกสูงสุด 1 ปี</strong> ที่ปรึกษา compliance คิด <strong>฿50,000–500,000</strong> ต่อบริษัท ธุรกิจไทย 3M+ ต้องการความช่วยเหลือ PDPA 90% ไม่รู้ว่าตัวเอง comply หรือเปล่า</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE PAIN ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN POINTS</div>
+    <div class="section-label th">ปัญหาที่แท้จริง</div>
+    <h2>
+      <span class="en">Thai People Are Legally Vulnerable — and Afraid to Ask for Help</span>
+      <span class="th">คนไทยเปราะบางทางกฎหมาย — และกลัวที่จะขอความช่วยเหลือ</span>
+    </h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">💰</div>
+      <div class="pain-text">
+        <h3 class="en">Lawyers Cost ฿3,000–15,000 Per Consultation — Too Expensive for Most</h3>
+        <h3 class="th">ทนายความคิด ฿3,000–15,000 ต่อการปรึกษา — แพงเกินไปสำหรับคนทั่วไป</h3>
+        <p class="en">Thai lawyers charge ฿1,500–5,000/hour for basic consultations; ฿3,000–15,000 for a single advice session. For a Thai worker earning ฿25,000/mo, that's 12–60% of their monthly salary for one conversation. Result: most Thais suffer legal violations silently — unpaid wages, illegal contract terms, landlord disputes — rather than pay for legal help.</p>
+        <p class="th">ทนายความไทยคิด ฿1,500–5,000/ชั่วโมง ฿3,000–15,000 ต่อการปรึกษาครั้งเดียว สำหรับพนักงานที่ได้ ฿25,000/เดือน = 12–60% ของเงินเดือน ผล: คนไทยส่วนใหญ่ทนกับการละเมิดทางกฎหมายเงียบๆ ค่าจ้างค้างจ่าย สัญญาผิดกฎหมาย ข้อพิพาทกับเจ้าของบ้าน แทนที่จะจ่ายเงินขอความช่วยเหลือ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📋</div>
+      <div class="pain-text">
+        <h3 class="en">Thai SMEs Don't Know Their Labor Law Obligations</h3>
+        <h3 class="th">SME ไทยไม่รู้พันธกรณีกฎหมายแรงงาน</h3>
+        <p class="en">Thai Labor Protection Act (พ.ร.บ. คุ้มครองแรงงาน) is routinely violated by employers who simply don't know the rules — overtime rates, severance pay (≥1 year = 30 days pay), sick leave (30 days/year paid), maternity leave (98 days). Labor tribunals receive 50,000+ cases annually. 70% of Thai workers in an ECOT survey didn't know their basic rights. SMEs face retroactive severance claims of ฿100K–1M when they fire incorrectly.</p>
+        <p class="th">พ.ร.บ. คุ้มครองแรงงานถูกละเมิดเป็นประจำโดยนายจ้างที่ไม่รู้กฎ อัตราค่าล่วงเวลา ค่าชดเชย (≥1 ปี = 30 วัน) ลาป่วย (30 วัน/ปี) ลาคลอด (98 วัน) ศาลแรงงานรับคดี 50,000+ คดี/ปี SME เผชิญการเรียกร้องค่าชดเชย ฿100K–1M เมื่อเลิกจ้างผิดวิธี</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📄</div>
+      <div class="pain-text">
+        <h3 class="en">Thai Contracts Are Copy-Pasted from the Internet — Full of Landmines</h3>
+        <h3 class="th">สัญญาไทยคัดลอกจากอินเทอร์เน็ต — เต็มไปด้วยกับดัก</h3>
+        <p class="en">Thai SMEs download employment contracts, service agreements, and lease agreements from Google. These templates are often missing critical Thai law requirements, contain illegal clauses (e.g., "no severance pay" is void under Labor Protection Act), or create unintended liabilities. A ฿500 contract template can cost ฿200,000 in labor tribunal losses.</p>
+        <p class="th">SME ไทยดาวน์โหลดสัญญาจ้างงาน สัญญาบริการ สัญญาเช่าจาก Google template เหล่านี้มักขาดข้อกำหนดกฎหมายไทยที่สำคัญ มีข้อกำหนดผิดกฎหมาย (เช่น "ไม่มีค่าชดเชย" = โมฆะ) หรือสร้างความรับผิดชอบโดยไม่ตั้งใจ template ฿500 อาจทำให้เสียเงิน ฿200,000 จากคดีแรงงาน</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🏠</div>
+      <div class="pain-text">
+        <h3 class="en">Property & Consumer Disputes Are Never Resolved</h3>
+        <h3 class="th">ข้อพิพาทที่ดินและผู้บริโภคไม่มีทางออก</h3>
+        <p class="en">Thai Consumer Protection Board handles 100,000+ complaints annually. Landlord-tenant disputes (illegal deposit deductions, premature eviction) and condo scams are the most common. Most victims don't pursue claims because they don't know the process, can't afford a lawyer, and assume "the system doesn't work for ordinary people." It does — but only if you know the law.</p>
+        <p class="th">สคบ. รับเรื่องร้องเรียน 100,000+ คดี/ปี ข้อพิพาทผู้เช่า-เจ้าของ (หัก deposit ผิดกฎหมาย ขับไล่ก่อนสัญญา) คดีคอนโดโกงเป็นเรื่องที่พบบ่อยที่สุด เหยื่อส่วนใหญ่ไม่ฟ้อง เพราะไม่รู้กระบวนการ จ่ายทนายไม่ได้ และคิดว่า "ระบบไม่ช่วยคนธรรมดา" จริงๆ มันช่วยได้ แต่ต้องรู้กฎหมาย</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUTION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2>
+      <span class="en">MuteLaw: Harvey.ai for Thailand — on LINE OA</span>
+      <span class="th">MuteLaw: Harvey.ai สำหรับไทย — บน LINE OA</span>
+    </h2>
+    <div class="two-col" style="margin-bottom:2rem;">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Law RAG: Answers Grounded in Actual Thai Statutes</h3>
+            <h3 class="th">Thai Law RAG: คำตอบอ้างอิงกฎหมายไทยจริง</h3>
+            <p class="en">AI trained on Thai Civil and Commercial Code, Labor Protection Act, PDPA, Revenue Code, Land Code, Consumer Protection Act, and 10,000+ Thai Supreme Court opinions. Every answer cites the specific statute and section. Not generic AI legal advice — Thai-law specific, section-cited answers.</p>
+            <p class="th">AI เรียนรู้จากประมวลกฎหมายแพ่งและพาณิชย์ พ.ร.บ. คุ้มครองแรงงาน PDPA ประมวลรัษฎากร ประมวลกฎหมายที่ดิน พ.ร.บ. คุ้มครองผู้บริโภค และคำพิพากษาฎีกา 10,000+ คดี คำตอบทุกข้ออ้างอิงมาตรากฎหมายที่ชัดเจน</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">PDPA Compliance Checker — Instant Audit via LINE</h3>
+            <h3 class="th">ตรวจ PDPA Compliance — ผ่าน LINE ทันที</h3>
+            <p class="en">Answer 20 questions via LINE → AI generates your PDPA compliance scorecard: what you're doing right, what's a violation risk, specific remediation steps. Replaces ฿50K–500K compliance consultant with a ฿2,999/mo subscription. Privacy Policy generator included (Thai-language, PDPA-compliant template customized to your business).</p>
+            <p class="th">ตอบ 20 คำถามผ่าน LINE → AI สร้าง PDPA scorecard: ทำถูกต้องอะไร ความเสี่ยงการละเมิดอะไร ขั้นตอนแก้ไขที่ชัดเจน แทนที่ที่ปรึกษา ฿50K–500K ด้วย subscription ฿2,999/เดือน รวม Privacy Policy generator (ภาษาไทย แก้ไขตามธุรกิจคุณ)</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Labor Rights Advisor (สิทธิ์แรงงาน)</h3>
+            <h3 class="th">ที่ปรึกษาสิทธิ์แรงงานไทย</h3>
+            <p class="en">Workers ask: "My employer docks pay for being 5 minutes late — is this legal?" AI answers: "Under Section 76 of the Labor Protection Act, wage deductions are only allowed for..." Workers get their rights explained in plain Thai, with specific sections and next steps (file at Labor Area Office → free process). Employers get compliance guidance.</p>
+            <p class="th">พนักงานถาม: "นายจ้างหักเงินเดือนเพราะมาสาย 5 นาที — ถูกกฎหมายไหม?" AI ตอบ: "ตาม มาตรา 76 พ.ร.บ. คุ้มครองแรงงาน การหักค่าจ้างทำได้เฉพาะกรณี..." พนักงานเข้าใจสิทธิ์ตัวเองเป็นภาษาไทย พร้อมขั้นตอนต่อไป (ยื่นสำนักงานสวัสดิการแรงงาน — ฟรี)</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Contract Generator & Reviewer</h3>
+            <h3 class="th">สร้างและตรวจสัญญาไทย</h3>
+            <p class="en">Generate Thai-language contracts: employment contracts (with correct severance clauses), NDA, service agreements, lease agreements, loan agreements. Or upload your existing contract → AI flags illegal clauses, missing Thai law requirements, unfair terms. 15 minutes for a legally sound Thai contract vs. ฿10,000–50,000 lawyer fees.</p>
+            <p class="th">สร้างสัญญาภาษาไทย: สัญญาจ้างงาน (มีข้อค่าชดเชยถูกต้อง) NDA สัญญาบริการ สัญญาเช่า สัญญากู้ยืม หรืออัปโหลดสัญญาที่มีอยู่ → AI ชี้ข้อกำหนดผิดกฎหมาย ข้อที่ขาด ข้อที่ไม่เป็นธรรม 15 นาทีได้สัญญาที่ถูกต้องตามกฎหมาย แทนค่าทนาย ฿10,000–50,000</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Consumer Rights Claim Assistant</h3>
+            <h3 class="th">ผู้ช่วยร้องเรียนคุ้มครองผู้บริโภค</h3>
+            <p class="en">Describe your dispute → AI identifies the relevant law (Consumer Protection Act, Consumer Case Procedure Act) → drafts a formal complaint letter to สคบ./Consumer Court → explains the process step-by-step (fee: ฿0–small claims court ฿1,000). Turns "I was scammed" into an actionable legal claim in 10 minutes.</p>
+            <p class="th">อธิบายข้อพิพาท → AI ระบุกฎหมายที่เกี่ยวข้อง → ร่างหนังสือร้องเรียนอย่างเป็นทางการถึง สคบ./ศาลผู้บริโภค → อธิบายขั้นตอนทีละขั้น (ค่าธรรมเนียม ฿0–คดีผู้บริโภค ฿1,000) เปลี่ยน "โดนโกง" ให้กลายเป็นคำร้องทางกฎหมายใน 10 นาที</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Company Incorporation Guide (BOJ + DBD)</h3>
+            <h3 class="th">คู่มือจดทะเบียนบริษัท (BOJ + DBD)</h3>
+            <p class="en">AI guides you through Thai company registration: sole proprietorship vs. limited company, minimum capital requirements, mandatory registrations (Revenue Dept, Social Security), compliance calendar. Startup founders waste 3 weeks navigating DBD (กรมพัฒนาธุรกิจการค้า) alone. MuteLaw cuts it to 2 days with step-by-step guidance.</p>
+            <p class="th">AI แนะนำการจดทะเบียนบริษัทไทย: เจ้าของคนเดียวกับบจ. ทุนขั้นต่ำ การจดทะเบียนภาคบังคับ (กรมสรรพากร ประกันสังคม) ปฏิทิน compliance ผู้ก่อตั้ง startup เสียเวลา 3 สัปดาห์กับ DBD เพียงอย่างเดียว MuteLaw ย่อเหลือ 2 วัน</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MARKET ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">MARKET DATA</div>
+    <div class="section-label th">ข้อมูลตลาด</div>
+    <h2>
+      <span class="en">Legal Services: A Trillion-Dollar Global Category, Untouched in Thai</span>
+      <span class="th">บริการกฎหมาย: หมวดสินค้า $1 ล้านล้านโลก ยังไม่มีใครทำในไทย</span>
+    </h2>
+    <div class="three-col" style="margin-bottom:2rem;">
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3 class="en">Global Legal Services: $1 Trillion+</h3>
+        <h3 class="th">บริการกฎหมายโลก: $1 ล้านล้าน+</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Global legal services market exceeds $1 trillion annually. Legal tech subset: $25B+ growing at 12% CAGR. AI legal tools: Harvey.ai ($80M raised, $3B+ valuation), Clio ($250M funding), Lawgeex ($120M). DoNotPay proved consumer legal AI at mass scale. The category is proven globally — Thailand is completely unserved in Thai language.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ตลาดบริการกฎหมายโลกเกิน $1 ล้านล้าน/ปี ส่วน Legal Tech: $25B+ เติบโต 12% CAGR Harvey.ai ($80M, $3B+) Clio ($250M) Lawgeex ($120M) DoNotPay พิสูจน์ consumer legal AI ในวงกว้าง หมวดนี้ได้รับการพิสูจน์แล้วทั่วโลก แต่ไทยยังไม่มีใครทำในภาษาไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🇹🇭</div>
+        <h3 class="en">Thailand: 70M People + 3M Businesses</h3>
+        <h3 class="th">ไทย: 70M คน + 3M ธุรกิจ</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">70M potential users for individual tier. 3M+ registered businesses for SME tier. 75,000+ registered Thai lawyers (Thai Lawyers Council) — each serving perhaps 10–50 ongoing clients — leaves hundreds of thousands of legal situations unserved. PDPA compliance alone creates immediate urgency for 3M+ businesses.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ผู้ใช้ที่เป็นไปได้ 70M คนสำหรับ tier บุคคล ธุรกิจจดทะเบียน 3M+ สำหรับ tier SME ทนายความไทยจดทะเบียน 75,000+ คน แต่ละคนให้บริการลูกค้า 10–50 รายที่กำลังดำเนินอยู่ ทิ้งสถานการณ์ทางกฎหมายนับแสนที่ไม่มีใครรับ PDPA compliance เพียงอย่างเดียวสร้างความเร่งด่วนทันทีสำหรับ 3M+ ธุรกิจ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Proven Willingness to Pay</h3>
+        <h3 class="th">พิสูจน์ความเต็มใจจ่าย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Thais already pay: ฿3,000–15,000 for a single lawyer consultation, ฿50K–500K for PDPA compliance consulting, ฿20K–100K for company registration with a lawyer, ฿5K–50K for contract drafting. MuteLaw at ฿499/mo for individuals or ฿2,999/mo for SMEs delivers the same guidance at 1–5% of the cost. The willingness to pay ceiling is already set high.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">คนไทยจ่ายอยู่แล้ว: ฿3,000–15,000 ต่อการปรึกษาทนาย ฿50K–500K สำหรับที่ปรึกษา PDPA ฿20K–100K สำหรับจดทะเบียนบริษัท ฿5K–50K สำหรับร่างสัญญา MuteLaw ฿499/เดือน (บุคคล) หรือ ฿2,999/เดือน (SME) ให้คำแนะนำเดิมในราคา 1–5% เพดานความเต็มใจจ่ายสูงอยู่แล้ว</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2>
+      <span class="en">Zero Thai-Language Legal AI for the Public Exists</span>
+      <span class="th">ไม่มี AI กฎหมายภาษาไทยสำหรับประชาชนเลย</span>
+    </h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>PLATFORM</th>
+            <th>Thai Language</th>
+            <th>For Public/SME</th>
+            <th>Thai Law RAG</th>
+            <th>LINE Integration</th>
+            <th>PromptPay</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Harvey.ai</strong></td>
+            <td class="no">❌ English only</td>
+            <td class="no">❌ Law firms only</td>
+            <td class="no">❌ US/UK law</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="no">$10K+/mo enterprise</td>
+          </tr>
+          <tr>
+            <td><strong>LawcruxAI (TH)</strong></td>
+            <td class="yes">✅ Thai</td>
+            <td class="no">❌ Lawyers only</td>
+            <td class="yes">✅ Thai law</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="partial">฿3K–10K/mo</td>
+          </tr>
+          <tr>
+            <td><strong>ChatGPT / Claude</strong></td>
+            <td class="partial">⚡ Partial Thai</td>
+            <td class="partial">⚡ Generic answers</td>
+            <td class="no">❌ No Thai law RAG</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="partial">$20/mo (not specialized)</td>
+          </tr>
+          <tr>
+            <td><strong>Traditional lawyers</strong></td>
+            <td class="yes">✅ Thai</td>
+            <td class="yes">✅ For public</td>
+            <td class="yes">✅ Full expertise</td>
+            <td class="no">❌ No</td>
+            <td class="yes">✅ Cash/transfer</td>
+            <td class="no">฿3K–15K/consultation</td>
+          </tr>
+          <tr>
+            <td><strong>Legal aid (กรมคุ้มครองสิทธิ์)</strong></td>
+            <td class="yes">✅ Thai</td>
+            <td class="yes">✅ For public</td>
+            <td class="partial">⚡ Limited</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="yes">Free but weeks wait</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>MuteLaw ✦</strong></td>
+            <td class="yes">✅ Thai-native</td>
+            <td class="yes">✅ SME + individual</td>
+            <td class="yes">✅ Full Thai law RAG</td>
+            <td class="yes">✅ LINE-first</td>
+            <td class="yes">✅ PromptPay</td>
+            <td class="yes">฿499–9,999/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2>
+      <span class="en">3-Tier Subscription + Per-Document Generation</span>
+      <span class="th">subscription 3 ระดับ + สร้างเอกสารต่อชิ้น</span>
+    </h2>
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">INDIVIDUAL</div>
+        <div class="pricing-tier th">บุคคล</div>
+        <div class="pricing-price">฿499</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Unlimited legal Q&A (Thai law). Labor rights, consumer rights, tenancy disputes. 2 document templates/mo. LINE chatbot access.</div>
+        <div class="pricing-desc th">ถามกฎหมายไทยไม่จำกัด สิทธิ์แรงงาน สิทธิ์ผู้บริโภค ข้อพิพาทผู้เช่า template 2 ฉบับ/เดือน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">SME</div>
+        <div class="pricing-tier th">SME</div>
+        <div class="pricing-price">฿2,999</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Everything + PDPA compliance checker, employment contract generator, 10 document templates/mo, annual compliance calendar, 3 HR seats.</div>
+        <div class="pricing-desc th">ทุกอย่าง + ตรวจ PDPA สร้างสัญญาจ้าง template 10 ฉบับ/เดือน ปฏิทิน compliance 3 HR seats</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">LAW FIRM</div>
+        <div class="pricing-tier th">สำนักงานกฎหมาย</div>
+        <div class="pricing-price">฿9,999</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">AI research assistant for Thai lawyers. Case law search, statute lookup, draft generation. Saves 20+ hours/week for junior lawyers. White-label option.</div>
+        <div class="pricing-desc th">AI research assistant สำหรับทนาย ค้นหาคำพิพากษา ค้นกฎหมาย สร้างร่าง ประหยัด 20+ ชม./สัปดาห์ สำหรับทนายจูเนียร์</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">PER DOCUMENT</div>
+        <div class="pricing-tier th">ต่อเอกสาร</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit en">/document (no subscription)</div>
+        <div class="pricing-unit th">/เอกสาร (ไม่ต้อง subscribe)</div>
+        <div class="pricing-desc en">Generate one legal document: employment contract, NDA, lease agreement, service agreement, loan agreement. Pay once, get a Thai-law-compliant template.</div>
+        <div class="pricing-desc th">สร้างเอกสารกฎหมายหนึ่งฉบับ สัญญาจ้าง NDA สัญญาเช่า สัญญาบริการ สัญญากู้ จ่ายครั้งเดียวได้ template ถูกกฎหมาย</div>
+      </div>
+    </div>
+
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE MATH</p>
+      <div class="revenue-row">
+        <span class="en">5,000 Individual (฿499/mo)</span>
+        <span class="th">Individual 5,000 คน (฿499/เดือน)</span>
+        <span class="revenue-val">฿2.5M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">500 SME (฿2,999/mo)</span>
+        <span class="th">SME 500 บริษัท (฿2,999/เดือน)</span>
+        <span class="revenue-val">฿1.5M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">30 Law Firms (฿9,999/mo)</span>
+        <span class="th">สำนักงานกฎหมาย 30 แห่ง (฿9,999/เดือน)</span>
+        <span class="revenue-val">฿300K/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Per-document (200/mo × ฿299)</span>
+        <span class="th">ต่อเอกสาร (200/เดือน × ฿299)</span>
+        <span class="revenue-val">฿60K/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en"><strong>Total MRR (Year 1 exit rate)</strong></span>
+        <span class="th"><strong>MRR รวม (ปลายปีที่ 1)</strong></span>
+        <span class="revenue-val"><strong>฿4.36M/mo = ฿52M ARR</strong></span>
+      </div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;">
+        <span class="en">Conservative: 2K individual + 300 SME + 20 law firms = ฿2M MRR = ฿24M ARR</span>
+        <span class="th">อนุรักษ์นิยม: Individual 2K + SME 300 + สำนักงาน 20 = ฿2M MRR = ฿24M ARR</span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GTM ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">GO-TO-MARKET</div>
+    <div class="section-label th">กลยุทธ์เข้าตลาด</div>
+    <h2>
+      <span class="en">PDPA Fear Creates Immediate Distribution</span>
+      <span class="th">ความกลัว PDPA สร้าง Distribution ทันที</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">⚠️</div>
+        <h3 class="en">PDPA Urgency Marketing</h3>
+        <h3 class="th">Marketing ผ่านความกลัว PDPA</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Every Thai SME LINE group, Facebook SME group, and HR community is already discussing PDPA compliance anxiety. Targeted ads: "คุณมีความเสี่ยง PDPA ไหม? ตรวจฟรีผ่าน LINE" (Are you PDPA compliant? Free check via LINE). PDPA fear = immediate organic distribution.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ทุกกลุ่ม LINE SME กลุ่ม Facebook SME และชุมชน HR กำลังพูดถึงความวิตกเรื่อง PDPA compliance โฆษณาตรง: "คุณมีความเสี่ยง PDPA ไหม? ตรวจฟรีผ่าน LINE" ความกลัว PDPA = distribution organic ทันที</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3 class="en">Thai HR & Legal Facebook Groups (200K+ members)</h3>
+        <h3 class="th">กลุ่ม Facebook HR & กฎหมายไทย (200K+ สมาชิก)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Facebook groups: "HR Thailand" (78K+), "กฎหมายน่ารู้" (Legal Knowledge, 500K+ members), "HR มือโปร" — all see daily legal questions. Post answers, establish authority, link to MuteLaw free trial. Organic community distribution is fastest channel for legal content.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">กลุ่ม Facebook: "HR Thailand" (78K+) "กฎหมายน่ารู้" (500K+ สมาชิก) "HR มือโปร" — ทุกกลุ่มมีคำถามกฎหมายทุกวัน ตอบคำถาม สร้าง authority ลิงก์ไปยัง MuteLaw free trial</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3 class="en">Law Firm White-Label Partnership</h3>
+        <h3 class="th">พันธมิตร White-Label กับสำนักงานกฎหมาย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Partner with Thai law firms: MuteLaw becomes their AI assistant for intake and research. Law firm charges ฿500/mo to clients for "AI legal assistant access." Law firm gets 30% revenue share + reduced junior lawyer costs. 100 law firm partners × 50 clients each = 5,000 users with zero direct sales.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ร่วมมือกับสำนักงานกฎหมายไทย MuteLaw กลายเป็น AI assistant สำหรับ intake และ research สำนักงานกฎหมายคิดค่า "AI assistant" จากลูกค้า ฿500/เดือน ได้ revenue share 30% สำนักงาน 100 แห่ง × ลูกค้า 50 คน = 5,000 users โดยไม่ต้องขายตรง</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TIMELINE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">BUILD TIMELINE</div>
+    <div class="section-label th">ไทม์ไลน์การสร้าง</div>
+    <h2><span class="en">5-Week MVP to First Revenue</span><span class="th">5 สัปดาห์ MVP สู่รายได้แรก</span></h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 1–2</div>
+        <div class="tl-title en">Thai Law Corpus + RAG Engine</div>
+        <div class="tl-title th">Thai Law Corpus + RAG Engine</div>
+        <div class="tl-desc en">Scrape and curate Thai law texts: CCC, Labor Protection Act, PDPA, Revenue Code, Consumer Protection Act from Thai government legal databases (krisdika.go.th, gdlaw.go.th). Build vector DB + RAG pipeline. Test accuracy on 100 common Thai legal questions with lawyer review.</div>
+        <div class="tl-desc th">รวบรวมกฎหมายไทย: ประมวลกฎหมายแพ่งฯ พ.ร.บ. คุ้มครองแรงงาน PDPA ประมวลรัษฎากร จาก krisdika.go.th gdlaw.go.th สร้าง vector DB + RAG pipeline ทดสอบความแม่นยำกับคำถาม 100 ข้อโดยทนายความรีวิว</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 3</div>
+        <div class="tl-title en">LINE OA Integration + PDPA Checker MVP</div>
+        <div class="tl-title th">LINE OA + PDPA Checker MVP</div>
+        <div class="tl-desc en">LINE OA chatbot connected to Thai law RAG. PDPA compliance checker (20-question flow) as first killer feature. Test with 20 Thai SME owners for feedback on accuracy and usability.</div>
+        <div class="tl-desc th">LINE OA chatbot เชื่อมต่อ Thai law RAG ตัวตรวจ PDPA compliance (flow 20 คำถาม) เป็น killer feature แรก ทดสอบกับ SME ไทย 20 ราย</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 4</div>
+        <div class="tl-title en">Document Generator + PromptPay Billing</div>
+        <div class="tl-title th">Document Generator + PromptPay Billing</div>
+        <div class="tl-desc en">Thai contract template generator (employment, NDA, service agreement, lease). Per-document ฿299 model first. PromptPay QR code payment flow. Soft launch to HR Thailand Facebook group with "first 100 users free PDPA check."</div>
+        <div class="tl-desc th">สร้าง template สัญญาไทย (จ้างงาน NDA บริการ เช่า) model ฿299/เอกสารก่อน Payment ผ่าน PromptPay Soft launch ในกลุ่ม HR Thailand "100 คนแรกตรวจ PDPA ฟรี"</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 5</div>
+        <div class="tl-title en">Subscription + First 100 Paying Customers</div>
+        <div class="tl-title th">Subscription + ลูกค้าจ่ายเงิน 100 รายแรก</div>
+        <div class="tl-desc en">Launch subscription tiers. Target: 50 Individual (฿499) + 30 SME (฿2,999) + 5 Law Firm (฿9,999) = ฿164,495 MRR month 1. Direct outreach to 200 Thai SME Facebook group admins with PDPA compliance offer.</div>
+        <div class="tl-desc th">เปิดตัว tier subscription เป้าหมาย: Individual 50 (฿499) + SME 30 (฿2,999) + สำนักงาน 5 (฿9,999) = ฿164,495 MRR เดือน 1 outreach ตรงถึง admin กลุ่ม Facebook SME 200 คน</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยงและการแก้ไข</div>
+    <h2><span class="en">Honest Assessment</span><span class="th">ประเมินอย่างตรงไปตรงมา</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="risk-item">
+          <div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3 class="en">AI Legal Hallucinations = Liability</h3><h3 class="th">AI ตอบผิดกฎหมาย = ความรับผิด</h3></div>
+          <p class="en">Wrong legal advice can cost users money or freedom. Mitigation: (1) RAG grounded in actual Thai statutes (not training data only), (2) confidence scores on every answer, (3) mandatory disclaimer: "For specific legal situations, consult a licensed Thai lawyer," (4) disclaim liability explicitly in ToS, (5) test with 5 Thai lawyers before launch.</p>
+          <p class="th">คำแนะนำกฎหมายที่ผิดอาจทำให้ผู้ใช้เสียเงินหรืออิสรภาพ แก้ไข: RAG อ้างอิงกฎหมายจริง คะแนนความมั่นใจทุกคำตอบ ข้อความเตือนบังคับ ปฏิเสธความรับผิดใน ToS ทดสอบกับทนาย 5 คนก่อน launch</p>
+        </div>
+        <div class="risk-item">
+          <div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3 class="en">Thai Law Changes Frequently</h3><h3 class="th">กฎหมายไทยเปลี่ยนบ่อย</h3></div>
+          <p class="en">Thai labor law, PDPA, tax laws are amended regularly. Outdated legal information could give wrong advice. Mitigation: Set up automated monitoring of Thai Royal Gazette (ราชกิจจานุเบกษา) for new amendments. Update corpus quarterly. Tag every answer with "valid as of [date]."</p>
+          <p class="th">กฎหมายแรงงาน PDPA ภาษีไทยถูกแก้ไขเป็นประจำ ข้อมูลล้าสมัยอาจให้คำแนะนำผิด แก้ไข: ติดตาม ราชกิจจานุเบกษา อัตโนมัติ อัปเดต corpus ทุกไตรมาส ติด tag "ถูกต้อง ณ วันที่..."</p>
+        </div>
+      </div>
+      <div>
+        <div class="risk-item">
+          <div class="risk-header"><span class="risk-badge risk-med">MED</span><h3 class="en">Thai Lawyers Council Opposition</h3><h3 class="th">สภาทนายความต่อต้าน</h3></div>
+          <p class="en">Thai Lawyers Council may argue MuteLaw constitutes unlicensed legal practice. Mitigation: Position as "legal information" not "legal advice." Clear disclaimers. DoNotPay succeeded globally with this framing. Precedent: Google's legal information summaries are not considered legal practice.</p>
+          <p class="th">สภาทนายความอาจโต้แย้งว่า MuteLaw ประกอบวิชาชีพกฎหมายโดยไม่มีใบอนุญาต แก้ไข: วางตำแหน่งเป็น "ข้อมูลกฎหมาย" ไม่ใช่ "คำแนะนำทางกฎหมาย" ข้อความเตือนชัดเจน DoNotPay ประสบความสำเร็จด้วย framing นี้</p>
+        </div>
+        <div class="risk-item">
+          <div class="risk-header"><span class="risk-badge risk-med">MED</span><h3 class="en">Thai Law Data Quality</h3><h3 class="th">คุณภาพข้อมูลกฎหมายไทย</h3></div>
+          <p class="en">Thai legal databases (krisdika.go.th) have incomplete digitization of older statutes and case law. Mitigation: Start with the 10 highest-demand areas (labor, PDPA, contract, consumer rights, company formation). Expand corpus over time. Partner with a Thai law school for corpus quality review.</p>
+          <p class="th">ฐานข้อมูลกฎหมายไทย (krisdika.go.th) มีการแปลงดิจิทัลไม่สมบูรณ์สำหรับกฎหมายเก่า แก้ไข: เริ่มจาก 10 หัวข้อที่ต้องการสูงสุด ขยาย corpus ไปเรื่อยๆ ร่วมมือกับคณะนิติศาสตร์ไทย</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">39/50 — Tier-High ✅</span><span class="th">39/50 — Tier-High ✅</span></h2>
+    <table class="score-table">
+      <tr>
+        <td class="dim en">Market Potential</td><td class="dim th">ศักยภาพตลาด</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td>
+        <td class="pts">8/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Problem Severity</td><td class="dim th">ความรุนแรงของปัญหา</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td>
+        <td class="pts">9/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Competition Gap</td><td class="dim th">ช่องว่างการแข่งขัน</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td>
+        <td class="pts">8/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Build Feasibility</td><td class="dim th">ความเป็นไปได้ในการสร้าง</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        <td class="pts">7/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Our Advantage</td><td class="dim th">ข้อได้เปรียบของเรา</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        <td class="pts">7/10</td>
+      </tr>
+      <tr class="total-row">
+        <td class="en"><strong>TOTAL</strong></td><td class="th"><strong>รวม</strong></td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:78%"></div></div></td>
+        <td class="pts"><strong>39/50</strong></td>
+      </tr>
+    </table>
+
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;">
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="en">CEO Assessment: Why This Scores High</h3>
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="th">CEO Assessment: ทำไมให้คะแนนสูง</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="en">
+        <strong>Problem Severity 9/10:</strong> Thai PDPA is a mandatory compliance requirement with criminal penalties — this is not "nice to have." Every Thai business with customer data must comply. Labor law violations lead to tribunal losses of ฿100K–1M. Thai people avoid legal help due to cost, resulting in preventable financial damage. The pain is both financially severe and emotionally real (fear).<br><br>
+        <strong>Market Potential 8/10:</strong> Harvey.ai's $3B valuation, DoNotPay's mass-market success, and the trillion-dollar global legal services market prove category. Thailand: 3M+ businesses (PDPA compliance mandatory), 70M individuals. Willingness to pay proven by existing lawyer consultation rates.<br><br>
+        <strong>Competition Gap 8/10:</strong> Harvey.ai and Lawgeex are enterprise English-only tools. LawcruxAI serves lawyers only. ChatGPT has no Thai law RAG, no LINE integration, no subscription. Zero Thai-language legal AI for the public. The gap is complete.<br><br>
+        <strong>Build Feasibility 7/10:</strong> Thai law corpus exists at krisdika.go.th and gdlaw.go.th (official sources). RAG pipeline is proven technology. LINE OA integration is well-documented. The challenge is accuracy — wrong legal advice has serious consequences. Requires lawyer review before launch and ongoing corpus maintenance.<br><br>
+        <strong>Our Advantage 7/10:</strong> Thai language NLP, LINE-first distribution, PromptPay billing, first-mover advantage. The regulatory forcing function (PDPA) creates immediate urgency that reduces need for paid acquisition. Key risk: no legal credentials — must frame as "legal information" not "legal advice."
+      </p>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="th">
+        <strong>Problem Severity 9/10:</strong> PDPA ไทยเป็นข้อกำหนด compliance บังคับพร้อมโทษอาญา ไม่ใช่ "ดีถ้ามี" ธุรกิจไทยทุกที่มีข้อมูลลูกค้าต้อง comply การละเมิดกฎหมายแรงงาน = แพ้คดีแรงงาน ฿100K–1M คนไทยหลีกเลี่ยงความช่วยเหลือกฎหมายเพราะค่าใช้จ่าย ปัญหานี้รุนแรงทางการเงินและจริงทางอารมณ์ (ความกลัว)<br><br>
+        <strong>Market Potential 8/10:</strong> มูลค่า Harvey.ai $3B ความสำเร็จ DoNotPay และตลาดบริการกฎหมายโลก $1 ล้านล้านพิสูจน์หมวดนี้ ไทย: ธุรกิจ 3M+ (PDPA บังคับ) คน 70M ความเต็มใจจ่ายพิสูจน์โดยอัตราค่าปรึกษาทนายที่มีอยู่<br><br>
+        <strong>Competition Gap 8/10:</strong> Harvey.ai และ Lawgeex เป็น enterprise ภาษาอังกฤษ LawcruxAI ให้บริการทนายเท่านั้น ChatGPT ไม่มี Thai law RAG ไม่มี LINE ไม่มี subscription ไม่มี AI กฎหมายภาษาไทยสำหรับประชาชนเลย<br><br>
+        <strong>Build Feasibility 7/10:</strong> Thai law corpus อยู่ที่ krisdika.go.th gdlaw.go.th (แหล่งทางการ) RAG pipeline เป็นเทคโนโลยีที่พิสูจน์แล้ว LINE OA integration มีเอกสารดี ความท้าทายคือความแม่นยำ — คำแนะนำกฎหมายผิดมีผลร้ายแรง ต้องให้ทนายรีวิวก่อน launch<br><br>
+        <strong>Our Advantage 7/10:</strong> NLP ภาษาไทย LINE-first PromptPay first-mover ความเร่งด่วนของ PDPA ลด paid acquisition ความเสี่ยงหลัก: ไม่มีใบอนุญาตกฎหมาย ต้องวาง frame เป็น "ข้อมูลกฎหมาย" ไม่ใช่ "คำแนะนำทางกฎหมาย"
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #93 Complete</span><span class="th">ไอเดีย #93 เสร็จสมบูรณ์</span></h2>
+    <p class="en">MuteLaw scored 39/50 — Tier-High. Zero Thai-language legal AI exists for the public. Harvey.ai's $3B valuation proves the category. Thai PDPA compliance creates immediate regulatory urgency for 3M+ businesses.</p>
+    <p class="th">MuteLaw ได้ 39/50 — Tier-High ไม่มี AI กฎหมายภาษาไทยสำหรับประชาชน มูลค่า Harvey.ai $3B พิสูจน์หมวดนี้ PDPA ไทยสร้างความเร่งด่วนทางกฎหมายทันทีสำหรับธุรกิจ 3M+</p>
+    <a href="index.html" class="back-link">
+      <span class="en">← Back to All Ideas</span>
+      <span class="th">← กลับไปดูไอเดียทั้งหมด</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #93 · MUTELAW</p>
+</footer>
+<script>
+function setLang(lang){
+  document.body.classList.toggle('show-th', lang==='th');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.getElementById('btn-th').classList.toggle('active', lang==='th');
+}
+</script>
+</body>
+</html>
