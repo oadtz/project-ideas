@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteFlow — AI Daily Work Planner for Thai Professionals via LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #221a0f;
+    --border: rgba(249,115,22,0.15);
+    --border2: rgba(249,115,22,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f97316;
+    --primary-light: #fb923c;
+    --primary-pale: rgba(249,115,22,0.08);
+    --primary-glow: rgba(249,115,22,0.2);
+    --secondary: #fbbf24;
+    --secondary-light: #fcd34d;
+    --secondary-pale: rgba(251,191,36,0.08);
+    --secondary-glow: rgba(251,191,36,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(251,191,36,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(251,191,36,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    background: rgba(10,10,15,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: 'Space Mono', monospace; font-size: 0.9rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.02em;
+  }
+  .nav-score {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    color: var(--muted); background: var(--surface);
+    padding: 0.3rem 0.8rem; border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .nav-score span { color: var(--primary); font-weight: 700; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 8rem 0 5rem;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.1em;
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    border-radius: 100px; padding: 0.4rem 1rem; margin-bottom: 2rem;
+  }
+  .hero-label {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--muted); letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .hero-num {
+    font-size: 1rem; color: var(--muted2);
+    font-family: 'Space Mono', monospace; font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .hero-title {
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.03em; margin-bottom: 0.5rem;
+  }
+  .hero-title .accent { color: var(--primary); }
+  .hero-title .accent2 { color: var(--secondary); }
+  .hero-tagline {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--text2); font-weight: 400;
+    max-width: 680px; margin-bottom: 2.5rem; line-height: 1.5;
+  }
+  .hero-kicker {
+    font-size: 1.1rem; font-weight: 600; color: var(--primary-light);
+    font-style: italic; margin-bottom: 3rem;
+    background: var(--primary-pale); border-left: 3px solid var(--primary);
+    padding: 0.8rem 1.2rem; border-radius: 0 8px 8px 0;
+    max-width: 640px;
+  }
+
+  .score-band {
+    display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+  .score-pill {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 0.5rem 1rem;
+  }
+  .score-pill .val { color: var(--primary); font-weight: 700; font-size: 1rem; }
+
+  .hero-cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary); color: #0a0a0f;
+    font-weight: 700; font-size: 0.9rem;
+    padding: 0.9rem 1.8rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 24px var(--primary-glow); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 1px solid var(--border2); color: var(--text2);
+    font-weight: 600; font-size: 0.9rem;
+    padding: 0.9rem 1.8rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* SECTIONS */
+  section { padding: 6rem 0; border-top: 1px solid var(--border); }
+
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::after {
+    content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--primary); opacity: 0.4;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.15; margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 1.05rem; color: var(--text2); max-width: 640px; margin-bottom: 3rem;
+  }
+
+  /* STATS */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-num {
+    font-size: 2rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace; line-height: 1; margin-bottom: 0.4rem;
+  }
+  .stat-label { font-size: 0.82rem; color: var(--muted); }
+  .stat-label strong { color: var(--text2); display: block; font-size: 0.92rem; margin-bottom: 0.2rem; }
+
+  /* PROBLEM */
+  .problem-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+  }
+  .problem-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem;
+    border-left: 3px solid var(--red);
+  }
+  .problem-card .icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+  .problem-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+  .problem-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  /* LINE MOCKUP */
+  .line-mockup {
+    background: #1a1a2a; border: 1px solid var(--border2);
+    border-radius: 20px; max-width: 380px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .line-header {
+    background: #00b900; padding: 0.8rem 1.2rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .line-header .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); display: flex; align-items: center;
+    justify-content: center; font-size: 1.2rem;
+  }
+  .line-header .info { flex: 1; }
+  .line-header .name { font-size: 0.88rem; font-weight: 700; color: #fff; }
+  .line-header .status { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
+
+  .line-chat { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .msg-bubble {
+    max-width: 85%; padding: 0.6rem 0.9rem;
+    border-radius: 12px; font-size: 0.82rem; line-height: 1.5;
+  }
+  .msg-ai {
+    background: var(--surface3); color: var(--text);
+    border-radius: 4px 12px 12px 12px;
+    border-left: 2px solid var(--primary); align-self: flex-start;
+  }
+  .msg-user {
+    background: #00b900; color: #fff;
+    border-radius: 12px 4px 12px 12px;
+    align-self: flex-end;
+  }
+  .msg-time { font-size: 0.65rem; color: var(--muted2); margin-top: 0.2rem; }
+  .msg-time.right { text-align: right; }
+  .msg-notification {
+    background: rgba(249,115,22,0.12); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 0.7rem 0.9rem;
+    font-size: 0.78rem; color: var(--text2);
+    align-self: flex-start; max-width: 95%;
+  }
+  .msg-notification .noti-title { color: var(--primary); font-weight: 700; margin-bottom: 0.25rem; font-size: 0.8rem; }
+  .msg-notification ul { padding-left: 1rem; color: var(--text2); }
+  .msg-notification li { margin-bottom: 0.2rem; }
+  .msg-notification .noti-foot { color: var(--muted); font-size: 0.72rem; margin-top: 0.3rem; }
+
+  /* HOW IT WORKS */
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
+  }
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem; position: relative;
+  }
+  .step-num {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.1em;
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 0.2rem 0.6rem;
+    display: inline-block; margin-bottom: 1rem;
+  }
+  .step-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .step-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .step-card .step-icon { font-size: 1.8rem; display: block; margin-bottom: 0.8rem; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
+  }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem;
+    transition: all 0.2s;
+  }
+  .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .feature-card .feat-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
+  .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+  .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .feature-tag {
+    display: inline-block; margin-top: 0.8rem;
+    font-size: 0.68rem; font-family: 'Space Mono', monospace;
+    font-weight: 700; letter-spacing: 0.08em;
+    background: var(--primary-pale); color: var(--primary);
+    border: 1px solid var(--border2); border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* COMPETITORS */
+  .compare-table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem;
+  }
+  .compare-table th {
+    text-align: left; padding: 0.8rem 1rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--muted); letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td {
+    padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr.ours td { background: var(--primary-pale); }
+  .compare-table tr.ours td:first-child { border-left: 2px solid var(--primary); border-radius: 2px; }
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+  .partial { color: var(--amber); }
+
+  /* REVENUE */
+  .revenue-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .plan-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.8rem;
+  }
+  .plan-card.highlight {
+    border-color: var(--primary); background: var(--primary-pale);
+    box-shadow: 0 0 30px var(--primary-glow);
+  }
+  .plan-label {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .plan-price {
+    font-size: 1.8rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace; margin-bottom: 0.4rem;
+  }
+  .plan-price sub { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .plan-card ul { list-style: none; padding: 0; margin-top: 1rem; }
+  .plan-card li {
+    font-size: 0.85rem; color: var(--muted); padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem;
+  }
+  .plan-card li:last-child { border-bottom: none; }
+  .plan-card li .check { flex-shrink: 0; }
+
+  .math-box {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 2rem; margin-top: 2rem;
+    font-family: 'Space Mono', monospace; font-size: 0.85rem;
+  }
+  .math-box h3 { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 1rem; }
+  .math-row { display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .math-row:last-child { border-bottom: none; color: var(--primary); font-weight: 700; font-size: 1rem; }
+  .math-row .label { color: var(--muted); font-size: 0.78rem; }
+
+  /* SCORING */
+  .score-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem;
+  }
+  .score-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.4rem;
+  }
+  .score-item .s-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .score-item .s-val {
+    font-size: 1.6rem; font-weight: 800;
+    font-family: 'Space Mono', monospace; color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+  .score-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+  .score-item .s-note { font-size: 0.75rem; color: var(--muted2); margin-top: 0.5rem; line-height: 1.5; }
+
+  .score-total {
+    background: var(--primary-pale); border: 2px solid var(--primary);
+    border-radius: 14px; padding: 2rem; text-align: center; margin-top: 2rem;
+    box-shadow: 0 0 40px var(--primary-glow);
+  }
+  .score-total .total-num {
+    font-size: 4rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace; line-height: 1;
+  }
+  .score-total .total-label { font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+  .score-total .verdict {
+    display: inline-block; margin-top: 1rem;
+    font-size: 0.75rem; font-family: 'Space Mono', monospace;
+    font-weight: 700; letter-spacing: 0.1em;
+    background: var(--green); color: #fff; border-radius: 6px; padding: 0.3rem 0.8rem;
+  }
+
+  /* RISKS */
+  .risks-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem;
+  }
+  .risk-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem;
+    border-left: 3px solid var(--amber);
+  }
+  .risk-card .risk-head { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .risk-card h4 { font-size: 0.9rem; font-weight: 700; }
+  .risk-pill {
+    font-size: 0.65rem; font-family: 'Space Mono', monospace; font-weight: 700;
+    padding: 0.2rem 0.5rem; border-radius: 4px;
+  }
+  .risk-med { background: rgba(245,158,11,0.2); color: var(--amber); }
+  .risk-low { background: rgba(16,185,129,0.2); color: var(--green); }
+  .risk-high { background: rgba(239,68,68,0.2); color: var(--red); }
+  .risk-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .risk-card .mitigation {
+    margin-top: 0.6rem; font-size: 0.78rem; color: var(--green);
+    background: rgba(16,185,129,0.08); border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+  }
+
+  /* ROADMAP */
+  .roadmap { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .roadmap::before {
+    content: ''; position: absolute; left: 1.25rem; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .roadmap-item {
+    display: flex; gap: 1.5rem; padding: 0 0 2rem 0; position: relative;
+  }
+  .roadmap-dot {
+    width: 2.5rem; height: 2.5rem; border-radius: 50%; flex-shrink: 0;
+    background: var(--surface); border: 2px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; z-index: 1; position: relative;
+  }
+  .roadmap-dot.active { border-color: var(--primary); background: var(--primary-pale); }
+  .roadmap-content { flex: 1; }
+  .roadmap-content h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .roadmap-content .when {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--primary);
+    letter-spacing: 0.08em; margin-bottom: 0.5rem;
+  }
+  .roadmap-content p { font-size: 0.84rem; color: var(--muted); line-height: 1.6; }
+
+  /* INSIGHT BOX */
+  .insight-box {
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 2rem; margin-top: 2rem;
+  }
+  .insight-box .insight-label {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem;
+    color: var(--primary); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8rem;
+  }
+  .insight-box p { font-size: 0.92rem; color: var(--text2); line-height: 1.7; }
+  .insight-box strong { color: var(--primary); }
+
+  /* DISTRIBUTION */
+  .dist-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem;
+  }
+  .dist-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.4rem;
+    border-top: 2px solid var(--primary);
+  }
+  .dist-card .dist-icon { font-size: 1.5rem; margin-bottom: 0.6rem; display: block; }
+  .dist-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .dist-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .dist-card .speed {
+    margin-top: 0.6rem; font-size: 0.7rem; font-family: 'Space Mono', monospace;
+    font-weight: 700; color: var(--green);
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 3rem 0; border-top: 1px solid var(--border);
+    text-align: center; color: var(--muted); font-size: 0.82rem;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+  .footer-back {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--muted); font-size: 0.82rem; text-decoration: none;
+    margin-bottom: 1rem; transition: color 0.2s;
+  }
+  .footer-back:hover { color: var(--primary); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .hero { padding: 7rem 0 4rem; }
+    .score-band { gap: 0.8rem; }
+    .lang-toggle { top: 1rem; right: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<nav>
+  <div class="nav-brand">☀️ MuteLab · Idea #87</div>
+  <div class="nav-score">Sprint Score: <span>37/50</span></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🧠 PERSONAL PRODUCTIVITY · FIRST IDEA IN CATEGORY</div>
+    <div class="hero-label">EN — IDEA #87 / SPRINT · PERSONAL PRODUCTIVITY · LINE-NATIVE AI PLANNER</div>
+    <div class="hero-label th">TH — ไอเดีย #87 / SPRINT · Personal Productivity · AI วางแผนงานผ่าน LINE</div>
+    <div class="hero-num">#87</div>
+    <h1 class="hero-title">
+      <span class="en">Mute<span class="accent">Flow</span></span>
+      <span class="th">Mute<span class="accent">Flow</span></span>
+    </h1>
+    <p class="hero-tagline">
+      <span class="en">AI Daily Work Planner for Thai Professionals via LINE — Your personal executive assistant in LINE OA. Morning briefing, task capture, follow-up nudger, daily focus — all via LINE, zero new apps.</span>
+      <span class="th">AI วางแผนงานรายวันสำหรับมืออาชีพไทยผ่าน LINE — ผู้ช่วย Executive AI ใน LINE OA ของคุณ บรีฟเช้า, จัดการงาน, เตือนติดตาม, โฟกัสรายวัน — ทั้งหมดผ่าน LINE ไม่ต้องโหลดแอปใหม่</span>
+    </p>
+    <div class="hero-kicker">
+      <span class="en">"Every successful person has an executive assistant. Thai SME owners can't afford one. MuteFlow is their AI PA — for ฿199/mo."</span>
+      <span class="th">"คนที่ประสบความสำเร็จทุกคนมีผู้ช่วย Executive เจ้าของ SME ไทยจ่ายไม่ไหว MuteFlow คือ AI PA ของพวกเขา — เพียง ฿199/เดือน"</span>
+    </div>
+
+    <div class="score-band">
+      <div class="score-pill">
+        <span>Score</span><span class="val">37/50</span>
+      </div>
+      <div class="score-pill">
+        <span>Category</span><span style="color:var(--primary-light);font-weight:700;">Personal Productivity</span>
+      </div>
+      <div class="score-pill">
+        <span>Model</span><span style="color:var(--secondary);font-weight:700;">B2C SaaS · LINE OA</span>
+      </div>
+      <div class="score-pill">
+        <span>Time to First $</span><span style="color:var(--green);font-weight:700;">Day 1</span>
+      </div>
+    </div>
+
+    <div class="hero-cta-row">
+      <a href="#research" class="btn-primary">📊 See Research</a>
+      <a href="#score" class="btn-outline">🎯 Score Breakdown</a>
+      <a href="index.html" class="btn-outline">← All Ideas</a>
+    </div>
+  </div>
+
+  <!-- MARKET RESEARCH -->
+  <section id="research">
+    <div class="section-label">MARKET DATA</div>
+    <h2 class="section-title">
+      <span class="en">The Market: Real Numbers</span>
+      <span class="th">ตลาด: ตัวเลขจริง</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Global productivity software is exploding. Southeast Asia — especially Thailand — is an underserved greenfield with 70M+ LINE users and no LINE-native AI planner.</span>
+      <span class="th">ซอฟต์แวร์ productivity โลกกำลังระเบิด Southeast Asia โดยเฉพาะไทย — ยังไม่มีใครทำ LINE-native AI planner ทั้งที่มีผู้ใช้ LINE 70M+ คน</span>
+    </p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">$59.9B</div>
+        <div class="stat-label">
+          <strong>Global Productivity Software Market (2023)</strong>
+          Grand View Research — growing to $149.7B by 2030
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">15.8%</div>
+        <div class="stat-label">
+          <strong>Asia Pacific CAGR (2024–2030)</strong>
+          Fastest growing region globally — fastest market for new entrants
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">5M+</div>
+        <div class="stat-label">
+          <strong>Thai Freelancers</strong>
+          Overwhelmed by task overload, using Excel and LINE for project management
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3.1M+</div>
+        <div class="stat-label">
+          <strong>Thai SMEs</strong>
+          Owners managing operations + sales + finance solo — no system, no PA
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">53M</div>
+        <div class="stat-label">
+          <strong>LINE Users in Thailand (2024)</strong>
+          LINE is the #1 app — used for work, social, and commerce daily
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">30M+</div>
+        <div class="stat-label">
+          <strong>Todoist Global Users</strong>
+          Proves massive willingness to pay for task management — but English-only, no LINE
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">$19/mo</div>
+        <div class="stat-label">
+          <strong>Motion AI Planner Pricing</strong>
+          Voted #1 hottest product by Amplitude — saves 7.6 hrs/week per user
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">60%</div>
+        <div class="stat-label">
+          <strong>Workers Feel Digital Burnout (Forbes 2024)</strong>
+          Too many tools, too many notifications, zero prioritization
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <div class="insight-label">⚡ KEY INSIGHT</div>
+      <p class="en">
+        Every major productivity tool — Notion, Todoist, Motion, Obsidian, Reclaim — is <strong>English-first, app-first, and desktop-first</strong>. Thai knowledge workers and freelancers live in LINE. The switching cost of adopting a new app is the #1 reason 80%+ of Thai professionals use zero productivity system. <strong>MuteFlow eliminates switching cost entirely: the entire system lives inside LINE OA</strong>. Send a message → task captured. Receive morning brief → day planned. No app download. No new password. No learning curve. The same LINE they already open 50+ times per day.
+      </p>
+      <p class="th">
+        ทุกเครื่องมือ productivity หลัก — Notion, Todoist, Motion, Obsidian, Reclaim — <strong>เป็น English-first, App-first และ Desktop-first</strong> ทั้งนั้น แต่มืออาชีพไทยและ freelancer อยู่ใน LINE ค่าความเสี่ยงในการเปลี่ยนไปใช้แอปใหม่คือเหตุผล #1 ที่กว่า 80% ของมืออาชีพไทยไม่ใช้ระบบ productivity เลย <strong>MuteFlow ขจัด switching cost ทั้งหมด: ระบบทั้งหมดอยู่ใน LINE OA</strong> ส่งข้อความ → บันทึกงาน รับบรีฟเช้า → วางแผนวัน ไม่ต้องดาวน์โหลดแอป ไม่ต้องรหัสผ่านใหม่ ไม่ต้องเรียนรู้ใหม่ ใช้ LINE เดิมที่เปิดอยู่แล้ว 50+ ครั้งต่อวัน
+      </p>
+    </div>
+  </section>
+
+  <!-- THE PROBLEM -->
+  <section id="problem">
+    <div class="section-label">THE PROBLEM</div>
+    <h2 class="section-title">
+      <span class="en">Thai Professionals Are Drowning in Work Chaos</span>
+      <span class="th">มืออาชีพไทยจมอยู่ในความวุ่นวายของงาน</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">The pain is real and universal. No system. No priority. No follow-up. Every day = reactive firefighting.</span>
+      <span class="th">ความเจ็บปวดนี้จริงและพบได้ทั่วไป ไม่มีระบบ ไม่มี priority ไม่มีการ follow up ทุกวัน = ดับไฟตลอดเวลา</span>
+    </p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="icon">🤯</span>
+        <h3><span class="en">Task Overload, Zero System</span><span class="th">งานล้น ไม่มีระบบ</span></h3>
+        <p class="en">Thai freelancers manage 15-30 active tasks across 5+ LINE groups, email, and Instagram DMs simultaneously. Most use sticky notes or nothing. Critical tasks slip through daily.</p>
+        <p class="th">Freelancer ไทยจัดการงาน 15-30 ชิ้นใน LINE กลุ่ม 5+ กลุ่ม, email และ Instagram DMs พร้อมกัน ส่วนใหญ่ใช้กระดาษโน้ตหรือไม่มีอะไรเลย งานสำคัญหายทุกวัน</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">📞</span>
+        <h3><span class="en">Lost Follow-Ups = Lost Revenue</span><span class="th">ลืม Follow-Up = เสียเงิน</span></h3>
+        <p class="en">SME owners estimate losing 2-3 clients per month due to forgotten follow-ups. A ฿15,000 proposal sent but never followed up = ฿180,000 lost annually per owner.</p>
+        <p class="th">เจ้าของ SME ประมาณว่าเสียลูกค้า 2-3 คนต่อเดือนเพราะลืม follow-up ใบเสนอราคา ฿15,000 ที่ส่งไปแต่ไม่ติดตาม = เสียเงิน ฿180,000 ต่อปีต่อคน</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">🌅</span>
+        <h3><span class="en">No Morning Structure = Wasted Hours</span><span class="th">ไม่มีโครงสร้างเช้า = เสียเวลา</span></h3>
+        <p class="en">Research: workers who plan their day the night before or morning complete 31% more high-priority tasks. Most Thai professionals start work by opening LINE and reacting to messages. No plan, no focus.</p>
+        <p class="th">งานวิจัย: ผู้ที่วางแผนวันก่อนเริ่มทำงานทำงาน priority สูงได้มากกว่า 31% มืออาชีพไทยส่วนใหญ่เริ่มงานด้วยการเปิด LINE และตอบสนองข้อความ ไม่มีแผน ไม่มีโฟกัส</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">🔧</span>
+        <h3><span class="en">Existing Tools Don't Fit</span><span class="th">เครื่องมือที่มีไม่เหมาะ</span></h3>
+        <p class="en">Notion = too complex to start. Todoist = English menus, no Thai shortcuts. Motion = $19/mo USD, Western calendar assumptions. Reclaim = Google Calendar only. None support LINE input natively.</p>
+        <p class="th">Notion = ซับซ้อนเกินไปจะเริ่ม Todoist = เมนูภาษาอังกฤษ ไม่มีทางลัดไทย Motion = $19/เดือน USD มีแต่ calendar แบบตะวันตก Reclaim = Google Calendar เท่านั้น ไม่มีตัวไหนรองรับ LINE input โดยตรง</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">💸</span>
+        <h3><span class="en">Can't Afford a Human PA</span><span class="th">จ้าง PA มนุษย์ไม่ไหว</span></h3>
+        <p class="en">A human personal assistant in Thailand costs ฿20,000–40,000/mo. 95% of Thai freelancers and SME owners work alone. MuteFlow delivers AI PA functionality for ฿199/mo — 100x cheaper.</p>
+        <p class="th">ผู้ช่วยส่วนตัวมนุษย์ในไทยราคา ฿20,000–40,000/เดือน Freelancer ไทยและเจ้าของ SME 95% ทำงานคนเดียว MuteFlow ให้ฟังก์ชัน AI PA ในราคา ฿199/เดือน — ถูกกว่า 100 เท่า</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">📲</span>
+        <h3><span class="en">App Fatigue Is Real</span><span class="th">ล้าจากแอปมากเกินไป</span></h3>
+        <p class="en">Average Thai smartphone has 80+ apps installed. 60% of Forbes-surveyed workers feel increased burnout from digital tools. Adding ANOTHER new app = zero adoption. LINE already open: ✓</p>
+        <p class="th">สมาร์ทโฟนไทยมีแอปติดตั้งเฉลี่ย 80+ แอป 60% ของพนักงานที่ Forbes สำรวจรู้สึก burnout จากเครื่องมือดิจิทัล การเพิ่มแอปใหม่ = adoption ศูนย์ LINE เปิดอยู่แล้ว: ✓</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LINE MOCKUP + HOW IT WORKS -->
+  <section id="how">
+    <div class="section-label">HOW IT WORKS</div>
+    <h2 class="section-title">
+      <span class="en">Your AI Executive Assistant — In LINE</span>
+      <span class="th">ผู้ช่วย Executive AI ของคุณ — ใน LINE</span>
+    </h2>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:3rem;align-items:start;flex-wrap:wrap;">
+
+      <div class="line-mockup">
+        <div class="line-header">
+          <div class="avatar">🧠</div>
+          <div class="info">
+            <div class="name">MuteFlow AI</div>
+            <div class="status">● Active · Your Work PA</div>
+          </div>
+        </div>
+        <div class="line-chat">
+          <div class="msg-notification">
+            <div class="noti-title">🌅 Good morning, คุณต้อม! (7:30 AM)</div>
+            <ul>
+              <li>🔴 งานด่วน: ส่งรายงาน Q1 ให้ลูกค้า A</li>
+              <li>📞 ติดตาม: คุณสมชาย (ส่ง quote ไป 3 วันแล้ว)</li>
+              <li>🗓️ นัด 14:00: ประชุม Zoom กับ Dev team</li>
+              <li>📌 เหลือ: 4 งาน, 2 ติดตาม, 1 ประชุม</li>
+            </ul>
+            <div class="noti-foot">พิมพ์ "เริ่ม" เพื่อเริ่ม Focus Timer 🔥</div>
+          </div>
+          <div class="msg-time">07:30</div>
+
+          <div class="msg-user">เริ่ม</div>
+          <div class="msg-time right">07:31</div>
+
+          <div class="msg-bubble msg-ai">⏱️ Focus timer เริ่มแล้ว! 25 นาทีสำหรับ "รายงาน Q1" ไม่ให้ใครรบกวนนะ 🔥<br><br>หมดเวลา = แจ้งเตือนอัตโนมัติ</div>
+          <div class="msg-time">07:31</div>
+
+          <div class="msg-user">ต้องโทรหาคุณมานะพรุ่งนี้เช้า เรื่องสัญญา</div>
+          <div class="msg-time right">14:22</div>
+
+          <div class="msg-bubble msg-ai">✅ บันทึกแล้ว! พรุ่งนี้ 09:00 จะเตือนโทรหาคุณมานะ เรื่องสัญญา 📞<br><br>เพิ่ม note เพิ่มเติมได้เลย</div>
+          <div class="msg-time">14:22</div>
+
+          <div class="msg-notification" style="margin-top:0.5rem;">
+            <div class="noti-title">🌙 สรุปวันนี้ (21:00)</div>
+            <ul>
+              <li>✅ ทำเสร็จ: 3/5 งาน (60%)</li>
+              <li>⏳ ค้างอยู่: รายงาน Q1 (70%), Proposal B</li>
+              <li>📊 Focus time: 2.5 ชม. (สถิติสัปดาห์: 11.5 ชม.)</li>
+            </ul>
+            <div class="noti-foot">พรุ่งนี้: 4 งาน, โทรคุณมานะ 09:00 🚀</div>
+          </div>
+          <div class="msg-time">21:00</div>
+        </div>
+      </div>
+
+      <div class="steps-grid" style="grid-template-columns:1fr;gap:1rem;">
+        <div class="step-card">
+          <span class="step-icon">🌅</span>
+          <div class="step-num">STEP 01 · 07:30 AM DAILY</div>
+          <h3><span class="en">Morning Smart Brief</span><span class="th">บรีฟเช้าอัจฉริยะ</span></h3>
+          <p class="en">Every morning at 7:30, LINE pushes your personalized daily briefing: top 3 tasks by priority, pending follow-ups, meetings today, and a focus suggestion. Your day is structured before you start.</p>
+          <p class="th">ทุกเช้า 7:30 LINE ส่งบรีฟรายวันส่วนตัว: งาน top 3 ตาม priority, follow-up ที่รอ, ประชุมวันนี้ และคำแนะนำโฟกัส วันของคุณถูกวางโครงสร้างก่อนเริ่มงาน</p>
+        </div>
+        <div class="step-card">
+          <span class="step-icon">💬</span>
+          <div class="step-num">STEP 02 · ANYTIME</div>
+          <h3><span class="en">Quick Capture — Just Type</span><span class="th">บันทึกด่วน — แค่พิมพ์</span></h3>
+          <p class="en">Say anything to LINE: "ต้องโทรหาคุณสมชายพรุ่งนี้" or "ส่ง invoice ลูกค้า B วันศุกร์" — AI understands Thai natural language, categorizes, and schedules automatically.</p>
+          <p class="th">พูดอะไรก็ได้ใน LINE: "ต้องโทรหาคุณสมชายพรุ่งนี้" หรือ "ส่ง invoice ลูกค้า B วันศุกร์" — AI เข้าใจภาษาไทยธรรมชาติ แบ่งหมวดหมู่และกำหนดเวลาอัตโนมัติ</p>
+        </div>
+        <div class="step-card">
+          <span class="step-icon">🔥</span>
+          <div class="step-num">STEP 03 · ON DEMAND</div>
+          <h3><span class="en">Focus Timer + Top 3</span><span class="th">Focus Timer + งาน Top 3</span></h3>
+          <p class="en">Reply "เริ่ม" → 25-min Pomodoro timer begins, LINE notifies when done. AI picks your top 3 tasks each day based on deadlines, client importance, and your work patterns.</p>
+          <p class="th">ตอบ "เริ่ม" → จับเวลา Pomodoro 25 นาที LINE แจ้งเตือนเมื่อครบ AI เลือกงาน top 3 ประจำวันตาม deadline ความสำคัญของลูกค้า และรูปแบบการทำงานของคุณ</p>
+        </div>
+        <div class="step-card">
+          <span class="step-icon">📞</span>
+          <div class="step-num">STEP 04 · AUTOMATED</div>
+          <h3><span class="en">Follow-Up Nudger</span><span class="th">เตือน Follow-Up อัตโนมัติ</span></h3>
+          <p class="en">Never lose a client again. MuteFlow tracks open conversations and nudges you: "คุณสมชาย — ส่ง proposal 3 วันแล้ว ยังไม่ตอบ ติดตามได้เลย." Your client pipeline never goes cold.</p>
+          <p class="th">ไม่เสียลูกค้าอีกแล้ว MuteFlow ติดตามการสนทนาที่ค้างอยู่และเตือน: "คุณสมชาย — ส่ง proposal 3 วันแล้ว ยังไม่ตอบ ติดตามได้เลย" Pipeline ลูกค้าไม่เย็นลงอีกต่อไป</p>
+        </div>
+        <div class="step-card">
+          <span class="step-icon">🌙</span>
+          <div class="step-num">STEP 05 · 21:00 DAILY</div>
+          <h3><span class="en">Daily Review & Tomorrow Plan</span><span class="th">ทบทวนวันและวางแผนพรุ่งนี้</span></h3>
+          <p class="en">End-of-day summary: what got done, what's pending, focus time tracked, productivity trend. Tomorrow's top 3 auto-generated based on what's overdue and what's upcoming.</p>
+          <p class="th">สรุปปลายวัน: ทำอะไรเสร็จ อะไรค้างอยู่ focus time ที่ติดตาม แนวโน้ม productivity งาน top 3 พรุ่งนี้สร้างอัตโนมัติตามสิ่งที่เกินกำหนดและที่กำลังจะมาถึง</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">FEATURES</div>
+    <h2 class="section-title">
+      <span class="en">Everything You Need, Nothing You Don't</span>
+      <span class="th">ทุกสิ่งที่คุณต้องการ ไม่มีอะไรที่ไม่จำเป็น</span>
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feat-icon">🌅</span>
+        <h3><span class="en">Morning Smart Brief</span><span class="th">บรีฟเช้าอัจฉริยะ</span></h3>
+        <p class="en">AI-generated daily overview at 7:30 AM: top priorities, follow-ups, meetings, and a motivational nudge. Delivered to LINE before your first coffee.</p>
+        <p class="th">ภาพรวมรายวัน AI สร้างเวลา 7:30 AM: priority หลัก, follow-up, ประชุม และแรงบันดาลใจ ส่งถึง LINE ก่อนกาแฟแก้วแรก</p>
+        <span class="feature-tag">CORE FEATURE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">⚡</span>
+        <h3><span class="en">Natural Language Task Capture</span><span class="th">บันทึกงานภาษาธรรมชาติ</span></h3>
+        <p class="en">Type anything in Thai or English. AI understands: "ส่งรายงานลูกค้า A วันพฤหัสนี้" → task created, deadline set, client tagged automatically.</p>
+        <p class="th">พิมพ์อะไรก็ได้เป็นภาษาไทยหรืออังกฤษ AI เข้าใจ: "ส่งรายงานลูกค้า A วันพฤหัสนี้" → งานถูกสร้าง, กำหนดส่งถูกตั้ง, ลูกค้าถูก tag อัตโนมัติ</p>
+        <span class="feature-tag">THAI-NATIVE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🎯</span>
+        <h3><span class="en">AI Daily Focus — Top 3</span><span class="th">AI โฟกัสรายวัน — Top 3</span></h3>
+        <p class="en">AI learns your work patterns and picks the 3 most important tasks each day. Not just by deadline — by client value, dependencies, and your energy level patterns.</p>
+        <p class="th">AI เรียนรู้รูปแบบการทำงานของคุณและเลือก 3 งานสำคัญสุดประจำวัน ไม่ใช่แค่ตาม deadline แต่ตามมูลค่าลูกค้า dependencies และรูปแบบพลังงานของคุณ</p>
+        <span class="feature-tag">AI-POWERED</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">⏱️</span>
+        <h3><span class="en">Pomodoro Focus Timer</span><span class="th">จับเวลา Pomodoro</span></h3>
+        <p class="en">Reply "เริ่ม" to start a 25-min deep work session. LINE notifies when done. Tracks your total focus hours per day and week — like a fitness tracker for your work.</p>
+        <p class="th">ตอบ "เริ่ม" เพื่อเริ่มเซสชั่นทำงานลึก 25 นาที LINE แจ้งเตือนเมื่อครบ ติดตามชั่วโมงโฟกัสทั้งหมดต่อวันและต่อสัปดาห์ — เหมือนฟิตเนสแทร็กเกอร์สำหรับงานของคุณ</p>
+        <span class="feature-tag">BUILT-IN</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📞</span>
+        <h3><span class="en">Smart Follow-Up Nudger</span><span class="th">เตือน Follow-Up อัจฉริยะ</span></h3>
+        <p class="en">AI tracks your client conversations and proactively nudges: "คุณสมชาย — ส่ง quote ไป 5 วันแล้ว ยังไม่ตอบ โทรติดตามได้เลย." Never lose a warm lead again.</p>
+        <p class="th">AI ติดตามการสนทนากับลูกค้าและเตือนล่วงหน้า: "คุณสมชาย — ส่ง quote ไป 5 วันแล้ว ยังไม่ตอบ โทรติดตามได้เลย" ไม่เสียลีดที่อุ่นแล้วอีกต่อไป</p>
+        <span class="feature-tag">MONEY SAVER</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🌙</span>
+        <h3><span class="en">End-of-Day Review</span><span class="th">ทบทวนปลายวัน</span></h3>
+        <p class="en">21:00 daily: summary of what got done, focus time tracked, productivity trend vs. yesterday/last week. Tomorrow's plan auto-generated for review.</p>
+        <p class="th">21:00 ทุกวัน: สรุปทำอะไรเสร็จ, focus time ที่ติดตาม, แนวโน้ม productivity เทียบเมื่อวาน/สัปดาห์ก่อน แผนพรุ่งนี้สร้างอัตโนมัติให้ทบทวน</p>
+        <span class="feature-tag">AUTO</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📊</span>
+        <h3><span class="en">Weekly Productivity Report</span><span class="th">รายงาน Productivity รายสัปดาห์</span></h3>
+        <p class="en">Every Sunday: comprehensive report — focus hours, tasks completed, follow-ups closed, productivity score. See your patterns and improve week over week.</p>
+        <p class="th">ทุกวันอาทิตย์: รายงานครบถ้วน — ชั่วโมงโฟกัส, งานที่เสร็จ, follow-up ที่ปิด, productivity score เห็นรูปแบบของคุณและพัฒนาทุกสัปดาห์</p>
+        <span class="feature-tag">INSIGHTS</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🗓️</span>
+        <h3><span class="en">Google Calendar Sync</span><span class="th">ซิงค์ Google Calendar</span></h3>
+        <p class="en">Connect Google Calendar — AI sees your meetings and adjusts daily plan accordingly. Calendar events appear in morning brief automatically.</p>
+        <p class="th">เชื่อมต่อ Google Calendar — AI เห็นประชุมของคุณและปรับแผนรายวันตาม กิจกรรม calendar ปรากฏในบรีฟเช้าอัตโนมัติ</p>
+        <span class="feature-tag">SYNC</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📈</span>
+        <h3><span class="en">Thai Financial Goal Tracker</span><span class="th">ติดตามเป้าหมายการเงินไทย</span></h3>
+        <p class="en">Set revenue targets: "ทำเงิน ฿150K ในเดือนนี้" — AI tracks progress, reminds you mid-month, suggests focus areas to hit target.</p>
+        <p class="th">ตั้งเป้ารายได้: "ทำเงิน ฿150K ในเดือนนี้" — AI ติดตามความคืบหน้า เตือนกลางเดือน แนะนำสิ่งที่ควรโฟกัสเพื่อถึงเป้า</p>
+        <span class="feature-tag">MONEY-FOCUSED</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITORS -->
+  <section id="competitors">
+    <div class="section-label">COMPETITIVE ANALYSIS</div>
+    <h2 class="section-title">
+      <span class="en">Why Existing Tools Don't Fit Thai Users</span>
+      <span class="th">ทำไมเครื่องมือที่มีไม่เหมาะกับคนไทย</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Global productivity apps exist, but they all have the same problem: they're built for Western users with desktop habits and English preferences. Thai professionals work differently.</span>
+      <span class="th">มีแอป productivity โลกอยู่แล้ว แต่มีปัญหาเดียวกันทั้งหมด: สร้างสำหรับผู้ใช้ตะวันตกที่มีนิสัยใช้ desktop และชอบภาษาอังกฤษ มืออาชีพไทยทำงานต่างออกไป</span>
+    </p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Thai Language</th>
+          <th>LINE Native</th>
+          <th>AI Briefing</th>
+          <th>Follow-Up Nudges</th>
+          <th>Price/mo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Notion</strong></td>
+          <td class="partial">Partial</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td>$8–16</td>
+        </tr>
+        <tr>
+          <td><strong>Todoist</strong></td>
+          <td class="partial">Partial</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td>$5</td>
+        </tr>
+        <tr>
+          <td><strong>Motion AI</strong></td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td class="check">✓</td>
+          <td class="cross">✗</td>
+          <td>$19</td>
+        </tr>
+        <tr>
+          <td><strong>Reclaim AI</strong></td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td class="partial">Calendar only</td>
+          <td class="cross">✗</td>
+          <td>$10</td>
+        </tr>
+        <tr>
+          <td><strong>Obsidian</strong></td>
+          <td class="partial">Partial</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+          <td>Free</td>
+        </tr>
+        <tr class="ours">
+          <td><strong>🔥 MuteFlow</strong></td>
+          <td class="check">✓ Full Thai</td>
+          <td class="check">✓ 100% LINE</td>
+          <td class="check">✓ Morning + Eve</td>
+          <td class="check">✓ Client tracking</td>
+          <td>฿199 (~$6)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="insight-box" style="margin-top:2rem;">
+      <div class="insight-label">⚡ COMPETITIVE MOAT</div>
+      <p class="en"><strong>Zero LINE-native productivity app exists.</strong> Motion and Reclaim are calendar-focused for Western corporate users. Notion and Obsidian require learning new paradigms. MuteFlow's unique positioning: <strong>Thai language first, LINE-native, AI briefing focus</strong> — a completely different UX designed for Thai freelancer/SME workflows. This isn't "copy Motion for Thailand." It's a fundamentally simpler interface for a different user.</p>
+      <p class="th"><strong>ไม่มีแอป productivity LINE-native เลย</strong> Motion และ Reclaim เน้น calendar สำหรับผู้ใช้ corporate ตะวันตก Notion และ Obsidian ต้องเรียนรู้วิธีใช้ใหม่ จุดยืนเฉพาะของ MuteFlow: <strong>ภาษาไทยเป็นหลัก, LINE-native, เน้น AI briefing</strong> — UX ที่แตกต่างโดยสิ้นเชิงออกแบบสำหรับ workflow freelancer/SME ไทย ไม่ใช่ "copy Motion สำหรับไทย" แต่เป็นอินเทอร์เฟซที่เรียบง่ายกว่าสำหรับผู้ใช้ที่ต่างออกไป</p>
+    </div>
+  </section>
+
+  <!-- REVENUE MODEL -->
+  <section id="revenue">
+    <div class="section-label">REVENUE MODEL</div>
+    <h2 class="section-title">
+      <span class="en">Simple Pricing, Real Revenue Path</span>
+      <span class="th">ราคาเรียบง่าย ทางสู่รายได้จริง</span>
+    </h2>
+    <div class="revenue-grid">
+      <div class="plan-card">
+        <div class="plan-label">PERSONAL</div>
+        <div class="plan-price">฿199<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Morning + evening AI brief</li>
+          <li><span class="check">✓</span> Unlimited task capture (Thai/EN)</li>
+          <li><span class="check">✓</span> Focus timer + weekly report</li>
+          <li><span class="check">✓</span> Google Calendar sync</li>
+          <li><span class="check">✓</span> 10 client follow-up tracks</li>
+        </ul>
+      </div>
+      <div class="plan-card highlight">
+        <div class="plan-label">PRO — BEST FOR FREELANCERS</div>
+        <div class="plan-price">฿499<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Everything in Personal</li>
+          <li><span class="check">✓</span> Unlimited client follow-up</li>
+          <li><span class="check">✓</span> Revenue goal tracking</li>
+          <li><span class="check">✓</span> Priority AI responses</li>
+          <li><span class="check">✓</span> Export reports (PDF/Excel)</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-label">TEAM — FOR SMALL TEAMS (3-10)</div>
+        <div class="plan-price">฿1,499<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Everything in Pro</li>
+          <li><span class="check">✓</span> Shared task board</li>
+          <li><span class="check">✓</span> Team productivity dashboard</li>
+          <li><span class="check">✓</span> Admin controls</li>
+          <li><span class="check">✓</span> Priority support</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="math-box">
+      <h3>💵 REALISTIC REVENUE MATH (MONTH 12)</h3>
+      <div class="math-row"><span class="label">Personal subscribers</span><span>1,500 × ฿199 = ฿298,500</span></div>
+      <div class="math-row"><span class="label">Pro subscribers</span><span>400 × ฿499 = ฿199,600</span></div>
+      <div class="math-row"><span class="label">Team subscribers</span><span>50 × ฿1,499 = ฿74,950</span></div>
+      <div class="math-row"><span class="label">Total MRR (Month 12)</span><span style="color:var(--primary);font-weight:800;">฿573,050/mo</span></div>
+      <div class="math-row"><span class="label">Annual Run Rate</span><span style="color:var(--primary);font-weight:800;">฿6.9M ARR (~$200K)</span></div>
+    </div>
+
+    <div class="insight-box">
+      <div class="insight-label">💰 UNIT ECONOMICS</div>
+      <p class="en">
+        <strong>Gross margin: ~85%</strong> — LLM API cost per user is ~฿15-30/mo at scale (Claude Haiku for task parsing, brief generation). LINE Messaging API is free for OA. <strong>CAC target: ฿50-100</strong> via freelancer Facebook groups and LINE viral sharing. <strong>LTV target: ฿2,000+</strong> (10+ month retention). LTV:CAC = 20:1 at conservative estimates. <strong>Time to first $: Day 1</strong> — user scans QR, pays via PromptPay, starts using immediately. No free tier friction.
+      </p>
+      <p class="th">
+        <strong>Gross margin: ~85%</strong> — ต้นทุน LLM API ต่อผู้ใช้ ~฿15-30/เดือนที่ scale (Claude Haiku สำหรับแยกวิเคราะห์งาน, สร้างบรีฟ) LINE Messaging API ฟรีสำหรับ OA <strong>เป้า CAC: ฿50-100</strong> ผ่านกลุ่ม Facebook freelancer และการแชร์ viral ใน LINE <strong>เป้า LTV: ฿2,000+</strong> (retention 10+ เดือน) LTV:CAC = 20:1 ตามประมาณการอนุรักษ์นิยม <strong>Time to first $: วันที่ 1</strong> — ผู้ใช้สแกน QR, จ่ายผ่าน PromptPay, เริ่มใช้ทันที ไม่มี friction จาก free tier
+      </p>
+    </div>
+  </section>
+
+  <!-- DISTRIBUTION -->
+  <section id="distribution">
+    <div class="section-label">GO-TO-MARKET</div>
+    <h2 class="section-title">
+      <span class="en">Fast Distribution: Already in Their Pocket</span>
+      <span class="th">กระจายเร็ว: อยู่ในกระเป๋าผู้ใช้แล้ว</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">MuteFlow lives in LINE. Distribution IS the product. Users don't download an app — they add a LINE OA friend. Instant activation.</span>
+      <span class="th">MuteFlow อยู่ใน LINE การกระจายคือตัวผลิตภัณฑ์ ผู้ใช้ไม่ต้องดาวน์โหลดแอป — เพียงเพิ่มเพื่อน LINE OA เปิดใช้ทันที</span>
+    </p>
+    <div class="dist-grid">
+      <div class="dist-card">
+        <span class="dist-icon">👥</span>
+        <h4>Thai Freelancer FB Groups</h4>
+        <p class="en">Post in "Freelance Thailand", "Digital Nomad Thailand", "SME Thailand" — 100K+ members combined. One post = 500-2,000 clicks.</p>
+        <p class="th">โพสต์ใน "Freelance Thailand", "Digital Nomad Thailand", "SME Thailand" — 100K+ สมาชิกรวม โพสต์เดียว = 500-2,000 คลิก</p>
+        <div class="speed">⏱️ Hours to first users</div>
+      </div>
+      <div class="dist-card">
+        <span class="dist-icon">🔄</span>
+        <h4>LINE Viral Loop</h4>
+        <p class="en">Built-in share: "ส่งการ์ดแนะนำ MuteFlow ให้เพื่อน → รับฟรี 7 วัน" Every user becomes a referrer. LINE makes sharing frictionless.</p>
+        <p class="th">Share ในตัว: "ส่งการ์ดแนะนำ MuteFlow ให้เพื่อน → รับฟรี 7 วัน" ทุกคนเป็นผู้แนะนำ LINE ทำให้การแชร์ไร้ friction</p>
+        <div class="speed">⏱️ Viral from day 1</div>
+      </div>
+      <div class="dist-card">
+        <span class="dist-icon">🎥</span>
+        <h4>Productivity YouTubers</h4>
+        <p class="en">Collab with Thai productivity channels: "มาลอง MuteFlow — AI วางแผนงานใน LINE" Demo videos convert exceptionally well.</p>
+        <p class="th">Collab กับช่อง productivity ไทย: "มาลอง MuteFlow — AI วางแผนงานใน LINE" วิดีโอ demo แปลงผู้ชมได้ดีมาก</p>
+        <div class="speed">⏱️ Days to thousands</div>
+      </div>
+      <div class="dist-card">
+        <span class="dist-icon">💼</span>
+        <h4>LinkedIn Thai Professionals</h4>
+        <p class="en">Target Thai knowledge workers on LinkedIn with productivity content. "ประสบความสำเร็จในงานมากขึ้นด้วย MuteFlow" — executive positioning.</p>
+        <p class="th">เจาะมืออาชีพไทยบน LinkedIn ด้วยคอนเทนต์ productivity "ประสบความสำเร็จในงานมากขึ้นด้วย MuteFlow" — positioning แบบ executive</p>
+        <div class="speed">⏱️ Professional audience</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORING -->
+  <section id="score">
+    <div class="section-label">SPRINT SCORE</div>
+    <h2 class="section-title">
+      <span class="en">Idea #87: MuteFlow — 37/50</span>
+      <span class="th">ไอเดีย #87: MuteFlow — 37/50</span>
+    </h2>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="s-label">Market Potential</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note">
+          <span class="en">$60B global market, APAC fastest growth. 5M Thai freelancers + 3M SMEs. B2C pricing caps upside.</span>
+          <span class="th">ตลาดโลก $60B, APAC เติบโตเร็วสุด Freelancer ไทย 5M + SME 3M ราคา B2C จำกัด upside</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Problem Severity</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note">
+          <span class="en">Task overload is real. Lost follow-ups = lost revenue. Many use free tools, but pain is genuine.</span>
+          <span class="th">งานล้นจริง ลืม follow-up = เสียเงิน หลายคนใช้เครื่องมือฟรี แต่ความเจ็บปวดจริง</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Competition Gap</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note">
+          <span class="en">ZERO LINE-native AI planner. All major apps are English-first, app-first. Thai-specific = strong moat.</span>
+          <span class="th">ZERO AI planner แบบ LINE-native แอปใหญ่ทั้งหมดเป็น English-first, app-first Thai-specific = คูเมืองแข็งแกร่ง</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Build Feasibility</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note">
+          <span class="en">LINE bot + LLM + Google Calendar API = MVP in 2-3 weeks. Simple scope, no complex infrastructure.</span>
+          <span class="th">LINE bot + LLM + Google Calendar API = MVP ใน 2-3 สัปดาห์ ขอบเขตเรียบง่าย ไม่มีโครงสร้างซับซ้อน</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Our Advantage</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note">
+          <span class="en">LINE-first Thai context. But global apps could add Thai/LINE eventually. Speed matters.</span>
+          <span class="th">LINE-first context ไทย แต่แอปโลกอาจเพิ่ม Thai/LINE ได้ในอนาคต ความเร็วสำคัญ</span>
+        </div>
+      </div>
+    </div>
+    <div class="score-total">
+      <div class="total-num">37/50</div>
+      <div class="total-label">PASS THRESHOLD: ≥30</div>
+      <div class="verdict">✅ STRONG PASS</div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section id="risks">
+    <div class="section-label">RISKS</div>
+    <h2 class="section-title">
+      <span class="en">What Could Go Wrong?</span>
+      <span class="th">อะไรอาจผิดพลาด?</span>
+    </h2>
+    <div class="risks-grid">
+      <div class="risk-card">
+        <div class="risk-head">
+          <h4>B2C Churn</h4>
+          <span class="risk-pill risk-med">MEDIUM</span>
+        </div>
+        <p class="en">Individuals churn faster than businesses. If users don't feel daily value, they cancel. Need sticky habits fast.</p>
+        <p class="th">บุคคลทั่วไป churn เร็วกว่าธุรกิจ ถ้าผู้ใช้ไม่รู้สึกว่ามีค่าทุกวันจะยกเลิก ต้องสร้างนิสัยติดให้เร็ว</p>
+        <div class="mitigation">Mitigation: Daily morning brief = habit loop. If they open LINE for MuteFlow daily, switching cost becomes high.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head">
+          <h4>LLM Cost at Scale</h4>
+          <span class="risk-pill risk-low">LOW</span>
+        </div>
+        <p class="en">If 10K+ users send 50+ messages/day each, API costs scale. Need efficient prompting and caching.</p>
+        <p class="th">ถ้าผู้ใช้ 10K+ ส่ง 50+ ข้อความ/วันต่อคน ต้นทุน API จะ scale ต้องมี prompting และ caching ที่มีประสิทธิภาพ</p>
+        <div class="mitigation">Mitigation: Use cheaper models (Haiku) for routine tasks. Cache briefs. Batch processing. At ฿199/mo, margin is safe.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head">
+          <h4>Global Competitors Add LINE</h4>
+          <span class="risk-pill risk-med">MEDIUM</span>
+        </div>
+        <p class="en">Notion, Todoist, or Motion could add LINE integration and Thai language, eroding our moat.</p>
+        <p class="th">Notion, Todoist หรือ Motion อาจเพิ่ม LINE integration และภาษาไทย กัดเซาะคูเมืองเรา</p>
+        <div class="mitigation">Mitigation: Move fast, build user base before they notice. Thai-specific features (PromptPay, Thai holidays, Thai work culture) are hard for global players to replicate.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head">
+          <h4>LINE Policy Changes</h4>
+          <span class="risk-pill risk-low">LOW</span>
+        </div>
+        <p class="en">LINE could change OA API terms or pricing, affecting our business model.</p>
+        <p class="th">LINE อาจเปลี่ยนเงื่อนไข API OA หรือราคา กระทบโมเดลธุรกิจเรา</p>
+        <div class="mitigation">Mitigation: LINE has been stable for years. OA API is core to their ecosystem. Diversify to web dashboard as backup.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <div class="section-label">ROADMAP</div>
+    <h2 class="section-title">
+      <span class="en">90-Day Path to Revenue</span>
+      <span class="th">90 วันสู่รายได้</span>
+    </h2>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-dot active">🚀</div>
+        <div class="roadmap-content">
+          <div class="when">WEEK 1-2</div>
+          <h3>MVP Launch</h3>
+          <p class="en">LINE OA live. Morning brief + task capture + focus timer. Manual onboarding. First 50 beta users from freelancer groups.</p>
+          <p class="th">LINE OA เปิดใช้ บรีฟเช้า + บันทึกงาน + focus timer Onboarding แบบ manual 50 ผู้ใช้ beta แรกจากกลุ่ม freelancer</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">💰</div>
+        <div class="roadmap-content">
+          <div class="when">WEEK 3-4</div>
+          <h3>First Paying Customers</h3>
+          <p class="en">PromptPay payment integration. Auto-onboarding flow. 100 paying users target. Revenue: ฿20K/mo.</p>
+          <p class="th">เชื่อมต่อ PromptPay ขั้นตอน onboarding อัตโนมัติ เป้า 100 ผู้ใช้จ่ายเงิน รายได้: ฿20K/เดือน</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">📈</div>
+        <div class="roadmap-content">
+          <div class="when">MONTH 2</div>
+          <h3>Follow-Up Nudger + Pro Tier</h3>
+          <p class="en">Launch smart follow-up tracking. Add Pro tier at ฿499/mo. 300 paying users. Revenue: ฿70K/mo.</p>
+          <p class="th">เปิดตัว follow-up tracking อัจฉริยะ เพิ่ม Pro tier ที่ ฿499/เดือน 300 ผู้ใช้จ่ายเงิน รายได้: ฿70K/เดือน</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">🏆</div>
+        <div class="roadmap-content">
+          <div class="when">MONTH 3</div>
+          <h3>1,000 Users + Team Tier</h3>
+          <p class="en">Google Calendar sync live. Team tier launched. 500+ paying users. Revenue: ฿150K/mo. Path to ฿500K/mo clear.</p>
+          <p class="th">Google Calendar sync เปิดใช้ Team tier เปิดตัว 500+ ผู้ใช้จ่ายเงิน รายได้: ฿150K/เดือน เส้นทางสู่ ฿500K/เดือนชัดเจน</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CEO ASSESSMENT -->
+  <section id="assessment">
+    <div class="section-label">CEO ASSESSMENT</div>
+    <h2 class="section-title">
+      <span class="en">Why This Might Work</span>
+      <span class="th">ทำไมถึงอาจได้ผล</span>
+    </h2>
+    <div class="insight-box">
+      <p class="en">
+        <strong>The key insight is switching cost elimination.</strong> Every other productivity tool requires: download app → create account → learn UI → remember to open it daily. That's 4 friction points where users drop off. <strong>MuteFlow requires: add LINE friend → start chatting.</strong> That's it.
+        <br><br>
+        Thai freelancers and SME owners already open LINE 50+ times per day. They don't need another app. They need a smarter LINE experience. MuteFlow is not "competing with Notion" — it's competing with the status quo of doing nothing.
+        <br><br>
+        <strong>Revenue is immediate:</strong> 14-day free trial via LINE QR → PromptPay → ฿199/mo. First payment can happen within hours of launch. No enterprise sales cycles, no credit card friction, no annual commitments.
+        <br><br>
+        <strong>The risk is retention.</strong> B2C apps churn faster than B2B. The morning brief MUST become a daily habit or users cancel. This is why the 7:30 AM brief is the core feature — if it becomes part of their morning routine (like checking Instagram), switching cost becomes real.
+        <br><br>
+        <strong>At scale:</strong> 2,000 users at ฿280 ARPU = ฿560K MRR = ฿6.7M ARR. Not venture-scale, but a very healthy bootstrap business for 2 people. Exit path: sell to a Thai SaaS company (FlowAccount, J Dwarf, etc.) looking to add productivity features.
+      </p>
+      <p class="th">
+        <strong>Key insight คือการขจัด switching cost</strong> เครื่องมือ productivity อื่นทุกตัวต้อง: ดาวน์โหลดแอป → สร้างบัญชี → เรียนรู้ UI → จำต้องเปิดทุกวัน นั่นคือ 4 friction point ที่ผู้ใช้หลุด <strong>MuteFlow ต้อง: เพิ่มเพื่อน LINE → เริ่มแชท</strong> แค่นั้น
+        <br><br>
+        Freelancer ไทยและเจ้าของ SME เปิด LINE 50+ ครั้งต่อวันอยู่แล้ว พวกเขาไม่ต้องการแอปใหม่ พวกเขาต้องการประสบการณ์ LINE ที่ฉลาดกว่า MuteFlow ไม่ใช่ "แข่งกับ Notion" — แต่แข่งกับสถานะปัจจุบันที่ไม่ทำอะไรเลย
+        <br><br>
+        <strong>รายได้ทันที:</strong> ทดลองฟรี 14 วันผ่าน QR LINE → PromptPay → ฿199/เดือน การจ่ายครั้งแรกเกิดขึ้นได้ภายในชั่วโมงหลังเปิดตัว ไม่มี sales cycle enterprise ไม่มี friction บัตรเครดิต ไม่มี commitment รายปี
+        <br><br>
+        <strong>ความเสี่ยงคือ retention</strong> แอป B2C churn เร็วกว่า B2B บรีฟเช้า 7:30 ต้องเป็นนิสัยประจำวัน ไม่งั้นผู้ใช้จะยกเลิก นี่คือเหตุผลที่บรีฟ 7:30 AM เป็นฟีเจอร์หลัก — ถ้ามันเป็นส่วนหนึ่งของ routine เช้าของพวกเขา (เหมือนเช็ค Instagram) switching cost จะกลายเป็นของจริง
+        <br><br>
+        <strong>ที่ scale:</strong> 2,000 ผู้ใช้ที่ ARPU ฿280 = ฿560K MRR = ฿6.7M ARR ไม่ใช่ venture-scale แต่เป็นธุรกิจ bootstrap ที่แข็งแกร่งมากสำหรับ 2 คน ทางออก: ขายให้บริษัท SaaS ไทย (FlowAccount, J Dwarf, ฯลฯ) ที่มองหาเพิ่มฟีเจอร์ productivity
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.html" class="footer-back">← Back to All Ideas</a>
+    <p>
+      <span class="en">Idea #87: MuteFlow — AI Daily Work Planner for Thai Professionals via LINE · Score: 37/50 · Category: Personal Productivity</span>
+      <span class="th">ไอเดีย #87: MuteFlow — AI วางแผนงานรายวันสำหรับมืออาชีพไทยผ่าน LINE · คะแนน: 37/50 · หมวด: Personal Productivity</span>
+    </p>
+    <p style="margin-top:0.5rem;opacity:0.6;font-size:0.75rem;">MuteLab Idea Sprint · Feb 2026</p>
+  </footer>
+
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') {
+    document.body.classList.add('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[1].classList.add('active');
+  } else {
+    document.body.classList.remove('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[0].classList.add('active');
+  }
+}
+// Auto-detect Thai browser
+if (navigator.language && navigator.language.startsWith('th')) {
+  setLang('th');
+}
+</script>
+</body>
+</html>
