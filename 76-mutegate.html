@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteGate — x402-Native API Monetization for the AI Agent Economy</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4); font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50; padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s; font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 4px 40px rgba(245,158,11,0.08); margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2); padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1; font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+  .token-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; position: relative; overflow: hidden; transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; font-family: 'Space Mono', monospace; }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace; margin-top: 0.4rem;
+  }
+  .tc-badge.purple { background: var(--secondary-pale); border-color: rgba(139,92,246,0.2); color: var(--secondary-light); }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace; display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub { font-size: 1.05rem; color: var(--muted); line-height: 1.75; margin-bottom: 2rem; max-width: 580px; }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 3rem 0; }
+  .stat-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2); transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); margin-bottom: 0.75rem; line-height: 1.2; }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .wf-step { background: var(--surface); padding: 2rem 1.5rem; transition: background 0.2s; }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+  .wf-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem; transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem; position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2); }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2); border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .rev-highlight .rh-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; font-family: 'Space Mono', monospace; }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num { font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; color: var(--primary); line-height: 1; margin-bottom: 0.25rem; font-family: 'Space Mono', monospace; }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .rev-tier { background: var(--surface); padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; transition: background 0.2s; }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label { width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary); flex-shrink: 0; font-family: 'Space Mono', monospace; }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount { font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--text); }
+  .rt-note { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--secondary-light); }
+
+  .roadmap-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 20px rgba(0,0,0,0.2); }
+  .roadmap-header { background: var(--surface2); padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.8rem; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: space-between; font-family: 'Space Mono', monospace; }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 1.25rem; transition: background 0.15s; }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric { font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-top: 0.4rem; }
+
+  .video-placeholder {
+    background: var(--surface2); border: 2px dashed var(--border2);
+    border-radius: 16px; padding: 4rem 2rem; text-align: center; margin-bottom: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .video-placeholder::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.04) 0%, transparent 70%); }
+  .vp-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.7; }
+  .vp-title { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .vp-sub { font-size: 0.9rem; color: var(--muted); }
+  .vp-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2); color: var(--primary); border-radius: 980px; padding: 0.4rem 1rem; font-size: 0.75rem; font-weight: 700; margin-top: 1rem; font-family: 'Space Mono', monospace; }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2); border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem; position: relative; overflow: hidden;
+  }
+  .cta-wrap::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.1) 0%, transparent 55%), radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%); }
+  .cta-wrap::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary)); background-size: 200% 100%; animation: shimmer 3s linear infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.3); color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem; font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem; font-family: 'Space Mono', monospace; position: relative; z-index: 1; }
+  .cta-title { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; color: var(--text); margin-bottom: 1rem; line-height: 1.15; position: relative; z-index: 1; }
+  .cta-title .gold { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary { display: inline-flex; align-items: center; gap: 0.6rem; background: linear-gradient(135deg, var(--primary), #d97706); color: #0a0a0f; font-size: 0.9rem; font-weight: 700; padding: 0.9rem 2rem; border-radius: 10px; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(245,158,11,0.3); font-family: 'Space Mono', monospace; }
+  .cta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
+  .cta-btn-secondary { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(139,92,246,0.1); color: var(--secondary-light); border: 1px solid rgba(139,92,246,0.3); font-size: 0.9rem; font-weight: 600; padding: 0.9rem 2rem; border-radius: 10px; text-decoration: none; transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .cta-btn-secondary:hover { background: rgba(139,92,246,0.2); transform: translateY(-1px); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  .code-block {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem; font-family: 'Space Mono', monospace; font-size: 0.78rem;
+    color: var(--text2); line-height: 1.8; overflow-x: auto; margin: 1.5rem 0;
+  }
+  .code-comment { color: var(--muted2); }
+  .code-keyword { color: var(--secondary-light); }
+  .code-string { color: var(--green); }
+  .code-number { color: var(--primary); }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+
+  .research-btn { position: fixed; bottom: 2rem; right: 2rem; z-index: 90; display: flex; align-items: center; gap: 0.5rem; padding: 0.9rem 1.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0a0a0f; border: none; border-radius: 980px; font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(245,158,11,0.3); transition: all 0.3s; }
+  .research-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 8px 32px rgba(245,158,11,0.4); }
+  .research-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.75); backdrop-filter: blur(20px); overflow-y: auto; padding: 2rem; }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content { background: #16162a; border: 1px solid var(--border2); border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; margin: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+  .research-modal-close { position: absolute; top: 1rem; right: 1.5rem; color: var(--muted); background: var(--surface2); width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+  .research-modal-close:hover { background: var(--surface3); color: var(--text); }
+  .research-modal-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border); position: relative; }
+  .research-modal-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 20px 20px 0 0; }
+  .research-modal-header h2 { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0; }
+  .research-badge { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--primary); background: var(--primary-pale); padding: 0.3rem 0.8rem; border-radius: 980px; border: 1px solid rgba(245,158,11,0.2); width: fit-content; font-weight: 600; margin-top: 0.5rem; }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 { font-family: 'Space Mono', monospace; font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.08em; }
+  .research-section p, .research-section ul { color: var(--text2); font-size: 0.88rem; line-height: 1.65; margin: 0; }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.4rem; }
+  .research-highlight { background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2); padding: 1rem; border-radius: 12px; text-align: center; }
+  .research-highlight h3 { border: none; padding: 0; margin: 0; font-size: 1.1rem; color: var(--primary) !important; text-transform: none; letter-spacing: 0; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span></a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🚪</div>
+        <span>MuteGate</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span><span class="en">$20B+ API market · x402 first-mover</span><span class="th">ตลาด API $20B+ · x402 first-mover</span></span>
+      <div class="topbar-badge"><span class="en">Idea 76</span><span class="th">ไอเดีย 76</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        🚪 <span class="en">IDEA 76 — MUTEGATE · x402-NATIVE API MONETIZATION</span><span class="th">ไอเดีย 76 — MUTEGATE · x402-NATIVE API MONETIZATION</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">The <span class="gold">Stripe</span> for<br><span class="purple">AI Agent</span> APIs</span>
+        <span class="th"><span class="gold">Stripe</span> สำหรับ<br>API ของ <span class="purple">AI Agent</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>x402-native API monetization platform.</strong> Turn any service into a pay-per-call API that AI agents can discover and pay for automatically. Built on Coinbase's HTTP 402 protocol. The infrastructure layer for the agent economy.</span>
+        <span class="th"><strong>แพลตฟอร์มสร้างรายได้จาก API แบบ x402-native</strong> เปลี่ยนทุกบริการเป็น API แบบจ่ายต่อ call ที่ AI agent ค้นหาและจ่ายเงินอัตโนมัติ สร้างบนโปรโตคอล HTTP 402 ของ Coinbase ชั้นโครงสร้างพื้นฐานสำหรับเศรษฐกิจ agent</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">36/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 36/50 — PASS</strong>
+              <span class="en">x402 Deep Dive — HIGH PRIORITY</span>
+              <span class="th">x402 Deep Dive — ความสำคัญสูง</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">$20B+</div>
+            <div class="score-meta">
+              <strong>🌐 API Management Market by 2030</strong>
+              <span class="en">20%+ CAGR, accelerating with AI agents</span>
+              <span class="th">CAGR 20%+, เร่งตัวด้วย AI agents</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Window: Code Example -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">MuteGate — <span class="en">x402 API Transaction Flow</span><span class="th">ขั้นตอนธุรกรรม x402 API</span></div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🤖</div>
+          <div class="tc-name"><span class="en">AI AGENT</span><span class="th">AI AGENT</span></div>
+          <div class="tc-value">GET /api</div>
+          <div class="tc-sub"><span class="en">Agent discovers & calls API</span><span class="th">Agent ค้นหา & เรียก API</span></div>
+          <div class="tc-badge">⚡ <span class="en">Auto-discovery</span><span class="th">ค้นหาอัตโนมัติ</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">💳</div>
+          <div class="tc-name"><span class="en">HTTP 402</span><span class="th">HTTP 402</span></div>
+          <div class="tc-value">Pay Required</div>
+          <div class="tc-sub"><span class="en">x402 payment negotiation</span><span class="th">การเจรจาชำระเงิน x402</span></div>
+          <div class="tc-badge purple">🔗 <span class="en">On-chain</span><span class="th">On-chain</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">✅</div>
+          <div class="tc-name"><span class="en">200 OK</span><span class="th">200 OK</span></div>
+          <div class="tc-value">Data Delivered</div>
+          <div class="tc-sub"><span class="en">Instant access after payment</span><span class="th">เข้าถึงทันทีหลังจ่าย</span></div>
+          <div class="tc-badge">💰 <span class="en">Revenue earned</span><span class="th">รายได้เข้า</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">🔗 x402 Payment Flow</span><span class="th">🔗 ขั้นตอนการชำระเงิน x402</span></span>
+          <span style="color:var(--primary);">Coinbase Protocol ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:100%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">API Call</span><span class="th">เรียก API</span> ✓</span>
+          <span><span class="en">402 Response</span><span class="th">402 ตอบกลับ</span> ✓</span>
+          <span><span class="en">Crypto Payment</span><span class="th">จ่ายคริปโต</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Data Access</span><span class="th">เข้าถึงข้อมูล</span> ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🌐</div>
+      <div class="stat-num"><span class="gold">$20B+</span></div>
+      <div class="stat-label"><span class="en">API management market by 2030. 20%+ CAGR. Kong, Apigee, AWS Gateway dominate — but none support x402 crypto payments.</span><span class="th">ตลาดจัดการ API ปี 2030 CAGR 20%+ Kong, Apigee, AWS Gateway ครอง — แต่ไม่มีใครรองรับ x402 crypto payments</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="purple">$50B+</span></div>
+      <div class="stat-label"><span class="en">AI agent market projected by 2030. Agents need to PAY for APIs autonomously. x402 is the standard. We're the gateway.</span><span class="th">ตลาด AI agent คาดการณ์ปี 2030 Agent ต้องจ่ายค่า API เอง x402 คือมาตรฐาน เราคือ gateway</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💎</div>
+      <div class="stat-num"><span class="gold">$0</span></div>
+      <div class="stat-label"><span class="en">Competitors with x402-native API monetization. ZERO. The protocol is brand new (Coinbase, 2025). Pure first-mover opportunity.</span><span class="th">คู่แข่งที่มี x402-native API monetization ศูนย์ โปรโตคอลใหม่มาก (Coinbase, 2025) โอกาส first-mover แท้จริง</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⚡</div>
+      <div class="stat-num"><span class="purple">2-3%</span></div>
+      <div class="stat-label"><span class="en">Transaction fee per API call. Like Stripe takes 2.9% + 30¢ for web payments, MuteGate takes 2-3% for agent payments. Revenue at scale.</span><span class="th">ค่าธรรมเนียมต่อ API call เหมือน Stripe เก็บ 2.9% สำหรับ web payments MuteGate เก็บ 2-3% สำหรับ agent payments รายได้ระดับ scale</span></div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title"><span class="en">Monetize any API in three steps</span><span class="th">สร้างรายได้จาก API ใดก็ได้ใน 3 ขั้นตอน</span></div>
+    <p class="section-sub"><span class="en">Developers register their API on MuteGate, set pricing per call, and AI agents automatically discover and pay for access. No invoicing, no subscriptions, no payment disputes — pure machine-to-machine commerce.</span><span class="th">นักพัฒนาลงทะเบียน API บน MuteGate ตั้งราคาต่อ call แล้ว AI agent จะค้นพบและจ่ายเงินอัตโนมัติ ไม่มี invoice ไม่มี subscription ไม่มีข้อพิพาท — การค้าแบบ machine-to-machine ล้วนๆ</span></p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📡</div>
+        <div class="wf-title"><span class="en">Register Your API</span><span class="th">ลงทะเบียน API ของคุณ</span></div>
+        <div class="wf-desc"><span class="en">Connect your existing API or create one from a database/service. Set per-call pricing ($0.001 – $10+). MuteGate wraps it with x402 payment headers automatically.</span><span class="th">เชื่อมต่อ API ที่มีหรือสร้างจาก database/service ตั้งราคาต่อ call ($0.001 – $10+) MuteGate ใส่ x402 payment headers ให้อัตโนมัติ</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title"><span class="en">AI Agents Discover & Pay</span><span class="th">AI Agent ค้นพบ & จ่ายเงิน</span></div>
+        <div class="wf-desc"><span class="en">Agents browsing the web hit your API, get a 402 Payment Required response, negotiate price via x402 protocol, pay with USDC/ETH on Base, and get instant access.</span><span class="th">Agent ท่องเว็บพบ API ของคุณ ได้รับ 402 Payment Required เจรจาราคาผ่าน x402 จ่ายด้วย USDC/ETH บน Base และเข้าถึงทันที</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">💰</div>
+        <div class="wf-title"><span class="en">Get Paid Instantly</span><span class="th">รับเงินทันที</span></div>
+        <div class="wf-desc"><span class="en">Payments settle on-chain (Base L2 = low fees). Real-time analytics dashboard. Withdraw to your wallet anytime. No 30-day net terms, no invoicing hassle.</span><span class="th">การชำระเงิน settle on-chain (Base L2 = ค่าธรรมเนียมต่ำ) แดชบอร์ดวิเคราะห์แบบ real-time ถอนไปกระเป๋าเมื่อไหร่ก็ได้ ไม่มี net 30 ไม่มีความยุ่งยากเรื่อง invoice</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code Example -->
+  <div class="code-block">
+    <span class="code-comment"># AI Agent calls your API via MuteGate</span><br>
+    <span class="code-keyword">GET</span> https://api.mutegate.io/v1/weather/bangkok<br>
+    <br>
+    <span class="code-comment"># MuteGate responds with 402 + payment details</span><br>
+    <span class="code-keyword">HTTP/1.1</span> <span class="code-number">402</span> Payment Required<br>
+    <span class="code-keyword">X-Payment:</span> <span class="code-string">{"protocol":"x402","amount":"0.001","currency":"USDC","network":"base"}</span><br>
+    <br>
+    <span class="code-comment"># Agent pays via x402 header, gets data instantly</span><br>
+    <span class="code-keyword">GET</span> https://api.mutegate.io/v1/weather/bangkok<br>
+    <span class="code-keyword">X-Payment-Proof:</span> <span class="code-string">{"tx":"0xabc...","amount":"0.001"}</span><br>
+    <br>
+    <span class="code-keyword">HTTP/1.1</span> <span class="code-number">200</span> OK<br>
+    <span class="code-string">{"temp": 34, "humidity": 78, "forecast": "sunny"}</span>
+  </div>
+
+  <!-- Why MuteGate -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title"><span class="en">Perfect timing, perfect founder</span><span class="th">จังหวะเวลาสมบูรณ์แบบ ผู้ก่อตั้งสมบูรณ์แบบ</span></div>
+    <p class="section-sub"><span class="en">x402 is brand new (Coinbase, Feb 2025). The AI agent economy is exploding. Thanapat is a blockchain CTO. This is the intersection of everything we're best at.</span><span class="th">x402 ใหม่มาก (Coinbase, ก.พ. 2025) เศรษฐกิจ AI agent กำลังระเบิด ธนภัทร เป็น blockchain CTO นี่คือจุดตัดของทุกอย่างที่เราเก่งที่สุด</span></p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">🔗</div>
+        <div class="why-panel-title"><span class="en">Blockchain CTO = Perfect Founder-Market Fit</span><span class="th">Blockchain CTO = Founder-Market Fit สมบูรณ์แบบ</span></div>
+        <div class="why-panel-desc"><span class="en">Thanapat builds blockchain infrastructure at Water Ledger daily. Smart contracts, on-chain payments, protocol design — this is literally his day job. No other API company has this DNA.</span><span class="th">ธนภัทร สร้าง blockchain infrastructure ที่ Water Ledger ทุกวัน Smart contracts, on-chain payments, protocol design — นี่คืองานประจำของเขา ไม่มีบริษัท API อื่นที่มี DNA แบบนี้</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">⏰</div>
+        <div class="why-panel-title"><span class="en">x402 is 1 Month Old — First Mover Window</span><span class="th">x402 อายุ 1 เดือน — หน้าต่าง First Mover</span></div>
+        <div class="why-panel-desc"><span class="en">Coinbase released x402 in Feb 2025. The ecosystem is embryonic. Build the tooling layer NOW and become the default infrastructure. Like Stripe was to credit cards in 2011.</span><span class="th">Coinbase ออก x402 ใน ก.พ. 2025 ระบบนิเวศยังอยู่ในช่วงเริ่มต้น สร้าง tooling layer ตอนนี้แล้วเป็นโครงสร้างพื้นฐานเริ่มต้น เหมือน Stripe กับบัตรเครดิตในปี 2011</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🤖</div>
+        <div class="why-panel-title"><span class="en">AI Agents NEED Payment Infrastructure</span><span class="th">AI Agent ต้องการโครงสร้างพื้นฐานการชำระเงิน</span></div>
+        <div class="why-panel-desc"><span class="en">Claude, GPT, Gemini agents need to BUY services autonomously. They can't use credit cards. x402 + crypto is the ONLY viable path. MuteGate makes it dead simple for API providers.</span><span class="th">Claude, GPT, Gemini agents ต้องซื้อบริการเอง ใช้บัตรเครดิตไม่ได้ x402 + crypto เป็นทางเดียวที่ viable MuteGate ทำให้ง่ายมากสำหรับผู้ให้บริการ API</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💎</div>
+        <div class="why-panel-title"><span class="en">Network Effects: More APIs = More Agents = More APIs</span><span class="th">Network Effects: ยิ่ง API เยอะ = ยิ่ง Agent เยอะ = ยิ่ง API เยอะ</span></div>
+        <div class="why-panel-desc"><span class="en">Classic marketplace dynamics. Once we have critical mass of monetized APIs, agents will come. Once agents come, more developers will list. Winner-take-most market — be first.</span><span class="th">พลวัตตลาดกลางแบบคลาสสิก เมื่อเรามี API ที่ monetize มากพอ agent จะมา เมื่อ agent มา นักพัฒนาจะลงทะเบียนเพิ่ม ตลาด winner-take-most — เป็นคนแรก</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title"><span class="en">Transaction fees + SaaS = compounding revenue</span><span class="th">ค่าธรรมเนียมธุรกรรม + SaaS = รายได้ทบต้น</span></div>
+    <p class="section-sub"><span class="en">2-3% of every API transaction + monthly subscription for premium features. Revenue grows with the entire AI agent economy — we're betting on the platform, not one product.</span><span class="th">2-3% ของทุกธุรกรรม API + subscription รายเดือนสำหรับฟีเจอร์ premium รายได้โตตามเศรษฐกิจ AI agent ทั้งหมด — เราเดิมพันกับแพลตฟอร์ม ไม่ใช่สินค้าเดียว</span></p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>$1M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">$1M</div>
+          <div class="rh-sub"><span class="en">ARR by Month 18-24</span><span class="th">ARR ภายใน 18-24 เดือน</span></div>
+          <div class="rh-note">
+            <span class="en">1,000 APIs × avg $200/mo tx fees = $200K/mo<br>+ 500 Pro subscribers × $99/mo = $50K/mo<br>+ 50 Enterprise × $499/mo = $25K/mo<br>= $275K/mo ≈ $3.3M ARR</span>
+            <span class="th">1,000 API × เฉลี่ย $200/เดือน tx fees = $200K/เดือน<br>+ 500 Pro × $99/เดือน = $50K/เดือน<br>+ 50 Enterprise × $499/เดือน = $25K/เดือน<br>= $275K/เดือน ≈ $3.3M ARR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;"><span class="en">Tier</span><span class="th">ระดับ</span></div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;"><span class="en">Details</span><span class="th">รายละเอียด</span></div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;"><span class="en">Price</span><span class="th">ราคา</span></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🆓</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc"><span class="en">1 API endpoint, basic analytics, 3% transaction fee. Get started instantly.</span><span class="th">1 API endpoint, analytics เบื้องต้น, ค่าธรรมเนียม 3% เริ่มต้นทันที</span></div>
+          <div class="rt-price"><div class="rt-amount">Free</div><div class="rt-note">3% tx fee</div></div>
+        </div>
+        <div class="rev-tier" style="background:rgba(245,158,11,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">⚡</div>
+          <div class="rt-label" style="color:var(--primary-light);">Pro ⭐</div>
+          <div class="rt-desc"><span class="en">Unlimited APIs, advanced analytics, custom domains, webhook notifications, 2% fee.</span><span class="th">API ไม่จำกัด, analytics ขั้นสูง, custom domain, webhook, ค่าธรรมเนียม 2%</span></div>
+          <div class="rt-price"><div class="rt-amount">$99/mo</div><div class="rt-note">2% tx fee</div></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc"><span class="en">White-label, SLA guarantees, dedicated support, custom payment terms, 1.5% fee.</span><span class="th">White-label, SLA รับประกัน, ซัพพอร์ตเฉพาะ, เงื่อนไขชำระเงินพิเศษ, ค่าธรรมเนียม 1.5%</span></div>
+          <div class="rt-price"><div class="rt-amount">$499/mo</div><div class="rt-note">1.5% tx fee</div></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🌐</div>
+          <div class="rt-label">Marketplace</div>
+          <div class="rt-desc"><span class="en">List on MuteGate marketplace for agent discovery. Featured placement, verified badge.</span><span class="th">ลิสต์บน MuteGate marketplace สำหรับ agent discovery ตำแหน่ง featured, verified badge</span></div>
+          <div class="rt-price"><div class="rt-amount">+$49/mo</div><div class="rt-note">add-on</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title"><span class="en">From protocol to platform in 18 months</span><span class="th">จากโปรโตคอลสู่แพลตฟอร์มใน 18 เดือน</span></div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span><span class="en">🚪 MuteGate — Milestone Timeline</span><span class="th">🚪 MuteGate — แผน Milestones</span></span>
+        <span class="roadmap-tag"><span class="en">$1M ARR target · Month 18-24</span><span class="th">เป้า $1M ARR · เดือน 18-24</span></span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 1–3 · PROTOCOL LAYER</span><span class="th">เดือน 1–3 · ชั้นโปรโตคอล</span></div>
+          <div class="roadmap-title"><span class="en">Build x402 gateway SDK + first 10 APIs</span><span class="th">สร้าง x402 gateway SDK + 10 API แรก</span></div>
+          <div class="roadmap-body"><span class="en">Open-source x402 proxy middleware. SDK for Node.js/Python. Onboard our OWN APIs first (weather, exchange rates, Thai business data). Publish on GitHub for developer trust.</span><span class="th">Open-source x402 proxy middleware SDK สำหรับ Node.js/Python onboard API ของเราเองก่อน (สภาพอากาศ, อัตราแลกเปลี่ยน, ข้อมูลธุรกิจไทย) เผยแพร่บน GitHub เพื่อความน่าเชื่อถือ</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 1–3</div><div class="roadmap-metric">10 APIs</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 4–6 · MARKETPLACE</span><span class="th">เดือน 4–6 · ตลาดกลาง</span></div>
+          <div class="roadmap-title"><span class="en">Launch marketplace + developer onboarding</span><span class="th">เปิด marketplace + onboard นักพัฒนา</span></div>
+          <div class="roadmap-body"><span class="en">Self-serve dashboard for developers. API listing marketplace with search. Agent-friendly documentation format. First paying developers. Crypto community marketing (Twitter/X, Discord).</span><span class="th">แดชบอร์ด self-serve สำหรับนักพัฒนา API listing marketplace พร้อมค้นหา รูปแบบ documentation ที่ agent-friendly นักพัฒนาจ่ายเงินกลุ่มแรก การตลาดชุมชน crypto</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 4–6</div><div class="roadmap-metric">100 APIs</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 7–12 · SCALE</span><span class="th">เดือน 7–12 · ขยายตัว</span></div>
+          <div class="roadmap-title"><span class="en">1,000 APIs, agent SDK integrations, $100K+ MRR</span><span class="th">1,000 API, agent SDK integrations, $100K+ MRR</span></div>
+          <div class="roadmap-body"><span class="en">Integrate with major AI agent frameworks (LangChain, CrewAI, AutoGen). Agent auto-discovery protocol. Enterprise tier launch. Coinbase partnership discussions.</span><span class="th">ผสานกับ AI agent frameworks หลัก (LangChain, CrewAI, AutoGen) โปรโตคอล agent auto-discovery เปิด Enterprise tier เริ่มคุยพาร์ทเนอร์กับ Coinbase</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 7–12</div><div class="roadmap-metric">$100K MRR</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 12–18 · INFRASTRUCTURE</span><span class="th">เดือน 12–18 · โครงสร้างพื้นฐาน</span></div>
+          <div class="roadmap-title"><span class="en">Become THE default x402 infrastructure layer</span><span class="th">เป็นชั้นโครงสร้างพื้นฐาน x402 เริ่มต้น</span></div>
+          <div class="roadmap-body"><span class="en">Multi-chain support (Base, Ethereum, Polygon). Enterprise white-label. Agent wallet management. Become what Stripe is to e-commerce — but for AI agents. Series A ready.</span><span class="th">รองรับ multi-chain (Base, Ethereum, Polygon) Enterprise white-label จัดการกระเป๋า agent เป็น Stripe ของ e-commerce แต่สำหรับ AI agents พร้อม Series A</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 12–18</div><div class="roadmap-metric" style="color:var(--primary-light);">$1M ARR 🏆</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Placeholder -->
+  <div class="video-placeholder animate d2">
+    <div class="vp-icon">🎬</div>
+    <h3 class="vp-title"><span class="en">Product Demo — Coming Soon</span><span class="th">Demo สินค้า — เร็วๆ นี้</span></h3>
+    <p class="vp-sub"><span class="en">Watch an AI agent discover, negotiate, and pay for an API call through MuteGate in real-time — zero human involvement.</span><span class="th">ดู AI agent ค้นพบ เจรจา และจ่ายเงินสำหรับ API call ผ่าน MuteGate แบบ real-time — ไม่มีมนุษย์เกี่ยวข้อง</span></p>
+    <div class="vp-badge">📹 <span class="en">Demo video in production</span><span class="th">กำลังผลิต demo video</span></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">🔥 <span class="en">Score: 36/50 — x402 DEEP DIVE · HIGH PRIORITY</span><span class="th">Score: 36/50 — x402 DEEP DIVE · ความสำคัญสูง</span></div>
+    <h2 class="cta-title">
+      <span class="en">The <span class="gold">Stripe</span> moment<br>for <span class="purple">AI agents</span> is NOW.</span>
+      <span class="th">ช่วงเวลา <span class="gold">Stripe</span><br>สำหรับ <span class="purple">AI agents</span> คือตอนนี้</span>
+    </h2>
+    <p class="cta-sub"><span class="en">x402 is 1 month old. The AI agent economy is exploding. The window for first-mover infrastructure is 6-12 months. Thanapat's blockchain CTO background = perfect founder-market fit.</span><span class="th">x402 อายุ 1 เดือน เศรษฐกิจ AI agent กำลังระเบิด หน้าต่าง first-mover infrastructure คือ 6-12 เดือน พื้นหลัง blockchain CTO ของธนภัทร = founder-market fit สมบูรณ์แบบ</span></p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span></a>
+      <a href="05-x402-gateway.html" class="cta-btn-secondary"><span class="en">x402 Gateway (Idea #5) →</span><span class="th">x402 Gateway (ไอเดีย #5) →</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+function openResearchModal() { document.getElementById('researchModal').classList.add('active'); }
+function closeResearchModal() { document.getElementById('researchModal').classList.remove('active'); }
+</script>
+
+<button class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 MuteGate — x402-Native API Monetization</h2>
+      <span class="research-badge">Idea #76 · x402 Deep Dive · Score: 36/50 🔥</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3>One-liner</h3>
+        <p>x402-native API monetization platform — the "Stripe for AI agent payments." Developers register APIs, set per-call pricing, AI agents auto-discover and pay via Coinbase's HTTP 402 protocol. Infrastructure layer for the agent economy.</p>
+      </section>
+      <section class="research-section">
+        <h3>Problem</h3>
+        <ul>
+          <li>AI agents (Claude, GPT, Gemini) increasingly need to PAY for external services autonomously</li>
+          <li>Agents can't use credit cards, subscriptions, or human payment flows</li>
+          <li>API providers have no easy way to accept machine-to-machine micropayments</li>
+          <li>x402 protocol exists (Coinbase, Feb 2025) but NO tooling/platform layer built yet</li>
+          <li>$20B+ API management market has ZERO x402-native solutions</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Market Evidence</h3>
+        <ul>
+          <li>API management market: $5.5B (2024) → $20B+ by 2030 (CAGR 20%+)</li>
+          <li>AI agent market: $5B (2025) → $50B+ by 2030</li>
+          <li>RapidAPI: $1B+ valuation, 4M+ developers — API marketplace model proven</li>
+          <li>Stripe: $65B valuation, 2.9% + 30¢ per transaction — payment infrastructure model proven</li>
+          <li>x402 protocol released Feb 2025 by Coinbase — supports USDC/ETH on Base L2</li>
+          <li>Kong (API gateway): $1.4B valuation — infrastructure layer is massive</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Competitors</h3>
+        <ul>
+          <li><strong>RapidAPI:</strong> Largest API marketplace. No x402/crypto support. Traditional billing only. $1B+ valuation.</li>
+          <li><strong>Coinbase x402 reference:</strong> Open-source reference implementation. Protocol only, no platform/marketplace.</li>
+          <li><strong>Kong/Apigee/AWS:</strong> API gateways. No payment built-in. No crypto support.</li>
+          <li><strong>Stripe:</strong> Web payments. No machine-to-machine support. No x402.</li>
+          <li><strong>Gap:</strong> NOBODY has built a platform specifically for x402 API monetization. Zero.</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Risks</h3>
+        <ul>
+          <li>x402 adoption uncertainty — protocol may not gain traction</li>
+          <li>Coinbase could build their own platform layer (platform risk)</li>
+          <li>Crypto regulatory changes could affect payment flows</li>
+          <li>AI agent economy may develop slower than projected</li>
+          <li>Chicken-and-egg: need both API providers AND agent users</li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3>Founder-Market Fit</h3>
+        <p><strong>VERY HIGH.</strong> Thanapat = blockchain CTO at Water Ledger. Smart contracts, on-chain payments, protocol design = daily work. Sun = AI agent (literally). We ARE the target user. We understand both sides of the marketplace intimately.</p>
+      </section>
+      <div class="research-highlight">
+        <h3>Score: 36/50 — PASS ✅</h3>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.5rem;">Market 8 + Problem 7 + Competition 7 + Feasibility 6 + Advantage 8</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
