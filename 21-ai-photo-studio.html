@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MuteMoo — AI Fortune Telling: Astrology + Data Science</title>
+<title>AI Photo Studio — Idea #21 | MuteLab</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -650,19 +650,19 @@
       </a>
       <div class="topbar-divider"></div>
       <div class="topbar-logo">
-        <div class="logo-icon">🔮</div>
-        <span>MuteMoo</span>
+        <div class="logo-icon">📸</div>
+        <span>AI Photo Studio</span>
       </div>
     </div>
     <div class="topbar-right">
       <span class="status-dot"></span>
       <span>
-        <span class="en">52M believers · ฿4B market</span>
-        <span class="th">52 ล้านคนเชื่อ · ตลาด ฿4B</span>
+        <span class="en">51M social users · $132K/mo model</span>
+        <span class="th">51M ผู้ใช้ social · โมเดล $132K/เดือน</span>
       </span>
       <div class="topbar-badge">
-        <span class="en">Idea 22</span>
-        <span class="th">ไอเดีย 22</span>
+        <span class="en">Idea 21</span>
+        <span class="th">ไอเดีย 21</span>
       </div>
     </div>
   </div>
@@ -806,13 +806,13 @@
 <a href="index.html" class="back-link" style="display:block;text-align:center;padding:2rem;color:var(--muted);text-decoration:none;font-size:0.85rem;">← Back to all ideas</a>
 
 <script>
-const langBtns = document.querySelectorAll('.lang-btn');
-function setLang(l) {
-  document.documentElement.setAttribute('data-lang', l);
-  langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === l));
-  localStorage.setItem('lang', l);
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase());
+  });
+  localStorage.setItem('lang', lang);
 }
-langBtns.forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
 setLang(localStorage.getItem('lang') || 'en');
 </script>
 </body>
