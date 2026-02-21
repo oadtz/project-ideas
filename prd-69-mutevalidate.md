@@ -1,16 +1,33 @@
-# PRD: MuteValidate — AI Idea-to-Revenue Validation Engine
-### Product Requirements Document v1.0
-**Status:** Deep Dive Complete | **Score:** 34/50 | **Date:** 2026-02-21
+# PRD: MuteValidate — AI Launch Kit Engine
+### Product Requirements Document v2.0 (Enhanced)
+**Status:** Enhanced Deep Dive Complete | **Score:** 38/50 (↑ from 34) | **Date:** 2026-02-21
 
 ---
 
 ## 1. Executive Summary
 
-**MuteValidate** is an AI-powered business idea validation engine that takes a raw concept and delivers a comprehensive validation package in ~30 minutes: market sizing, competitor analysis, revenue model, risk assessment, scored go/no-go recommendation, and a deployment-ready landing page.
+**MuteValidate** is an AI-powered Launch Kit Engine that takes a raw business concept and delivers a **complete launch-ready package in ~30 minutes**: validation report, deployment-ready landing page, investor-grade pitch deck, shareable infographic, and scored go/no-go recommendation.
 
-Born from MuteLab's own sprint (79+ ideas validated in 48 hours), MuteValidate productizes our internal pipeline. The key differentiator vs. ChatGPT: **real-time web research integration** (Brave Search + live web scraping), auto-generated landing pages, and a calibrated scoring framework.
+Born from MuteLab's own sprint (79+ ideas validated, 50+ landing pages auto-generated in 48 hours), MuteValidate productizes our proven pipeline. Enhanced beyond validation-only: the "Launch Kit" concept bundles **4 deliverables** that founders typically spend 2-4 weeks creating across multiple tools (Gamma, Carrd, Canva, VentureKit).
 
-**Target:** Content-first launch → B2C SaaS → B2B incubator tool. Conservative ARR target: $224K by Year 2. Moderate: $636K.
+**Key differentiators vs. competition:**
+- **Real-time web research** (Brave Search + live web scraping) — not static AI generation
+- **4 deliverables in one pipeline** — nobody else bundles validation + landing page + pitch deck + infographic
+- **30-minute turnaround** — hackathon-speed execution
+- **Calibrated scoring framework** — battle-tested on 79+ ideas
+
+**Target:** Hackathon/accelerator market → B2C SaaS → B2B agency white-label → Enterprise incubators
+**Conservative ARR target:** $747K by Year 2 (up from $224K with validation-only). **Moderate:** $1.44M.
+
+### v2.0 Enhancement Summary (2026-02-21)
+| Aspect | v1.0 (Validation Only) | v2.0 (Launch Kit) |
+|--------|----------------------|-------------------|
+| Output | Validation report + landing page | Report + landing page + pitch deck + infographic |
+| Score | 34/50 | 38/50 |
+| Pricing | $5/validation, $29/mo | $79/kit, $49/mo |
+| Target ARR | $224K-$636K | $747K-$1.44M |
+| Killer use case | General founders | Hackathon teams, accelerator applicants |
+| Moat | Weak (3/10) | Moderate (5/10) |
 
 ---
 
@@ -23,21 +40,29 @@ Born from MuteLab's own sprint (79+ ideas validated in 48 hours), MuteValidate p
 3. **Incubators / accelerators (B2B):** Receive 100-1000+ applications per batch. Need to score and rank quickly with consistent criteria.
 4. **Corporate innovation teams (B2B):** Must justify new project budgets with market data. Need professional validation reports.
 
-### 2.2 Current Solutions & Gaps
+### 2.2 Current Solutions & Gaps (Enhanced Analysis)
 
-| Solution | Gap |
-|---|---|
-| ChatGPT/Claude | No real-time web data, no structured output, no landing pages |
-| ValidatorAI ($49/3 calls) | Mentor-style (slow), limited automation |
-| VentureKit ($8/mo) | Business plan tool, not validation-focused |
-| IdeaBuddy | Full planning software, overkill for quick validation |
-| Manual research | Takes 10-40 hours per idea, inconsistent quality |
+| Solution | What It Does | Gap vs. Launch Kit |
+|---|---|---|
+| ChatGPT/Claude | Generic AI analysis | No web data, no landing page, no pitch deck, no infographic |
+| ValidatorAI ($49/3 calls) | Mentor-style validation + Founder Signal Engine | Slow, no deliverables, no landing pages |
+| **VentureKit ($8/mo)** | **Business plan + pitch deck + market research + financial forecast** | **Closest competitor — but no landing page, no infographic, no validation scoring, no real-time data. 750K users.** |
+| Gamma.app (~$10/mo) | AI presentation generation | Deck only, no validation, no landing page |
+| Beautiful.ai ($12/mo) | AI-powered presentations | Deck only, no research or validation |
+| Carrd ($19/yr) | Simple one-page sites | Landing page only, no AI, no validation |
+| Canva ($13/mo) | Design everything including infographics | Design tool, no validation, no research |
+| IdeaBuddy | Full planning software | Overkill, questionnaire-based, slow |
+| Manual research | DIY across 4+ tools | Takes 2-4 weeks, costs $50+/mo in tools |
+
+**Key finding:** VentureKit is the #1 threat — they already bundle 3 of our 4 deliverables at just $8/mo with 750K users. However, they lack: (1) landing page generation, (2) real-time web scraping, (3) calibrated validation scoring, (4) infographic output, (5) the "30 min launch kit" speed positioning.
 
 ### 2.3 Our Unique Value
 
-**"From raw idea to validated package in 30 minutes — with real data, not AI hallucinations."**
+**"From raw idea to launch-ready kit in 30 minutes — landing page, pitch deck, infographic, and honest validation. All from one text description."**
 
-The 30-minute turnaround with live web research is the key differentiator. Nobody else combines: real-time competitor website scraping + market data + auto-generated landing page + calibrated scoring.
+The competitive advantage is the **BUNDLE** — no one combines all four deliverables with real-time web research in a single automated pipeline. Individual components have strong competitors; the integration is unique.
+
+**Why the bundle matters:** A hackathon team at hour 36 doesn't need a business plan tool, a presentation tool, a landing page builder, AND a design tool. They need ONE tool that produces ALL their assets in one shot.
 
 ---
 
@@ -50,13 +75,15 @@ The 30-minute turnaround with live web research is the key differentiator. Nobod
 - Optional: industry category, geography, budget range
 - Example input: "AI-powered fortune telling app for Thai market combining astrology with data science"
 
-#### F2: Validation Pipeline (Background Processing, ~30 min)
+#### F2: Launch Kit Pipeline (Background Processing, ~30 min)
 1. **Market Research:** Brave Search + web_fetch for real-time market data, trends, market sizing
 2. **Competitor Analysis:** Auto-discover and analyze 5-10 competitors (features, pricing, traction)
 3. **Revenue Model:** Suggest pricing strategies, TAM/SAM/SOM, unit economics
 4. **Risk Assessment:** Identify top 5-10 risks with severity scoring
-5. **Go/No-Go Score:** Calibrated 50-point scoring (Market Size, Build Feasibility, Revenue Potential, Founder Fit, Moat)
-6. **Landing Page Generation:** Full HTML landing page ready to deploy
+5. **Go/No-Go Score:** Calibrated 50-point scoring (Market Potential, Problem Severity, Competition Gap, Build Feasibility, Our Advantage)
+6. **Landing Page Generation:** Full HTML landing page ready to deploy (bilingual, responsive)
+7. **Pitch Deck Generation:** 10-slide investor-grade presentation (PDF/PPTX) — problem, solution, market, competition, business model, traction, team, financials, ask, vision
+8. **Infographic Generation:** Shareable visual summary — market size, competitor landscape, scoring radar, key metrics (PNG/PDF)
 
 #### F3: Validation Report Dashboard
 - Beautiful, interactive report with sections for each analysis area
@@ -75,18 +102,20 @@ The 30-minute turnaround with live web research is the key differentiator. Nobod
 - Compare ideas side-by-side
 - Track progress on selected ideas
 
-### 3.2 Tier Features
+### 3.2 Tier Features (Enhanced with Launch Kit)
 
-| Feature | Free | Pro ($29/mo) | Agency ($99/mo) | Enterprise ($499/mo) |
-|---|---|---|---|---|
-| Validations/month | 1 | 10 | 30 | Unlimited |
-| Report depth | Basic (1-page) | Full (10+ pages) | Full + custom scoring | Full + custom + API |
-| Landing page | ❌ | ✅ | ✅ White-label | ✅ White-label |
-| Export PDF | ❌ | ✅ | ✅ | ✅ |
-| API access | ❌ | ❌ | ✅ | ✅ |
-| Bulk import (CSV) | ❌ | ❌ | ❌ | ✅ |
-| Custom scoring framework | ❌ | ❌ | ❌ | ✅ |
-| Priority processing | ❌ | ❌ | ✅ | ✅ |
+| Feature | Free | Starter ($29/kit) | Launch Kit ($79/kit) | Pro ($49/mo) | Agency ($149/mo) | Enterprise ($799/mo) |
+|---|---|---|---|---|---|---|
+| Kits/month | 1 report only | Pay-per-kit | Pay-per-kit | 5 | 15 | Unlimited |
+| Validation report | Basic (1-page) | Full | Full | Full | Full + custom | Full + custom + API |
+| Landing page | ❌ | ✅ | ✅ | ✅ | ✅ White-label | ✅ White-label |
+| Pitch deck (PDF/PPTX) | ❌ | ❌ | ✅ | ✅ | ✅ White-label | ✅ White-label |
+| Infographic (PNG/PDF) | ❌ | ❌ | ✅ | ✅ | ✅ Branded | ✅ Branded |
+| Export PDF | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| API access | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Bulk import (CSV) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Custom scoring | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Priority processing | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
 
 ### 3.3 Deferred Features (v2+)
 
@@ -264,16 +293,30 @@ User Input → Job Queue → Pipeline Orchestrator
 
 ## 9. Competitive Positioning Statement
 
-**For aspiring founders and incubators** who need to quickly validate business ideas with real market data, **MuteValidate** is an AI validation engine that **delivers a complete validation package — including a live landing page — in 30 minutes.** Unlike ChatGPT (generic, no web data), ValidatorAI (slow, manual), or VentureKit (business plans, not validation), MuteValidate **combines real-time web research with calibrated scoring to give you an honest go/no-go answer backed by evidence, not opinions.**
+**For hackathon teams, accelerator applicants, and startup founders** who need to go from raw idea to launch-ready assets under time pressure, **MuteValidate** is an AI Launch Kit Engine that **delivers a complete package — validation report, landing page, pitch deck, and infographic — in 30 minutes.** Unlike VentureKit (no landing pages, no real-time data), Gamma (presentations only), or ChatGPT (no structured deliverables), MuteValidate is **the only tool that produces ALL the assets you need to present, pitch, and validate — from a single text description.**
 
 ---
 
-## 10. Decision
+## 10. Decision (Updated v2.0)
 
-**Recommendation: PROCEED — Content-First Approach**
+**Recommendation: PROCEED — Hackathon/Event Channel First**
 
-Build MuteValidate as the engine behind a content play. Publish validation reports → build audience → convert to SaaS. This de-risks the moat problem and creates compounding value through SEO.
+The enhanced "Launch Kit" concept is meaningfully stronger than validation-only (34 → 38/50). The combination of 4 deliverables creates a unique product category that no competitor currently occupies.
 
-Expected outcome: $100-300K ARR lifestyle business (conservative), $300-636K ARR with strong execution, $1M+ ARR only with successful B2B pivot.
+**Priority build order:**
+1. Validation report + Landing page (PROVEN — we have this now)
+2. Pitch deck generation (Week 1-2 with reveal.js/Puppeteer)
+3. Infographic generation (Week 3-4 with HTML templates)
+4. User dashboard + payments (Week 5-6)
 
-The meta-story is powerful: "We used AI to validate 79+ business ideas. Then we validated the validator. It works."
+**Priority go-to-market:**
+1. Hackathon/Startup Weekend partnerships (fastest channel, highest urgency buyers)
+2. Content marketing with published launch kits (SEO + social proof)
+3. Accelerator applicant marketing (recurring need)
+4. Agency white-label (B2B revenue)
+
+**Expected outcome:** $747K ARR conservative (Y2), $1.44M moderate. Path to $1M is realistic with combined hackathon + B2B strategy.
+
+**Honest caveat:** VentureKit at $8/mo with 750K users could add landing pages and infographics. Our window of opportunity is 6-12 months. Move fast, build brand, own the "Launch Kit" category before incumbents notice.
+
+The meta-story is even more powerful now: "We used AI to validate 79+ business ideas AND generate 50+ landing pages in 48 hours. Then we productized the whole pipeline."
