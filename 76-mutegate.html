@@ -778,9 +778,82 @@ function closeResearchModal() { document.getElementById('researchModal').classLi
         <h3>Founder-Market Fit</h3>
         <p><strong>VERY HIGH.</strong> Thanapat = blockchain CTO at Water Ledger. Smart contracts, on-chain payments, protocol design = daily work. Sun = AI agent (literally). We ARE the target user. We understand both sides of the marketplace intimately.</p>
       </section>
-      <div class="research-highlight">
-        <h3>Score: 36/50 — PASS ✅</h3>
-        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.5rem;">Market 8 + Problem 7 + Competition 7 + Feasibility 6 + Advantage 8</p>
+      <div class="research-highlight" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);">
+        <h3>⚠️ Revised Score: 29/50 — BELOW THRESHOLD</h3>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.5rem;">Original: Market 8 + Problem 7 + Competition 7 + Feasibility 6 + Advantage 8 = 36/50</p>
+        <p style="color:#ef4444;font-size:0.85rem;margin-top:0.3rem;">Revised: Market 7 + Problem 5 + Competition 4 + Feasibility 7 + Advantage 6 = 29/50</p>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.5rem;">Deep dive revealed x402 ecosystem is far more mature than initially assessed. Coinbase already building platform layer (Bazaar, facilitators, SDKs). See deep dive below.</p>
+      </div>
+
+      <!-- DEEP DIVE SECTION -->
+      <section class="research-section" style="margin-top:2rem;padding-top:1.5rem;border-top:2px solid rgba(245,158,11,0.3);">
+        <h3 style="font-size:1.3rem;color:#fbbf24;">🔬 Deep Dive Results (Feb 2026)</h3>
+      </section>
+
+      <section class="research-section">
+        <h3>x402 Protocol Status — MUCH More Mature Than Expected</h3>
+        <ul>
+          <li><strong>75.41M transactions</strong> processed, $24.24M volume, 94K buyers, 22K sellers</li>
+          <li><strong>V2 specification</strong> launched Dec 2025 with major upgrades</li>
+          <li>SDKs in <strong>TypeScript, Python, Go</strong> + Express, Next.js, Hono, FastAPI, Flask, Gin integrations</li>
+          <li><strong>Bazaar (Discovery Layer)</strong> — built-in API marketplace/discovery (basic but functional)</li>
+          <li><strong>MCP integration</strong> already documented — Claude Desktop can call paid APIs</li>
+          <li>Multi-chain: <strong>Base, Solana, Polygon, Avalanche</strong> + any EVM</li>
+          <li><strong>x402 Foundation</strong> being launched by Coinbase + Cloudflare</li>
+          <li>600+ builders in Telegram community</li>
+          <li>Base L2 gas: <strong>$0.001 per transaction</strong> — micropayments are viable</li>
+          <li>Protocol fees: <strong>ZERO</strong></li>
+        </ul>
+      </section>
+
+      <section class="research-section">
+        <h3>⚠️ Critical Competitive Threat</h3>
+        <ul>
+          <li><strong>Coinbase IS building the platform layer:</strong> Bazaar, facilitators, SDKs, AI-powered docs</li>
+          <li><strong>x402 Foundation (Coinbase + Cloudflare)</strong> will fund ecosystem tools — could fund competitors or build internally</li>
+          <li><strong>RapidAPI acquired by Nokia</strong> — distressed sale suggests API marketplace model is harder than expected</li>
+          <li>Original premise "ZERO tooling exists" is <strong>NO LONGER TRUE</strong></li>
+          <li>Integration is literally <strong>1 line of code</strong> for sellers — what does MuteGate add?</li>
+        </ul>
+      </section>
+
+      <section class="research-section">
+        <h3>What's Still Missing (Remaining Opportunity)</h3>
+        <ul>
+          <li>❌ Curated marketplace with UI (reviews, ratings, categories) — Bazaar is API-only</li>
+          <li>❌ Business analytics dashboard (revenue, usage, trends)</li>
+          <li>❌ Non-crypto developer onboarding (managed wallets, simplified setup)</li>
+          <li>❌ SLA monitoring and quality scoring</li>
+          <li>❌ Enterprise features (team management, audit logs, compliance)</li>
+          <li>❌ API documentation hosting / testing sandbox</li>
+        </ul>
+      </section>
+
+      <section class="research-section">
+        <h3>Revenue Reality Check</h3>
+        <ul>
+          <li><strong>$3.3M ARR target</strong> would require ~40M txns/month through MuteGate — 50%+ of ALL x402 volume</li>
+          <li><strong>Conservative (24mo):</strong> ~$24K ARR — lifestyle business at best</li>
+          <li><strong>Moderate (24mo):</strong> ~$120K ARR — decent but not venture-scale</li>
+          <li><strong>Aggressive (24mo):</strong> ~$600K ARR — still far from target</li>
+          <li>Chicken-and-egg problem is severe: why use MuteGate when x402 SDK is 1 line of code?</li>
+        </ul>
+      </section>
+
+      <section class="research-section">
+        <h3>Recommendation</h3>
+        <p><strong>Do NOT pursue as originally conceived.</strong> The core value proposition (x402 platform layer) is being built by Coinbase. Consider a narrower pivot:</p>
+        <ul>
+          <li><strong>"x402 for non-crypto devs"</strong> — managed onboarding eliminating crypto complexity</li>
+          <li><strong>"Enterprise x402"</strong> — compliance, SLA guarantees, audit trails</li>
+          <li><strong>"x402 Agent Hub"</strong> — LangChain/CrewAI/MCP plugin with curated discovery</li>
+        </ul>
+        <p style="margin-top:0.5rem;color:var(--green);">Founder-market fit remains EXCELLENT. The specific product concept needs refinement. Validate with 2-week prototype + community signal test.</p>
+      </section>
+
+      <div class="research-highlight" style="background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.3);">
+        <h3>📋 <a href="prd-76-mutegate.md" style="color:#c084fc;">Full PRD Available</a> | <a href="research/mutegate-deep-dive.md" style="color:#c084fc;">Deep Dive Report</a></h3>
+        <p style="color:var(--text2);font-size:0.85rem;margin-top:0.5rem;">Complete PRD with x402 analysis, competition matrix, cost analysis, ROI scenarios, 30-day validation plan, and go-to-market strategy.</p>
       </div>
     </div>
   </div>
