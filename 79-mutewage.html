@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteWage — AI Payroll & Tax Compliance for Thai Micro-Businesses on LINE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --primary-glow: rgba(245,158,11,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(245,158,11,0.08), 0 0 0 1px rgba(245,158,11,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .video-placeholder {
+    background: var(--surface2);
+    border: 2px dashed var(--border2);
+    border-radius: 16px; padding: 4rem 2rem;
+    text-align: center; margin-bottom: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .video-placeholder::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(245,158,11,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .vp-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.7; }
+  .vp-title { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .vp-sub { font-size: 0.9rem; color: var(--muted); }
+  .vp-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    color: var(--primary); border-radius: 980px; padding: 0.4rem 1rem;
+    font-size: 0.75rem; font-weight: 700; margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .gold { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: linear-gradient(135deg, var(--primary), #d97706);
+    color: #0a0a0f;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
+  .cta-btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: rgba(139,92,246,0.1); color: var(--secondary-light);
+    border: 1px solid rgba(139,92,246,0.3);
+    font-size: 0.9rem; font-weight: 600;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-secondary:hover { background: rgba(139,92,246,0.2); transform: translateY(-1px); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+  .d5 { opacity: 0; animation-delay: 0.5s; }
+
+  .research-btn {
+    position: fixed;
+    bottom: 2rem; right: 2rem; z-index: 90;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #0a0a0f;
+    border: none; border-radius: 980px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .research-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(245,158,11,0.4);
+  }
+  .research-modal {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px) saturate(1.5);
+    overflow-y: auto; padding: 2rem;
+  }
+  .research-modal.active { display: flex; align-items: flex-start; justify-content: center; }
+  .research-modal-content {
+    background: #16162a;
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    position: relative; margin: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,158,11,0.1);
+  }
+  .research-modal-close {
+    position: absolute; top: 1rem; right: 1.5rem;
+    color: var(--muted); background: var(--surface2);
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  }
+  .research-modal-close:hover { background: var(--surface3); color: var(--text); }
+  .research-modal-header {
+    padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.5rem;
+    position: relative;
+  }
+  .research-modal-header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 20px 20px 0 0;
+  }
+  .research-modal-header h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0;
+  }
+  .research-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); background: var(--primary-pale);
+    padding: 0.3rem 0.8rem; border-radius: 980px;
+    border: 1px solid rgba(245,158,11,0.2);
+    width: fit-content; font-weight: 600;
+  }
+  .research-modal-body { padding: 1.5rem 2rem 2rem; }
+  .research-section { margin-bottom: 1.5rem; }
+  .research-section:last-child { margin-bottom: 0; }
+  .research-section h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .research-section p, .research-section ul {
+    color: var(--text2); font-size: 0.88rem; line-height: 1.65; margin: 0;
+  }
+  .research-section ul { padding-left: 1.5rem; }
+  .research-section li { margin-bottom: 0.4rem; }
+  .research-highlight {
+    background: var(--primary-pale); border: 1px solid rgba(245,158,11,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+  }
+  .research-highlight h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--primary) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+  .research-highlight-purple {
+    background: var(--secondary-pale); border: 1px solid rgba(139,92,246,0.2);
+    padding: 1rem; border-radius: 12px; text-align: center;
+    margin-top: 0.75rem;
+  }
+  .research-highlight-purple h3 {
+    border: none; padding: 0; margin: 0;
+    font-size: 1.1rem; color: var(--secondary-light) !important;
+    text-transform: none; letter-spacing: 0; font-weight: 800;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">💰</div>
+        <span>MuteWage</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">3.2M SMEs · ฿3-5K/mo pain</span>
+        <span class="th">3.2M SME · เจ็บ ฿3-5K/เดือน</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 79</span>
+        <span class="th">ไอเดีย 79</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        💰 <span class="en">IDEA 79 — MUTEWAGE · AI PAYROLL ON LINE</span><span class="th">ไอเดีย 79 — MUTEWAGE · AI เงินเดือนบน LINE</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="gold">Payroll</span><br>on <span class="purple">LINE</span> for Thai SMEs</span>
+        <span class="th">AI <span class="gold">คำนวณเงินเดือน</span><br>บน <span class="purple">LINE</span> สำหรับ SME ไทย</span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered payroll calculator on LINE</strong> for Thai micro-businesses (1-20 employees). Auto-calculates OT, social security (ประกันสังคม), withholding tax (ภ.ง.ด.1), generates pay slips & tax forms. "คำนวณเงินเดือนถูกต้อง ไม่ต้องจ้างบัญชี"</span>
+        <span class="th"><strong>AI คำนวณเงินเดือนบน LINE</strong> สำหรับธุรกิจขนาดเล็ก (1-20 คน) คำนวณ OT ประกันสังคม ภาษีหัก ณ ที่จ่าย (ภ.ง.ด.1) ออกสลิป + แบบยื่นภาษีอัตโนมัติ "คำนวณเงินเดือนถูกต้อง ไม่ต้องจ้างบัญชี"</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">36/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 36/50 — PASS</strong>
+              <span class="en">Boring but profitable — high retention SaaS</span>
+              <span class="th">ไม่เซ็กซี่ แต่ทำเงิน — SaaS ที่ retention สูง</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">3.2M</div>
+            <div class="score-meta">
+              <strong>🇹🇭 Thai SMEs</strong>
+              <span class="en">99.5% of all Thai businesses need payroll</span>
+              <span class="th">99.5% ของธุรกิจไทยทั้งหมดต้องคิดเงินเดือน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Window -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        MuteWage — <span class="en">AI Payroll on LINE</span><span class="th">AI คำนวณเงินเดือนบน LINE</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📱</div>
+          <div class="tc-name"><span class="en">LINE CHAT</span><span class="th">แชท LINE</span></div>
+          <div class="tc-value"><span class="en">Send Data</span><span class="th">ส่งข้อมูล</span></div>
+          <div class="tc-sub"><span class="en">Hours, OT, absence via LINE</span><span class="th">ชั่วโมง OT ขาดงาน ผ่าน LINE</span></div>
+          <div class="tc-badge">✓ <span class="en">No app install</span><span class="th">ไม่ต้องลงแอป</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🤖</div>
+          <div class="tc-name"><span class="en">AI CALCULATE</span><span class="th">AI คำนวณ</span></div>
+          <div class="tc-value"><span class="en">Auto Payroll</span><span class="th">เงินเดือนอัตโนมัติ</span></div>
+          <div class="tc-sub"><span class="en">OT + Social Security + Tax</span><span class="th">OT + ประกันสังคม + ภาษี</span></div>
+          <div class="tc-badge">✓ <span class="en">100% compliant</span><span class="th">ถูกกฎหมาย 100%</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📄</div>
+          <div class="tc-name"><span class="en">OUTPUT</span><span class="th">ผลลัพธ์</span></div>
+          <div class="tc-value"><span class="en">Slips + Forms</span><span class="th">สลิป + แบบยื่น</span></div>
+          <div class="tc-sub"><span class="en">Pay slips, ภ.ง.ด.1, สปส.1-10</span><span class="th">สลิปเงินเดือน ภ.ง.ด.1 สปส.1-10</span></div>
+          <div class="tc-badge purple">⭐ <span class="en">Ready to file</span><span class="th">พร้อมยื่น</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">💰 AI Payroll Pipeline</span><span class="th">💰 ขั้นตอน AI เงินเดือน</span></span>
+          <span style="color:var(--primary);">LINE → Calculate → File ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:90%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Input Hours</span><span class="th">กรอกชั่วโมง</span> ✓</span>
+          <span><span class="en">AI Calculate</span><span class="th">AI คำนวณ</span> ✓</span>
+          <span><span class="en">Generate Slips</span><span class="th">ออกสลิป</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">File Tax</span><span class="th">ยื่นภาษี</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏪</div>
+      <div class="stat-num"><span class="gold">3.2M</span></div>
+      <div class="stat-label">
+        <span class="en">Thai SMEs (99.5% of all businesses). Most have 1-20 employees and still use Excel or manual calculation for payroll.</span>
+        <span class="th">SME ไทย (99.5% ของธุรกิจทั้งหมด) ส่วนใหญ่มี 1-20 คน ยังใช้ Excel หรือคำนวณมือ</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💸</div>
+      <div class="stat-num"><span class="purple">฿3-5K</span></div>
+      <div class="stat-label">
+        <span class="en">Monthly cost of outsourcing payroll to an accountant. Most micro-businesses can't afford it but NEED compliant payroll. Big pain.</span>
+        <span class="th">ค่าจ้างบัญชีทำเงินเดือน/เดือน ธุรกิจเล็กจ่ายไม่ไหว แต่ต้องทำเงินเดือนให้ถูกกฎหมาย เจ็บมาก</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📱</div>
+      <div class="stat-num"><span class="gold">54M</span></div>
+      <div class="stat-label">
+        <span class="en">LINE users in Thailand (78% of population). Thai SME owners live on LINE. No app install needed — payroll where they already are.</span>
+        <span class="th">ผู้ใช้ LINE ในไทย (78% ของประชากร) เจ้าของร้านอยู่บน LINE แล้ว ไม่ต้องลงแอปใหม่</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">⚖️</div>
+      <div class="stat-num"><span class="purple">฿2K-20K</span></div>
+      <div class="stat-label">
+        <span class="en">Fines for payroll non-compliance (ประกันสังคม/ภาษี). Thai labor law is complex — OT rates, SS tiers, progressive tax. Errors are expensive.</span>
+        <span class="th">ค่าปรับเงินเดือนผิดกฎหมาย กฎหมายแรงงานไทยซับซ้อน — อัตรา OT ชั้นประกันสังคม ภาษีขั้นบันได ผิดพลาดแพงมาก</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">Payroll in 3 messages on LINE</span>
+      <span class="th">ทำเงินเดือนใน 3 ข้อความบน LINE</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">No software to learn. No spreadsheet formulas. Just send employee data on LINE — AI handles OT calculations, social security, withholding tax, and generates everything you need to file.</span>
+      <span class="th">ไม่ต้องเรียนซอฟต์แวร์ ไม่ต้องพิมพ์สูตร Excel แค่ส่งข้อมูลพนักงานบน LINE — AI จัดการ OT ประกันสังคม ภาษีหัก ณ ที่จ่าย และสร้างเอกสารทุกอย่างที่ต้องยื่น</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📱</div>
+        <div class="wf-title">
+          <span class="en">Send Employee Data via LINE</span>
+          <span class="th">ส่งข้อมูลพนักงานผ่าน LINE</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Type or upload: employee names, hours worked, OT hours, absences, bonuses. Or snap a photo of your attendance sheet — AI reads it automatically.</span>
+          <span class="th">พิมพ์หรืออัพโหลด: ชื่อพนักงาน ชั่วโมงทำงาน OT ขาดงาน โบนัส หรือถ่ายรูปใบลงเวลา — AI อ่านให้อัตโนมัติ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title">
+          <span class="en">AI Calculates Everything</span>
+          <span class="th">AI คำนวณทุกอย่าง</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Auto-applies Thai labor law: OT rates (1.5x weekday, 3x holiday), social security (5% capped at ฿750), progressive withholding tax. Zero errors, 100% compliant.</span>
+          <span class="th">ใช้กฎหมายแรงงานไทยอัตโนมัติ: OT (1.5x วันธรรมดา 3x วันหยุด) ประกันสังคม (5% ไม่เกิน ฿750) ภาษีหัก ณ ที่จ่ายขั้นบันได ไม่ผิดพลาด ถูกกฎหมาย 100%</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">📄</div>
+        <div class="wf-title">
+          <span class="en">Get Slips + Tax Forms</span>
+          <span class="th">รับสลิป + แบบยื่นภาษี</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Receive: PDF pay slips for each employee, ภ.ง.ด.1 monthly form, สปส.1-10 social security form, bank transfer file. Ready to submit — just print or e-file.</span>
+          <span class="th">ได้รับ: สลิปเงินเดือน PDF ทุกคน แบบ ภ.ง.ด.1 รายเดือน แบบ สปส.1-10 ไฟล์โอนเงินธนาคาร พร้อมยื่น — แค่ปริ้นท์หรือ e-file</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteWage -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">UNFAIR ADVANTAGE</span><span class="th">ข้อได้เปรียบที่เหนือกว่า</span></div>
+    <div class="section-title">
+      <span class="en">LINE-first beats web-first for Thai SMEs</span>
+      <span class="th">LINE-first ชนะ web-first สำหรับ SME ไทย</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">empeo costs ฿690/mo minimum (full HRIS). PEAK costs ฿900/mo (accounting suite). FlowAccount's payroll is a secondary feature. Nobody built a lightweight, LINE-native payroll bot for micro-businesses.</span>
+      <span class="th">empeo ขั้นต่ำ ฿690/เดือน (HRIS เต็มรูปแบบ) PEAK ฿900/เดือน (ระบบบัญชี) FlowAccount มีเงินเดือนแค่ feature เสริม ยังไม่มีใครสร้างบอทเงินเดือนบน LINE สำหรับธุรกิจเล็ก</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">📱</div>
+        <div class="why-panel-title">
+          <span class="en">LINE = Zero Friction</span>
+          <span class="th">LINE = ไม่มี Friction</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">54M Thai LINE users. No app to install, no website to learn, no login to remember. Thai shop owners already message suppliers on LINE — payroll lives where they work.</span>
+          <span class="th">54 ล้านคนใช้ LINE ไม่ต้องลงแอป ไม่ต้องเรียนเว็บไซต์ ไม่ต้องจำ login เจ้าของร้านคุยกับ supplier บน LINE อยู่แล้ว — เงินเดือนอยู่ที่ที่เขาทำงาน</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💰</div>
+        <div class="why-panel-title">
+          <span class="en">10x Cheaper Than Alternatives</span>
+          <span class="th">ถูกกว่าทางเลือกอื่น 10 เท่า</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">฿199/mo vs ฿3-5K/mo accountant or ฿690-3,500/mo HRIS software. For a noodle shop with 5 employees, MuteWage saves ฿2,800-4,800/mo. That's real money for micro-businesses.</span>
+          <span class="th">฿199/เดือน vs จ้างบัญชี ฿3-5K/เดือน หรือซอฟต์แวร์ HRIS ฿690-3,500/เดือน ร้านก๋วยเตี๋ยวมี 5 คน MuteWage ประหยัด ฿2,800-4,800/เดือน เงินจริงสำหรับธุรกิจเล็ก</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🔒</div>
+        <div class="why-panel-title">
+          <span class="en">99%+ Retention (Payroll Lock-in)</span>
+          <span class="th">Retention 99%+ (ล็อคอินด้วยเงินเดือน)</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Payroll SaaS has the highest retention of ANY software category. Once a business runs payroll through you, they NEVER switch — it's too risky. This is a sticky, compounding revenue engine.</span>
+          <span class="th">SaaS เงินเดือนมี retention สูงสุดในทุกหมวดซอฟต์แวร์ เมื่อธุรกิจทำเงินเดือนผ่านเราแล้ว ไม่มีวันย้าย — เสี่ยงเกินไป นี่คือ revenue engine ที่สะสม</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">⚖️</div>
+        <div class="why-panel-title">
+          <span class="en">Compliance = Must-Have (Not Nice-to-Have)</span>
+          <span class="th">กฎหมาย = ต้องมี (ไม่ใช่มีก็ดี)</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Every business with employees MUST file ภ.ง.ด.1 monthly and สปส.1-10. Non-compliance = fines. This isn't optional software — it's legally required. Guaranteed demand.</span>
+          <span class="th">ทุกธุรกิจที่มีพนักงานต้องยื่น ภ.ง.ด.1 ทุกเดือนและ สปส.1-10 ไม่ยื่น = โดนปรับ นี่ไม่ใช่ซอฟต์แวร์ทางเลือก — กฎหมายบังคับ demand รับประกัน</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">Simple tiers, compounding revenue</span>
+      <span class="th">ราคาเข้าใจง่าย รายได้สะสม</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Payroll is monthly recurring by nature. Every business that starts using MuteWage stays forever — switching payroll systems is terrifying for any business owner.</span>
+      <span class="th">เงินเดือนเป็น recurring ตามธรรมชาติ ทุกธุรกิจที่เริ่มใช้ MuteWage อยู่ตลอดไป — การเปลี่ยนระบบเงินเดือนน่ากลัวสำหรับเจ้าของทุกคน</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿30M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿30M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18 (~$937K)</span>
+            <span class="th">ARR ภายในเดือน 18 (~$937K)</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 200 businesses (early adopters)<br>Month 6: 1,000 businesses<br>Month 12: 3,000 businesses, ฿15M ARR<br>Month 18: 5,000 businesses = ฿30M ARR</span>
+            <span class="th">เดือน 3: 200 ธุรกิจ (early adopters)<br>เดือน 6: 1,000 ธุรกิจ<br>เดือน 12: 3,000 ธุรกิจ ฿15M ARR<br>เดือน 18: 5,000 ธุรกิจ = ฿30M ARR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(245,158,11,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">📱</div>
+          <div class="rt-label" style="color:var(--primary-light);">Basic ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Up to 10 employees. Pay slips, social security calc, withholding tax. Perfect for shops, restaurants, small offices.</span>
+            <span class="th">ไม่เกิน 10 คน สลิปเงินเดือน คำนวณประกันสังคม ภาษีหัก ณ ที่จ่าย เหมาะกับร้านค้า ร้านอาหาร ออฟฟิศเล็ก</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿199/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">📊</div>
+          <div class="rt-label">Pro</div>
+          <div class="rt-desc">
+            <span class="en">Up to 50 employees. Auto-generate ภ.ง.ด.1, สปส.1-10 forms. Bank transfer files (SCB, KBank, BBL). Leave tracking.</span>
+            <span class="th">ไม่เกิน 50 คน สร้าง ภ.ง.ด.1 สปส.1-10 อัตโนมัติ ไฟล์โอนเงินธนาคาร (SCB KBank BBL) ระบบลา</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿499/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Business</div>
+          <div class="rt-desc">
+            <span class="en">Unlimited employees. Multi-branch. Year-end ภ.ง.ด.1ก. HR basics (leave, attendance). API integration. Priority support.</span>
+            <span class="th">ไม่จำกัดจำนวนคน หลายสาขา ภ.ง.ด.1ก สิ้นปี HR พื้นฐาน (ลา ลงเวลา) API integration ซัพพอร์ตพิเศษ</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿1,499/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🤝</div>
+          <div class="rt-label">Accountant</div>
+          <div class="rt-desc">
+            <span class="en">For accounting firms managing multiple clients. Bulk processing, white-label slips, multi-company dashboard.</span>
+            <span class="th">สำหรับสำนักงานบัญชีดูแลหลายลูกค้า ประมวลผลรวด สลิป white-label แดชบอร์ดหลายบริษัท</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿2,999/mo</div>
+            <div class="rt-note"><span class="en">per firm</span><span class="th">ต่อสำนักงาน</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From LINE bot to Thailand's payroll standard</span>
+      <span class="th">จาก LINE bot สู่มาตรฐานเงินเดือนไทย</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">💰 MuteWage — Milestone Timeline</span>
+          <span class="th">💰 MuteWage — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿30M ARR target · Month 18</span>
+          <span class="th">เป้า ฿30M ARR · เดือนที่ 18</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–2 · MVP</span>
+            <span class="th">เดือน 1–2 · MVP</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">LINE bot: input hours → output payroll + slips</span>
+            <span class="th">LINE bot: กรอกชั่วโมง → ออกเงินเดือน + สลิป</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Build Thai payroll calculation engine (OT, social security, withholding tax). LINE OA bot with LIFF mini-app for data input. PDF pay slip generation. Test with 20 real businesses for free.</span>
+            <span class="th">สร้างระบบคำนวณเงินเดือนไทย (OT ประกันสังคม ภาษี) LINE OA bot + LIFF mini-app สำหรับกรอกข้อมูล สร้างสลิป PDF ทดสอบกับ 20 ธุรกิจจริงฟรี</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 1–2</div>
+          <div class="roadmap-metric">20 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 3–6 · GROWTH</span>
+            <span class="th">เดือน 3–6 · เติบโต</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">1,000 businesses, tax form generation, bank files</span>
+            <span class="th">1,000 ธุรกิจ สร้างแบบยื่นภาษี ไฟล์ธนาคาร</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add ภ.ง.ด.1 + สปส.1-10 auto-generation. Bank transfer file support (SCB, KBank, BBL). Distribution: partner with accounting firms (they resell to clients). Facebook ads targeting "ร้านอาหาร", "ร้านค้า".</span>
+            <span class="th">เพิ่มสร้าง ภ.ง.ด.1 + สปส.1-10 อัตโนมัติ รองรับไฟล์โอนธนาคาร (SCB KBank BBL) การกระจาย: ร่วมกับสำนักงานบัญชี (เขาขายต่อให้ลูกค้า) Facebook ads ทาร์เก็ต "ร้านอาหาร" "ร้านค้า"</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 3–6</div>
+          <div class="roadmap-metric">฿6M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 7–12 · EXPAND</span>
+            <span class="th">เดือน 7–12 · ขยาย</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">3,000 businesses — add HR features, accountant tier</span>
+            <span class="th">3,000 ธุรกิจ — เพิ่ม HR features ระดับสำนักงานบัญชี</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Leave management, attendance tracking via LINE check-in. Launch Accountant tier (white-label for firms managing 50+ clients). Year-end ภ.ง.ด.1ก processing. API for POS/accounting integration.</span>
+            <span class="th">ระบบลา ลงเวลาผ่าน LINE check-in เปิดระดับสำนักงานบัญชี (white-label สำหรับบริษัทดูแล 50+ ลูกค้า) ประมวลผล ภ.ง.ด.1ก สิ้นปี API สำหรับเชื่อมต่อ POS/ระบบบัญชี</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 7–12</div>
+          <div class="roadmap-metric">฿15M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 13–18 · DOMINATE</span>
+            <span class="th">เดือน 13–18 · ครองตลาด</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">5,000+ businesses — become Thailand's payroll standard</span>
+            <span class="th">5,000+ ธุรกิจ — เป็นมาตรฐานเงินเดือนไทย</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Embedded payroll for POS systems (Ocha, FoodStory). Insurance/loan upsell via payroll data. Consider Vietnam/Myanmar expansion. Payroll data = lending data = fintech opportunity.</span>
+            <span class="th">ฝังระบบเงินเดือนใน POS (โอชา FoodStory) ขายต่อประกัน/สินเชื่อผ่านข้อมูลเงินเดือน พิจารณาขยาย เวียดนาม/เมียนมา ข้อมูลเงินเดือน = ข้อมูลสินเชื่อ = โอกาส fintech</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 13–18</div>
+          <div class="roadmap-metric" style="color:var(--primary-light);">฿30M ARR 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Placeholder -->
+  <div class="video-placeholder animate d2">
+    <div class="vp-icon">🎬</div>
+    <h3 class="vp-title">
+      <span class="en">Product Demo — Coming Soon</span>
+      <span class="th">Demo สินค้า — เร็วๆ นี้</span>
+    </h3>
+    <p class="vp-sub">
+      <span class="en">Watch how MuteWage calculates payroll for 10 employees in under 60 seconds — right on LINE.</span>
+      <span class="th">ดูว่า MuteWage คำนวณเงินเดือน 10 คนได้ภายใน 60 วินาที — บน LINE เลย</span>
+    </p>
+    <div class="vp-badge">
+      📹 <span class="en">Demo video in production</span><span class="th">กำลังผลิต demo video</span>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">🔥 <span class="en">Score: 36/50 — BORING BUT PROFITABLE</span><span class="th">Score: 36/50 — ไม่เซ็กซี่แต่ทำเงิน</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">3.2 million</span> Thai SMEs.<br><span class="purple">Zero</span> LINE-native payroll.</span>
+      <span class="th"><span class="gold">3.2 ล้าน</span> SME ไทย<br><span class="purple">ไม่มี</span>เงินเดือนบน LINE</span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">Payroll SaaS = highest retention in software. Every business MUST do it. 99%+ never churn. ฿199/mo beats ฿3-5K accountant. LINE-first = zero friction adoption. This prints money quietly.</span>
+      <span class="th">SaaS เงินเดือน = retention สูงสุดในซอฟต์แวร์ ทุกธุรกิจต้องทำ 99%+ ไม่เลิกใช้ ฿199/เดือน ชนะจ้างบัญชี ฿3-5K LINE-first = ไม่มี friction นี่คือเครื่องพิมพ์เงินเงียบๆ</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <a href="78-muteclip.html" class="cta-btn-secondary">
+        <span class="en">← MuteClip</span><span class="th">← MuteClip</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+</script>
+
+<!-- Research Detail Button -->
+<button id="researchBtn" class="research-btn" onclick="openResearchModal()">📋 Research</button>
+
+<!-- Research Detail Modal -->
+<div id="researchModal" class="research-modal">
+  <div class="research-modal-content">
+    <button class="research-modal-close" onclick="closeResearchModal()">&times;</button>
+    <div class="research-modal-header">
+      <h2>📋 MuteWage — AI Payroll on LINE</h2>
+      <span class="research-badge">Idea #79 · AI Payroll · Score: 36/50 ✅ PASS</span>
+    </div>
+    <div class="research-modal-body">
+      <section class="research-section">
+        <h3><span class="en">One-liner</span><span class="th">สรุปสั้น</span></h3>
+        <p>
+          <span class="en">AI-powered payroll calculator on LINE for Thai micro-businesses (1-20 employees). Auto-calculates OT, social security, withholding tax, generates pay slips & tax filing forms.</span>
+          <span class="th">AI คำนวณเงินเดือนบน LINE สำหรับธุรกิจเล็กไทย (1-20 คน) คำนวณ OT ประกันสังคม ภาษี ออกสลิป + แบบยื่นภาษีอัตโนมัติ</span>
+        </p>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Problem</span><span class="th">ปัญหา</span></h3>
+        <ul>
+          <li><span class="en">3.2M Thai SMEs, 80%+ micro-businesses (1-20 employees)</span><span class="th">3.2 ล้าน SME ไทย, 80%+ เป็นธุรกิจเล็ก (1-20 คน)</span></li>
+          <li><span class="en">Most use Excel or manual calculation — error-prone, time-consuming</span><span class="th">ส่วนใหญ่ใช้ Excel หรือคำนวณมือ — ผิดพลาดง่าย เสียเวลา</span></li>
+          <li><span class="en">Outsourcing to accountant = ฿3-5K/month — expensive for micro-businesses</span><span class="th">จ้างบัญชี = ฿3-5K/เดือน — แพงสำหรับธุรกิจเล็ก</span></li>
+          <li><span class="en">Thai labor law is COMPLEX: OT rates (1.5x/3x), social security tiers, progressive tax brackets</span><span class="th">กฎหมายแรงงานไทยซับซ้อน: OT (1.5x/3x) ชั้นประกันสังคม ภาษีขั้นบันได</span></li>
+          <li><span class="en">Non-compliance = fines ฿2K-20K — but most micro-businesses don't know the rules</span><span class="th">ไม่ปฏิบัติตาม = ปรับ ฿2K-20K — แต่ธุรกิจเล็กส่วนใหญ่ไม่รู้กฎ</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Market Evidence</span><span class="th">หลักฐานตลาด</span></h3>
+        <ul>
+          <li><span class="en">3.2M+ registered Thai SMEs (99.5% of all businesses)</span><span class="th">3.2M+ SME ไทยจดทะเบียน (99.5% ของธุรกิจทั้งหมด)</span></li>
+          <li><span class="en">Global payroll outsourcing: $12.5B (2024) → $19.5B (2030)</span><span class="th">ตลาด payroll outsourcing โลก: $12.5B (2024) → $19.5B (2030)</span></li>
+          <li><span class="en">Gusto (US): $10B+ valuation — payroll for SMBs. Proven model.</span><span class="th">Gusto (US): มูลค่า $10B+ — payroll สำหรับ SMBs โมเดลพิสูจน์แล้ว</span></li>
+          <li><span class="en">54M LINE users in Thailand — distribution channel is built-in</span><span class="th">54M ผู้ใช้ LINE ในไทย — ช่องทางกระจาย built-in</span></li>
+        </ul>
+      </section>
+      <section class="research-section">
+        <h3><span class="en">Competition</span><span class="th">คู่แข่ง</span></h3>
+        <ul>
+          <li><span class="en"><strong>empeo:</strong> ฿690-3,790/mo. Full HRIS (web). Overkill for micro-businesses.</span><span class="th"><strong>empeo:</strong> ฿690-3,790/เดือน HRIS เต็มรูปแบบ (เว็บ) เกินไปสำหรับธุรกิจเล็ก</span></li>
+          <li><span class="en"><strong>FlowAccount:</strong> Free payroll module (up to 1 user). Accounting-first, payroll is secondary feature.</span><span class="th"><strong>FlowAccount:</strong> ฟรี payroll (1 ผู้ใช้) เน้นบัญชี เงินเดือนเป็นแค่ feature เสริม</span></li>
+          <li><span class="en"><strong>PEAK:</strong> ฿900-3,500/mo. Accounting suite with payroll (10-unlimited employees). Web-based.</span><span class="th"><strong>PEAK:</strong> ฿900-3,500/เดือน ระบบบัญชีมี payroll (10-ไม่จำกัด) เว็บ</span></li>
+          <li><span class="en"><strong>Manual accountants:</strong> ฿3-5K/mo. Slow, human error, no real-time access.</span><span class="th"><strong>บัญชีมือ:</strong> ฿3-5K/เดือน ช้า ผิดพลาดได้ ไม่มี real-time</span></li>
+          <li><span class="en">⚡ <strong>Gap: ZERO LINE-native payroll bots for micro-businesses</strong></span><span class="th">⚡ <strong>ช่องว่าง: ไม่มี payroll bot บน LINE สำหรับธุรกิจเล็กเลย</strong></span></li>
+        </ul>
+      </section>
+      <section class="research-section research-highlight">
+        <h3>✨ Score: 36/50 — PASS</h3>
+        <p style="margin:0.5rem 0;font-size:0.9rem;opacity:0.8;">Market: 8/10 · Problem: 8/10 · Competition: 6/10 · Build: 8/10 · Advantage: 6/10</p>
+      </section>
+      <section class="research-section research-highlight-purple">
+        <h3>💰 "คำนวณเงินเดือนถูกต้อง ไม่ต้องจ้างบัญชี" — Boring but prints money</h3>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function openResearchModal() {
+  document.getElementById('researchModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeResearchModal() {
+  document.getElementById('researchModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeResearchModal();
+});
+document.getElementById('researchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResearchModal();
+});
+</script>
+</body>
+</html>
