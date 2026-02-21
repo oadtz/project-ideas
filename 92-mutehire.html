@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteHire — AI Recruitment Platform for Thai SMEs</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0c0c14;
+    --surface: #101020;
+    --surface2: #161628;
+    --surface3: #1e1e38;
+    --border: rgba(99,102,241,0.15);
+    --border2: rgba(99,102,241,0.28);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-pale: rgba(99,102,241,0.08);
+    --primary-glow: rgba(99,102,241,0.22);
+    --secondary: #22d3ee;
+    --secondary-light: #67e8f9;
+    --secondary-pale: rgba(34,211,238,0.08);
+    --secondary-glow: rgba(34,211,238,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,211,238,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 40% 0%, rgba(99,102,241,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(34,211,238,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    padding: 1.1rem 2rem;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700; color: var(--primary-light);
+    letter-spacing: 0.06em;
+  }
+  .nav-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem; padding: 0.2rem 0.6rem;
+    border-radius: 99px; border: 1px solid var(--border2);
+    color: var(--muted); letter-spacing: 0.06em;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 8rem 0 5rem;
+  }
+  .hero-meta {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+  }
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700;
+    padding: 0.35rem 0.9rem; border-radius: 99px;
+    border: 1px solid var(--border2);
+    color: var(--primary-light); background: var(--primary-pale);
+  }
+  .idea-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 4.4rem);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.03em; margin-bottom: 0.5rem;
+  }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    color: var(--secondary-light); font-weight: 600;
+    margin-bottom: 1.5rem; letter-spacing: -0.01em;
+  }
+  .hero-desc {
+    font-size: 1.05rem; color: var(--text2); max-width: 680px;
+    line-height: 1.75; margin-bottom: 2.5rem;
+  }
+  .hero-stats {
+    display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem; font-weight: 700; color: var(--primary-light);
+  }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+
+  .score-banner {
+    display: inline-flex; align-items: center; gap: 1.2rem;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 1rem 1.8rem;
+    margin-bottom: 2rem;
+  }
+  .score-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; }
+  .score-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 2rem; font-weight: 700; color: var(--primary-light);
+  }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar {
+    width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden;
+  }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 99px; }
+
+  /* SECTIONS */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700;
+    color: var(--primary-light); margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+
+  /* GRID */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+  /* CARDS */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(99,102,241,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+
+  /* PAIN POINT */
+  .pain-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: var(--surface); border: 1px solid rgba(239,68,68,0.18);
+    border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem;
+  }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+
+  /* FEATURE */
+  .feature-item {
+    display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem;
+  }
+  .feature-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem;
+  }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+  @media(max-width:900px) { .pricing-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:500px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem 1.2rem;
+    text-align: center; position: relative;
+  }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--primary); color: #fff;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em;
+    padding: 0.25rem 0.7rem; border-radius: 99px;
+    font-family: 'Space Mono', monospace;
+  }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem; font-weight: 700; color: var(--primary-light);
+    margin-bottom: 0.2rem;
+  }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+
+  /* SCORE TABLE */
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts {
+    font-family: 'Space Mono', monospace; font-weight: 700;
+    color: var(--primary-light); text-align: right; white-space: nowrap;
+  }
+  .score-table .bar-cell { width: 120px; padding-right: 0; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--secondary)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--text); background: var(--surface2); }
+
+  /* COMP TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+
+  /* RISK */
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+
+  /* REVENUE */
+  .revenue-block { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:1.5rem; }
+  .revenue-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .revenue-row:last-child { border-bottom:none; font-weight:700; color:var(--primary-light); }
+  .revenue-val { font-family:'Space Mono',monospace; color:var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color:var(--primary-light); font-size:1rem; }
+
+  /* CTA */
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .cta-section h2 { font-size:2rem; margin-bottom:1rem; }
+  .cta-section p { color:var(--text2); max-width:520px; margin:0 auto 2rem; }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+
+  /* FOOTER */
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #92</span>
+  <span class="nav-badge en">AI RECRUITMENT</span>
+  <span class="nav-badge th">ระบบสรรหาบุคลากร AI</span>
+</nav>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">💼 AI RECRUITMENT · HRTECH</span>
+      <span class="hero-tag th">💼 AI สรรหา · HRTech</span>
+      <span class="idea-num">SPRINT #92 — FEB 21, 2026</span>
+    </div>
+
+    <h1>
+      <span class="en">Mute<span class="accent">Hire</span></span>
+      <span class="th">Mute<span class="accent">Hire</span></span>
+    </h1>
+    <div class="hero-sub">
+      <span class="en">AI Recruitment Platform for Thai SMEs</span>
+      <span class="th">แพลตฟอร์มสรรหาบุคลากร AI สำหรับ SME ไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai SMEs pay ฿90K–300K per hire to recruitment agencies. JobsDB posts the vacancy — then HR manually screens 300 CVs for 40 hours. MuteHire does it in 4 minutes: post a JD on LINE OA, AI screens every CV, scores candidates, schedules interviews automatically, drafts offer letters in Thai — at 95% less than agency fees.</span>
+      <span class="th">SME ไทยจ่าย ฿90K–300K ต่อการจ้างงานหนึ่งครั้งให้บริษัทจัดหางาน JobsDB ประกาศงาน แต่ HR ต้องคัดกรอง CV 300 ใบเองนาน 40 ชั่วโมง MuteHire ทำแทนได้ใน 4 นาที: โพสต์ JD ผ่าน LINE OA AI คัดกรอง CV ทุกใบ ให้คะแนน นัดสัมภาษณ์อัตโนมัติ ร่างหนังสือเสนองานเป็นภาษาไทย — ถูกกว่าบริษัทจัดหางาน 95%</span>
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">3M+</span>
+        <span class="stat-label en">Thai businesses</span>
+        <span class="stat-label th">ธุรกิจไทย</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">฿300K</span>
+        <span class="stat-label en">avg agency fee/hire</span>
+        <span class="stat-label th">ค่าจัดหาต่อครั้ง</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">40hr</span>
+        <span class="stat-label en">manual screening/role</span>
+        <span class="stat-label th">คัดกรองด้วยมือ</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">฿0</span>
+        <span class="stat-label en">Thai AI ATS exists</span>
+        <span class="stat-label th">ATS AI ไทยที่มีอยู่</span>
+      </div>
+    </div>
+
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">36</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:72%"></div></div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.4rem;font-family:'Space Mono',monospace;">TIER-HIGH ✅</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ THE PAIN ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN POINT</div>
+    <div class="section-label th">ปัญหาที่แท้จริง</div>
+    <h2>
+      <span class="en">Thai HR's Biggest Hidden Cost</span>
+      <span class="th">ต้นทุนซ่อนเร้นของ HR ไทย</span>
+    </h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">📄</div>
+      <div class="pain-text">
+        <h3 class="en">CV Flood — 300 Applications, 40 Hours of Manual Work</h3>
+        <h3 class="th">CV ท่วม — 300 ใบสมัคร, ทำงาน 40 ชั่วโมง</h3>
+        <p class="en">Post a job on JobsDB and receive 200–500 applications. Thai HR managers manually open every PDF, read each CV, create Excel trackers, sort by criteria, shortlist manually. One hire = 40 hours minimum. This is documented consistently in Thai HR LinkedIn discussions and Facebook HR Thailand group (78,000+ members).</p>
+        <p class="th">ลงประกาศงานบน JobsDB แล้วรับใบสมัคร 200–500 ใบ HR ไทยต้องเปิด PDF ทีละไฟล์ อ่าน CV แต่ละใบ ทำ Excel จัดเรียงตามเกณฑ์ คัดเองทีละคน หนึ่งตำแหน่ง = 40 ชั่วโมงขั้นต่ำ</p>
+      </div>
+    </div>
+
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">Agency Fees Are Brutal for SMEs — ฿90K–300K Per Hire</h3>
+        <h3 class="th">ค่าบริษัทจัดหางานแพงเกินไปสำหรับ SME</h3>
+        <p class="en">Michael Page, Robert Half, Adecco charge 15–25% of first-year salary. For a ฿50K/mo software engineer = ฿90K–150K fee. For a ฿100K/mo manager = ฿180K–300K fee. Thai SMEs with 20–200 employees can't afford this for every position, so they suffer through manual screening — or skip the hire entirely and overwork existing staff.</p>
+        <p class="th">Michael Page, Robert Half, Adecco คิด 15–25% ของเงินเดือนปีแรก วิศวกร ฿50K/เดือน = ค่าบริการ ฿90K–150K ผู้จัดการ ฿100K/เดือน = ฿180K–300K SME ที่มีพนักงาน 20–200 คนไม่มีทางแบกค่าใช้จ่ายนี้ได้ทุกตำแหน่ง</p>
+      </div>
+    </div>
+
+    <div class="pain-item">
+      <div class="pain-emoji">😰</div>
+      <div class="pain-text">
+        <h3 class="en">No Thai-Language AI Screening Exists</h3>
+        <h3 class="th">ไม่มีระบบ AI คัดกรองภาษาไทย</h3>
+        <p class="en">Global ATS platforms (Greenhouse, Lever, Workable) are English-only, designed for US company structures, and priced for enterprises ($500–3,000/mo). Thai job boards (JobsDB, WorkVenture, JobThai) offer posting only — no AI screening, no Thai language NLP, no LINE interview scheduling. Zero Thai-native AI ATS exists.</p>
+        <p class="th">ATS ระดับโลก (Greenhouse, Lever, Workable) เป็นภาษาอังกฤษ ออกแบบสำหรับบริษัทอเมริกา ราคาสำหรับองค์กรใหญ่ ($500–3,000/เดือน) Job board ไทย (JobsDB, WorkVenture, JobThai) มีแค่ประกาศงาน ไม่มี AI คัดกรอง ไม่มี NLP ภาษาไทย ไม่มีนัดสัมภาษณ์ผ่าน LINE</p>
+      </div>
+    </div>
+
+    <div class="pain-item">
+      <div class="pain-emoji">🤝</div>
+      <div class="pain-text">
+        <h3 class="en">Cultural Fit Gap: Thai Workplace Has Unique Dynamics</h3>
+        <h3 class="th">Thai Cultural Fit: ระบบต่างชาติวัดไม่ได้</h3>
+        <p class="en">Hierarchy (เกรงใจ), team harmony (น้ำใจ), seniority respect, and work-life culture in Thai offices are invisible to global screening tools. Thai employers want cultural fit screening that global platforms can't do. Thai language CV parsing (handling both Thai and Transliterated English) is also a technical barrier global tools fail at consistently.</p>
+        <p class="th">ลำดับชั้น (เกรงใจ) ความสามัคคี (น้ำใจ) และวัฒนธรรมการทำงานในบริษัทไทยเป็นสิ่งที่เครื่องมือต่างชาติมองไม่เห็น นายจ้างไทยต้องการ cultural fit screening ที่เข้าใจบริบทไทย รวมถึงการ parse CV ที่มีทั้งภาษาไทยและอังกฤษ</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SOLUTION ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2>
+      <span class="en">MuteHire: Your AI Recruiter, Native to LINE</span>
+      <span class="th">MuteHire: AI HR ที่เกิดมาบน LINE</span>
+    </h2>
+
+    <div class="two-col" style="margin-bottom:2rem;">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">AI CV Screening in Thai + English</h3>
+            <h3 class="th">AI คัดกรอง CV ภาษาไทย + อังกฤษ</h3>
+            <p class="en">Upload 300 CVs or import directly from JobsDB/WorkVenture. AI parses Thai-English bilingual CVs, extracts skills/experience, scores against your JD criteria. 4 minutes for 300 CVs vs. 40 hours manual. Shortlist delivered with ranked justification.</p>
+            <p class="th">อัปโหลด 300 CV หรือ import จาก JobsDB/WorkVenture โดยตรง AI parse CV สองภาษาไทย-อังกฤษ ดึงทักษะ/ประสบการณ์ ให้คะแนนตามเกณฑ์ JD ของคุณ 4 นาทีสำหรับ 300 CV แทนที่ 40 ชั่วโมง</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Automated Interview Scheduling via LINE</h3>
+            <h3 class="th">นัดสัมภาษณ์อัตโนมัติผ่าน LINE</h3>
+            <p class="en">MuteHire sends LINE messages to shortlisted candidates with time slot options. Candidate taps preferred time → auto-confirmed → calendar invite sent. HR manager never touches scheduling. Candidates already use LINE — zero friction, zero app download.</p>
+            <p class="th">MuteHire ส่งข้อความ LINE ถึงผู้สมัครที่ผ่านการคัดเลือก พร้อมตัวเลือกเวลา ผู้สมัครเลือกเวลา → ยืนยันอัตโนมัติ → ส่งนัดปฏิทิน HR ไม่ต้องทำอะไรเลย</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai-Language JD Generator & Offer Letter</h3>
+            <h3 class="th">สร้าง JD + หนังสือเสนองานภาษาไทย</h3>
+            <p class="en">Describe the role in LINE chat → AI generates a professional Thai-language JD optimized for JobsDB. After interview → AI drafts Thai offer letter with correct labor law terms (probation period, สัญญาจ้างงาน), salary/benefits structure. 10 minutes vs. 3 hours with a lawyer.</p>
+            <p class="th">อธิบายตำแหน่งใน LINE chat → AI สร้าง JD ภาษาไทยที่มืออาชีพ เหมาะกับ JobsDB หลังสัมภาษณ์ → AI ร่างหนังสือเสนองานภาษาไทยถูกต้องตามกฎหมายแรงงาน (ทดลองงาน สัญญาจ้างงาน) 10 นาที แทนที่ 3 ชั่วโมงกับทนายความ</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Cultural Fit Pre-Screening Questions</h3>
+            <h3 class="th">คำถามวัด Cultural Fit แบบไทย</h3>
+            <p class="en">AI sends standardized async video/text pre-screen questions to candidates via LINE. Thai-context questions: work style, teamwork (น้ำใจ), hierarchy comfort, WFH/office preferences. HR reviews 3-minute summaries — not 30-minute calls. Cultural fit score generated automatically.</p>
+            <p class="th">AI ส่งคำถาม pre-screen วิดีโอ/ข้อความ async ถึงผู้สมัครผ่าน LINE คำถามบริบทไทย: สไตล์การทำงาน teamwork (น้ำใจ) ความสะดวกกับลำดับชั้น HR ดูสรุป 3 นาที ไม่ใช่โทร 30 นาที</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">PromptPay Billing — Pay What You Use</h3>
+            <h3 class="th">จ่ายผ่าน PromptPay ตามที่ใช้จริง</h3>
+            <p class="en">Thai SMEs don't do annual SaaS contracts. MuteHire accepts PromptPay, monthly no-commitment. Per-hire credit system available: buy 3 hire-credits (฿9,900) or subscribe monthly. No USD credit card required. No annual lock-in. Payment as Thai as the product itself.</p>
+            <p class="th">SME ไทยไม่ทำสัญญา SaaS รายปี MuteHire รับ PromptPay รายเดือน ไม่ผูกสัญญา ระบบเครดิตต่อการจ้าง: ซื้อ 3 เครดิต (฿9,900) หรือ subscribe รายเดือน ไม่ต้องมีบัตรเครดิต USD ไม่ล็อกอินรายปี</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Candidate Tracking Dashboard (Web + LINE)</h3>
+            <h3 class="th">Dashboard ติดตามผู้สมัคร (Web + LINE)</h3>
+            <p class="en">Visual hiring pipeline: Applied → Screened → Shortlisted → Interviewed → Offered → Hired. Update stage via LINE message or web dashboard. All candidate history in one place. Exportable to Excel for executives who love Excel. Integrated notes for panel interview feedback.</p>
+            <p class="th">Pipeline การจ้างงาน: สมัคร → คัดกรอง → Shortlist → สัมภาษณ์ → เสนองาน → รับเข้าทำงาน อัปเดตสถานะผ่าน LINE หรือ web dashboard ประวัติผู้สมัครทั้งหมดในที่เดียว export Excel ได้สำหรับผู้บริหาร</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ MARKET ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">MARKET DATA</div>
+    <div class="section-label th">ข้อมูลตลาด</div>
+    <h2>
+      <span class="en">The Recruitment Market Is Enormous & Underserved in Thailand</span>
+      <span class="th">ตลาดสรรหาบุคลากรมหึมา แต่ไม่มีใครทำดีในไทย</span>
+    </h2>
+
+    <div class="three-col" style="margin-bottom:2rem;">
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3 class="en">Global HR Tech: $40B+</h3>
+        <h3 class="th">HR Tech โลก: $40B+</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Global HR technology market exceeds $40B annually. ATS segment: $2.5B+ growing at 8% CAGR. Southeast Asia fastest-growing region — Thailand specifically accelerating post-pandemic digital adoption for SMEs.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ตลาด HR Tech โลกเกิน $40B ต่อปี ส่วน ATS: $2.5B+ เติบโต 8% CAGR ภูมิภาค SEA เติบโตเร็วที่สุด ไทยโดยเฉพาะเร่งตัวหลังโควิด</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🇹🇭</div>
+        <h3 class="en">Thai Staffing Market: ฿5B+/yr</h3>
+        <h3 class="th">ตลาดสรรหาไทย: ฿5B+/ปี</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Thailand's recruitment agency market estimated at ฿5B+ annually (agencies like Michael Page, Adecco, Manpower charge 15–25% per hire). 3M+ registered Thai businesses. SMEs (10–500 employees) = 500K+ companies actively hiring. Huge TAM, zero AI disruption yet.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ตลาดบริษัทจัดหางานไทยประมาณ ฿5B+/ปี ธุรกิจจดทะเบียนไทย 3M+ บริษัท บริษัท SME (10–500 คน) = 500K+ บริษัทที่กำลังสรรหาอยู่ TAM มหึมา ยังไม่มี AI เข้ามารบกวน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Thai Job Market: Tight, High-Volume</h3>
+        <h3 class="th">ตลาดแรงงานไทย: ตึง, ปริมาณสูง</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">JobsDB Thailand: 4M+ registered jobseekers. WorkVenture: 1M+ profiles. Thai unemployment rate low (1.2%) = competitive hiring market. Every SME competes for the same talent pool. Speed of screening = competitive advantage. Average time-to-hire in Thailand: 45–60 days (global average 40 days). MuteHire cuts this to 15–20 days.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">JobsDB ไทย: ผู้สมัคร 4M+ คน WorkVenture: 1M+ โปรไฟล์ อัตราว่างงานไทยต่ำ (1.2%) = ตลาดจ้างงานแข่งขันสูง ทุก SME แย่งผู้สมัครกลุ่มเดียวกัน ความเร็วคัดกรอง = ความได้เปรียบทางการแข่งขัน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ COMPETITION ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2>
+      <span class="en">Complete Whitespace for Thai-Native AI ATS</span>
+      <span class="th">ช่องว่างสมบูรณ์สำหรับ AI ATS แบบไทย</span>
+    </h2>
+
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th class="en">PLATFORM</th>
+            <th class="th">แพลตฟอร์ม</th>
+            <th>Thai Language</th>
+            <th>AI Screening</th>
+            <th>LINE Integration</th>
+            <th>PromptPay</th>
+            <th>SME Pricing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>JobsDB (SEEK)</strong></td>
+            <td class="th"><strong>JobsDB</strong></td>
+            <td class="yes">✅ Yes</td>
+            <td class="no">❌ Job board only</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="partial">฿3K–15K/mo (posting)</td>
+          </tr>
+          <tr>
+            <td><strong>WorkVenture</strong></td>
+            <td class="th"><strong>WorkVenture</strong></td>
+            <td class="yes">✅ Yes</td>
+            <td class="partial">⚡ Basic</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="partial">฿5K–20K/mo</td>
+          </tr>
+          <tr>
+            <td><strong>Greenhouse</strong></td>
+            <td class="th"><strong>Greenhouse</strong></td>
+            <td class="no">❌ English only</td>
+            <td class="yes">✅ Full ATS</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="no">$500–3,000/mo</td>
+          </tr>
+          <tr>
+            <td><strong>Lever / Workable</strong></td>
+            <td class="th"><strong>Lever / Workable</strong></td>
+            <td class="no">❌ English only</td>
+            <td class="yes">✅ Full ATS</td>
+            <td class="no">❌ No</td>
+            <td class="no">❌ No</td>
+            <td class="no">$200–800/mo</td>
+          </tr>
+          <tr>
+            <td><strong>Michael Page / Adecco</strong></td>
+            <td class="th"><strong>Michael Page / Adecco</strong></td>
+            <td class="yes">✅ Yes</td>
+            <td class="no">❌ Human only</td>
+            <td class="no">❌ No</td>
+            <td class="yes">✅ Yes</td>
+            <td class="no">฿90K–300K/hire</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>MuteHire ✦</strong></td>
+            <td class="th"><strong>MuteHire ✦</strong></td>
+            <td class="yes">✅ Thai-native</td>
+            <td class="yes">✅ Full AI</td>
+            <td class="yes">✅ LINE-first</td>
+            <td class="yes">✅ PromptPay</td>
+            <td class="yes">฿3,900–19,900/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ REVENUE ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2>
+      <span class="en">B2B SaaS + Per-Hire Credits — High ARPU, Low Churn</span>
+      <span class="th">B2B SaaS + เครดิตต่อการจ้าง — ARPU สูง Churn ต่ำ</span>
+    </h2>
+
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER</div>
+        <div class="pricing-tier th">เริ่มต้น</div>
+        <div class="pricing-price">฿3,900</div>
+        <div class="pricing-unit en">/month · up to 3 active roles</div>
+        <div class="pricing-unit th">/เดือน · สูงสุด 3 ตำแหน่ง</div>
+        <div class="pricing-desc en">AI screening, LINE scheduling, Thai JD generator. 50 CV scans/mo. PromptPay billing.</div>
+        <div class="pricing-desc th">AI คัดกรอง นัด LINE สร้าง JD ไทย สแกน CV 50 ใบ/เดือน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier en">GROWTH</div>
+        <div class="pricing-tier th">โตเร็ว</div>
+        <div class="pricing-price">฿9,900</div>
+        <div class="pricing-unit en">/month · up to 10 active roles</div>
+        <div class="pricing-unit th">/เดือน · สูงสุด 10 ตำแหน่ง</div>
+        <div class="pricing-desc en">Everything in Starter + cultural fit scoring, offer letter generator, 300 CV scans/mo, hiring pipeline dashboard.</div>
+        <div class="pricing-desc th">ทุกอย่างใน Starter + คะแนน cultural fit ร่างหนังสือเสนองาน สแกน 300 CV/เดือน dashboard pipeline</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">SCALE</div>
+        <div class="pricing-tier th">สเกลใหญ่</div>
+        <div class="pricing-price">฿19,900</div>
+        <div class="pricing-unit en">/month · unlimited roles</div>
+        <div class="pricing-unit th">/เดือน · ไม่จำกัดตำแหน่ง</div>
+        <div class="pricing-desc en">Everything + API integration (JobsDB/WorkVenture), multi-user (5 HR seats), white-label career page, advanced analytics.</div>
+        <div class="pricing-desc th">ทุกอย่าง + API integration, HR 5 คน, career page สีขาว, analytics ขั้นสูง</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">PAY-PER-HIRE</div>
+        <div class="pricing-tier th">จ่ายตามจ้าง</div>
+        <div class="pricing-price">฿4,900</div>
+        <div class="pricing-unit en">/hire credit (no subscription)</div>
+        <div class="pricing-unit th">/เครดิตต่อการจ้าง</div>
+        <div class="pricing-desc en">For SMEs hiring 1–2 people/year. Buy 3 credits = ฿14,700. Compare to ฿90K–300K agency fee for one hire.</div>
+        <div class="pricing-desc th">SME ที่จ้าง 1–2 คน/ปี ซื้อ 3 เครดิต = ฿14,700 เทียบกับค่าบริษัทจัดหางาน ฿90K–300K</div>
+      </div>
+    </div>
+
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;" class="en">YEAR 1 REVENUE MATH</p>
+      <p class="section-label" style="margin-bottom:1rem;" class="th">คณิตศาสตร์รายได้ปีที่ 1</p>
+      <div class="revenue-row">
+        <span class="en">500 Starter (฿3,900/mo)</span>
+        <span class="th">500 Starter (฿3,900/เดือน)</span>
+        <span class="revenue-val">฿1.95M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">150 Growth (฿9,900/mo)</span>
+        <span class="th">150 Growth (฿9,900/เดือน)</span>
+        <span class="revenue-val">฿1.49M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">30 Scale (฿19,900/mo)</span>
+        <span class="th">30 Scale (฿19,900/เดือน)</span>
+        <span class="revenue-val">฿597K/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Pay-per-hire credits (100/mo × ฿4,900)</span>
+        <span class="th">เครดิตจ้าง (100/เดือน × ฿4,900)</span>
+        <span class="revenue-val">฿490K/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en"><strong>Total MRR (Year 1 exit rate)</strong></span>
+        <span class="th"><strong>MRR รวม (ปลายปีที่ 1)</strong></span>
+        <span class="revenue-val"><strong>฿4.53M/mo = ฿54M ARR</strong></span>
+      </div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;">
+        <span class="en">Conservative: 200 Starter + 50 Growth + 10 Scale = ฿1.5M MRR = ฿18M ARR</span>
+        <span class="th">อนุรักษ์นิยม: 200 Starter + 50 Growth + 10 Scale = ฿1.5M MRR = ฿18M ARR</span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ GO-TO-MARKET ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">GO-TO-MARKET</div>
+    <div class="section-label th">กลยุทธ์เข้าตลาด</div>
+    <h2>
+      <span class="en">Where Thai HR Managers Already Gather</span>
+      <span class="th">ที่ที่ HR ไทยรวมตัวกันอยู่แล้ว</span>
+    </h2>
+
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">📘</div>
+        <h3 class="en">Facebook HR Thailand (78K+ members)</h3>
+        <h3 class="th">Facebook HR Thailand (78K+ สมาชิก)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Active community discussing HR pain points daily. Post "I automated my CV screening with MuteHire — 40 hours became 4 minutes" = instant viral interest. Targeted outreach to top contributors.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ชุมชนที่พูดคุยปัญหา HR ทุกวัน โพสต์ "ฉันอัตโนมัติการคัดกรอง CV ด้วย MuteHire — 40 ชั่วโมงเหลือ 4 นาที" = ไวรัลทันที</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💼</div>
+        <h3 class="en">LinkedIn Thailand HR Professionals</h3>
+        <h3 class="th">LinkedIn HR Professionals ไทย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Targeted LinkedIn outreach to HR managers at Thai SMEs (10–200 employees). Direct message with a free trial offer: "Screen 50 CVs free — no credit card required." High conversion from trial to paid.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ติดต่อ HR manager ของ SME ไทย (10–200 พนักงาน) โดยตรงทาง LinkedIn ข้อความพร้อม trial ฟรี: "คัดกรอง 50 CV ฟรี — ไม่ต้องมีบัตรเครดิต"</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3 class="en">Thai SME Association Partnerships</h3>
+        <h3 class="th">พันธมิตรสมาคม SME ไทย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Partner with Thai SME associations (สมาคม SME ไทย) to offer MuteHire as a member benefit. Association sends one email blast = thousands of qualified leads. Revenue share model with association.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ร่วมมือกับสมาคม SME ไทย เสนอ MuteHire เป็นสิทธิประโยชน์สมาชิก สมาคมส่งอีเมล = ลีดที่มีคุณภาพหลายพัน แบ่งปันรายได้กับสมาคม</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ TIMELINE ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">BUILD TIMELINE</div>
+    <div class="section-label th">ไทม์ไลน์การสร้าง</div>
+    <h2>
+      <span class="en">6-Week MVP to First Revenue</span>
+      <span class="th">6 สัปดาห์ MVP ถึงรายได้แรก</span>
+    </h2>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 1–2</div>
+        <div class="tl-title en">Core CV Parser + Thai NLP</div>
+        <div class="tl-title th">CV Parser หลัก + Thai NLP</div>
+        <div class="tl-desc en">Build Thai-English bilingual CV parser. Extract: name, education, experience, skills, certifications. Score against JD criteria using LLM. MVP handles PDF, DOCX, JPG.</div>
+        <div class="tl-desc th">สร้าง Thai-English bilingual CV parser ดึง: ชื่อ, การศึกษา, ประสบการณ์, ทักษะ, ใบรับรอง ให้คะแนนตามเกณฑ์ JD ด้วย LLM</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 3–4</div>
+        <div class="tl-title en">LINE OA Integration + Scheduling</div>
+        <div class="tl-title th">LINE OA Integration + การนัดหมาย</div>
+        <div class="tl-desc en">LINE OA for JD input, candidate communication, interview scheduling. Auto-send interview invites with time slots. Candidate confirms via LINE tap. Calendar invite generated automatically.</div>
+        <div class="tl-desc th">LINE OA สำหรับกรอก JD, ติดต่อผู้สมัคร, นัดสัมภาษณ์ ส่งคำเชิญสัมภาษณ์พร้อมช่วงเวลาอัตโนมัติ ผู้สมัครยืนยันผ่าน LINE</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 5</div>
+        <div class="tl-title en">Thai JD + Offer Letter Generator</div>
+        <div class="tl-title th">สร้าง JD + หนังสือเสนองานไทย</div>
+        <div class="tl-desc en">AI generates Thai JD from role description (LINE chat input). AI drafts Thai offer letter with correct labor law terms. Templates customizable per company.</div>
+        <div class="tl-desc th">AI สร้าง JD ไทยจากคำอธิบายตำแหน่ง (กรอกใน LINE chat) AI ร่างหนังสือเสนองานไทยตามกฎหมายแรงงาน</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 6</div>
+        <div class="tl-title en">Dashboard + PromptPay Billing</div>
+        <div class="tl-title th">Dashboard + ชำระ PromptPay</div>
+        <div class="tl-desc en">Web dashboard for hiring pipeline. PromptPay integration (manual verification to start, API later). First 10 beta users (free) from HR Thailand Facebook group.</div>
+        <div class="tl-desc th">Web dashboard สำหรับ pipeline การจ้าง PromptPay integration (verify มือก่อน, API ทีหลัง) 10 beta user แรก (ฟรี) จากกลุ่ม HR Thailand</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ RISKS ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยงและการแก้ไข</div>
+    <h2>
+      <span class="en">Honest Assessment of What Could Go Wrong</span>
+      <span class="th">ประเมินความเสี่ยงอย่างตรงไปตรงมา</span>
+    </h2>
+
+    <div class="two-col">
+      <div>
+        <div class="risk-item">
+          <div class="risk-header">
+            <span class="risk-badge risk-high">HIGH</span>
+            <h3 class="en">HR Manager Trust Barrier</h3>
+            <h3 class="th">HR Manager ไม่ไว้วางใจ AI</h3>
+          </div>
+          <p class="en">HR managers fear AI will "miss good candidates" or make biased decisions. Solution: Show AI recommendations + keep human override. Every shortlist shows "why AI scored this candidate X/10" with transparent criteria.</p>
+          <p class="th">HR กลัว AI "พลาดผู้สมัครดี" หรือตัดสินแบบ bias แก้ไข: แสดงคำแนะนำ AI + ให้ human override ทุก shortlist แสดง "ทำไม AI ให้คะแนน X/10" พร้อมเกณฑ์โปร่งใส</p>
+        </div>
+        <div class="risk-item">
+          <div class="risk-header">
+            <span class="risk-badge risk-high">HIGH</span>
+            <h3 class="en">JobsDB/WorkVenture API Access</h3>
+            <h3 class="th">เข้าถึง API JobsDB/WorkVenture</h3>
+          </div>
+          <p class="en">Job boards may not offer API access for CV import. Solution: MVP works with manual CV upload (drag-drop). Later: partner with job boards for official integration. Alternative: browser extension for one-click import.</p>
+          <p class="th">Job board อาจไม่ให้ API import CV แก้ไข: MVP ทำงานกับอัปโหลด CV มือ (drag-drop) ภายหลัง: ขอ partnership กับ job board ทางเลือก: browser extension import คลิกเดียว</p>
+        </div>
+      </div>
+      <div>
+        <div class="risk-item">
+          <div class="risk-header">
+            <span class="risk-badge risk-med">MED</span>
+            <h3 class="en">Thai Language NLP Accuracy</h3>
+            <h3 class="th">ความแม่นยำ NLP ภาษาไทย</h3>
+          </div>
+          <p class="en">Thai CV parsing is harder than English (no spaces between words, transliteration variations). Solution: Use Claude/GPT-4 which handles Thai well. Manual review of first 1,000 CV parses to train edge cases.</p>
+          <p class="th">Parse CV ภาษาไทยยากกว่าอังกฤษ (ไม่มีช่องว่างระหว่างคำ, ทับศัพท์หลายแบบ) แก้ไข: ใช้ Claude/GPT-4 ที่รองรับภาษาไทยดี ตรวจสอบ CV 1,000 ใบแรกด้วยมือ</p>
+        </div>
+        <div class="risk-item">
+          <div class="risk-header">
+            <span class="risk-badge risk-med">MED</span>
+            <h3 class="en">Sales Cycle Length</h3>
+            <h3 class="th">ความยาวรอบการขาย</h3>
+          </div>
+          <p class="en">B2B SaaS has longer sales cycles than B2C. Solution: Free tier (50 CV scans) + freemium model. Lower friction to start. Pay-per-hire option for SMEs hesitant about monthly subscription.</p>
+          <p class="th">B2B SaaS มีรอบการขายยาวกว่า B2C แก้ไข: Free tier (สแกน 50 CV) + freemium model ลด friction เริ่มต้น ตัวเลือก pay-per-hire สำหรับ SME ที่ลังเล subscription รายเดือน</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SCORING ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2>
+      <span class="en">36/50 — Tier-High ✅</span>
+      <span class="th">36/50 — Tier-High ✅</span>
+    </h2>
+
+    <table class="score-table">
+      <tr>
+        <td class="dim en">Market Potential</td>
+        <td class="dim th">ศักยภาพตลาด</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        <td class="pts">7/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Problem Severity</td>
+        <td class="dim th">ความรุนแรงของปัญหา</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td>
+        <td class="pts">9/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Competition Gap</td>
+        <td class="dim th">ช่องว่างการแข่งขัน</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        <td class="pts">7/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Build Feasibility</td>
+        <td class="dim th">ความเป็นไปได้ในการสร้าง</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        <td class="pts">7/10</td>
+      </tr>
+      <tr>
+        <td class="dim en">Our Advantage</td>
+        <td class="dim th">ข้อได้เปรียบของเรา</td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:60%"></div></div></td>
+        <td class="pts">6/10</td>
+      </tr>
+      <tr class="total-row">
+        <td class="en"><strong>TOTAL</strong></td>
+        <td class="th"><strong>รวม</strong></td>
+        <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:72%"></div></div></td>
+        <td class="pts"><strong>36/50</strong></td>
+      </tr>
+    </table>
+
+    <div style="margin-top:2rem;padding:1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;">
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="en">CEO Assessment: Why This Score</h3>
+      <h3 style="color:var(--primary-light);margin-bottom:0.8rem;" class="th">CEO Assessment: ทำไมให้คะแนนนี้</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="en">
+        <strong>Problem Severity 9/10:</strong> Thai HR managers drowning in CVs is not a "nice to have" problem — it's acute, recurring pain. 40 hours per hire for manual screening is documented consistently in Thai HR communities. This is real pain that costs real money.<br><br>
+        <strong>Market Potential 7/10:</strong> 3M+ Thai businesses, 500K+ SMEs actively hiring. Recruitment agency market ฿5B+/year. However, Thai SME SaaS adoption is slower than US — lower ARPU expectations than global ATS tools.<br><br>
+        <strong>Competition Gap 7/10:</strong> No Thai-native AI ATS exists. Global tools (Greenhouse, Lever) are English-only, no LINE, no PromptPay. Thai job boards offer posting only, no AI screening. Complete whitespace for Thai-native solution.<br><br>
+        <strong>Build Feasibility 7/10:</strong> CV parsing + AI scoring + LINE scheduling are proven technologies. The real challenge is HR manager trust — AI recommending candidates feels risky. Solution: Keep human override, show transparent AI reasoning.<br><br>
+        <strong>Our Advantage 6/10:</strong> Thai language NLP, LINE integration, PromptPay billing are structural moats global tools can't easily copy. However, we don't have HR industry credibility yet — need to build trust through free trials and case studies.
+      </p>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;" class="th">
+        <strong>Problem Severity 9/10:</strong> HR ไทยจมกับ CV ไม่ใช่ปัญหา "มีก็ดี" — เจ็บปวดและเกิดขึ้นซ้ำ 40 ชั่วโมงต่อการจ้างหนึ่งครั้งเป็นที่บันทึกไว้ในชุมชน HR ไทยทุกที่<br><br>
+        <strong>Market Potential 7/10:</strong> ธุรกิจไทย 3M+ SME 500K+ กำลังจ้างงาน ตลาดบริษัทจัดหางาน ฿5B+/ปี แต่ SME ไทยยอมรับ SaaS ช้ากว่าอเมริกา — ARPU ต่ำกว่า<br><br>
+        <strong>Competition Gap 7/10:</strong> ไม่มี AI ATS แบบไทยอยู่เลย เครื่องมือโลก (Greenhouse, Lever) ภาษาอังกฤษ ไม่มี LINE ไม่มี PromptPay Job board ไทยมีแค่ประกาศงาน ไม่มี AI คัดกรอง<br><br>
+        <strong>Build Feasibility 7/10:</strong> CV parsing + AI scoring + LINE scheduling เป็นเทคโนโลยีที่พิสูจน์แล้ว ความท้าทายคือความไว้วางใจของ HR — AI แนะนำผู้สมัครดูเสี่ยง แก้ไข: ให้ human override แสดงเหตุผล AI โปร่งใส<br><br>
+        <strong>Our Advantage 6/10:</strong> NLP ภาษาไทย LINE integration PromptPay เป็นคูเมืองที่เครื่องมือโลกคัดลอกยาก แต่เรายังไม่มีความน่าเชื่อถือในอุตสาหกรรม HR — ต้องสร้างความไว้วางใจผ่าน free trial และ case study
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ CTA ═══════════════════════ -->
+<section class="cta-section">
+  <div class="container">
+    <h2>
+      <span class="en">Idea #92 Complete</span>
+      <span class="th">ไอเดีย #92 เสร็จสมบูรณ์</span>
+    </h2>
+    <p class="en">MuteHire scored 36/50 — Tier-High. Thai SME recruitment is underserved, high-pain, and ready for AI disruption. No Thai-native AI ATS exists. First-mover advantage in Thai HR Tech market.</p>
+    <p class="th">MuteHire ได้ 36/50 — Tier-High การสรรหาบุคลากร SME ไทยถูกละเลย เจ็บปวดสูง พร้อม AI disruption ไม่มี AI ATS แบบไทยอยู่เลย ได้เปรียบผู้นำตลาด HR Tech ไทย</p>
+    <a href="index.html" class="back-link">
+      <span class="en">← Back to All Ideas</span>
+      <span class="th">← กลับไปดูไอเดียทั้งหมด</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #92 · MUTEHIRE</p>
+</footer>
+
+<script>
+function setLang(lang){
+  document.body.classList.toggle('show-th', lang==='th');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
+  document.getElementById('btn-th').classList.toggle('active', lang==='th');
+}
+</script>
+</body>
+</html>
