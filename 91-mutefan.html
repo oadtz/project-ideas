@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteFan — Anti-Scam Fan Project Platform for Thai Celebrity Fans</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #0f1520;
+    --surface2: #0a1525;
+    --border: rgba(14,165,233,0.15);
+    --border2: rgba(14,165,233,0.28);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7888a0;
+    --muted2: #5a6a7a;
+    --primary: #0ea5e9;
+    --primary-light: #38bdf8;
+    --primary-pale: rgba(14,165,233,0.08);
+    --primary-glow: rgba(14,165,233,0.22);
+    --secondary: #e879f9;
+    --secondary-pale: rgba(232,121,249,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(14,165,233,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,121,249,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(14,165,233,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(232,121,249,0.06) 0%, transparent 55%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; background: rgba(10,10,15,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0.9rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .nav-brand { font-family: 'Space Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--primary-light); }
+  .nav-score { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); background: var(--surface); padding: 0.3rem 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
+  .nav-score span { color: var(--primary-light); font-weight: 700; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.1em; background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 100px; padding: 0.4rem 1rem; margin-bottom: 2rem; }
+  .hero-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .hero-num { font-size: 1rem; color: var(--muted2); font-family: 'Space Mono', monospace; font-weight: 700; margin-bottom: 0.5rem; }
+  .hero-title { font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero-title .accent { color: var(--primary-light); }
+  .hero-tagline { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text2); font-weight: 400; max-width: 680px; margin-bottom: 2.5rem; line-height: 1.5; }
+  .hero-kicker { font-size: 1.05rem; font-weight: 600; color: var(--primary-light); font-style: italic; margin-bottom: 3rem; background: var(--primary-pale); border-left: 3px solid var(--primary); padding: 0.8rem 1.2rem; border-radius: 0 8px 8px 0; max-width: 700px; }
+  .score-band { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .score-pill { font-family: 'Space Mono', monospace; font-size: 0.75rem; display: flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 0.5rem 1rem; }
+  .score-pill .val { color: var(--primary-light); font-weight: 700; font-size: 1rem; }
+  .hero-cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff; font-weight: 700; font-size: 0.9rem; padding: 0.9rem 1.8rem; border-radius: 10px; text-decoration: none; transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 24px var(--primary-glow); }
+  .btn-outline { display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border2); color: var(--text2); font-weight: 600; font-size: 0.9rem; padding: 0.9rem 1.8rem; border-radius: 10px; text-decoration: none; transition: all 0.2s; }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary-light); }
+
+  section { padding: 6rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--primary-light); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+  .section-label::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--primary); opacity: 0.4; }
+  .section-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1rem; }
+  .section-sub { font-size: 1.05rem; color: var(--text2); max-width: 640px; margin-bottom: 3rem; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary-light); font-family: 'Space Mono', monospace; line-height: 1; margin-bottom: 0.4rem; }
+  .stat-label strong { color: var(--text2); display: block; font-size: 0.92rem; margin-bottom: 0.2rem; }
+  .stat-label { font-size: 0.82rem; color: var(--muted); }
+
+  .scam-alert { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); border-radius: 14px; padding: 2rem; margin-bottom: 3rem; }
+  .scam-alert h3 { color: #fca5a5; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .scam-cases { display: flex; flex-direction: column; gap: 0.7rem; }
+  .scam-case { background: rgba(239,68,68,0.06); border-radius: 8px; padding: 0.8rem 1rem; font-size: 0.85rem; color: var(--text2); border-left: 2px solid #ef4444; }
+  .scam-case strong { color: #fca5a5; }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; transition: all 0.2s; }
+  .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .feature-card .feat-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
+  .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .feature-tag { display: inline-block; margin-top: 0.8rem; font-size: 0.68rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.08em; background: var(--primary-pale); color: var(--primary-light); border: 1px solid var(--border2); border-radius: 6px; padding: 0.2rem 0.6rem; }
+
+  .how-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+  .how-step { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; text-align: center; }
+  .how-step .step-num-badge { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--primary-light); background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 6px; padding: 0.2rem 0.6rem; display: inline-block; margin-bottom: 0.8rem; }
+  .how-step .step-emoji { font-size: 2rem; display: block; margin-bottom: 0.8rem; }
+  .how-step h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .how-step p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .compare-table th { text-align: left; padding: 0.8rem 1rem; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr.ours td { background: var(--primary-pale); }
+  .compare-table tr.ours td:first-child { border-left: 2px solid var(--primary); }
+  .check { color: var(--green); } .cross { color: var(--red); } .partial { color: var(--amber); }
+
+  .revenue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .plan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; }
+  .plan-card.highlight { border-color: var(--primary); background: var(--primary-pale); box-shadow: 0 0 30px var(--primary-glow); }
+  .plan-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .plan-price { font-size: 1.6rem; font-weight: 800; color: var(--primary-light); font-family: 'Space Mono', monospace; margin-bottom: 0.4rem; }
+  .plan-price sub { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+  .plan-card ul { list-style: none; padding: 0; margin-top: 1rem; }
+  .plan-card li { font-size: 0.85rem; color: var(--muted); padding: 0.3rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; }
+  .plan-card li:last-child { border-bottom: none; }
+
+  .math-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 2rem; margin-top: 2rem; font-family: 'Space Mono', monospace; font-size: 0.85rem; }
+  .math-box h3 { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 1rem; }
+  .math-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .math-row:last-child { border-bottom: none; color: var(--primary-light); font-weight: 700; font-size: 1rem; }
+  .math-row .label { color: var(--muted); font-size: 0.78rem; }
+
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+  .score-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; }
+  .score-item .s-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .score-item .s-val { font-size: 1.6rem; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--primary-light); margin-bottom: 0.5rem; }
+  .score-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+  .score-item .s-note { font-size: 0.75rem; color: var(--muted2); margin-top: 0.5rem; line-height: 1.5; }
+  .score-total { background: var(--primary-pale); border: 2px solid var(--primary); border-radius: 14px; padding: 2rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 40px var(--primary-glow); }
+  .score-total .total-num { font-size: 4rem; font-weight: 800; color: var(--primary-light); font-family: 'Space Mono', monospace; line-height: 1; }
+  .score-total .total-label { font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+  .score-total .verdict { display: inline-block; margin-top: 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.1em; background: var(--green); color: #fff; border-radius: 6px; padding: 0.3rem 0.8rem; }
+
+  .risks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+  .risk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; border-left: 3px solid var(--amber); }
+  .risk-card .risk-head { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .risk-card h4 { font-size: 0.9rem; font-weight: 700; }
+  .risk-pill { font-size: 0.65rem; font-family: 'Space Mono', monospace; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; }
+  .risk-med { background: rgba(245,158,11,0.2); color: var(--amber); }
+  .risk-low { background: rgba(16,185,129,0.2); color: var(--green); }
+  .risk-high { background: rgba(239,68,68,0.2); color: var(--red); }
+  .risk-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .risk-card .mitigation { margin-top: 0.6rem; font-size: 0.78rem; color: var(--green); background: rgba(16,185,129,0.08); border-radius: 6px; padding: 0.4rem 0.7rem; }
+
+  .insight-box { background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 14px; padding: 2rem; margin-top: 2rem; }
+  .insight-box .insight-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--primary-light); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8rem; }
+  .insight-box p { font-size: 0.92rem; color: var(--text2); line-height: 1.7; }
+  .insight-box strong { color: var(--primary-light); }
+
+  footer { padding: 3rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.82rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.82rem; text-decoration: none; margin-bottom: 1rem; transition: color 0.2s; }
+  .footer-back:hover { color: var(--primary-light); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <div class="nav-brand">☀️ MuteLab · Idea #91</div>
+  <div class="nav-score">Sprint Score: <span>39/50</span></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🌟 FANDOM/CELEBRITY · FIRST IN CATEGORY · ANTI-SCAM CROWDFUNDING</div>
+    <div class="hero-label">EN — IDEA #91 / SPRINT · THAI CELEBRITY FANDOM · FAN PROJECT PLATFORM</div>
+    <div class="hero-label th">TH — ไอเดีย #91 / SPRINT · ฬandome ดาราไทย · แพลตฟอร์ม Fan Project</div>
+    <div class="hero-num">#91</div>
+    <h1 class="hero-title">
+      <span class="en">Mute<span class="accent">Fan</span></span>
+      <span class="th">Mute<span class="accent">Fan</span></span>
+    </h1>
+    <p class="hero-tagline">
+      <span class="en">Weverse for Thai BL/Celebrity Fans — Transparent, anti-scam fan project crowdfunding with PromptPay escrow. Official fan club memberships. Birthday project coordination. Merch drops. The platform Thai celebrity fans have been waiting for.</span>
+      <span class="th">Weverse สำหรับแฟนคลับดาราไทย / BL — crowdfunding fan project โปร่งใสป้องกันการโกง พร้อม PromptPay escrow สมาชิกแฟนคลับอย่างเป็นทางการ จัดการ birthday project ออก merch แพลตฟอร์มที่แฟนดาราไทยรอคอย</span>
+    </p>
+    <div class="hero-kicker">
+      <span class="en">"Thai fan birthday projects raise ฿5-50M per celebrity. Fan leaders collect PromptPay then disappear — estimated ฿100M+ lost to scams annually. Weverse has 100M+ users for K-pop but ZERO Thai content. MuteFan: PromptPay escrow + transparent tracking = anti-scam by design. 5% platform fee on all projects."</span>
+      <span class="th">"Thai fan birthday projects ระดมทุน ฿5-50M ต่อดารา แฟนคลับ leader เก็บ PromptPay แล้วหาย — สูญเสียจากการโกงประมาณ ฿100M+/ปี Weverse มีผู้ใช้ 100M+ สำหรับ K-pop แต่ไม่มีคอนเทนต์ไทยเลย MuteFan: PromptPay escrow + ติดตามโปร่งใส = ป้องกันการโกงโดยดีไซน์ 5% platform fee บนทุก project"</span>
+    </div>
+    <div class="score-band">
+      <div class="score-pill"><span>Score</span><span class="val">39/50</span></div>
+      <div class="score-pill"><span>Category</span><span style="color:var(--primary-light);font-weight:700;">Fandom / Celebrity</span></div>
+      <div class="score-pill"><span>Model</span><span style="color:var(--secondary);font-weight:700;">Platform · % GMV + Memberships</span></div>
+      <div class="score-pill"><span>Time to First $</span><span style="color:var(--green);font-weight:700;">Week 3</span></div>
+    </div>
+    <div class="hero-cta-row">
+      <a href="#research" class="btn-primary">📊 See Research</a>
+      <a href="#score" class="btn-outline">🎯 Score Breakdown</a>
+      <a href="index.html" class="btn-outline">← All Ideas</a>
+    </div>
+  </div>
+
+  <!-- MARKET -->
+  <section id="research">
+    <div class="section-label">MARKET DATA</div>
+    <h2 class="section-title">
+      <span class="en">The Thai Celebrity Fan Economy: Billions. All Manual. All Scam-Prone.</span>
+      <span class="th">Economy แฟนคลับดาราไทย: หลายพันล้าน ทั้งหมด Manual ทั้งหมดเสี่ยงโกง</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Weverse (K-pop, Hybe Corporation) has 100M+ users and a multi-billion dollar valuation — proving the fan platform market is massive. Thai celebrity fandom is equally passionate but has ZERO dedicated platform.</span>
+      <span class="th">Weverse (K-pop, Hybe Corporation) มีผู้ใช้ 100M+ และมูลค่าหลายพันล้านดอลลาร์ พิสูจน์ว่าตลาด fan platform มหาศาล แฟนคลับดาราไทยก็ passionate เท่ากัน แต่ไม่มีแพลตฟอร์มเฉพาะเลย</span>
+    </p>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">100M+</div><div class="stat-label"><strong>Weverse Global Users</strong>K-pop fan platform by Hybe (BTS company). Proves fans pay for exclusive content and community. No Thai content.</div></div>
+      <div class="stat-card"><div class="stat-num">฿5-50M</div><div class="stat-label"><strong>Per Celebrity Birthday Project</strong>Thai fans raise ฿5-50M per top celebrity birthday for: LED billboards, streaming boosts, merch, charity donations</div></div>
+      <div class="stat-card"><div class="stat-num">฿100M+</div><div class="stat-label"><strong>Est. Annual Fan Scam Losses (TH)</strong>Fan leaders collect PromptPay donations then disappear. Multiple cases reported in Thai media 2021-2024.</div></div>
+      <div class="stat-card"><div class="stat-num">GMMTV</div><div class="stat-label"><strong>Thailand's Biggest BL Studio</strong>Produces 20-30 BL/GL/drama series/year. Artists: Bright-Win, Off-Gun, Krist-Singto, Gulf-Mew have global fanbases.</div></div>
+      <div class="stat-card"><div class="stat-num">12M+</div><div class="stat-label"><strong>Bright Vachirawit Instagram Followers</strong>Top Thai BL actor. Global fanbase across Japan, Philippines, Indonesia, Vietnam, Latin America.</div></div>
+      <div class="stat-card"><div class="stat-num">ZERO</div><div class="stat-label"><strong>Thai-Native Fan Project Platforms</strong>All coordination: Twitter/X + Facebook + LINE groups + spreadsheets. No dedicated platform exists.</div></div>
+      <div class="stat-card"><div class="stat-num">$34B+</div><div class="stat-label"><strong>Global Crowdfunding Market</strong>Fan project crowdfunding is a subcategory — with higher urgency and willingness to pay than general crowdfunding</div></div>
+      <div class="stat-card"><div class="stat-num">¥900/mo</div><div class="stat-label"><strong>Weverse Membership Price (~฿220)</strong>K-pop fans pay ¥900/mo for exclusive artist content. Thai fans will pay for equivalent Thai celebrity access.</div></div>
+    </div>
+
+    <div class="scam-alert">
+      <h3>🚨 THE SCAM PROBLEM: Why MuteFan Exists</h3>
+      <div class="scam-cases">
+        <div class="scam-case"><strong>The Pattern:</strong> Fan leader creates project → fans donate via PromptPay (no escrow) → leader "manages" funds → project executed with zero transparency — OR — leader disappears with the money. Fans have zero recourse.</div>
+        <div class="scam-case"><strong>Birthday Project Workflow Today:</strong> Twitter poll for project idea → LINE group for donation announcements → individual PromptPay transfers to leader's personal account → Google Sheet for "tracking" → leader posts "proof" photos → no audit trail → trust-based system that regularly fails.</div>
+        <div class="scam-case"><strong>The Trust Gap:</strong> Fans WANT to support their favorite celebrities but fear losing money to scams. This fear REDUCES total fan spending — even legitimate projects raise less than they could because fans hesitate. MuteFan removes the fear by design: PromptPay → MuteFan escrow → transparent project → funds released only when delivery is proven.</div>
+        <div class="scam-case"><strong>Scale:</strong> Top Thai celebrities have fan clubs running 5-10 projects per year each. 50 major Thai celebrities × 5 projects × avg ฿3M = ฿750M/year in fan project GMV. At 5% platform fee = ฿37.5M ARR from crowdfunding alone — before memberships.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="section-label">HOW IT WORKS</div>
+    <h2 class="section-title">
+      <span class="en">From Scam-Prone to Trustworthy in 3 Steps</span>
+      <span class="th">จากเสี่ยงโกงสู่น่าเชื่อถือใน 3 ขั้นตอน</span>
+    </h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="step-emoji">📋</span>
+        <div class="step-num-badge">STEP 01</div>
+        <h3><span class="en">Create Project + Set Goal</span><span class="th">สร้าง Project + ตั้งเป้า</span></h3>
+        <p class="en">Fan leader creates project: "Bright's Birthday 2026 — Raise ฿5M for LED Billboard in Tokyo." Sets timeline, goal, and what happens to unspent funds (auto-refund).</p>
+        <p class="th">Fan leader สร้าง project: "วันเกิด Bright 2026 — ระดมทุน ฿5M สำหรับ LED Billboard ในโตเกียว" ตั้ง timeline, เป้าหมาย และสิ่งที่จะเกิดกับเงินที่เหลือ (คืนอัตโนมัติ)</p>
+      </div>
+      <div class="how-step">
+        <span class="step-emoji">💳</span>
+        <div class="step-num-badge">STEP 02</div>
+        <h3><span class="en">Fans Donate via PromptPay</span><span class="th">แฟนบริจาคผ่าน PromptPay</span></h3>
+        <p class="en">Fan scans project QR → PromptPay transfer → funds go to MuteFan escrow (NOT leader's account). Every fan gets receipt + their name on the donor leaderboard. Real-time progress bar.</p>
+        <p class="th">แฟนสแกน QR → โอน PromptPay → เงินไปที่ MuteFan escrow (ไม่ใช่บัญชีส่วนตัว leader) แฟนทุกคนได้ใบเสร็จ + ชื่อบนกระดานผู้บริจาค แถบความคืบหน้า real-time</p>
+      </div>
+      <div class="how-step">
+        <span class="step-emoji">🔍</span>
+        <div class="step-num-badge">STEP 03</div>
+        <h3><span class="en">Transparent Execution + Proof</span><span class="th">ดำเนินการโปร่งใส + พิสูจน์</span></h3>
+        <p class="en">When funds are used (billboard booked, merch ordered), leader uploads invoice/receipts as proof. Community votes on approval. Unspent funds = auto-returned to donors within 7 days.</p>
+        <p class="th">เมื่อใช้เงิน (จอง billboard, สั่ง merch) leader อัปโหลดใบแจ้งหนี้/ใบเสร็จเป็นหลักฐาน ชุมชนโหวตอนุมัติ เงินที่เหลือ = คืนผู้บริจาคอัตโนมัติภายใน 7 วัน</p>
+      </div>
+      <div class="how-step">
+        <span class="step-emoji">🌟</span>
+        <div class="step-num-badge">STEP 04</div>
+        <h3><span class="en">Fan Identity + Badge System</span><span class="th">ตัวตนแฟน + ระบบ Badge</span></h3>
+        <p class="en">Your contribution history, fan badges (Founding Fan, Diamond Supporter), leaderboard rank, anniversary dates. Your fandom identity — permanent, portable, provable.</p>
+        <p class="th">ประวัติการสนับสนุน, fan badge (Founding Fan, Diamond Supporter), อันดับกระดาน, วันครบรอบ ตัวตนแฟนของคุณ — ถาวร พกพาได้ พิสูจน์ได้</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">PLATFORM FEATURES</div>
+    <h2 class="section-title">
+      <span class="en">Beyond Anti-Scam: A Full Fan Ecosystem</span>
+      <span class="th">เกินกว่าป้องกันโกง: Ecosystem แฟนเต็มรูปแบบ</span>
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feat-icon">🔒</span>
+        <h3><span class="en">PromptPay Escrow — The Core Moat</span><span class="th">PromptPay Escrow — คูเมืองหลัก</span></h3>
+        <p class="en">Fan donations go to MuteFan escrow, not the leader's personal account. Funds released only when project milestones are proven with uploaded receipts. Anti-scam by architecture, not by trust.</p>
+        <p class="th">เงินบริจาคแฟนไปที่ escrow MuteFan ไม่ใช่บัญชีส่วนตัว leader เงินถูกปล่อยเมื่อพิสูจน์ milestone ด้วยใบเสร็จที่อัปโหลด ป้องกันการโกงด้วยสถาปัตยกรรม ไม่ใช่ด้วยความไว้วางใจ</p>
+        <span class="feature-tag">🔥 KILLER FEATURE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🎂</span>
+        <h3><span class="en">Birthday Project Studio</span><span class="th">Birthday Project Studio</span></h3>
+        <p class="en">Create campaigns for: LED billboards, streaming charts boost, merchandise, airport banner, charity donation, concert ticket group buy. Pre-built templates for each type. Built-in Thai vendor directory.</p>
+        <p class="th">สร้างแคมเปญสำหรับ: LED billboard, ชาร์ต streaming, merchandise, ป้ายสนามบิน, บริจาคการกุศล, ซื้อตั๋วคอนเสิร์ตกลุ่ม เทมเพลตสำเร็จรูปสำหรับแต่ละประเภท ไดเรกทอรีผู้ขายไทยในตัว</p>
+        <span class="feature-tag">FAN CULTURE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">💎</span>
+        <h3><span class="en">Fan Club Memberships</span><span class="th">สมาชิกแฟนคลับ</span></h3>
+        <p class="en">Monthly fan club memberships (฿99-499/mo): exclusive content, early ticket access, member badge, LINE group access. Fan clubs run by official fan clubs or organized fan communities.</p>
+        <p class="th">สมาชิกแฟนคลับรายเดือน (฿99-499/เดือน): คอนเทนต์พิเศษ, early ticket access, member badge, เข้าถึง LINE group แฟนคลับดำเนินการโดยแฟนคลับอย่างเป็นทางการหรือชุมชนแฟนที่จัดตั้ง</p>
+        <span class="feature-tag">RECURRING REVENUE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🛍️</span>
+        <h3><span class="en">Fan-Made Merch Drops</span><span class="th">Fan-Made Merch Drops</span></h3>
+        <p class="en">Fan designers create merch (photo cards, acrylic stands, fan art prints), list on MuteFan. Pre-order via PromptPay, MuteFan handles fulfillment coordination. 15% platform cut.</p>
+        <p class="th">นักออกแบบแฟนสร้าง merch (photo card, acrylic stand, fan art print) ลิสต์บน MuteFan Pre-order ผ่าน PromptPay MuteFan จัดการการส่ง 15% platform cut</p>
+        <span class="feature-tag">GMV DRIVER</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🌏</span>
+        <h3><span class="en">International Fan Support</span><span class="th">รองรับแฟนต่างประเทศ</span></h3>
+        <p class="en">Japanese, Filipino, Indonesian, Vietnamese fans can donate via Wise/Payoneer, auto-converted to THB for Thai projects. Multi-language: EN/TH/JP/ID. Thai BL fandom is global.</p>
+        <p class="th">แฟนญี่ปุ่น, ฟิลิปปินส์, อินโดนีเซีย, เวียดนามบริจาคผ่าน Wise/Payoneer แปลงอัตโนมัติเป็น THB สำหรับ project ไทย หลายภาษา: EN/TH/JP/ID แฟนดอม Thai BL เป็นระดับโลก</p>
+        <span class="feature-tag">GLOBAL REACH</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📊</span>
+        <h3><span class="en">Fan Contribution Passport</span><span class="th">หนังสือเดินทางการสนับสนุนแฟน</span></h3>
+        <p class="en">Your entire fandom history: every project supported, badges earned, total amount contributed. Shareable fan profile — your identity in the fandom. "ฉันเป็น Bright fan ตั้งแต่ปี 2019."</p>
+        <p class="th">ประวัติ fandom ทั้งหมดของคุณ: ทุก project ที่สนับสนุน, badge ที่ได้รับ, ยอดสนับสนุนรวม โปรไฟล์แฟนที่แชร์ได้ ตัวตนของคุณใน fandom "ฉันเป็น Bright fan ตั้งแต่ปี 2019"</p>
+        <span class="feature-tag">IDENTITY</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITORS -->
+  <section id="competitors">
+    <div class="section-label">COMPETITION</div>
+    <h2 class="section-title">
+      <span class="en">Why No Existing Platform Serves Thai Fans</span>
+      <span class="th">ทำไมไม่มีแพลตฟอร์มที่มีรองรับแฟนไทย</span>
+    </h2>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Platform</th><th>Thai Content</th><th>PromptPay Escrow</th><th>Fan Projects</th><th>Transparency</th><th>Merch</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Weverse (Hybe)</strong></td><td class="cross">✗ K-pop only</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">Basic</td><td class="check">✓</td></tr>
+        <tr><td><strong>Twitter/X Fan Groups</strong></td><td class="partial">Partial</td><td class="cross">✗ No escrow</td><td class="partial">Manual</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td><strong>LINE Fan Groups</strong></td><td class="check">✓</td><td class="cross">✗</td><td class="partial">Manual</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td><strong>GoFundMe/Kickstarter</strong></td><td class="cross">✗</td><td class="partial">USD only</td><td class="partial">Generic</td><td class="check">✓</td><td class="cross">✗</td></tr>
+        <tr class="ours">
+          <td><strong>🔥 MuteFan</strong></td>
+          <td class="check">✓ Thai-first</td>
+          <td class="check">✓ Auto</td>
+          <td class="check">✓ Full studio</td>
+          <td class="check">✓ Full audit trail</td>
+          <td class="check">✓ Fan-made</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- REVENUE -->
+  <section id="revenue">
+    <div class="section-label">REVENUE MODEL</div>
+    <h2 class="section-title">
+      <span class="en">Multiple Revenue Streams: GMV % + Memberships + Merch</span>
+      <span class="th">หลาย Revenue Stream: GMV % + Membership + Merch</span>
+    </h2>
+    <div class="revenue-grid">
+      <div class="plan-card highlight">
+        <div class="plan-label">CROWDFUNDING TAKE RATE</div>
+        <div class="plan-price">5%<sub> of raised amount</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Auto-deducted from escrow</li>
+          <li><span class="check">✓</span> ฿5M project → ฿250K fee</li>
+          <li><span class="check">✓</span> Scales with fan economy</li>
+          <li><span class="check">✓</span> No risk — only charged if funded</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-label">FAN MEMBERSHIP</div>
+        <div class="plan-price">฿99-499<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Basic: ฿99 — early project alerts, fan badge</li>
+          <li><span class="check">✓</span> VIP: ฿299 — exclusive content, vote rights</li>
+          <li><span class="check">✓</span> Diamond: ฿499 — all features + merch early access</li>
+          <li><span class="check">✓</span> Recurring, high-retention</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-label">MERCH COMMISSION</div>
+        <div class="plan-price">15%<sub> of merch GMV</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Fan designers list products</li>
+          <li><span class="check">✓</span> MuteFan handles PromptPay</li>
+          <li><span class="check">✓</span> Fulfillment coordination</li>
+          <li><span class="check">✓</span> International shipping support</li>
+        </ul>
+      </div>
+    </div>
+    <div class="math-box">
+      <h3>💵 REALISTIC REVENUE MATH (YEAR 1)</h3>
+      <div class="math-row"><span class="label">Crowdfunding: 20 projects × avg ฿2M raised × 5%</span><span>฿2,000,000/yr</span></div>
+      <div class="math-row"><span class="label">Fan memberships: 5,000 members × ฿150/mo avg</span><span>฿750,000/mo</span></div>
+      <div class="math-row"><span class="label">Merch: ฿3M GMV/mo × 15%</span><span>฿450,000/mo</span></div>
+      <div class="math-row"><span class="label">Total MRR (steady state Year 1)</span><span style="color:var(--primary-light);">฿1.2M+/mo</span></div>
+      <div class="math-row"><span class="label">Annual Run Rate + Crowdfunding</span><span style="color:var(--primary-light);font-weight:800;">฿16-20M ARR</span></div>
+    </div>
+  </section>
+
+  <!-- SCORE -->
+  <section id="score">
+    <div class="section-label">SPRINT SCORE</div>
+    <h2 class="section-title"><span class="en">Idea #91: MuteFan — 39/50</span><span class="th">ไอเดีย #91: MuteFan — 39/50</span></h2>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="s-label">Market Potential</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note"><span class="en">Thai BL fandom is global (Japan, PH, ID, VN, LATAM). Weverse at 100M users proves scale. ฿750M/yr in Thai fan project GMV estimated. Global crowdfunding $34B+.</span><span class="th">Thai BL fandom เป็นระดับโลก Weverse 100M user พิสูจน์ scale GMV fan project ไทย ประมาณ ฿750M/ปี Crowdfunding โลก $34B+</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Problem Severity</div>
+        <div class="s-val">9/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:90%;"></div></div>
+        <div class="s-note"><span class="en">Fan project scams are EXTREME documented pain — Thai media coverage, fans losing millions. Every fan who's ever donated to a project knows the fear. Anti-scam = urgent need.</span><span class="th">Scam fan project เป็นความเจ็บปวด EXTREME ที่มีหลักฐาน สื่อไทยรายงาน แฟนเสียเงินล้าน ทุกแฟนที่เคยบริจาครู้ถึงความกลัว ป้องกันโกง = ความต้องการเร่งด่วน</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Competition Gap</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note"><span class="en">Weverse exists for K-pop but ZERO Thai content. No Thai fan platform has PromptPay escrow. Twitter/LINE groups = no protection. First-mover gets network effects fast in tight fan communities.</span><span class="th">Weverse มีสำหรับ K-pop แต่ไม่มีคอนเทนต์ไทย ไม่มีแพลตฟอร์มแฟนไทยที่มี PromptPay escrow Twitter/LINE = ไม่มีการป้องกัน</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Build Feasibility</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note"><span class="en">Crowdfunding platform + PromptPay escrow + social features = 4-6 week MVP. More complex than LINE bot but well-understood architecture. Opn handles PromptPay escrow.</span><span class="th">Crowdfunding platform + PromptPay escrow + social = MVP 4-6 สัปดาห์ ซับซ้อนกว่า LINE bot แต่สถาปัตยกรรมที่เข้าใจดี Opn จัดการ PromptPay escrow</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Our Advantage</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note"><span class="en">PromptPay + LINE + Thai cultural knowledge + first-mover. Supply-side (fan leaders) easy to reach via Twitter/LINE communities. Network effects: successful project → word spreads → more projects.</span><span class="th">PromptPay + LINE + ความรู้วัฒนธรรมไทย + first-mover Supply-side ถึงได้ง่ายผ่าน Twitter/LINE Network effects: project สำเร็จ → กระจายข่าว → project ใหม่</span></div>
+      </div>
+    </div>
+    <div class="score-total">
+      <div class="total-num">39/50</div>
+      <div class="total-label">PASS THRESHOLD: ≥30 · TIED #2 IN SPRINT · FIRST FANDOM IDEA</div>
+      <div class="verdict">✅ STRONG PASS</div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section id="risks">
+    <div class="section-label">RISKS</div>
+    <h2 class="section-title"><span class="en">What Could Go Wrong?</span><span class="th">อะไรอาจผิดพลาด?</span></h2>
+    <div class="risks-grid">
+      <div class="risk-card">
+        <div class="risk-head"><h4>Fan Leader Adoption</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Existing fan leaders who currently collect money manually may resist using an escrow platform — it reduces their control. Those running legitimate projects will embrace it; only scammers resist.</p>
+        <p class="th">Fan leader ที่เก็บเงิน manual ปัจจุบันอาจต้านทานการใช้แพลตฟอร์ม escrow เพราะลดการควบคุม ผู้ที่ดำเนิน project ถูกกฎหมายจะยินดี เฉพาะผู้โกงที่ต่อต้าน</p>
+        <div class="mitigation">Mitigation: Position as legitimacy badge — "ใช้ MuteFan แสดงว่า project นี้ไม่โกง" Fan leaders who use MuteFan get higher donations because fans trust them more.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>Studio / Celebrity Endorsement</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Official endorsement from GMMTV or celebrities would massively accelerate adoption. Without it, MuteFan is fan-to-fan, not celebrity-to-fan.</p>
+        <p class="th">การรับรองอย่างเป็นทางการจาก GMMTV หรือดาราจะเร่ง adoption มาก หากไม่มี MuteFan เป็นแฟน-ต่อ-แฟน ไม่ใช่ดารา-ต่อ-แฟน</p>
+        <div class="mitigation">Mitigation: Start with fan-to-fan projects first. Success builds credibility with studios. After 50+ successful projects, approach GMMTV for official partnership (premium revenue share).</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>International Payment Complexity</h4><span class="risk-pill risk-low">LOW</span></div>
+        <p class="en">International fans (Japan, Philippines) need multi-currency support. Wise/Payoneer integration needed.</p>
+        <p class="th">แฟนต่างประเทศ (ญี่ปุ่น, ฟิลิปปินส์) ต้องการรองรับหลายสกุลเงิน ต้องการ integration Wise/Payoneer</p>
+        <div class="mitigation">Mitigation: Start Thailand-only with PromptPay (simpler). Add international payments in Phase 2 once core platform is proven. Thai domestic fan economy alone is sufficient for Year 1 revenue targets.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>Fandom Platform Network Effects</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Fan platforms succeed or fail on network effects. If MuteFan doesn't get the biggest fan communities in the first 3 months, growth stalls.</p>
+        <p class="th">Fan platform สำเร็จหรือล้มเหลวด้วย network effects ถ้า MuteFan ไม่ได้ชุมชนแฟนที่ใหญ่ที่สุดใน 3 เดือนแรก การเติบโตจะหยุดนิ่ง</p>
+        <div class="mitigation">Mitigation: Target the 5 largest Thai BL fan communities on Twitter first. One viral "anti-scam" project success = organic growth to 20+ communities. Urgency of scam protection makes adoption fast.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CEO ASSESSMENT -->
+  <section id="assessment">
+    <div class="section-label">CEO ASSESSMENT</div>
+    <h2 class="section-title"><span class="en">Why MuteFan Scores 39/50</span><span class="th">ทำไม MuteFan ได้ 39/50</span></h2>
+    <div class="insight-box">
+      <div class="insight-label">⚡ CORE THESIS</div>
+      <p class="en">
+        <strong>The anti-scam angle is not just a feature — it's the entire product market fit.</strong> Thai fan project scams are documented in Thai media repeatedly. Every fan who has ever donated to a birthday project knows the fear: "Will this leader run with my money?" This fear REDUCES total fan spending across the entire market. MuteFan doesn't compete with Twitter and LINE groups — it eliminates the reason those groups exist (coordination) while solving the reason fans hesitate (scam risk).
+        <br><br>
+        <strong>Distribution is the easiest in the entire sprint.</strong> Fan communities on Twitter are tight-knit, highly active, and share relevant tools instantly. One tweet from a trusted fan leader: "เราย้ายมาใช้ MuteFan สำหรับ project วันเกิด Bright ปีนี้ ไม่ต้องกลัวโกงแล้ว" → thousands of impressions in hours → fan communities follow.
+        <br><br>
+        <strong>Revenue compounds with fandom growth.</strong> Thai BL dramas keep producing new artists (GMMTV releases 20-30 series/year). Each new popular actor = new fan communities = new birthday projects = new MuteFan GMV. The platform grows with the Thai entertainment industry — a tailwind of new supply.
+        <br><br>
+        <strong>Exit path:</strong> GMMTV or Line Corporation could acquire MuteFan to create an official fan ecosystem platform. At ฿20M ARR and 100K+ active fans, a 10x revenue multiple = ฿200M ($5.7M). GMMTV's content business needs this platform. K-pop labels paid billions for fan platforms — Thai equivalent at smaller scale is realistic.
+      </p>
+      <p class="th">
+        <strong>Anti-scam ไม่ใช่แค่ฟีเจอร์ แต่คือ product market fit ทั้งหมด</strong> Scam fan project ไทยมีรายงานในสื่อไทยซ้ำๆ แฟนทุกคนที่เคยบริจาค birthday project รู้ถึงความกลัว: "leader จะหนีกับเงินฉันไหม?" ความกลัวนี้ลดการใช้จ่ายของแฟนทั้งหมดในตลาด MuteFan ไม่ได้แข่งกับ Twitter และ LINE group แต่ขจัดเหตุผลที่กลุ่มเหล่านั้นมีอยู่ (การประสานงาน) พร้อมแก้ไขเหตุผลที่แฟนลังเล (ความเสี่ยงการโกง)
+        <br><br>
+        <strong>Exit path:</strong> GMMTV หรือ LINE Corporation อาจซื้อ MuteFan เพื่อสร้างแพลตฟอร์ม fan ecosystem อย่างเป็นทางการ ที่ ฿20M ARR และแฟน active 100K+ มูลค่า 10x revenue = ฿200M ($5.7M) ธุรกิจคอนเทนต์ของ GMMTV ต้องการแพลตฟอร์มนี้
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <a href="index.html" class="footer-back">← Back to All Ideas</a>
+    <p><span class="en">Idea #91: MuteFan — Anti-Scam Fan Project Platform for Thai Celebrities · Score: 39/50 · Category: Fandom / Celebrity</span><span class="th">ไอเดีย #91: MuteFan — แพลตฟอร์ม Fan Project ป้องกันโกงสำหรับดาราไทย · คะแนน: 39/50 · หมวด: Fandom / Celebrity</span></p>
+    <p style="margin-top:0.5rem;opacity:0.6;font-size:0.75rem;">MuteLab Idea Sprint · Feb 2026</p>
+  </footer>
+</div>
+<script>
+function setLang(lang) {
+  if (lang === 'th') {
+    document.body.classList.add('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[1].classList.add('active');
+  } else {
+    document.body.classList.remove('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[0].classList.add('active');
+  }
+}
+if (navigator.language && navigator.language.startsWith('th')) setLang('th');
+</script>
+</body>
+</html>
