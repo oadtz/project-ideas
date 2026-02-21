@@ -510,10 +510,59 @@ app.<span class="fn">use</span>(<span class="fn">mutepay</span>({
   </div>
 </section>
 
+<section id="deep-dive" style="padding:4rem 0;">
+  <div class="container">
+    <h2 class="section-title" style="background:linear-gradient(135deg, var(--red) 30%, var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚠️ Deep Dive Result: KILLED (26/50)</h2>
+    <p class="section-sub" style="color:var(--red);">Merged with MuteGate (#76). Both ideas killed after ecosystem reality check.</p>
+
+    <div style="max-width:800px; margin:2rem auto; background:var(--surface); border:2px solid rgba(239,68,68,0.4); border-radius:16px; padding:2rem;">
+      <h3 style="color:var(--red); margin-bottom:1rem;">🔴 Why This Was Killed</h3>
+      <div style="display:grid; gap:1rem;">
+        <div class="problem-card" style="border-color:rgba(239,68,68,0.3);">
+          <h3 style="color:var(--red);">x402 Activity Stalled</h3>
+          <p>x402.org shows "0 transactions in last 30 days." 75.41M lifetime transactions but potentially zero current activity. Building on a stalling protocol = extreme risk.</p>
+        </div>
+        <div class="problem-card" style="border-color:rgba(239,68,68,0.3);">
+          <h3 style="color:var(--red);">Coinbase IS the Competition</h3>
+          <p>Coinbase built x402, runs the reference facilitator, ships comprehensive SDKs in 3 languages + 6 frameworks, and is launching the x402 Foundation with Cloudflare. Every tool we'd build, they can build for free.</p>
+        </div>
+        <div class="problem-card" style="border-color:rgba(239,68,68,0.3);">
+          <h3 style="color:var(--red);">Market Too Small</h3>
+          <p>$24.24M total lifetime volume. 22K sellers. Even capturing 5% of volume at 2% fee = $24K/year. Analytics SaaS for <1K active sellers = sub-$100K ARR ceiling.</p>
+        </div>
+        <div class="problem-card" style="border-color:rgba(239,68,68,0.3);">
+          <h3 style="color:var(--red);">Ecosystem Gaps Closing</h3>
+          <p>V2 includes Discovery extension (Bazaar), wallet identity (SIWx for subscriptions coming), modular paywall package. The "missing business layer" is being built by Coinbase themselves.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem; padding:1.5rem; background:var(--bg); border-radius:12px;">
+        <h4 style="color:var(--amber); margin-bottom:0.75rem;">📊 Revised Score: 37 → 26/50</h4>
+        <table style="width:100%; font-size:0.85rem; color:var(--text2);">
+          <tr><td>Market</td><td style="color:var(--red);">8 → 5</td><td>Protocol stalling, tiny addressable market</td></tr>
+          <tr><td>Problem</td><td style="color:var(--red);">8 → 5</td><td>Remaining gaps incremental, not foundational</td></tr>
+          <tr><td>Competition</td><td style="color:var(--red);">7 → 3</td><td>Competing with $100B+ protocol creator</td></tr>
+          <tr><td>Feasibility</td><td>7 → 7</td><td>Still easy to build (paradoxically)</td></tr>
+          <tr><td>Advantage</td><td style="color:var(--amber);">7 → 6</td><td>CTO fit real but window closed</td></tr>
+        </table>
+      </div>
+
+      <div style="margin-top:1.5rem; padding:1rem; background:rgba(239,68,68,0.1); border-radius:8px; border:1px solid rgba(239,68,68,0.3);">
+        <p style="color:var(--red); font-weight:600; margin-bottom:0.5rem;">📋 MuteGate (#76) merged into this assessment and archived.</p>
+        <p style="color:var(--text2); font-size:0.85rem;">MuteGate scored 36→29/50 independently. Combined analysis confirms both ideas should be killed. Full analysis: <a href="research/mutepay-merged-deep-dive.md" style="color:var(--primary);">merged deep dive report</a></p>
+      </div>
+
+      <div style="margin-top:1.5rem; text-align:center;">
+        <p style="color:var(--muted); font-size:0.85rem;">Better uses of blockchain CTO expertise: MuteAudit (#65, 36/50), MuteTrade (#39, 36/50), MuteTax (#70, 34/50)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="container">
-    <p>MutePay — A MuteLab Product | Built with ☀️ by Sun</p>
-    <p style="margin-top:0.5rem; font-size:0.75rem; color:var(--muted2);">x402 is an open standard by Coinbase. MutePay is not affiliated with Coinbase.</p>
+    <p>MutePay — A MuteLab Product | Built with ☀️ by Sun | ⚠️ KILLED — Score: 26/50</p>
+    <p style="margin-top:0.5rem; font-size:0.75rem; color:var(--muted2);">x402 is an open standard by Coinbase. MutePay is not affiliated with Coinbase. MuteGate (#76) merged and archived.</p>
   </div>
 </footer>
 
