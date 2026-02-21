@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCollect — AI Debt Collection & Recovery Platform for Thai Lenders</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .gold { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: linear-gradient(135deg, var(--primary), #059669);
+    color: #0a0a0f;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.4); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">💸</div>
+        <span>MuteCollect</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">฿16.35T household debt · 90% automation</span>
+        <span class="th">หนี้ครัวเรือน ฿16.35T · อัตโนมัติ 90%</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 82</span>
+        <span class="th">ไอเดีย 82</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        💸 <span class="en">IDEA 82 — MUTECOLLECT · AI DEBT RECOVERY</span><span class="th">ไอเดีย 82 — MUTECOLLECT · AI ทวงหนี้</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="gold">Debt Collection</span><br>Platform for <span class="purple">Thai Lenders</span></span>
+        <span class="th">แพลตฟอร์ม<span class="gold">ทวงหนี้ AI</span><br>สำหรับ<span class="purple">ผู้ให้สินเชื่อไทย</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered debt collection automation</strong> for Thai banks, NBFIs, fintechs & micro-lenders. ML-based risk scoring, omnichannel outreach (LINE/SMS/voice), automated payment negotiations, and regulatory-compliant workflows. "Credgenics for Thailand."</span>
+        <span class="th"><strong>ระบบทวงหนี้อัตโนมัติด้วย AI</strong> สำหรับธนาคาร สถาบันการเงิน ฟินเทค และไมโครเลนเดอร์ไทย ให้คะแนนความเสี่ยงด้วย ML, ติดต่อหลายช่องทาง (LINE/SMS/เสียง), เจรจาชำระหนี้อัตโนมัติ, ตาม พ.ร.บ.ทวงถามหนี้ 2558</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">36/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 36/50 — PASS</strong>
+              <span class="en">High-ticket B2B, massive pain point</span>
+              <span class="th">B2B ราคาสูง, pain point มหาศาล</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">฿16.35T</div>
+            <div class="score-meta">
+              <strong>🏦 Household Debt</strong>
+              <span class="en">90% of GDP — highest in Asia</span>
+              <span class="th">90% ของ GDP — สูงสุดในเอเชีย</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Window -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        MuteCollect — <span class="en">AI Collection Dashboard</span><span class="th">แดชบอร์ดทวงหนี้ AI</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">🧠</div>
+          <div class="tc-name"><span class="en">ML RISK SCORING</span><span class="th">ให้คะแนนความเสี่ยง ML</span></div>
+          <div class="tc-value">Predict</div>
+          <div class="tc-sub"><span class="en">Propensity-to-pay scoring per debtor</span><span class="th">คะแนนแนวโน้มการชำระต่อลูกหนี้</span></div>
+          <div class="tc-badge">✓ <span class="en">79% payment rate</span><span class="th">อัตราชำระ 79%</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📱</div>
+          <div class="tc-name"><span class="en">OMNICHANNEL</span><span class="th">หลายช่องทาง</span></div>
+          <div class="tc-value">LINE+SMS+Voice</div>
+          <div class="tc-sub"><span class="en">AI selects optimal channel per debtor</span><span class="th">AI เลือกช่องทางที่ดีที่สุดต่อลูกหนี้</span></div>
+          <div class="tc-badge">✓ <span class="en">Auto-personalize</span><span class="th">ปรับแต่งอัตโนมัติ</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">⚖️</div>
+          <div class="tc-name"><span class="en">COMPLIANCE</span><span class="th">ตามกฎหมาย</span></div>
+          <div class="tc-value">พ.ร.บ. 2558</div>
+          <div class="tc-sub"><span class="en">Debt Collection Act 2015 compliant</span><span class="th">ตาม พ.ร.บ.ทวงถามหนี้ 2558</span></div>
+          <div class="tc-badge purple">⭐ <span class="en">BOT regulated</span><span class="th">กำกับโดย ธปท.</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">💸 Collection Pipeline</span><span class="th">💸 ขั้นตอนทวงหนี้</span></span>
+          <span style="color:var(--primary);">90% Automated ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:90%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Risk Score</span><span class="th">ให้คะแนน</span> ✓</span>
+          <span><span class="en">Segment</span><span class="th">แบ่งกลุ่ม</span> ✓</span>
+          <span><span class="en">Outreach</span><span class="th">ติดต่อ</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Negotiate</span><span class="th">เจรจา</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏦</div>
+      <div class="stat-num"><span class="gold">฿16.35T</span></div>
+      <div class="stat-label">
+        <span class="en">Thai household debt (87-90% of GDP). Highest in Asia. 28M+ Thais have consumer debt. NPLs estimated at ฿500B+.</span>
+        <span class="th">หนี้ครัวเรือนไทย (87-90% ของ GDP) สูงสุดในเอเชีย คนไทย 28M+ มีหนี้ NPL ประมาณ ฿500B+</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🤖</div>
+      <div class="stat-num"><span class="purple">90%</span></div>
+      <div class="stat-label">
+        <span class="en">Process automation achievable with AI debt collection. Leading platforms report 79% payment rates vs ~30% traditional. Massive efficiency gain.</span>
+        <span class="th">กระบวนการอัตโนมัติด้วย AI ทวงหนี้ แพลตฟอร์มชั้นนำรายงานอัตราชำระ 79% vs ~30% แบบเดิม ประสิทธิภาพเพิ่มมหาศาล</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📈</div>
+      <div class="stat-num"><span class="gold">$5.6B</span></div>
+      <div class="stat-label">
+        <span class="en">Global debt collection software market (2025), growing ~10% CAGR. AI-powered predictive analytics driving +1.2% additional CAGR impact.</span>
+        <span class="th">ตลาดซอฟต์แวร์ทวงหนี้โลก (2025) โต ~10% CAGR AI predictive analytics เพิ่ม CAGR อีก 1.2%</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🇹🇭</div>
+      <div class="stat-num"><span class="purple">ZERO</span></div>
+      <div class="stat-label">
+        <span class="en">Thai AI debt collection platforms. Market uses manual call centers and SMS blasts. Credgenics (India) serves 150+ lenders but NOT Thailand.</span>
+        <span class="th">แพลตฟอร์มทวงหนี้ AI ไทย ตลาดใช้ call center ธรรมดาและส่ง SMS Credgenics (อินเดีย) มี 150+ ลูกค้าแต่ไม่รับไทย</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">From overdue account to payment in 3 AI-powered steps</span>
+      <span class="th">จากบัญชีค้างชำระสู่การชำระเงินใน 3 ขั้นตอนด้วย AI</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Replace expensive call centers and scattered SMS with AI that predicts who will pay, chooses the right channel, and negotiates payment plans — all compliant with Thai Debt Collection Act 2015.</span>
+      <span class="th">แทนที่ call center ราคาแพงและ SMS กระจัดกระจายด้วย AI ที่ทำนายว่าใครจะจ่าย เลือกช่องทางที่ถูกต้อง และเจรจาแผนชำระหนี้ — ตาม พ.ร.บ.ทวงถามหนี้ 2558 ทั้งหมด</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">🧠</div>
+        <div class="wf-title">
+          <span class="en">AI Risk Scoring & Segmentation</span>
+          <span class="th">AI ให้คะแนนความเสี่ยง & แบ่งกลุ่ม</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Upload debtor portfolio. ML models score propensity-to-pay based on payment history, behavioral signals, and real-time insolvency data. Auto-segment into high/medium/low recovery buckets.</span>
+          <span class="th">อัปโหลดพอร์ตลูกหนี้ โมเดล ML ให้คะแนนแนวโน้มชำระจากประวัติ สัญญาณพฤติกรรม และข้อมูลความสามารถชำระแบบเรียลไทม์ แบ่งกลุ่มอัตโนมัติ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">📱</div>
+        <div class="wf-title">
+          <span class="en">Omnichannel AI Outreach</span>
+          <span class="th">AI ติดต่อหลายช่องทาง</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI selects optimal channel per debtor: LINE (Thailand's #1), SMS, email, AI voice call. Personalized messaging in Thai. Timing optimized by ML. Fully compliant with contact hour restrictions.</span>
+          <span class="th">AI เลือกช่องทางที่เหมาะสม: LINE (อันดับ 1 ไทย), SMS, อีเมล, โทรด้วย AI เสียง ข้อความเฉพาะบุคคลเป็นภาษาไทย ตาม พ.ร.บ. เรื่องเวลาติดต่อ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">🤝</div>
+        <div class="wf-title">
+          <span class="en">AI Payment Negotiation</span>
+          <span class="th">AI เจรจาชำระหนี้</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI chatbot negotiates installment plans, sends payment links via LINE/SMS, processes payments in real-time. Escalates to human agents only for complex cases. Full audit trail.</span>
+          <span class="th">AI chatbot เจรจาแผนผ่อนชำระ ส่งลิงก์จ่ายเงินผ่าน LINE/SMS ประมวลผลแบบเรียลไทม์ ส่งต่อมนุษย์เฉพาะกรณีซับซ้อน บันทึกครบถ้วน</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteCollect -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">WHY NOW</span><span class="th">ทำไมตอนนี้</span></div>
+    <div class="section-title">
+      <span class="en">Debt crisis + BNPL explosion + zero AI tools = perfect storm</span>
+      <span class="th">วิกฤตหนี้ + BNPL ระเบิด + ไม่มีเครื่องมือ AI = โอกาสทอง</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Thailand's household debt is the highest in Asia. BNPL (Shopee PayLater, Atome, etc.) is creating millions of new delinquent accounts. Lenders are drowning — and their collection tools are from the 1990s.</span>
+      <span class="th">หนี้ครัวเรือนไทยสูงสุดในเอเชีย BNPL (Shopee PayLater, Atome ฯลฯ) สร้างบัญชีค้างชำระใหม่นับล้าน ผู้ให้สินเชื่อจมน้ำ — และเครื่องมือทวงหนี้ยังเป็นยุค 90s</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">💣</div>
+        <div class="why-panel-title">
+          <span class="en">NPL Crisis: ฿500B+ in Bad Debt</span>
+          <span class="th">วิกฤต NPL: หนี้เสีย ฿500B+</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai NPL ratio ~2.7-3% of total loans. With ฿16.35T household debt, that's ฿440-490B in non-performing loans. Every % improvement in recovery = billions in value.</span>
+          <span class="th">อัตรา NPL ไทย ~2.7-3% ของสินเชื่อทั้งหมด หนี้ครัวเรือน ฿16.35T = NPL ฿440-490B ทุก 1% ที่ recovery ดีขึ้น = มูลค่าพันล้าน</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🛒</div>
+        <div class="why-panel-title">
+          <span class="en">BNPL Explosion = New Delinquency Wave</span>
+          <span class="th">BNPL ระเบิด = คลื่นหนี้ค้างชำระใหม่</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Shopee PayLater, Atome, Grab PayLater creating millions of micro-delinquencies. Young borrowers juggling multiple BNPL obligations. Default rates rising. These fintechs NEED automated collection.</span>
+          <span class="th">Shopee PayLater, Atome, Grab PayLater สร้างหนี้ค้างชำระจิ๋วนับล้าน คนรุ่นใหม่มี BNPL หลายเจ้า อัตราผิดนัดเพิ่ม ฟินเทคเหล่านี้ต้องการระบบทวงหนี้อัตโนมัติ</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📞</div>
+        <div class="why-panel-title">
+          <span class="en">Current Method: ฿50-100/call manual centers</span>
+          <span class="th">วิธีปัจจุบัน: call center ฿50-100/สาย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thai lenders use manual call centers (฿50-100 per contact attempt), SMS blasts (low open rate), or outsource to agencies (25-40% commission). AI can do it for ฿2-5 per contact at 79% payment rate.</span>
+          <span class="th">ผู้ให้สินเชื่อไทยใช้ call center (฿50-100/ครั้ง), SMS (เปิดอ่านต่ำ), หรือจ้าง agency (ค่าคอม 25-40%) AI ทำได้ ฿2-5/ครั้ง อัตราชำระ 79%</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">📲</div>
+        <div class="why-panel-title">
+          <span class="en">LINE = Thailand's Collection Channel</span>
+          <span class="th">LINE = ช่องทางทวงหนี้ไทย</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">53M+ LINE users in Thailand (75%+ of population). Open rate 60%+ vs SMS 20%. Payment links in LINE chat = frictionless. No global platform optimizes for LINE-first collection.</span>
+          <span class="th">LINE มีผู้ใช้ 53M+ ในไทย (75%+ ของประชากร) เปิดอ่าน 60%+ vs SMS 20% ลิงก์ชำระในแชท LINE = ไร้แรงเสียดทาน ไม่มีแพลตฟอร์มโลกใดเน้น LINE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">SaaS + performance fees = aligned incentives</span>
+      <span class="th">SaaS + ค่าธรรมเนียมตามผลงาน = แรงจูงใจตรงกัน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Base SaaS fee + success-based commission. We only make more money when clients recover more money. Perfect alignment.</span>
+      <span class="th">ค่า SaaS พื้นฐาน + ค่าคอมตามผลสำเร็จ เราได้เงินมากขึ้นเมื่อลูกค้าเก็บหนี้ได้มากขึ้น แรงจูงใจตรงกันสมบูรณ์</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿36M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿36M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18 ($1.1M)</span>
+            <span class="th">ARR ภายในเดือนที่ 18 ($1.1M)</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 3 fintech pilots (free)<br>Month 6: 10 paying clients, ฿800K MRR<br>Month 12: 30 clients, ฿2M MRR<br>Month 18: 50 clients × ฿60K avg = ฿3M MRR</span>
+            <span class="th">เดือน 3: 3 ฟินเทคนำร่อง (ฟรี)<br>เดือน 6: 10 ลูกค้าจ่ายเงิน ฿800K MRR<br>เดือน 12: 30 ลูกค้า ฿2M MRR<br>เดือน 18: 50 ลูกค้า × ฿60K เฉลี่ย = ฿3M MRR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🚀</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc">
+            <span class="en">Up to 5,000 accounts. AI risk scoring, SMS + LINE outreach, basic reporting. For micro-lenders and small fintechs.</span>
+            <span class="th">สูงสุด 5,000 บัญชี AI ให้คะแนนความเสี่ยง, SMS + LINE, รายงานเบื้องต้น สำหรับไมโครเลนเดอร์และฟินเทคเล็ก</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿19,900/mo</div>
+            <div class="rt-note"><span class="en">+ 3% recovered</span><span class="th">+ 3% ยอดเก็บได้</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(16,185,129,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">🏦</div>
+          <div class="rt-label" style="color:var(--primary-light);">Business ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Up to 50,000 accounts. Full omnichannel (LINE + SMS + Voice + Email), AI negotiation bot, payment link integration, compliance dashboard.</span>
+            <span class="th">สูงสุด 50,000 บัญชี ครบทุกช่องทาง (LINE + SMS + เสียง + อีเมล), AI เจรจา, ลิงก์ชำระ, แดชบอร์ด compliance</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿59,900/mo</div>
+            <div class="rt-note"><span class="en">+ 2% recovered</span><span class="th">+ 2% ยอดเก็บได้</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc">
+            <span class="en">Unlimited accounts. Custom ML models, API integration, field collection app, legal workflow automation, dedicated account manager.</span>
+            <span class="th">ไม่จำกัดบัญชี โมเดล ML เฉพาะ, API, แอปเก็บหนี้ภาคสนาม, อัตโนมัติขั้นตอนทางกฎหมาย, ผู้ดูแลบัญชีเฉพาะ</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿149,000/mo</div>
+            <div class="rt-note"><span class="en">+ 1.5% recovered</span><span class="th">+ 1.5% ยอดเก็บได้</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">📊</div>
+          <div class="rt-label">NPL Buyer</div>
+          <div class="rt-desc">
+            <span class="en">Buy NPL portfolios at discount, use AI to recover. We keep the spread. ฿1B portfolio at 20¢ on the dollar, recover 40% = ฿200M profit.</span>
+            <span class="th">ซื้อพอร์ต NPL ราคาลด ใช้ AI เก็บ เราเก็บส่วนต่าง พอร์ต ฿1B ซื้อ 20% เก็บได้ 40% = กำไร ฿200M</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">Future</div>
+            <div class="rt-note"><span class="en">Year 2+ play</span><span class="th">แผนปีที่ 2+</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From BNPL fintechs to bank-grade platform in 18 months</span>
+      <span class="th">จากฟินเทค BNPL สู่แพลตฟอร์มระดับธนาคารใน 18 เดือน</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">💸 MuteCollect — Milestone Timeline</span>
+          <span class="th">💸 MuteCollect — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿36M ARR target · Month 18</span>
+          <span class="th">เป้า ฿36M ARR · เดือนที่ 18</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–3 · MVP & PILOT</span>
+            <span class="th">เดือน 1–3 · MVP & นำร่อง</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Build LINE-first collection bot + pilot with 3 BNPL fintechs</span>
+            <span class="th">สร้าง bot ทวงหนี้ผ่าน LINE + นำร่อง 3 ฟินเทค BNPL</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Core: ML risk scoring engine, LINE messaging integration, SMS fallback, basic payment link generation. Pilot with BNPL fintechs (smaller, faster to close, desperate for solutions). Prove 2x improvement over manual.</span>
+            <span class="th">แกน: ML ให้คะแนนความเสี่ยง, เชื่อม LINE, SMS สำรอง, สร้างลิงก์ชำระ นำร่องกับ BNPL ฟินเทค (เล็กกว่า ปิดเร็วกว่า ต้องการโซลูชัน) พิสูจน์ว่าดีกว่าแบบเดิม 2 เท่า</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 1–3</div>
+          <div class="roadmap-metric">3 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 6 · MONETIZE & EXPAND</span>
+            <span class="th">เดือน 6 · สร้างรายได้ & ขยาย</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">10 paying clients, AI voice calling, compliance dashboard</span>
+            <span class="th">10 ลูกค้าจ่ายเงิน, โทร AI เสียง, แดชบอร์ด compliance</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add AI voice agent (Thai language), compliance dashboard for พ.ร.บ.ทวงถามหนี้ 2558, real-time analytics. Expand to micro-lenders and digital banks. ฿800K MRR.</span>
+            <span class="th">เพิ่ม AI โทรเสียง (ภาษาไทย), แดชบอร์ด compliance ตาม พ.ร.บ.ทวงถามหนี้ 2558, analytics เรียลไทม์ ขยายสู่ไมโครเลนเดอร์และดิจิทัลแบงก์ ฿800K MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 6</div>
+          <div class="roadmap-metric">฿9.6M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 12 · BANK-GRADE</span>
+            <span class="th">เดือน 12 · ระดับธนาคาร</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">30 clients including banks, field collection app, legal automation</span>
+            <span class="th">30 ลูกค้ารวมธนาคาร, แอปเก็บหนี้ภาคสนาม, อัตโนมัติทางกฎหมาย</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Field collection app with geo-tracking, legal workflow automation (demand letters, court filing prep), API for core banking integration. First bank clients (BOT sandbox if needed). ฿2M MRR.</span>
+            <span class="th">แอปเก็บหนี้ภาคสนามมี GPS, อัตโนมัติขั้นตอนกฎหมาย (หนังสือทวงหนี้, เตรียมฟ้อง), API เชื่อม core banking ลูกค้าธนาคารแรก ฿2M MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 12</div>
+          <div class="roadmap-metric">฿24M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 18 · SCALE + NPL</span>
+            <span class="th">เดือน 18 · ขยาย + ซื้อ NPL</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">50 clients, ฿36M ARR + NPL buying exploration</span>
+            <span class="th">50 ลูกค้า, ฿36M ARR + สำรวจซื้อ NPL</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">50 clients (fintechs + banks + collection agencies). Explore NPL portfolio acquisition — buy bad debt at discount, use our AI to recover at higher rates. SEA expansion (Vietnam, Philippines). ฿36M ARR.</span>
+            <span class="th">50 ลูกค้า (ฟินเทค + ธนาคาร + agency ทวงหนี้) สำรวจซื้อพอร์ต NPL — ซื้อหนี้เสียราคาลดใช้ AI เก็บ ขยาย SEA (เวียดนาม, ฟิลิปปินส์) ฿36M ARR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 18</div>
+          <div class="roadmap-metric" style="color:var(--primary-light);">฿36M ARR 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">💸 <span class="en">Score: 36/50 — MASSIVE MARKET GAP</span><span class="th">Score: 36/50 — ช่องว่างตลาดมหาศาล</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">฿16.35 trillion</span> in debt.<br><span class="purple">Zero</span> AI collection tools.</span>
+      <span class="th">หนี้ <span class="gold">฿16.35 ล้านล้าน</span><br><span class="purple">ไม่มี</span>เครื่องมือ AI ทวงหนี้</span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">Thailand's debt crisis is the highest in Asia. Lenders spend ฿50-100 per manual call. AI does it for ฿2-5 at 79% payment rate. LINE-first. Compliant. 50 clients × ฿60K/mo avg = $1.1M ARR.</span>
+      <span class="th">วิกฤตหนี้ไทยสูงสุดในเอเชีย ผู้ให้สินเชื่อจ่าย ฿50-100/สาย AI ทำได้ ฿2-5 อัตราชำระ 79% เน้น LINE ตามกฎหมาย 50 ลูกค้า × ฿60K/เดือนเฉลี่ย = $1.1M ARR</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('animate'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.stat-panel,.why-panel,.wf-step,.roadmap-item,.rev-tier').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
