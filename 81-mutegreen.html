@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteGreen — AI ESG & Sustainability Report Generator for Thai Companies</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --secondary-pale: rgba(139,92,246,0.08);
+    --secondary-glow: rgba(139,92,246,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .token-window {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 40px rgba(16,185,129,0.08), 0 0 0 1px rgba(16,185,129,0.05);
+    margin-bottom: 4rem;
+  }
+  .token-titlebar {
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .tt-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .tt-close { background: var(--red); }
+  .tt-min { background: var(--amber); }
+  .tt-max { background: var(--green); }
+  .tt-title {
+    font-size: 0.75rem; color: var(--muted); font-weight: 500;
+    text-align: center; flex: 1;
+    font-family: 'Space Mono', monospace;
+  }
+  .token-body { padding: 1.75rem; }
+  .token-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-bottom: 1.25rem;
+  }
+  .token-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+  }
+  .token-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .token-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .token-card:hover::before { opacity: 1; }
+  .tc-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .tc-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tc-value { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; font-family: 'Space Mono', monospace; }
+  .tc-sub { font-size: 0.72rem; color: var(--primary); }
+  .tc-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    color: var(--primary); border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.62rem; font-weight: 700; font-family: 'Space Mono', monospace;
+    margin-top: 0.4rem;
+  }
+  .tc-badge.purple {
+    background: var(--secondary-pale); border-color: rgba(139,92,246,0.2);
+    color: var(--secondary-light);
+  }
+
+  .chain-bar {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-top: 0;
+  }
+  .chain-label {
+    font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    display: flex; justify-content: space-between;
+  }
+  .chain-track { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem; }
+  .chain-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .chain-steps {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--muted); font-family: 'Space Mono', monospace;
+  }
+  .chain-steps span { color: var(--primary); }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.25);
+    color: var(--primary); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .hero h1 .gold { color: var(--primary); }
+  .hero h1 .purple { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; font-family: 'Space Mono', monospace; }
+  .score-num.purple { color: var(--secondary-light); }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon-wrap { margin-bottom: 0.75rem; font-size: 1.4rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 0.4rem; font-family: 'Space Mono', monospace; }
+  .stat-num .gold { color: var(--primary); }
+  .stat-num .purple { color: var(--secondary-light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s; position: relative;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .why-panels {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .why-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .why-panel:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--primary-glow); }
+  .why-panel-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.2);
+  }
+  .why-panel-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .why-panel-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+  .revenue-row {
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+  }
+  .rev-highlight {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px; padding: 2rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .rev-highlight::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+  .rev-highlight .rh-label {
+    font-size: 0.68rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.3; color: var(--text); }
+  .rev-highlight .rh-num {
+    font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+    color: var(--primary); line-height: 1; margin-bottom: 0.25rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .rev-highlight .rh-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .rev-highlight .rh-note { font-size: 0.82rem; color: var(--text2); line-height: 1.6; }
+
+  .rev-tiers {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rev-tier {
+    background: var(--surface); padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    transition: background 0.2s;
+  }
+  .rev-tier:hover { background: var(--surface2); }
+  .rt-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .rt-label {
+    width: 100px; font-size: 0.8rem; font-weight: 700; color: var(--primary);
+    flex-shrink: 0; font-family: 'Space Mono', monospace;
+  }
+  .rt-desc { flex: 1; font-size: 0.82rem; color: var(--muted); }
+  .rt-price { text-align: right; flex-shrink: 0; }
+  .rt-amount {
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700;
+    color: var(--text);
+  }
+  .rt-note {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--secondary-light);
+  }
+
+  .roadmap-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .roadmap-header {
+    background: var(--surface2); padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-tag { font-size: 0.7rem; color: var(--primary); font-weight: 700; }
+  .roadmap-item {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 1.25rem;
+    transition: background 0.15s;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-item:hover { background: var(--surface2); }
+  .roadmap-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .roadmap-content { flex: 1; }
+  .roadmap-phase {
+    font-size: 0.62rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .roadmap-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .roadmap-body { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .roadmap-right { text-align: right; flex-shrink: 0; }
+  .roadmap-time { font-size: 0.68rem; color: var(--muted2); font-family: 'Space Mono', monospace; }
+  .roadmap-metric {
+    font-family: 'Space Mono', monospace; font-size: 0.88rem; font-weight: 700;
+    color: var(--primary); margin-top: 0.4rem;
+  }
+
+  .cta-wrap {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4rem 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .cta-wrap::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(16,185,129,0.3);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.72rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 1rem; line-height: 1.15;
+    position: relative; z-index: 1;
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+  }
+  .cta-title .gold { color: var(--primary); }
+  .cta-title .purple { color: var(--secondary-light); }
+  .cta-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; flex-wrap: wrap; }
+  .cta-btn-primary {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: linear-gradient(135deg, var(--primary), #059669);
+    color: #0a0a0f;
+    font-size: 0.9rem; font-weight: 700;
+    padding: 0.9rem 2rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    font-family: 'Space Mono', monospace;
+  }
+  .cta-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16,185,129,0.4); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+  @media (max-width: 1000px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .token-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-row { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .token-grid { grid-template-columns: 1fr; }
+    .workflow { grid-template-columns: 1fr; }
+    .why-panels { grid-template-columns: 1fr; }
+    .cta-title { font-size: 2rem; }
+    .score-row { flex-direction: column; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .d1 { opacity: 0; animation-delay: 0.1s; }
+  .d2 { opacity: 0; animation-delay: 0.2s; }
+  .d3 { opacity: 0; animation-delay: 0.3s; }
+  .d4 { opacity: 0; animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Language toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">🌿</div>
+        <span>MuteGreen</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>
+        <span class="en">800+ listed companies · $1.4B ESG market</span>
+        <span class="th">800+ บจ. · ตลาด ESG $1.4B</span>
+      </span>
+      <div class="topbar-badge">
+        <span class="en">Idea 81</span>
+        <span class="th">ไอเดีย 81</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">
+        🌿 <span class="en">IDEA 81 — MUTEGREEN · AI ESG COMPLIANCE</span><span class="th">ไอเดีย 81 — MUTEGREEN · AI ESG Compliance</span>
+      </div>
+      <h1 class="animate d2">
+        <span class="en">AI <span class="gold">ESG Report</span><br>Generator for <span class="purple">Thai Companies</span></span>
+        <span class="th">AI สร้าง<span class="gold">รายงาน ESG</span><br>สำหรับ<span class="purple">บริษัทไทย</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>AI-powered ESG & sustainability reporting</strong> for Thai listed companies (SET/mai). Automates data collection, carbon accounting, GRI/TCFD report generation — turning months of consultant work into hours. "ESG compliance on autopilot."</span>
+        <span class="th"><strong>รายงาน ESG & ความยั่งยืน</strong> สำหรับบริษัทจดทะเบียนไทย (SET/mai) อัตโนมัติด้วย AI ทั้งเก็บข้อมูล คำนวณคาร์บอน สร้างรายงาน GRI/TCFD — เปลี่ยนงานที่ปรึกษาหลายเดือนเป็นชั่วโมง</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">35/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 35/50 — PASS</strong>
+              <span class="en">Regulatory tailwind, high-ticket B2B</span>
+              <span class="th">กฎหมายหนุน, B2B ราคาสูง</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">800+</div>
+            <div class="score-meta">
+              <strong>🏢 Listed Companies</strong>
+              <span class="en">SET + mai listed companies need ESG reports</span>
+              <span class="th">บจ. SET + mai ต้องทำรายงาน ESG</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Window -->
+  <div class="token-window animate d3">
+    <div class="token-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">
+        MuteGreen — <span class="en">AI ESG Dashboard</span><span class="th">แดชบอร์ด ESG AI</span>
+      </div>
+    </div>
+    <div class="token-body">
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="tc-icon">📊</div>
+          <div class="tc-name"><span class="en">DATA COLLECTION</span><span class="th">เก็บข้อมูล</span></div>
+          <div class="tc-value">AI Auto</div>
+          <div class="tc-sub"><span class="en">Pull from ERP, utilities, HR systems</span><span class="th">ดึงจาก ERP, สาธารณูปโภค, HR</span></div>
+          <div class="tc-badge">✓ <span class="en">80% automated</span><span class="th">อัตโนมัติ 80%</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">🌍</div>
+          <div class="tc-name"><span class="en">CARBON ACCOUNTING</span><span class="th">บัญชีคาร์บอน</span></div>
+          <div class="tc-value">Scope 1-3</div>
+          <div class="tc-sub"><span class="en">TGO-certified emission factors</span><span class="th">ค่า emission ตามมาตรฐาน อบก.</span></div>
+          <div class="tc-badge">✓ <span class="en">TGO compliant</span><span class="th">ตามมาตรฐาน อบก.</span></div>
+        </div>
+        <div class="token-card">
+          <div class="tc-icon">📋</div>
+          <div class="tc-name"><span class="en">REPORT GEN</span><span class="th">สร้างรายงาน</span></div>
+          <div class="tc-value">1-Click</div>
+          <div class="tc-sub"><span class="en">GRI, TCFD, SET One Report</span><span class="th">GRI, TCFD, แบบ 56-1 One Report</span></div>
+          <div class="tc-badge purple">⭐ <span class="en">SET format ready</span><span class="th">พร้อมรูปแบบ SET</span></div>
+        </div>
+      </div>
+      <div class="chain-bar">
+        <div class="chain-label">
+          <span><span class="en">🌿 ESG Report Pipeline</span><span class="th">🌿 ขั้นตอนรายงาน ESG</span></span>
+          <span style="color:var(--primary);">Months → Hours ✓</span>
+        </div>
+        <div class="chain-track"><div class="chain-fill" style="width:90%;"></div></div>
+        <div class="chain-steps">
+          <span><span class="en">Data Input</span><span class="th">นำเข้าข้อมูล</span> ✓</span>
+          <span><span class="en">AI Analysis</span><span class="th">AI วิเคราะห์</span> ✓</span>
+          <span><span class="en">Carbon Calc</span><span class="th">คำนวณคาร์บอน</span> ✓</span>
+          <span style="color:var(--secondary-light);"><span class="en">Report</span><span class="th">รายงาน</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🏢</div>
+      <div class="stat-num"><span class="gold">800+</span></div>
+      <div class="stat-label">
+        <span class="en">SET-listed companies. SET mandates sustainability reporting for all. Most SMEs have no ESG team — they need help.</span>
+        <span class="th">บจ. จดทะเบียนใน SET ตลาดหลักทรัพย์บังคับรายงานความยั่งยืน SME ส่วนใหญ่ไม่มีทีม ESG</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">💰</div>
+      <div class="stat-num"><span class="purple">$1.4B</span></div>
+      <div class="stat-label">
+        <span class="en">Global ESG reporting software market (2024), growing 15%+ CAGR. Persefoni raised $101M. Massive investment flowing in.</span>
+        <span class="th">ตลาดซอฟต์แวร์ ESG โลก (2024) โต 15%+ CAGR Persefoni ระดมทุน $101M เงินทุนไหลเข้ามหาศาล</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">🇹🇭</div>
+      <div class="stat-num"><span class="gold">20-25%</span></div>
+      <div class="stat-label">
+        <span class="en">Thailand's Paris Agreement pledge: reduce GHG 20-25% by 2030. TGO (อบก.) drives compliance. Carbon neutrality target: 2050.</span>
+        <span class="th">คำมั่น Paris Agreement ไทย: ลด GHG 20-25% ภายในปี 2030 อบก. ขับเคลื่อนการปฏิบัติ เป้าคาร์บอนเป็นกลาง: 2050</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon-wrap">📈</div>
+      <div class="stat-num"><span class="purple">฿500K-2M</span></div>
+      <div class="stat-label">
+        <span class="en">What Big 4 firms charge per company for ESG consulting. We can do it for ฿10K-50K/mo. 90% cheaper, 10x faster.</span>
+        <span class="th">Big 4 คิดค่าที่ปรึกษา ESG ต่อบริษัท เราทำได้ ฿10K-50K/เดือน ถูกกว่า 90% เร็วกว่า 10 เท่า</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title">
+      <span class="en">From raw data to SET-ready reports in 3 steps</span>
+      <span class="th">จากข้อมูลดิบสู่รายงานพร้อมส่ง SET ใน 3 ขั้นตอน</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">No more spending ฿500K+ on Big 4 consultants. MuteGreen uses AI to collect, calculate, and generate publication-ready ESG reports aligned with SET, GRI, and TCFD standards.</span>
+      <span class="th">ไม่ต้องจ่าย ฿500K+ ให้ที่ปรึกษา Big 4 อีกต่อไป MuteGreen ใช้ AI เก็บข้อมูล คำนวณ และสร้างรายงาน ESG พร้อมเผยแพร่ตามมาตรฐาน SET, GRI และ TCFD</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">📥</div>
+        <div class="wf-title">
+          <span class="en">Connect Data Sources</span>
+          <span class="th">เชื่อมต่อแหล่งข้อมูล</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Upload utility bills, HR data, supply chain info — or connect to ERP systems. AI extracts and categorizes ESG-relevant data automatically.</span>
+          <span class="th">อัปโหลดบิลสาธารณูปโภค ข้อมูล HR ซัพพลายเชน หรือเชื่อมต่อ ERP AI ดึงและจัดหมวดหมู่ข้อมูล ESG อัตโนมัติ</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🧮</div>
+        <div class="wf-title">
+          <span class="en">AI Carbon & ESG Calculation</span>
+          <span class="th">AI คำนวณคาร์บอน & ESG</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Automatic Scope 1, 2, 3 GHG calculations using TGO emission factors. ESG scoring across environmental, social, governance pillars with benchmarking vs industry peers.</span>
+          <span class="th">คำนวณ GHG Scope 1, 2, 3 อัตโนมัติ ใช้ emission factors ของ อบก. ให้คะแนน ESG ทุกมิติ พร้อมเปรียบเทียบคู่แข่ง</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">📋</div>
+        <div class="wf-title">
+          <span class="en">Generate SET-Ready Reports</span>
+          <span class="th">สร้างรายงานพร้อมส่ง SET</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">One-click generation of 56-1 One Report (sustainability section), GRI Standards, TCFD disclosures. Thai & English. Publication-ready PDF + data for SET submission.</span>
+          <span class="th">สร้างรายงาน 56-1 One Report (ส่วนความยั่งยืน), GRI Standards, TCFD ด้วยคลิกเดียว ไทย & อังกฤษ PDF พร้อมเผยแพร่ + ข้อมูลสำหรับส่ง SET</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why MuteGreen -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">WHY NOW</span><span class="th">ทำไมตอนนี้</span></div>
+    <div class="section-title">
+      <span class="en">Regulatory tsunami meets zero local tools</span>
+      <span class="th">คลื่นกฎระเบียบ ESG แต่ไม่มีเครื่องมือไทย</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">SET is pushing ESG hard — sustainability forums, scholarships, mandatory reporting. 800+ companies need tools, but Persefoni/Sphera don't serve Thailand. The gap is massive.</span>
+      <span class="th">SET ผลักดัน ESG อย่างหนัก — สัมมนา, ทุนการศึกษา, รายงานบังคับ 800+ บริษัทต้องการเครื่องมือ แต่ Persefoni/Sphera ไม่รับลูกค้าไทย ช่องว่างมหาศาล</span>
+    </p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-panel-icon">⚖️</div>
+        <div class="why-panel-title">
+          <span class="en">Mandatory Reporting = Guaranteed Demand</span>
+          <span class="th">รายงานบังคับ = ดีมานด์แน่นอน</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">SET requires sustainability disclosures in 56-1 One Report. Paris Agreement commits Thailand to 20-25% GHG reduction by 2030. Carbon neutrality by 2050. Companies MUST comply or face consequences.</span>
+          <span class="th">SET กำหนดเปิดเผยความยั่งยืนในรายงาน 56-1 Paris Agreement ผูกพันไทยลด GHG 20-25% ภายปี 2030 คาร์บอนเป็นกลางปี 2050 บริษัทต้องปฏิบัติตาม</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">🚫</div>
+        <div class="why-panel-title">
+          <span class="en">Zero Local AI Tools — We'd Be First</span>
+          <span class="th">ไม่มีเครื่องมือ AI ไทย — เราเป็นรายแรก</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Persefoni ($101M raised), Sphera, Watershed — all focus on US/EU markets with CSRD/SEC rules. None support Thai SET format, TGO emission factors, or Thai language. Zero local competitors.</span>
+          <span class="th">Persefoni ($101M), Sphera, Watershed — ทั้งหมดเน้นตลาด US/EU ไม่รองรับรูปแบบ SET, emission factors อบก., หรือภาษาไทย ไม่มีคู่แข่งท้องถิ่นเลย</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">💎</div>
+        <div class="why-panel-title">
+          <span class="en">High-Ticket B2B: ฿10K-50K/mo per company</span>
+          <span class="th">B2B ราคาสูง: ฿10K-50K/เดือนต่อบริษัท</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Companies currently pay Big 4 firms ฿500K-2M per ESG engagement. We're 90% cheaper AND faster. Even at ฿30K/mo avg, 100 clients = ฿36M ARR ($1.1M). That's our $1M target.</span>
+          <span class="th">บริษัทจ่าย Big 4 ฿500K-2M ต่อโปรเจค ESG เราถูกกว่า 90% และเร็วกว่า แค่ ฿30K/เดือนเฉลี่ย × 100 ลูกค้า = ฿36M ARR ($1.1M) นั่นคือเป้า $1M</span>
+        </div>
+      </div>
+      <div class="why-panel">
+        <div class="why-panel-icon">⛓️</div>
+        <div class="why-panel-title">
+          <span class="en">Blockchain CTO = Perfect Founder Fit</span>
+          <span class="th">CTO Blockchain = Founder-Market Fit สมบูรณ์</span>
+        </div>
+        <div class="why-panel-desc">
+          <span class="en">Thanapat's CTO background at Water Ledger (water management + blockchain) gives direct domain expertise in environmental data management. Carbon credits on blockchain = natural extension.</span>
+          <span class="th">พื้นฐาน CTO ของ Thanapat ที่ Water Ledger (จัดการน้ำ + blockchain) ให้ความเชี่ยวชาญตรงด้านข้อมูลสิ่งแวดล้อม Carbon credits บน blockchain = ต่อยอดธรรมชาติ</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Model -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title">
+      <span class="en">SaaS tiers: from SME to enterprise</span>
+      <span class="th">SaaS แบ่งระดับ: จาก SME ถึง enterprise</span>
+    </div>
+    <p class="section-sub">
+      <span class="en">Pure B2B SaaS. Companies pay monthly for compliance automation. Higher tiers include carbon credit marketplace integration and blockchain-verified reporting.</span>
+      <span class="th">B2B SaaS แท้ บริษัทจ่ายรายเดือนเพื่อ compliance อัตโนมัติ tier สูงรวมตลาดคาร์บอนเครดิตและรายงานยืนยันด้วย blockchain</span>
+    </p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿36M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿36M</div>
+          <div class="rh-sub">
+            <span class="en">ARR by Month 18 ($1.1M)</span>
+            <span class="th">ARR ภายในเดือนที่ 18 ($1.1M)</span>
+          </div>
+          <div class="rh-note">
+            <span class="en">Month 3: 5 pilot clients (free/discounted)<br>Month 6: 20 paying clients, ฿600K MRR<br>Month 12: 60 clients, ฿1.8M MRR<br>Month 18: 100 clients × ฿30K avg = ฿3M MRR</span>
+            <span class="th">เดือน 3: 5 ลูกค้านำร่อง (ฟรี/ลดราคา)<br>เดือน 6: 20 ลูกค้าจ่ายเงิน ฿600K MRR<br>เดือน 12: 60 ลูกค้า ฿1.8M MRR<br>เดือน 18: 100 ลูกค้า × ฿30K เฉลี่ย = ฿3M MRR</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2); border-bottom:1px solid var(--border);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;flex:0 0 100px;">
+            <span class="en">Tier</span><span class="th">ระดับ</span>
+          </div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Details</span><span class="th">รายละเอียด</span>
+          </div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">
+            <span class="en">Price</span><span class="th">ราคา</span>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🌱</div>
+          <div class="rt-label">Starter</div>
+          <div class="rt-desc">
+            <span class="en">Basic carbon calculator + ESG data collection. For mai-listed SMEs starting their ESG journey.</span>
+            <span class="th">เครื่องคำนวณคาร์บอนเบื้องต้น + เก็บข้อมูล ESG สำหรับ SME ใน mai ที่เริ่มต้น ESG</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿9,900/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier" style="background:rgba(16,185,129,0.04); border-left:3px solid var(--primary);">
+          <div class="rt-icon">🌿</div>
+          <div class="rt-label" style="color:var(--primary-light);">Business ⭐</div>
+          <div class="rt-desc">
+            <span class="en">Full Scope 1-3 carbon accounting + auto-generated GRI/TCFD/56-1 reports. Industry benchmarking. Core revenue driver.</span>
+            <span class="th">บัญชีคาร์บอน Scope 1-3 เต็มรูป + รายงาน GRI/TCFD/56-1 อัตโนมัติ เปรียบเทียบอุตสาหกรรม</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿29,900/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🏢</div>
+          <div class="rt-label">Enterprise</div>
+          <div class="rt-desc">
+            <span class="en">Blockchain-verified reporting, carbon credit marketplace, supply chain ESG tracking, custom API. For SET100 companies.</span>
+            <span class="th">รายงานยืนยันด้วย blockchain, ตลาดคาร์บอนเครดิต, ติดตาม ESG ซัพพลายเชน, API. สำหรับ SET100</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿99,000/mo</div>
+            <div class="rt-note"><span class="en">per month</span><span class="th">ต่อเดือน</span></div>
+          </div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🤝</div>
+          <div class="rt-label">Consulting</div>
+          <div class="rt-desc">
+            <span class="en">One-time ESG assessment & Net Zero roadmap generation for companies not yet started. High-margin upsell.</span>
+            <span class="th">ประเมิน ESG ครั้งเดียว & สร้าง Net Zero roadmap สำหรับบริษัทที่ยังไม่เริ่ม upsell กำไรสูง</span>
+          </div>
+          <div class="rt-price">
+            <div class="rt-amount">฿150K-500K</div>
+            <div class="rt-note"><span class="en">one-time</span><span class="th">ครั้งเดียว</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Roadmap -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title">
+      <span class="en">From pilot to 100 enterprise clients in 18 months</span>
+      <span class="th">จากนำร่องสู่ 100 ลูกค้าองค์กรใน 18 เดือน</span>
+    </div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>
+          <span class="en">🌿 MuteGreen — Milestone Timeline</span>
+          <span class="th">🌿 MuteGreen — แผน Milestones</span>
+        </span>
+        <span class="roadmap-tag">
+          <span class="en">฿36M ARR target · Month 18</span>
+          <span class="th">เป้า ฿36M ARR · เดือนที่ 18</span>
+        </span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">⚙️</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 1–3 · BUILD & PILOT</span>
+            <span class="th">เดือน 1–3 · สร้าง & นำร่อง</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">Build carbon calculator + recruit 5 pilot companies</span>
+            <span class="th">สร้างเครื่องคำนวณคาร์บอน + หา 5 บริษัทนำร่อง</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Build core: TGO emission factor database, Scope 1-2 calculator, basic 56-1 sustainability section generator. Recruit 5 mai-listed companies as free pilots. Use Thanapat's Water Ledger network for warm intros.</span>
+            <span class="th">สร้างแกน: ฐานข้อมูล emission factor อบก., เครื่องคำนวณ Scope 1-2, ตัวสร้างส่วนความยั่งยืน 56-1 หา 5 บจ. mai นำร่องฟรี ใช้เครือข่าย Water Ledger</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 1–3</div>
+          <div class="roadmap-metric">5 pilots</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🚀</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 6 · LAUNCH & MONETIZE</span>
+            <span class="th">เดือน 6 · เปิดตัว & สร้างรายได้</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">20 paying clients, full GRI/TCFD report generation</span>
+            <span class="th">20 ลูกค้าจ่ายเงิน สร้างรายงาน GRI/TCFD เต็มรูปแบบ</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Add Scope 3 estimation, GRI Standards template, TCFD disclosure generation. Launch at SET Sustainability Forum. Partner with accounting firms as channel partners. ฿600K MRR.</span>
+            <span class="th">เพิ่มประเมิน Scope 3, template GRI Standards, สร้าง TCFD disclosure เปิดตัวที่ SET Sustainability Forum ร่วมกับสำนักงานบัญชีเป็น channel partner ฿600K MRR</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 6</div>
+          <div class="roadmap-metric">฿7.2M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 12 · SCALE</span>
+            <span class="th">เดือน 12 · ขยายตัว</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">60 clients — add blockchain verification + carbon marketplace</span>
+            <span class="th">60 ลูกค้า — เพิ่มยืนยัน blockchain + ตลาดคาร์บอน</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Blockchain-verified ESG reports (immutable audit trail). Carbon credit marketplace integration. Supply chain ESG tracking for manufacturers. Enterprise tier launches for SET100 companies.</span>
+            <span class="th">รายงาน ESG ยืนยันด้วย blockchain (audit trail ไม่เปลี่ยนแปลง) เชื่อมตลาดคาร์บอนเครดิต ติดตาม ESG ซัพพลายเชนสำหรับผู้ผลิต เปิด Enterprise tier สำหรับ SET100</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 12</div>
+          <div class="roadmap-metric">฿21.6M ARR</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🌏</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase">
+            <span class="en">MONTH 18 · REGIONAL + $1M</span>
+            <span class="th">เดือน 18 · ขยายภูมิภาค + $1M</span>
+          </div>
+          <div class="roadmap-title">
+            <span class="en">100 clients, SEA expansion, ฿36M ARR ($1.1M)</span>
+            <span class="th">100 ลูกค้า, ขยาย SEA, ฿36M ARR ($1.1M)</span>
+          </div>
+          <div class="roadmap-body">
+            <span class="en">Expand to Vietnam, Indonesia, Philippines (ASEAN Taxonomy compliance). TGO partnership for carbon credit verification. API for auditing firms. Series A conversations. ฿36M ARR = $1.1M.</span>
+            <span class="th">ขยายสู่เวียดนาม อินโดนีเซีย ฟิลิปปินส์ (ASEAN Taxonomy compliance) ร่วมกับ อบก. ยืนยันคาร์บอนเครดิต API สำหรับสำนักงานตรวจสอบ เริ่มคุย Series A</span>
+          </div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-time">Mo 18</div>
+          <div class="roadmap-metric" style="color:var(--primary-light);">฿36M ARR 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <div class="cta-chip">🌿 <span class="en">Score: 35/50 — REGULATION-DRIVEN DEMAND</span><span class="th">Score: 35/50 — ดีมานด์จากกฎระเบียบ</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">800+ companies</span> must report.<br><span class="purple">Zero</span> Thai AI tools exist.</span>
+      <span class="th"><span class="gold">800+ บริษัท</span>ต้องรายงาน<br><span class="purple">ไม่มี</span>เครื่องมือ AI ไทย</span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">SET mandates ESG reporting. Paris Agreement requires 20-25% GHG reduction by 2030. Big 4 charges ฿500K+. We make it 90% cheaper with AI. Blockchain CTO = perfect founder fit. 100 clients × ฿30K/mo = $1.1M ARR.</span>
+      <span class="th">SET บังคับรายงาน ESG Paris Agreement ต้องลด GHG 20-25% ภายปี 2030 Big 4 คิด ฿500K+ เราทำถูกกว่า 90% ด้วย AI CTO Blockchain = founder fit สมบูรณ์ 100 ลูกค้า × ฿30K/เดือน = $1.1M ARR</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn-primary">
+        ← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang) {
+  if (lang === 'th') { document.body.classList.add('show-th'); } else { document.body.classList.remove('show-th'); }
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && lang === 'en') || (i === 1 && lang === 'th'));
+  });
+}
+</script>
+</body>
+</html>
