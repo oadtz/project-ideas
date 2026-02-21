@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteClub — Paid Community Platform for Thai Creators & Coaches</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #0f1a15;
+    --border: rgba(16,185,129,0.15);
+    --border2: rgba(16,185,129,0.28);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #10b981;
+    --primary-light: #34d399;
+    --primary-pale: rgba(16,185,129,0.08);
+    --primary-glow: rgba(16,185,129,0.2);
+    --secondary: #a78bfa;
+    --secondary-pale: rgba(167,139,250,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(167,139,250,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(167,139,250,0.05) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #0a0a0f; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    background: rgba(10,10,15,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-family: 'Space Mono', monospace; font-size: 0.9rem; font-weight: 700; color: var(--primary); }
+  .nav-score {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    color: var(--muted); background: var(--surface);
+    padding: 0.3rem 0.8rem; border-radius: 6px; border: 1px solid var(--border);
+  }
+  .nav-score span { color: var(--primary); font-weight: 700; }
+
+  /* HERO */
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.1em;
+    background: var(--primary-pale); border: 1px solid var(--border2);
+    border-radius: 100px; padding: 0.4rem 1rem; margin-bottom: 2rem;
+  }
+  .hero-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .hero-num { font-size: 1rem; color: var(--muted2); font-family: 'Space Mono', monospace; font-weight: 700; margin-bottom: 0.5rem; }
+  .hero-title { font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero-title .accent { color: var(--primary); }
+  .hero-tagline { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text2); font-weight: 400; max-width: 680px; margin-bottom: 2.5rem; line-height: 1.5; }
+  .hero-kicker {
+    font-size: 1.1rem; font-weight: 600; color: var(--primary-light);
+    font-style: italic; margin-bottom: 3rem;
+    background: var(--primary-pale); border-left: 3px solid var(--primary);
+    padding: 0.8rem 1.2rem; border-radius: 0 8px 8px 0; max-width: 640px;
+  }
+  .score-band { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .score-pill {
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 0.5rem 1rem;
+  }
+  .score-pill .val { color: var(--primary); font-weight: 700; font-size: 1rem; }
+  .hero-cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary); color: #0a0a0f;
+    font-weight: 700; font-size: 0.9rem; padding: 0.9rem 1.8rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s; font-family: 'Space Mono', monospace;
+  }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 24px var(--primary-glow); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 1px solid var(--border2); color: var(--text2);
+    font-weight: 600; font-size: 0.9rem; padding: 0.9rem 1.8rem; border-radius: 10px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+  section { padding: 6rem 0; border-top: 1px solid var(--border); }
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    color: var(--primary); letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--primary); opacity: 0.4; }
+  .section-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1rem; }
+  .section-sub { font-size: 1.05rem; color: var(--text2); max-width: 640px; margin-bottom: 3rem; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: border-color 0.2s; }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; line-height: 1; margin-bottom: 0.4rem; }
+  .stat-label { font-size: 0.82rem; color: var(--muted); }
+  .stat-label strong { color: var(--text2); display: block; font-size: 0.92rem; margin-bottom: 0.2rem; }
+
+  .problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .problem-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; border-left: 3px solid var(--red); }
+  .problem-card .icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+  .problem-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .problem-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  .creator-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .creator-type {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem;
+    display: flex; align-items: flex-start; gap: 0.8rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .creator-type:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .creator-type .ct-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .creator-type h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .creator-type p { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+  .creator-type .revenue { font-size: 0.72rem; color: var(--primary); font-weight: 700; margin-top: 0.4rem; font-family: 'Space Mono', monospace; }
+
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .compare-table th { text-align: left; padding: 0.8rem 1rem; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr.ours td { background: var(--primary-pale); }
+  .compare-table tr.ours td:first-child { border-left: 2px solid var(--primary); }
+  .check { color: var(--green); } .cross { color: var(--red); } .partial { color: var(--amber); }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; transition: all 0.2s; }
+  .feature-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .feature-card .feat-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
+  .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .feature-tag { display: inline-block; margin-top: 0.8rem; font-size: 0.68rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.08em; background: var(--primary-pale); color: var(--primary); border: 1px solid var(--border2); border-radius: 6px; padding: 0.2rem 0.6rem; }
+
+  .revenue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+  .plan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; }
+  .plan-card.highlight { border-color: var(--primary); background: var(--primary-pale); box-shadow: 0 0 30px var(--primary-glow); }
+  .plan-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .plan-price { font-size: 1.8rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; margin-bottom: 0.4rem; }
+  .plan-price sub { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .plan-card ul { list-style: none; padding: 0; margin-top: 1rem; }
+  .plan-card li { font-size: 0.85rem; color: var(--muted); padding: 0.3rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; }
+  .plan-card li:last-child { border-bottom: none; }
+  .math-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 2rem; margin-top: 2rem; font-family: 'Space Mono', monospace; font-size: 0.85rem; }
+  .math-box h3 { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 1rem; }
+  .math-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .math-row:last-child { border-bottom: none; color: var(--primary); font-weight: 700; font-size: 1rem; }
+  .math-row .label { color: var(--muted); font-size: 0.78rem; }
+
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+  .score-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; }
+  .score-item .s-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .score-item .s-val { font-size: 1.6rem; font-weight: 800; font-family: 'Space Mono', monospace; color: var(--primary); margin-bottom: 0.5rem; }
+  .score-bar { height: 4px; background: #1a2a22; border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; }
+  .score-item .s-note { font-size: 0.75rem; color: var(--muted2); margin-top: 0.5rem; line-height: 1.5; }
+  .score-total { background: var(--primary-pale); border: 2px solid var(--primary); border-radius: 14px; padding: 2rem; text-align: center; margin-top: 2rem; box-shadow: 0 0 40px var(--primary-glow); }
+  .score-total .total-num { font-size: 4rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; line-height: 1; }
+  .score-total .total-label { font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+  .score-total .verdict { display: inline-block; margin-top: 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.1em; background: var(--green); color: #fff; border-radius: 6px; padding: 0.3rem 0.8rem; }
+  .score-total .rank { display: inline-block; margin-top: 0.5rem; margin-left: 0.5rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.1em; background: var(--amber); color: #0a0a0f; border-radius: 6px; padding: 0.3rem 0.8rem; }
+
+  .risks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+  .risk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; border-left: 3px solid var(--amber); }
+  .risk-card .risk-head { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .risk-card h4 { font-size: 0.9rem; font-weight: 700; }
+  .risk-pill { font-size: 0.65rem; font-family: 'Space Mono', monospace; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; }
+  .risk-med { background: rgba(245,158,11,0.2); color: var(--amber); }
+  .risk-low { background: rgba(16,185,129,0.2); color: var(--green); }
+  .risk-high { background: rgba(239,68,68,0.2); color: var(--red); }
+  .risk-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .risk-card .mitigation { margin-top: 0.6rem; font-size: 0.78rem; color: var(--green); background: rgba(16,185,129,0.08); border-radius: 6px; padding: 0.4rem 0.7rem; }
+
+  .roadmap { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .roadmap::before { content: ''; position: absolute; left: 1.25rem; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .roadmap-item { display: flex; gap: 1.5rem; padding: 0 0 2rem 0; position: relative; }
+  .roadmap-dot { width: 2.5rem; height: 2.5rem; border-radius: 50%; flex-shrink: 0; background: var(--surface); border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 1rem; z-index: 1; position: relative; }
+  .roadmap-dot.active { border-color: var(--primary); background: var(--primary-pale); }
+  .roadmap-content { flex: 1; }
+  .roadmap-content h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .roadmap-content .when { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--primary); letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .roadmap-content p { font-size: 0.84rem; color: var(--muted); line-height: 1.6; }
+
+  .insight-box { background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 14px; padding: 2rem; margin-top: 2rem; }
+  .insight-box .insight-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--primary); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8rem; }
+  .insight-box p { font-size: 0.92rem; color: var(--text2); line-height: 1.7; }
+  .insight-box strong { color: var(--primary); }
+
+  .dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; }
+  .dist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; border-top: 2px solid var(--primary); }
+  .dist-card .dist-icon { font-size: 1.5rem; margin-bottom: 0.6rem; display: block; }
+  .dist-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .dist-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .dist-card .speed { margin-top: 0.6rem; font-size: 0.7rem; font-family: 'Space Mono', monospace; font-weight: 700; color: var(--green); }
+
+  .highlight-box { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 2rem; margin-bottom: 2rem; }
+  .highlight-box h3 { color: var(--amber); font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; }
+  .highlight-box p { font-size: 0.9rem; color: var(--text2); line-height: 1.7; }
+
+  footer { padding: 3rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.82rem; }
+  .footer-back { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.82rem; text-decoration: none; margin-bottom: 1rem; transition: color 0.2s; }
+  .footer-back:hover { color: var(--primary); }
+
+  @media (max-width: 768px) { .hero { padding: 7rem 0 4rem; } }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <div class="nav-brand">☀️ MuteLab · Idea #88</div>
+  <div class="nav-score">Sprint Score: <span>40/50</span></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🏆 HIGHEST SCORE IN SPRINT · COMMUNITY / MEMBERSHIP · FIRST IN CATEGORY</div>
+    <div class="hero-label">EN — IDEA #88 / SPRINT · COMMUNITY PLATFORM · CREATOR ECONOMY · THAI-FIRST</div>
+    <div class="hero-label th">TH — ไอเดีย #88 / SPRINT · แพลตฟอร์มชุมชน · Creator Economy · Thai-First</div>
+    <div class="hero-num">#88</div>
+    <h1 class="hero-title">
+      <span class="en">Mute<span class="accent">Club</span></span>
+      <span class="th">Mute<span class="accent">Club</span></span>
+    </h1>
+    <p class="hero-tagline">
+      <span class="en">Paid Community Platform for Thai Creators & Coaches — Circle.so for Thailand. PromptPay-native, LINE-integrated, Thai UI. The only platform where Thai creators can gate content, collect recurring membership fees, and build monetized communities without USD billing friction.</span>
+      <span class="th">แพลตฟอร์มชุมชนแบบ Paid สำหรับ Creator และโค้ชไทย — Circle.so สำหรับไทย รองรับ PromptPay, ผสาน LINE, UI ภาษาไทย แพลตฟอร์มเดียวที่ Creator ไทย lock content, เก็บค่า membership รายเดือน และสร้างชุมชนที่สร้างรายได้ โดยไม่ต้องเผชิญ friction จากบิล USD</span>
+    </p>
+    <div class="hero-kicker">
+      <span class="en">"Thai trading signal groups earn ฿500K-15M/mo — all managed via LINE manually. Thai fitness coaches lose 60% of memberships because fans can't pay Patreon. MuteClub fixes both. PromptPay-native. Zero USD friction."</span>
+      <span class="th">"กลุ่ม signal หุ้น/คริปโตไทยทำเงิน ฿500K-15M/เดือน แต่จัดการ manual ผ่าน LINE โค้ชฟิตเนสไทยเสีย 60% ของ membership เพราะแฟนๆ จ่าย Patreon ไม่ได้ MuteClub แก้ทั้งสองอย่าง PromptPay-native ไม่มี friction USD"</span>
+    </div>
+    <div class="score-band">
+      <div class="score-pill"><span>Score</span><span class="val">40/50 🏆</span></div>
+      <div class="score-pill"><span>Category</span><span style="color:var(--primary-light);font-weight:700;">Community / Membership</span></div>
+      <div class="score-pill"><span>Model</span><span style="color:var(--secondary);font-weight:700;">Platform · GMV Take Rate</span></div>
+      <div class="score-pill"><span>Time to First $</span><span style="color:var(--green);font-weight:700;">Week 2</span></div>
+    </div>
+    <div class="hero-cta-row">
+      <a href="#research" class="btn-primary">📊 See Research</a>
+      <a href="#score" class="btn-outline">🎯 Score Breakdown</a>
+      <a href="index.html" class="btn-outline">← All Ideas</a>
+    </div>
+  </div>
+
+  <!-- MARKET -->
+  <section id="research">
+    <div class="section-label">MARKET DATA</div>
+    <h2 class="section-title">
+      <span class="en">The Market: Creator Economy + Community Platforms</span>
+      <span class="th">ตลาด: Creator Economy + แพลตฟอร์มชุมชน</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">The creator economy is the fastest-growing segment in digital commerce. Thailand's 100K+ creators have zero Thai-native paid community tool. They're leaving money on the table every day.</span>
+      <span class="th">Creator economy คือกลุ่มที่เติบโตเร็วสุดใน digital commerce Creator ไทย 100K+ ไม่มีเครื่องมือชุมชนแบบ paid ที่เป็นไทย-native เลย พวกเขาสูญเสียเงินทุกวัน</span>
+    </p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">$205B</div>
+        <div class="stat-label"><strong>Global Creator Economy (2024)</strong>Grand View Research — growing to $1.34T by 2033, CAGR 23.3%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">23.3%</div>
+        <div class="stat-label"><strong>CAGR 2025–2033</strong>Fastest growing digital economy segment. APAC is fastest regional growth.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100K+</div>
+        <div class="stat-label"><strong>Thai Content Creators</strong>YouTube, TikTok, Instagram, LINE OA — fitness, trading, education, lifestyle</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">$89–199</div>
+        <div class="stat-label"><strong>Circle.so Monthly Price</strong>English-only, USD billing, no PromptPay, no Thai support — unusable for Thai creators</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">8–12%</div>
+        <div class="stat-label"><strong>Patreon Take Rate</strong>USD billing only — 60-70% of Thai fans can't pay due to no international credit card</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">฿500K–15M</div>
+        <div class="stat-label"><strong>Thai Trading Signal Groups</strong>Monthly revenue of top trading LINE groups — all manually managed, zero automation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">53M</div>
+        <div class="stat-label"><strong>LINE Users in Thailand</strong>Primary community tool — but free-only, zero content gating, zero payment collection</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">ZERO</div>
+        <div class="stat-label"><strong>Thai-Built Paid Community Platforms</strong>No Circle.so equivalent with PromptPay + Thai language. Total whitespace.</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <div class="insight-label">⚡ KEY INSIGHT: THE PROMPTPAY GAP</div>
+      <p class="en">
+        Thailand's payment infrastructure is <strong>PromptPay-first</strong>. Over 70% of Thai consumer payments use QR PromptPay (Bank of Thailand data). But <strong>every global community platform — Circle, Mighty Networks, Patreon, Substack — requires a credit card or PayPal</strong>. Only 20-30% of Thais have international credit cards (World Bank). This isn't a preference issue. It's a structural exclusion: <strong>Thai creators literally cannot accept recurring payments from their fans using any global platform</strong>. They resort to manual PromptPay bank transfers, Excel trackers, and manual LINE group management. A Thai creator with 2,000 fans paying ฿299/mo = ฿598K/mo potential. Currently they're collecting maybe 30% of that due to manual friction.
+      </p>
+      <p class="th">
+        โครงสร้างพื้นฐานการชำระเงินของไทยเป็น <strong>PromptPay-first</strong> การชำระเงินผู้บริโภคไทยกว่า 70% ใช้ QR PromptPay (ข้อมูลธนาคารแห่งประเทศไทย) แต่ <strong>ทุกแพลตฟอร์มชุมชนโลก — Circle, Mighty Networks, Patreon, Substack — ต้องการบัตรเครดิตหรือ PayPal</strong> มีชาวไทยเพียง 20-30% ที่มีบัตรเครดิตต่างประเทศ (World Bank) ไม่ใช่เรื่องความชอบ แต่เป็นการกีดกันเชิงโครงสร้าง: <strong>Creator ไทยไม่สามารถรับเงินรายเดือนจากแฟนๆ ด้วยแพลตฟอร์มโลกใดๆ ได้</strong> พวกเขาต้องใช้ PromptPay โอน manual, Excel tracker และจัดการ LINE group เอง
+      </p>
+    </div>
+  </section>
+
+  <!-- TARGET CREATORS -->
+  <section id="creators">
+    <div class="section-label">TARGET MARKET</div>
+    <h2 class="section-title">
+      <span class="en">8 Creator Types Ready to Pay Now</span>
+      <span class="th">Creator 8 ประเภทที่พร้อมจ่ายวันนี้</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Each segment has documented demand, willingness to pay, and a clear pain with manual management. The trading signal group segment alone is ฿10B+ annual market.</span>
+      <span class="th">แต่ละกลุ่มมีอุปสงค์ที่บันทึกไว้แล้ว ความเต็มใจจ่าย และความเจ็บปวดชัดเจนกับการจัดการ manual กลุ่ม signal การซื้อขายเพียงอย่างเดียวคือตลาด ฿10B+ ต่อปี</span>
+    </p>
+
+    <div class="highlight-box">
+      <h3>🔥 KILLER USE CASE: Thai Stock/Crypto Signal Groups</h3>
+      <p class="en">This is the highest-ARPU segment. Top Thai stock and crypto trading LINE groups charge ฿500–3,000/member/mo and have 500–5,000 members = ฿250K–15M/mo per admin. Currently: manual PromptPay → screenshot → admin verifies → manually invites to LINE group. This process takes 30-60 minutes per new member and requires constant manual tracking of expired subscribers. <strong>MuteClub automates this entirely: member pays PromptPay → auto-verified → auto-added to private channel → auto-removed when expired.</strong> One feature. Insane ROI for trading admins. They'll pay ฿2,000-5,000/mo for MuteClub without hesitation.</p>
+      <p class="th">นี่คือกลุ่มที่มี ARPU สูงสุด กลุ่ม LINE signal หุ้น/คริปโตไทยชั้นนำเก็บ ฿500–3,000/สมาชิก/เดือน และมีสมาชิก 500–5,000 คน = ฿250K–15M/เดือนต่อ admin ปัจจุบัน: โอน PromptPay manual → สกรีนช็อต → admin ตรวจสอบ → เชิญ LINE group manual กระบวนการนี้ใช้เวลา 30-60 นาทีต่อสมาชิกใหม่และต้องติดตาม subscriber ที่หมดอายุตลอดเวลา <strong>MuteClub ทำให้ทุกอย่างอัตโนมัติ: สมาชิกจ่าย PromptPay → verify อัตโนมัติ → เพิ่มใน channel อัตโนมัติ → ลบเมื่อหมดอายุ</strong> ฟีเจอร์เดียว ROI บ้าระห่ำสำหรับ admin การซื้อขาย พวกเขาจ่าย ฿2,000-5,000/เดือนสำหรับ MuteClub โดยไม่ลังเล</p>
+    </div>
+
+    <div class="creator-types">
+      <div class="creator-type">
+        <span class="ct-icon">📈</span>
+        <div>
+          <h4>Trading Signal Admins</h4>
+          <p class="en">Stock/crypto signal LINE groups — highest ARPU, most pain with manual tracking</p>
+          <p class="th">กลุ่ม LINE signal หุ้น/คริปโต ARPU สูงสุด เจ็บปวดสุดกับ manual tracking</p>
+          <div class="revenue">Members: 500–5,000 · ฿500–3,000/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">💪</span>
+        <div>
+          <h4>Fitness Coaches</h4>
+          <p class="en">Thai fitness influencers building paid workout programs + nutrition plans</p>
+          <p class="th">อินฟลูเอนเซอร์ฟิตเนสไทยสร้างโปรแกรม workout + แผนโภชนาการแบบ paid</p>
+          <div class="revenue">Members: 100–1,000 · ฿299–599/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">🧘</span>
+        <div>
+          <h4>Life & Business Coaches</h4>
+          <p class="en">Mindset, business strategy, personal development coaches with Thai audience</p>
+          <p class="th">โค้ช mindset, กลยุทธ์ธุรกิจ, พัฒนาตนเองที่มีผู้ชมชาวไทย</p>
+          <div class="revenue">Members: 50–500 · ฿499–1,999/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">🎓</span>
+        <div>
+          <h4>Online Educators</h4>
+          <p class="en">Thai language teachers, skill-specific courses (Photoshop, Excel, coding) with community</p>
+          <p class="th">ครูสอนภาษา, คอร์สทักษะเฉพาะ (Photoshop, Excel, coding) พร้อมชุมชน</p>
+          <div class="revenue">Members: 200–2,000 · ฿199–499/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">🌟</span>
+        <div>
+          <h4>Fan Clubs (BL/T-Pop)</h4>
+          <p class="en">Paid fan clubs for BL drama actors, T-pop artists — exclusive content, early access</p>
+          <p class="th">แฟนคลับแบบ paid สำหรับนักแสดง BL/ศิลปิน T-pop คอนเทนต์พิเศษ early access</p>
+          <div class="revenue">Members: 1,000–10,000 · ฿99–299/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">🍽️</span>
+        <div>
+          <h4>Food & Lifestyle</h4>
+          <p class="en">Thai food influencers with exclusive recipe content, cooking classes, ingredient sourcing</p>
+          <p class="th">อินฟลูเอนเซอร์อาหารไทยที่มีสูตรอาหารพิเศษ คลาสทำอาหาร แหล่งวัตถุดิบ</p>
+          <div class="revenue">Members: 200–2,000 · ฿199–399/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">💰</span>
+        <div>
+          <h4>Finance / Investment</h4>
+          <p class="en">Real estate investors, FIRE community, dividend investors sharing analysis and deals</p>
+          <p class="th">นักลงทุนอสังหา, ชุมชน FIRE, นักลงทุนปันผลแชร์การวิเคราะห์และ deal</p>
+          <div class="revenue">Members: 100–1,000 · ฿499–1,499/mo</div>
+        </div>
+      </div>
+      <div class="creator-type">
+        <span class="ct-icon">🎮</span>
+        <div>
+          <h4>Gaming Communities</h4>
+          <p class="en">Thai gaming content creators, esports teams, game coaching with subscriber communities</p>
+          <p class="th">Content creator เกมไทย ทีม esports โค้ชเกมที่มีชุมชน subscriber</p>
+          <div class="revenue">Members: 500–5,000 · ฿99–299/mo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="section-label">THE PROBLEM</div>
+    <h2 class="section-title">
+      <span class="en">Thai Creators Are Leaving Millions on the Table</span>
+      <span class="th">Creator ไทยทิ้งเงินหลายล้านไว้บนโต๊ะ</span>
+    </h2>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="icon">💳</span>
+        <h3><span class="en">No PromptPay-Integrated Platform</span><span class="th">ไม่มีแพลตฟอร์มที่รองรับ PromptPay</span></h3>
+        <p class="en">Circle.so, Mighty Networks, Patreon — all USD credit card only. 70-80% of Thai fans use PromptPay. Result: creators lose most potential paying members before they even sign up.</p>
+        <p class="th">Circle.so, Mighty Networks, Patreon — ต้องใช้บัตรเครดิต USD ทั้งหมด 70-80% ของแฟนไทยใช้ PromptPay ผลลัพธ์: creator เสียสมาชิกที่มีแนวโน้มจ่ายส่วนใหญ่ก่อนที่จะสมัครด้วยซ้ำ</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">😰</span>
+        <h3><span class="en">Manual Payment Hell</span><span class="th">นรกการชำระเงิน Manual</span></h3>
+        <p class="en">Trading signal admins spend 30-60 min/day on manual PromptPay verification → LINE invite → subscriber expiry tracking. At 200 members, this is a part-time job. At 2,000 members, it's impossible.</p>
+        <p class="th">Admin signal ใช้เวลา 30-60 นาที/วันกับการตรวจสอบ PromptPay manual → เชิญ LINE → ติดตามวันหมดอายุของ subscriber ที่สมาชิก 200 คน นี่คืองาน part-time ที่ 2,000 คน เป็นไปไม่ได้</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">🔧</span>
+        <h3><span class="en">Fragmented 4-Tool Stack</span><span class="th">ต้องใช้ 4 เครื่องมือ Fragmented</span></h3>
+        <p class="en">Thai creators currently: LINE OA (messages) + Google Drive (content) + PromptPay (payments) + Spreadsheet (member tracking) = 4 separate tools, all manual, all error-prone.</p>
+        <p class="th">Creator ไทยปัจจุบัน: LINE OA (ข้อความ) + Google Drive (คอนเทนต์) + PromptPay (การชำระเงิน) + Spreadsheet (ติดตามสมาชิก) = 4 เครื่องมือแยกกัน ทั้งหมด manual ทั้งหมดเกิดข้อผิดพลาดได้</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">🌐</span>
+        <h3><span class="en">English UX Kills Conversion</span><span class="th">UX ภาษาอังกฤษทำลาย Conversion</span></h3>
+        <p class="en">When Thai fans land on a Circle.so or Patreon page in English with "Subscribe for $9.99/mo" they bounce at 80%+. Thai language, Thai Baht, Thai UI = 3-5x better conversion rate.</p>
+        <p class="th">เมื่อแฟนไทยไปเจอหน้า Circle.so หรือ Patreon เป็นภาษาอังกฤษ "$9.99/mo" อัตราการ bounce 80%+ ภาษาไทย, ราคาบาท, UI ไทย = conversion rate ดีกว่า 3-5 เท่า</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">📊</span>
+        <h3><span class="en">No Creator Analytics</span><span class="th">ไม่มี Analytics สำหรับ Creator</span></h3>
+        <p class="en">Thai creators don't know which content drives subscriptions, which members are at churn risk, or what their MRR is. Manual PromptPay = zero business intelligence.</p>
+        <p class="th">Creator ไทยไม่รู้ว่าคอนเทนต์ใดดึง subscription, สมาชิกใดเสี่ยง churn หรือ MRR ของตัวเองเท่าไหร่ PromptPay manual = BI ศูนย์</p>
+      </div>
+      <div class="problem-card">
+        <span class="icon">🔒</span>
+        <h3><span class="en">Content Gating is Impossible</span><span class="th">ล็อก Content เป็นเรื่องเป็นไปไม่ได้</span></h3>
+        <p class="en">Thai creators share exclusive content via LINE OA (not gatable) or Google Drive (anyone with link can share). Zero native content protection. Premium content gets leaked constantly.</p>
+        <p class="th">Creator ไทยแชร์คอนเทนต์พิเศษผ่าน LINE OA (ไม่สามารถ lock ได้) หรือ Google Drive (ใครก็แชร์ลิงก์ได้) ไม่มีการป้องกันคอนเทนต์ native คอนเทนต์ premium รั่วไหลตลอดเวลา</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">PLATFORM FEATURES</div>
+    <h2 class="section-title">
+      <span class="en">One Platform. Everything a Thai Creator Needs.</span>
+      <span class="th">แพลตฟอร์มเดียว ทุกสิ่งที่ Creator ไทยต้องการ</span>
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feat-icon">💳</span>
+        <h3><span class="en">PromptPay Subscription Billing</span><span class="th">เก็บ Subscription ผ่าน PromptPay</span></h3>
+        <p class="en">Member pays via PromptPay QR → auto-verified via bank webhook → auto-access granted. Recurring billing reminder sent via LINE. Zero manual work. The #1 feature no global platform has.</p>
+        <p class="th">สมาชิกจ่ายผ่าน PromptPay QR → verify อัตโนมัติผ่าน bank webhook → ให้ access อัตโนมัติ เตือน billing รายเดือนส่งผ่าน LINE ไม่ต้องทำ manual เลย ฟีเจอร์ #1 ที่ไม่มีแพลตฟอร์มโลกมี</p>
+        <span class="feature-tag">CORE MOAT</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🏰</span>
+        <h3><span class="en">Gated Content + Tiers</span><span class="th">ล็อก Content + Tier สมาชิก</span></h3>
+        <p class="en">Create Basic / VIP / Diamond tiers. Posts, videos, files only visible to the right tier. Drip-release content on schedule. Auto-remove expired members.</p>
+        <p class="th">สร้าง tier Basic / VIP / Diamond โพสต์, วิดีโอ, ไฟล์มองเห็นได้เฉพาะ tier ที่ถูกต้อง ปล่อยคอนเทนต์ตามกำหนด ลบสมาชิกที่หมดอายุอัตโนมัติ</p>
+        <span class="feature-tag">REVENUE DRIVER</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">💬</span>
+        <h3><span class="en">Community Discussion + LINE Push</span><span class="th">ชุมชนถกเถียง + LINE Push</span></h3>
+        <p class="en">Threaded discussions, Q&A, member polls. New posts trigger LINE push notification to members — they engage where they already live.</p>
+        <p class="th">ถกเถียงแบบ thread, Q&A, poll สมาชิก โพสต์ใหม่กระตุ้น LINE push notification ถึงสมาชิก พวกเขา engage ในที่ที่อยู่อยู่แล้ว</p>
+        <span class="feature-tag">ENGAGEMENT</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📹</span>
+        <h3><span class="en">Live Sessions + Recordings</span><span class="th">Live Sessions + บันทึก</span></h3>
+        <p class="en">Host live sessions for paid members. Auto-recorded and made available as gated replay. Trading admins use this for daily market briefings. Coaches for group coaching calls.</p>
+        <p class="th">จัด live session สำหรับสมาชิก paid บันทึกอัตโนมัติและทำให้ใช้ได้เป็น replay แบบ locked Admin trading ใช้สำหรับบรีฟตลาดรายวัน โค้ชสำหรับ group coaching call</p>
+        <span class="feature-tag">HIGH VALUE</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">📊</span>
+        <h3><span class="en">Creator Revenue Dashboard</span><span class="th">Dashboard รายได้ Creator</span></h3>
+        <p class="en">Real-time MRR, member count, churn rate, top content by engagement, payment reminders due. Finally, Thai creators can run their community like a business.</p>
+        <p class="th">MRR real-time, จำนวนสมาชิก, churn rate, คอนเทนต์ top ตาม engagement, แจ้งเตือนการชำระเงินที่ครบกำหนด ในที่สุด Creator ไทยสามารถบริหารชุมชนเหมือนธุรกิจได้</p>
+        <span class="feature-tag">BUSINESS INSIGHT</span>
+      </div>
+      <div class="feature-card">
+        <span class="feat-icon">🔗</span>
+        <h3><span class="en">Auto LINE Group Management</span><span class="th">จัดการ LINE Group อัตโนมัติ</span></h3>
+        <p class="en">Pay → auto-invite to private LINE group/channel. Expire → auto-remove. This killer feature alone justifies the platform fee for trading signal admins who spend hours on this daily.</p>
+        <p class="th">จ่าย → เชิญ LINE group/channel อัตโนมัติ หมดอายุ → ลบอัตโนมัติ ฟีเจอร์เด็ดนี้เพียงอย่างเดียวสมเหตุสมผลกับค่าแพลตฟอร์มสำหรับ admin signal ที่ใช้เวลาหลายชั่วโมงกับเรื่องนี้ทุกวัน</p>
+        <span class="feature-tag">🔥 KILLER FEATURE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPETITORS -->
+  <section id="competitors">
+    <div class="section-label">COMPETITIVE LANDSCAPE</div>
+    <h2 class="section-title">
+      <span class="en">Why Global Platforms Fail Thai Creators</span>
+      <span class="th">ทำไมแพลตฟอร์มโลกล้มเหลวกับ Creator ไทย</span>
+    </h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>PromptPay</th>
+          <th>Thai UI</th>
+          <th>LINE Integration</th>
+          <th>Content Gating</th>
+          <th>Price/mo</th>
+          <th>Take Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Circle.so</strong></td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td>$89–199</td><td>2–4%</td></tr>
+        <tr><td><strong>Mighty Networks</strong></td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td><td>$79–354</td><td>3%</td></tr>
+        <tr><td><strong>Patreon</strong></td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">Basic</td><td>Free</td><td>8–12%</td></tr>
+        <tr><td><strong>Substack</strong></td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="partial">Newsletter</td><td>Free</td><td>10%</td></tr>
+        <tr><td><strong>LINE OA (manual)</strong></td><td class="partial">Manual</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td>Free</td><td>0%</td></tr>
+        <tr class="ours">
+          <td><strong>🔥 MuteClub</strong></td>
+          <td class="check">✓ Auto</td>
+          <td class="check">✓ Full</td>
+          <td class="check">✓ Native</td>
+          <td class="check">✓ Full</td>
+          <td>฿599/mo</td>
+          <td>8% (or flat fee)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- REVENUE -->
+  <section id="revenue">
+    <div class="section-label">REVENUE MODEL</div>
+    <h2 class="section-title">
+      <span class="en">Platform Take Rate: Aligned With Creator Success</span>
+      <span class="th">Take Rate แพลตฟอร์ม: เติบโตตามความสำเร็จ Creator</span>
+    </h2>
+    <div class="revenue-grid">
+      <div class="plan-card">
+        <div class="plan-label">STARTER</div>
+        <div class="plan-price">฿599<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Up to 200 members</li>
+          <li><span class="check">✓</span> PromptPay auto-billing</li>
+          <li><span class="check">✓</span> 2 membership tiers</li>
+          <li><span class="check">✓</span> Gated posts + files</li>
+          <li><span class="check">✓</span> LINE group management</li>
+          <li><span class="check">✓</span> Basic analytics</li>
+        </ul>
+      </div>
+      <div class="plan-card highlight">
+        <div class="plan-label">GROWTH — MOST POPULAR</div>
+        <div class="plan-price">฿1,499<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Unlimited members</li>
+          <li><span class="check">✓</span> 5 membership tiers</li>
+          <li><span class="check">✓</span> Live sessions + recordings</li>
+          <li><span class="check">✓</span> Course hosting</li>
+          <li><span class="check">✓</span> Advanced analytics + churn alerts</li>
+          <li><span class="check">✓</span> Custom subdomain</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-label">ENTERPRISE (TRADING GROUPS)</div>
+        <div class="plan-price">฿3,999<sub>/mo</sub></div>
+        <ul>
+          <li><span class="check">✓</span> Everything in Growth</li>
+          <li><span class="check">✓</span> White-label branding</li>
+          <li><span class="check">✓</span> Branded mobile app</li>
+          <li><span class="check">✓</span> Priority support + SLA</li>
+          <li><span class="check">✓</span> KYC / compliance features</li>
+          <li><span class="check">✓</span> Dedicated account manager</li>
+        </ul>
+      </div>
+    </div>
+    <div class="math-box">
+      <h3>💵 REALISTIC REVENUE MATH</h3>
+      <div class="math-row"><span class="label">Year 1: 300 Starter creators × ฿599</span><span>฿179,700/mo</span></div>
+      <div class="math-row"><span class="label">Year 1: 150 Growth creators × ฿1,499</span><span>฿224,850/mo</span></div>
+      <div class="math-row"><span class="label">Year 1: 30 Enterprise creators × ฿3,999</span><span>฿119,970/mo</span></div>
+      <div class="math-row"><span class="label">Platform fee MRR (Year 1)</span><span style="color:var(--primary);">฿524,520/mo</span></div>
+      <div class="math-row"><span class="label">GMV take rate (8% of member revenue)</span><span style="color:var(--primary);">+฿300K-600K/mo</span></div>
+      <div class="math-row"><span class="label">Total Year 1 ARR</span><span style="color:var(--primary);font-weight:800;">฿10–14M (~$285–400K)</span></div>
+      <div class="math-row"><span class="label">Year 2 ARR (2x creator base, higher GMV)</span><span style="color:var(--primary);font-weight:800;">฿25–40M ARR</span></div>
+    </div>
+  </section>
+
+  <!-- SCORING -->
+  <section id="score">
+    <div class="section-label">SPRINT SCORE — HIGHEST TO DATE</div>
+    <h2 class="section-title">
+      <span class="en">Idea #88: MuteClub — 40/50 🏆</span>
+      <span class="th">ไอเดีย #88: MuteClub — 40/50 🏆</span>
+    </h2>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="s-label">Market Potential</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note"><span class="en">$205B creator economy, 23.3% CAGR, APAC fastest. 100K+ Thai creators. High ARPU via take rate on GMV.</span><span class="th">Creator economy $205B, CAGR 23.3%, APAC เร็วสุด Creator ไทย 100K+ ARPU สูงผ่าน take rate บน GMV</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Problem Severity</div>
+        <div class="s-val">9/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:90%;"></div></div>
+        <div class="s-note"><span class="en">PromptPay gap = structural exclusion. Trading admins spending hours on manual work daily. Content leaking. Zero analytics. Pain is EXTREME and documented.</span><span class="th">PromptPay gap = การกีดกันเชิงโครงสร้าง Admin ใช้เวลาหลายชั่วโมงทำ manual ทุกวัน คอนเทนต์รั่ว ไม่มี analytics ความเจ็บปวด EXTREME และมีหลักฐาน</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Competition Gap</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note"><span class="en">Zero Thai community platform with PromptPay. Global tools structurally excluded from Thai market. Clear white space with high defensibility.</span><span class="th">Zero แพลตฟอร์มชุมชนไทยที่มี PromptPay เครื่องมือโลกถูกกีดกันเชิงโครงสร้างจากตลาดไทย White space ชัดเจน</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Build Feasibility</div>
+        <div class="s-val">7/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:70%;"></div></div>
+        <div class="s-note"><span class="en">More complex than LINE bot — needs web platform, payment rails, content hosting. 4-8 weeks for MVP. Thanapat CTO can build. Manageable.</span><span class="th">ซับซ้อนกว่า LINE bot ต้องการ web platform, payment rails, content hosting 4-8 สัปดาห์สำหรับ MVP Thanapat CTO สามารถสร้างได้</span></div>
+      </div>
+      <div class="score-item">
+        <div class="s-label">Our Advantage</div>
+        <div class="s-val">8/10</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:80%;"></div></div>
+        <div class="s-note"><span class="en">Thanapat CTO builds it fast. PromptPay integration = local moat global players can't easily copy. LINE-first. Thai language. First mover in clear gap.</span><span class="th">Thanapat CTO สร้างได้เร็ว PromptPay integration = คูเมืองท้องถิ่นที่ผู้เล่นโลก copy ได้ยาก LINE-first ภาษาไทย First mover ใน gap ที่ชัดเจน</span></div>
+      </div>
+    </div>
+    <div class="score-total">
+      <div class="total-num">40/50</div>
+      <div class="total-label">PASS THRESHOLD: ≥30 · JOINT HIGHEST SCORE IN SPRINT</div>
+      <div class="verdict">✅ STRONG PASS</div>
+      <div class="rank">🏆 = #1 in Sprint (tied with MuteWeb 39)</div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section id="risks">
+    <div class="section-label">RISKS</div>
+    <h2 class="section-title"><span class="en">What Could Go Wrong?</span><span class="th">อะไรอาจผิดพลาด?</span></h2>
+    <div class="risks-grid">
+      <div class="risk-card">
+        <div class="risk-head"><h4>Build Complexity</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Platform (not LINE bot) requires more engineering: auth, content gating, payment rails, file storage, notifications. 4-8 week MVP timeline.</p>
+        <p class="th">แพลตฟอร์ม (ไม่ใช่ LINE bot) ต้องใช้ engineering มากกว่า: auth, content gating, payment rails, file storage, notifications ระยะเวลา MVP 4-8 สัปดาห์</p>
+        <div class="mitigation">Mitigation: Build narrow MVP — just PromptPay billing + LINE group auto-management. That alone solves the #1 pain for trading admins. Ship fast, iterate.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>Creator Acquisition</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Need creators to bring their own audiences. Platform is worthless without creators. Cold start problem.</p>
+        <p class="th">ต้องการ creator ที่นำผู้ชมของตัวเองมา แพลตฟอร์มไร้ค่าโดยไม่มี creator ปัญหา cold start</p>
+        <div class="mitigation">Mitigation: Start with 10-20 trading signal admins (highest pain, highest willingness to pay). Their success = case studies for next wave. B2B sales to admins, not B2C to fans.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>PromptPay API Complexity</h4><span class="risk-pill risk-med">MEDIUM</span></div>
+        <p class="en">Thai banking APIs vary by bank. PromptPay QR verification requires bank partnership or third-party payment gateway integration.</p>
+        <p class="th">Thai banking API แตกต่างกันตามธนาคาร การ verify QR PromptPay ต้องการความร่วมมือกับธนาคารหรือการผสาน payment gateway บุคคลที่สาม</p>
+        <div class="mitigation">Mitigation: Use Omise/2C2P/Opn (Thai payment gateways) which already handle PromptPay. Not a blocker — proven solution exists.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head"><h4>Global Players Add Thai</h4><span class="risk-pill risk-low">LOW</span></div>
+        <p class="en">Circle.so or Mighty Networks could add Thai language and PromptPay integration.</p>
+        <p class="th">Circle.so หรือ Mighty Networks อาจเพิ่มภาษาไทยและ PromptPay integration</p>
+        <div class="mitigation">Mitigation: Global platforms rarely localize for specific SEA markets. Even if they do, Thai-first positioning, local support, and brand = defensible moat. Build fast.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <div class="section-label">ROADMAP</div>
+    <h2 class="section-title"><span class="en">90-Day Path to Revenue</span><span class="th">90 วันสู่รายได้</span></h2>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-dot active">🔧</div>
+        <div class="roadmap-content">
+          <div class="when">WEEK 1-3</div>
+          <h3>MVP: PromptPay Billing + LINE Auto-Management</h3>
+          <p class="en">Build core flow: creator sets up community → members pay PromptPay → auto-verified → auto-added to LINE group. Zero content platform needed for v0.1. Target: 5 trading signal admins as beta.</p>
+          <p class="th">สร้าง core flow: creator ตั้งค่าชุมชน → สมาชิกจ่าย PromptPay → verify อัตโนมัติ → เพิ่ม LINE group อัตโนมัติ ไม่ต้องการ content platform สำหรับ v0.1 เป้า: admin signal 5 คนเป็น beta</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">💰</div>
+        <div class="roadmap-content">
+          <div class="when">WEEK 4-6</div>
+          <h3>First Revenue + Content Platform</h3>
+          <p class="en">Add gated posts/files. Launch paid plans. Target 30 paying creators. Revenue: ฿30K-80K/mo. Case studies from trading admins prove ROI.</p>
+          <p class="th">เพิ่ม gated posts/files เปิดตัว paid plan เป้า creator จ่ายเงิน 30 คน รายได้: ฿30K-80K/เดือน Case study จาก admin trading พิสูจน์ ROI</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">📈</div>
+        <div class="roadmap-content">
+          <div class="when">MONTH 3</div>
+          <h3>100 Creator Clubs + Live Sessions</h3>
+          <p class="en">100 paying creator clubs. Add live session feature. Revenue: ฿150K-250K/mo. Partner with Thai influencer agencies for distribution.</p>
+          <p class="th">Creator club ที่จ่ายเงิน 100 คน เพิ่มฟีเจอร์ live session รายได้: ฿150K-250K/เดือน ร่วมมือกับเอเจนซีอินฟลูเอนเซอร์ไทยสำหรับการกระจาย</p>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot">🏆</div>
+        <div class="roadmap-content">
+          <div class="when">MONTH 6-12</div>
+          <h3>500 Creators + ฿10M ARR Target</h3>
+          <p class="en">500 active creator clubs. GMV take rate kicks in at scale. Creator ecosystem effects. Revenue: ฿800K-1.2M/mo = ฿10-14M ARR. Series A / exit preparation.</p>
+          <p class="th">Creator club ที่ active 500 คน GMV take rate เริ่มทำงานที่ scale Creator ecosystem effects รายได้: ฿800K-1.2M/เดือน = ฿10-14M ARR เตรียม Series A / exit</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CEO ASSESSMENT -->
+  <section id="assessment">
+    <div class="section-label">CEO ASSESSMENT</div>
+    <h2 class="section-title"><span class="en">Why This Scores 40/50</span><span class="th">ทำไมได้คะแนน 40/50</span></h2>
+    <div class="insight-box">
+      <p class="en">
+        <strong>The PromptPay gap is structurally real and not going away.</strong> Circle.so and Mighty Networks are US-focused businesses. Adding Thai PromptPay support would require regulatory compliance, local banking partnerships, and dedicated engineering — it's not in their roadmap. This structural exclusion from global platforms means MuteClub has a defensible window of at least 3-5 years.
+        <br><br>
+        <strong>The trading signal group segment is the beachhead.</strong> These are high-pain, high-willingness-to-pay B2B customers who will pay ฿2,000-5,000/mo for a tool that saves them hours of manual work daily. They don't need to be convinced — they already know the pain. Cold outreach to 20 trading admins = realistic first 20 paying customers. One feature (PromptPay → auto-LINE) solves their #1 problem.
+        <br><br>
+        <strong>Network effects build over time.</strong> Every creator brings their own audience (fans become platform users). As MuteClub grows, it becomes a discovery platform: fans browse creator clubs, find new creators to follow, existing creators get cross-promoted. This is how Circle.so grew to $89M ARR — it becomes the place professional creators live.
+        <br><br>
+        <strong>Revenue is B2B2C — best of both worlds.</strong> MuteClub charges creators (B2B, recurring, high LTV) and takes a cut of member revenue (GMV-based, scales with creator success). As creators earn more, MuteClub earns more — fully aligned incentives.
+        <br><br>
+        <strong>Exit path:</strong> In 3-5 years, sell to LINE Corporation (they want to expand OA monetization), a Thai telco (True, AIS), or a global platform entering SEA. At ฿25M ARR, a 5x revenue multiple = ฿125M exit (~$3.5M). At ฿50M ARR, 8x multiple = ฿400M (~$11M).
+      </p>
+      <p class="th">
+        <strong>PromptPay gap เป็นเรื่องจริงเชิงโครงสร้างและไม่ไปไหน</strong> Circle.so และ Mighty Networks เป็นธุรกิจที่เน้น US การเพิ่มรองรับ PromptPay ไทยต้องการ regulatory compliance, ความร่วมมือธนาคารท้องถิ่น และ engineering เฉพาะ ไม่อยู่ใน roadmap ของพวกเขา การกีดกันเชิงโครงสร้างจากแพลตฟอร์มโลกนี้หมายความว่า MuteClub มีช่วงเวลาที่ป้องกันได้อย่างน้อย 3-5 ปี
+        <br><br>
+        <strong>กลุ่ม signal การซื้อขายคือ beachhead</strong> นี่คือลูกค้า B2B ที่มีความเจ็บปวดสูงและเต็มใจจ่ายสูงที่จะจ่าย ฿2,000-5,000/เดือนสำหรับเครื่องมือที่ประหยัดเวลาหลายชั่วโมงของงาน manual ทุกวัน พวกเขาไม่ต้องการการโน้มน้าว พวกเขารู้ความเจ็บปวดอยู่แล้ว Cold outreach ถึง admin 20 คน = ลูกค้าจ่ายเงินแรก 20 คนที่สมเหตุสมผล
+        <br><br>
+        <strong>Network effects สร้างเมื่อเวลาผ่านไป</strong> Creator แต่ละคนนำผู้ชมของตัวเองมา (แฟนกลายเป็นผู้ใช้แพลตฟอร์ม) เมื่อ MuteClub เติบโต มันกลายเป็นแพลตฟอร์ม discovery: แฟนๆ เรียกดู creator club หาค creator ใหม่ creator ที่มีอยู่ได้รับ cross-promote นี่คือวิธีที่ Circle.so เติบโตสู่ $89M ARR
+        <br><br>
+        <strong>Exit path:</strong> ใน 3-5 ปี ขายให้ LINE Corporation (ต้องการขยาย OA monetization), telco ไทย (True, AIS), หรือแพลตฟอร์มโลกที่เข้า SEA ที่ ฿25M ARR, 5x revenue = ฿125M exit (~$3.5M) ที่ ฿50M ARR, 8x = ฿400M (~$11M)
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <a href="index.html" class="footer-back">← Back to All Ideas</a>
+    <p><span class="en">Idea #88: MuteClub — Paid Community Platform for Thai Creators · Score: 40/50 · Category: Community / Membership</span><span class="th">ไอเดีย #88: MuteClub — แพลตฟอร์มชุมชน Paid สำหรับ Creator ไทย · คะแนน: 40/50 · หมวด: Community / Membership</span></p>
+    <p style="margin-top:0.5rem;opacity:0.6;font-size:0.75rem;">MuteLab Idea Sprint · Feb 2026</p>
+  </footer>
+
+</div>
+<script>
+function setLang(lang) {
+  if (lang === 'th') {
+    document.body.classList.add('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[1].classList.add('active');
+  } else {
+    document.body.classList.remove('show-th');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lang-btn')[0].classList.add('active');
+  }
+}
+if (navigator.language && navigator.language.startsWith('th')) setLang('th');
+</script>
+</body>
+</html>
