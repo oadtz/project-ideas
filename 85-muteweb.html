@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteWeb — AI Website Building Service via LINE: เว็บสวย 24 ชม.</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f; --bg2:#0f0f18; --surface:#13131f; --surface2:#1a1a2e; --surface3:#222236;
+    --border:rgba(16,185,129,0.15); --border2:rgba(16,185,129,0.28);
+    --text:#f0f0f5; --text2:#c8c8d8; --muted:#7878a0; --muted2:#5a5a7a;
+    --primary:#10b981; --primary-light:#34d399; --primary-pale:rgba(16,185,129,0.08); --primary-glow:rgba(16,185,129,0.22);
+    --secondary:#8b5cf6; --secondary-light:#a78bfa; --secondary-pale:rgba(139,92,246,0.08);
+    --green:#10b981; --red:#ef4444; --amber:#f59e0b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(16,185,129,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.03) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(16,185,129,0.07) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(139,92,246,0.05) 0%,transparent 60%);pointer-events:none;}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#0a0a0f;}
+  .lang-btn:hover:not(.active){color:var(--primary);}
+  body:not(.show-th) .th{display:none;}
+  body.show-th .en{display:none;}
+  .topbar{background:rgba(10,10,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;padding:0 2rem;}
+  .topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px;}
+  .topbar-left{display:flex;align-items:center;gap:1rem;}
+  .back-link{color:var(--primary);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.3rem;font-weight:600;transition:opacity 0.2s;font-family:'Space Mono',monospace;}
+  .back-link:hover{opacity:0.7;}
+  .topbar-divider{width:1px;height:20px;background:var(--border);}
+  .topbar-logo{display:flex;align-items:center;gap:0.5rem;font-size:0.95rem;font-weight:700;color:var(--text);font-family:'Space Mono',monospace;}
+  .logo-icon{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;font-size:0.75rem;}
+  .topbar-right{display:flex;align-items:center;gap:0.75rem;font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);display:inline-block;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .topbar-badge{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.7rem;color:var(--text2);font-size:0.7rem;}
+  /* HERO */
+  .hero{padding:3.5rem 0 2rem;}
+  .hero-content{max-width:700px;}
+  .hero-chip{display:inline-flex;align-items:center;gap:0.5rem;background:var(--primary-pale);border:1px solid rgba(16,185,129,0.28);color:var(--primary);border-radius:8px;padding:0.35rem 0.9rem;font-size:0.75rem;font-weight:700;margin-bottom:1.5rem;font-family:'Space Mono',monospace;}
+  .hero h1{font-size:clamp(2.5rem,5vw,4rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:1.25rem;}
+  .hero h1 .gold{color:var(--primary);}
+  .hero h1 .purple{color:var(--secondary-light);}
+  .hero-sub{font-size:1.05rem;color:var(--muted);line-height:1.75;margin-bottom:2rem;max-width:580px;}
+  .hero-sub strong{color:var(--text2);}
+  .score-row{display:flex;gap:1rem;flex-wrap:wrap;}
+  .score-card{display:inline-flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:0.75rem 1.25rem;box-shadow:0 2px 16px rgba(0,0,0,0.3);}
+  .score-num{font-size:1.8rem;font-weight:800;color:var(--primary);letter-spacing:-0.02em;font-family:'Space Mono',monospace;}
+  .score-num.purple{color:var(--secondary-light);}
+  .score-meta{font-size:0.72rem;color:var(--muted);}
+  .score-meta strong{color:var(--text2);display:block;font-size:0.82rem;margin-bottom:0.1rem;}
+  /* CHAT MOCKUP */
+  .chat-window{background:var(--surface);border:1px solid var(--border2);border-radius:20px;overflow:hidden;box-shadow:0 4px 40px rgba(16,185,129,0.08);margin-bottom:4rem;}
+  .chat-titlebar{background:var(--surface2);padding:0.75rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border);}
+  .tt-dot{width:12px;height:12px;border-radius:50%;}
+  .tt-close{background:var(--red);}
+  .tt-min{background:var(--amber);}
+  .tt-max{background:var(--green);}
+  .tt-title{font-size:0.75rem;color:var(--muted);font-weight:500;text-align:center;flex:1;font-family:'Space Mono',monospace;}
+  .chat-body{padding:1.75rem;}
+  .chat-flow{display:flex;flex-direction:column;gap:0.85rem;margin-bottom:1.25rem;}
+  .msg{max-width:72%;padding:0.75rem 1rem;border-radius:14px;font-size:0.85rem;line-height:1.55;}
+  .msg.customer{background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2);color:var(--text2);align-self:flex-start;border-radius:4px 14px 14px 14px;}
+  .msg.ai{background:var(--secondary-pale);border:1px solid rgba(139,92,246,0.2);color:var(--text2);align-self:flex-end;border-radius:14px 4px 14px 14px;}
+  .msg-label{font-size:0.62rem;font-weight:700;color:var(--muted);margin-bottom:0.3rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.06em;}
+  .msg-wrap{display:flex;flex-direction:column;}
+  .msg-wrap.right{align-items:flex-end;}
+  .chat-result{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:1.5rem;}
+  .result-icon{font-size:3rem;flex-shrink:0;}
+  .result-text h3{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:0.3rem;}
+  .result-text p{font-size:0.82rem;color:var(--muted);}
+  .result-badge{display:inline-flex;align-items:center;gap:0.4rem;background:var(--primary-pale);border:1px solid rgba(16,185,129,0.25);color:var(--primary);border-radius:6px;padding:0.25rem 0.65rem;font-size:0.7rem;font-weight:700;font-family:'Space Mono',monospace;margin-top:0.5rem;}
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:3rem 0;}
+  .stat-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;transition:all 0.2s;position:relative;overflow:hidden;}
+  .stat-panel::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--primary),var(--secondary));opacity:0;transition:opacity 0.2s;}
+  .stat-panel:hover{border-color:var(--border2);box-shadow:0 0 20px var(--primary-glow);}
+  .stat-panel:hover::after{opacity:1;}
+  .stat-icon{font-size:1.4rem;margin-bottom:0.75rem;}
+  .stat-num{font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.4rem;font-family:'Space Mono',monospace;}
+  .g{color:var(--primary);}
+  .p{color:var(--secondary-light);}
+  .stat-label{font-size:0.8rem;color:var(--muted);line-height:1.6;}
+  /* SECTION */
+  .section{padding:4rem 0;}
+  .section-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.3rem 0.8rem;font-size:0.72rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.08em;}
+  .section-title{font-size:2.2rem;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:0.75rem;line-height:1.2;}
+  .section-sub{color:var(--muted);font-size:0.95rem;margin-bottom:3rem;line-height:1.7;}
+  /* WORKFLOW */
+  .workflow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  .wf-step{background:var(--surface);padding:1.75rem 1.25rem;transition:background 0.2s;}
+  .wf-step:hover{background:var(--surface2);}
+  .wf-num{font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--primary);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;}
+  .wf-icon{width:48px;height:48px;border-radius:12px;background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;}
+  .wf-title{font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:0.5rem;}
+  .wf-desc{font-size:0.8rem;color:var(--muted);line-height:1.6;}
+  /* WHY */
+  .why-panels{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .why-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.75rem;transition:all 0.2s;display:flex;flex-direction:column;gap:0.75rem;}
+  .why-panel:hover{border-color:var(--border2);box-shadow:0 0 20px var(--primary-glow);}
+  .why-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:var(--primary-pale);border:1px solid rgba(16,185,129,0.2);}
+  .why-title{font-size:1rem;font-weight:700;color:var(--text);}
+  .why-desc{font-size:0.85rem;color:var(--muted);line-height:1.65;}
+  /* REVENUE */
+  .revenue-row{display:grid;grid-template-columns:1fr 2fr;gap:1rem;}
+  .rev-highlight{background:linear-gradient(145deg,var(--surface2),var(--surface3));border:1px solid var(--border2);border-radius:16px;padding:2rem;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+  .rev-highlight::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary));}
+  .rh-label{font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;font-family:'Space Mono',monospace;}
+  .rh-title{font-size:1.3rem;font-weight:800;margin-bottom:0.75rem;line-height:1.3;color:var(--text);}
+  .rh-num{font-size:3rem;font-weight:900;letter-spacing:-0.04em;color:var(--primary);line-height:1;margin-bottom:0.25rem;font-family:'Space Mono',monospace;}
+  .rh-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;}
+  .rh-note{font-size:0.82rem;color:var(--text2);line-height:1.6;}
+  .rev-tiers{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .rev-tier{background:var(--surface);padding:1.1rem 1.5rem;display:flex;align-items:center;gap:1.25rem;transition:background 0.2s;}
+  .rev-tier:hover{background:var(--surface2);}
+  .rt-icon{font-size:1.2rem;flex-shrink:0;}
+  .rt-label{width:110px;font-size:0.8rem;font-weight:700;color:var(--primary);flex-shrink:0;font-family:'Space Mono',monospace;}
+  .rt-desc{flex:1;font-size:0.82rem;color:var(--muted);}
+  .rt-price{text-align:right;flex-shrink:0;}
+  .rt-amount{font-family:'Space Mono',monospace;font-size:0.95rem;font-weight:700;color:var(--text);}
+  .rt-note{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--secondary-light);}
+  /* ROADMAP */
+  .roadmap-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .roadmap-header{background:var(--surface2);padding:0.9rem 1.5rem;border-bottom:1px solid var(--border);font-size:0.8rem;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:space-between;font-family:'Space Mono',monospace;}
+  .roadmap-tag{font-size:0.7rem;color:var(--primary);font-weight:700;}
+  .roadmap-item{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;gap:1.25rem;transition:background 0.15s;}
+  .roadmap-item:last-child{border-bottom:none;}
+  .roadmap-item:hover{background:var(--surface2);}
+  .roadmap-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+  .roadmap-content{flex:1;}
+  .roadmap-phase{font-size:0.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem;font-family:'Space Mono',monospace;}
+  .roadmap-title{font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:0.3rem;}
+  .roadmap-body{font-size:0.82rem;color:var(--muted);line-height:1.55;}
+  .roadmap-right{text-align:right;flex-shrink:0;}
+  .roadmap-time{font-size:0.68rem;color:var(--muted2);font-family:'Space Mono',monospace;}
+  .roadmap-metric{font-family:'Space Mono',monospace;font-size:0.88rem;font-weight:700;color:var(--primary);margin-top:0.4rem;}
+  /* CTA */
+  .cta-wrap{background:linear-gradient(145deg,var(--surface2),var(--surface3));border:1px solid var(--border2);border-radius:20px;padding:4rem 3rem;text-align:center;margin:3rem 0 5rem;position:relative;overflow:hidden;}
+  .cta-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(16,185,129,0.1) 0%,transparent 55%);pointer-events:none;}
+  .cta-wrap::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--primary));background-size:200% 100%;animation:shimmer 3s linear infinite;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .cta-chip{display:inline-flex;align-items:center;gap:0.5rem;background:var(--primary-pale);border:1px solid rgba(16,185,129,0.3);color:var(--primary-light);border-radius:8px;padding:0.35rem 0.9rem;font-size:0.72rem;font-weight:700;margin-bottom:1.5rem;font-family:'Space Mono',monospace;position:relative;z-index:1;}
+  .cta-title{font-size:2.6rem;font-weight:800;letter-spacing:-0.04em;color:var(--text);margin-bottom:1rem;line-height:1.15;position:relative;z-index:1;}
+  .cta-title .gold{color:var(--primary);}
+  .cta-title .purple{color:var(--secondary-light);}
+  .cta-sub{color:var(--muted);font-size:0.95rem;margin-bottom:2.5rem;position:relative;z-index:1;}
+  .cta-actions{display:flex;gap:1rem;justify-content:center;position:relative;z-index:1;flex-wrap:wrap;}
+  .cta-btn{display:inline-flex;align-items:center;gap:0.6rem;background:linear-gradient(135deg,var(--primary),#059669);color:#0a0a0f;font-size:0.9rem;font-weight:700;padding:0.9rem 2rem;border-radius:10px;text-decoration:none;transition:all 0.2s;box-shadow:0 4px 20px rgba(16,185,129,0.3);font-family:'Space Mono',monospace;}
+  .cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(16,185,129,0.4);}
+  .divider{border:none;border-top:1px solid var(--border);margin:4rem 0;}
+  @media(max-width:1000px){.stats-row{grid-template-columns:repeat(2,1fr);}.revenue-row{grid-template-columns:1fr;}.why-panels{grid-template-columns:1fr;}.workflow{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:700px){.stats-row{grid-template-columns:1fr;}.workflow{grid-template-columns:1fr;}.cta-title{font-size:2rem;}.score-row{flex-direction:column;}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .animate{animation:fadeUp 0.5s ease forwards;}
+  .d1{opacity:0;animation-delay:0.1s;}.d2{opacity:0;animation-delay:0.2s;}.d3{opacity:0;animation-delay:0.3s;}.d4{opacity:0;animation-delay:0.4s;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('th')">TH</button>
+</div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span></a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo"><div class="logo-icon">🌐</div><span>MuteWeb</span></div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span><span class="en">3.1M Thai SMEs · website in 24h via LINE · ฿2,990</span><span class="th">SME ไทย 3.1M · เว็บ 24 ชม. ผ่าน LINE · ฿2,990</span></span>
+      <div class="topbar-badge"><span class="en">Idea 85</span><span class="th">ไอเดีย 85</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-chip animate d1">🌐 <span class="en">IDEA 85 — MUTEWEB · THANAPAT'S REQUEST</span><span class="th">ไอเดีย 85 — MUTEWEB · ไอเดียจาก THANAPAT</span></div>
+      <h1 class="animate d2">
+        <span class="en">Get a <span class="gold">Beautiful Website</span><br>via <span class="purple">LINE in 24h</span></span>
+        <span class="th">ได้<span class="gold">เว็บสวยมืออาชีพ</span><br>ผ่าน<span class="purple">LINE ใน 24 ชั่วโมง</span></span>
+      </h1>
+      <p class="hero-sub animate d3">
+        <span class="en"><strong>An AI web design service delivered entirely via LINE OA.</strong> Thai SME owners chat on LINE, describe their business, and receive a professional website in 24 hours — starting at ฿2,990. No forms, no meetings, no tech skills needed. Like ordering food delivery, but for your website. "สั่งเว็บผ่าน LINE ได้เว็บใน 24 ชม."</span>
+        <span class="th"><strong>บริการสร้างเว็บไซต์ผ่าน AI ส่งมอบผ่าน LINE OA</strong> เจ้าของ SME ไทยแชทบน LINE บอกเรื่องธุรกิจ ได้เว็บมืออาชีพใน 24 ชั่วโมง — เริ่มต้น ฿2,990 ไม่ต้องกรอกฟอร์ม ไม่ต้องนัดประชุม ไม่ต้องมีทักษะ IT เหมือนสั่งอาหาร Delivery แต่ได้เว็บไซต์</span>
+      </p>
+      <div class="animate d4">
+        <div class="score-row">
+          <div class="score-card">
+            <div class="score-num">39/50</div>
+            <div class="score-meta">
+              <strong>📊 Score: 39/50 — STRONG PASS</strong>
+              <span class="en">First $ in Week 1 · no DIY barrier · LINE moat</span>
+              <span class="th">รายได้แรกสัปดาห์ที่ 1 · ไม่มีอุปสรรค DIY · moat LINE</span>
+            </div>
+          </div>
+          <div class="score-card">
+            <div class="score-num purple">3.1M</div>
+            <div class="score-meta">
+              <strong>🏪 Thai SMEs without websites</strong>
+              <span class="en">Most still only on Facebook Page — no real website</span>
+              <span class="th">ส่วนใหญ่ยังมีแค่ Facebook Page — ไม่มีเว็บจริง</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT MOCKUP -->
+  <div class="chat-window animate d3">
+    <div class="chat-titlebar">
+      <div class="tt-dot tt-close"></div>
+      <div class="tt-dot tt-min"></div>
+      <div class="tt-dot tt-max"></div>
+      <div class="tt-title">MuteWeb LINE OA — <span class="en">AI Web Design Service</span><span class="th">บริการสร้างเว็บ AI</span></div>
+    </div>
+    <div class="chat-body">
+      <div class="chat-flow">
+        <div class="msg-wrap">
+          <div class="msg-label">🏪 <span class="en">CUSTOMER (Business Owner)</span><span class="th">ลูกค้า (เจ้าของร้าน)</span></div>
+          <div class="msg customer"><span class="en">Hello! I have a Thai massage shop in Chiang Mai. I want a website but I don't know how to make one. Friends keep telling me I need a website 🙏</span><span class="th">สวัสดีค่ะ มีร้านนวดแผนไทยที่เชียงใหม่ อยากได้เว็บไซต์แต่ทำไม่เป็นเลย เพื่อนๆ บอกว่าต้องมีเว็บถึงจะดูน่าเชื่อถือ 🙏</span></div>
+        </div>
+        <div class="msg-wrap right">
+          <div class="msg-label">🤖 <span class="en">MUTEWEB AI</span><span class="th">AI MUTEWEB</span></div>
+          <div class="msg ai"><span class="en">Hello! 😊 We specialize in creating beautiful websites for Thai businesses. Just answer 3 quick questions and we'll build your site in 24 hours! What services does your shop offer? (e.g., Thai massage, herbal compress, foot massage)</span><span class="th">สวัสดีค่ะ 😊 เราช่วยสร้างเว็บสวยให้ธุรกิจไทยโดยเฉพาะ ตอบแค่ 3 คำถามสั้นๆ แล้วเราจะสร้างเว็บให้ใน 24 ชั่วโมง! ร้านของคุณมีบริการอะไรบ้างคะ? (เช่น นวดแผนไทย นวดลูกประคบ นวดเท้า)</span></div>
+        </div>
+        <div class="msg-wrap">
+          <div class="msg customer"><span class="en">Thai massage, foot massage, herbal compress, and aromatherapy! I have 3 therapists. Price starts at ฿300/hr. Open 10am-10pm. I'll send you photos of the shop!</span><span class="th">นวดแผนไทย นวดเท้า ลูกประคบ อโรมา! มีพนักงาน 3 คน ราคาเริ่ม ฿300/ชม. เปิด 10โมง-4ทุ่ม ส่งรูปร้านให้ได้เลยค่ะ!</span></div>
+        </div>
+        <div class="msg-wrap right">
+          <div class="msg ai"><span class="en">✨ Perfect! Please send your shop photos + LINE ID for booking. We'll have your website ready in 24 hours with: ✓ Services page ✓ Online booking form ✓ Google Maps ✓ Price menu ✓ Customer reviews section. Payment: ฿2,990 via PromptPay. Shall we proceed?</span><span class="th">✨ ได้เลยค่ะ! ส่งรูปร้าน + LINE ID สำหรับจองได้เลย เราจะสร้างเว็บให้ใน 24 ชั่วโมง ประกอบด้วย: ✓ หน้าบริการ ✓ ฟอร์มจองออนไลน์ ✓ Google Maps ✓ เมนูราคา ✓ หน้าเรื่องราว ชำระ ฿2,990 ผ่าน PromptPay พร้อมดำเนินการได้เลยค่ะ?</span></div>
+        </div>
+      </div>
+      <div class="chat-result">
+        <div class="result-icon">🌐</div>
+        <div class="result-text">
+          <h3><span class="en">24 hours later: chiangmaimassage-xyz.com is LIVE ✅</span><span class="th">24 ชั่วโมงต่อมา: chiangmaimassage-xyz.com พร้อมใช้งาน ✅</span></h3>
+          <p><span class="en">Full professional website delivered. Customer pays ฿2,990 via PromptPay. AI built it, human QA'd it. Total cost to us: ~฿200 in AI API credits. Margin: 93%.</span><span class="th">เว็บมืออาชีพส่งมอบครบ ลูกค้าโอน ฿2,990 PromptPay AI สร้าง มนุษย์ตรวจ ต้นทุนของเรา: ~฿200 ค่า AI API กำไร: 93%</span></p>
+          <div class="result-badge">⚡ <span class="en">93% gross margin per site</span><span class="th">กำไรขั้นต้น 93% ต่อเว็บ</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row animate d1">
+    <div class="stat-panel">
+      <div class="stat-icon">🏪</div>
+      <div class="stat-num"><span class="g">3.1M</span></div>
+      <div class="stat-label"><span class="en">Thai SMEs. Most operate only on Facebook Page — no professional website. Web design agencies charge ฿15,000-100,000 and take 4-8 weeks. Huge underserved market.</span><span class="th">SME ไทย ส่วนใหญ่มีแค่ Facebook Page ไม่มีเว็บจริง เอเจนซีคิด ฿15,000-100,000 รอ 4-8 สัปดาห์ ตลาดที่ไม่ได้รับการรับใช้มหาศาล</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">🌐</div>
+      <div class="stat-num"><span class="p">11M+</span></div>
+      <div class="stat-label"><span class="en">Websites generated by Durable (3M business owners, $25/mo). Proves AI can build quality sites fast. But Durable is English DIY — Thai SMEs can't use it. We're a SERVICE, not a tool.</span><span class="th">เว็บที่ Durable สร้าง (3M ธุรกิจ $25/เดือน) พิสูจน์ว่า AI สร้างเว็บคุณภาพได้เร็ว แต่ Durable เป็นภาษาอังกฤษ DIY — SME ไทยใช้ไม่ได้ เราคือ บริการ ไม่ใช่เครื่องมือ</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">💰</div>
+      <div class="stat-num"><span class="g">93%</span></div>
+      <div class="stat-label"><span class="en">Gross margin per website. Customer pays ฿2,990. AI API cost: ~฿200 (content generation + image). Human QA: 15 min @ ฿150/hr = ฿37.50. Total COGS: ~฿250. Gross profit: ฿2,740.</span><span class="th">กำไรขั้นต้นต่อเว็บ ลูกค้าจ่าย ฿2,990 ต้นทุน AI API: ~฿200 (เนื้อหา+ภาพ) QA มนุษย์: 15 นาที = ฿37.50 COGS รวม: ~฿250 กำไร: ฿2,740</span></div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">📱</div>
+      <div class="stat-num"><span class="p">LINE</span></div>
+      <div class="stat-label"><span class="en">Thai SMEs live on LINE. They communicate with suppliers, staff, and customers via LINE already. Removing the friction of "go to a website" and replacing it with "just chat" = massive conversion lift.</span><span class="th">SME ไทยอยู่บน LINE สื่อสารกับซัพพลายเออร์ พนักงาน ลูกค้า ผ่าน LINE อยู่แล้ว ลบแรงเสียดทานของ "ไปที่เว็บ" แล้วเปลี่ยนเป็น "แค่แชท" = Conversion สูงขึ้นมาก</span></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="section-badge">⚙️ <span class="en">HOW IT WORKS</span><span class="th">วิธีการทำงาน</span></div>
+    <div class="section-title"><span class="en">Chat on LINE → AI builds → Website delivered in 24h</span><span class="th">แชทบน LINE → AI สร้าง → ส่งเว็บใน 24 ชั่วโมง</span></div>
+    <p class="section-sub"><span class="en">This is NOT a DIY website builder. It's a full-service AI web design agency delivered via LINE chat. The customer never touches a drag-and-drop interface. They just describe their business and receive a finished site.</span><span class="th">นี่ไม่ใช่เครื่องมือ DIY นี่คือบริการสร้างเว็บครบวงจรที่ใช้ AI ส่งมอบผ่านแชท LINE ลูกค้าไม่ต้องแตะ interface drag-and-drop แค่บอกเรื่องธุรกิจ แล้วรับเว็บสำเร็จรูป</span></p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">STEP_01</div>
+        <div class="wf-icon">💬</div>
+        <div class="wf-title"><span class="en">Customer Chats on LINE</span><span class="th">ลูกค้าแชทบน LINE</span></div>
+        <div class="wf-desc"><span class="en">Customer finds MuteWeb LINE OA (via FB ads, QR code, word of mouth). AI chatbot asks 5 quick questions: business type, services, location, photos, contact. Pays ฿2,990 via PromptPay.</span><span class="th">ลูกค้าเจอ LINE OA MuteWeb (ผ่านโฆษณา FB, QR, ปากต่อปาก) AI ถาม 5 คำถาม: ประเภทธุรกิจ บริการ ที่ตั้ง รูปภาพ ช่องทางติดต่อ ชำระ ฿2,990 PromptPay</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_02</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title"><span class="en">AI Generates Site</span><span class="th">AI สร้างเว็บ</span></div>
+        <div class="wf-desc"><span class="en">AI selects best template for the business type, generates Thai content (About, Services, Contact), creates hero images (AI-generated or customer photos optimized), builds on Framer/Webflow/WordPress. Full site in ~2 hours.</span><span class="th">AI เลือก template ที่เหมาะกับธุรกิจ สร้างเนื้อหาภาษาไทย (เกี่ยวกับ บริการ ติดต่อ) สร้างภาพ hero (AI หรือรูปลูกค้า optimize) สร้างบน Framer/Webflow/WordPress เว็บสมบูรณ์ใน ~2 ชั่วโมง</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_03</div>
+        <div class="wf-icon">👁️</div>
+        <div class="wf-title"><span class="en">Human QA (15 min)</span><span class="th">มนุษย์ QA (15 นาที)</span></div>
+        <div class="wf-desc"><span class="en">Human checks content accuracy, links, mobile responsiveness, SEO basics. Minor fixes if needed. This is what keeps quality high without killing margins. One person can QA 20-30 sites/day.</span><span class="th">มนุษย์ตรวจความถูกต้องเนื้อหา ลิงก์ mobile responsive SEO พื้นฐาน แก้ไขเล็กน้อยถ้าจำเป็น นี่คือสิ่งที่รักษาคุณภาพโดยไม่ทำลาย margin คนเดียว QA ได้ 20-30 เว็บ/วัน</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">STEP_04</div>
+        <div class="wf-icon">🎉</div>
+        <div class="wf-title"><span class="en">Deliver via LINE + Host</span><span class="th">ส่งผ่าน LINE + โฮสต์</span></div>
+        <div class="wf-desc"><span class="en">Customer receives website URL on LINE within 24h. Hosted by us at ฿299/mo. Includes SSL, Google Analytics, basic SEO, Contact form. Future upsell: LINE OA integration, booking system, e-commerce.</span><span class="th">ลูกค้าได้รับ URL เว็บบน LINE ภายใน 24 ชั่วโมง โฮสต์โดยเรา ฿299/เดือน รวม SSL, Google Analytics, SEO พื้นฐาน, ฟอร์มติดต่อ upsell ต่อ: เชื่อม LINE OA, ระบบจอง, อีคอมเมิร์ซ</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">⭐ <span class="en">THE EDGE</span><span class="th">จุดได้เปรียบ</span></div>
+    <div class="section-title"><span class="en">Why Thai SMEs can't use existing solutions</span><span class="th">ทำไม SME ไทยถึงใช้โซลูชั่นที่มีอยู่ไม่ได้</span></div>
+    <p class="section-sub"><span class="en">Durable, Wix, Squarespace, Framer AI — all English-only DIY tools. Thai SME owners don't want to learn a tool. They want a website. That's a completely different value proposition.</span><span class="th">Durable, Wix, Squarespace, Framer AI — ล้วนเป็นเครื่องมือ DIY ภาษาอังกฤษ เจ้าของ SME ไทยไม่ต้องการเรียนเครื่องมือ พวกเขาต้องการเว็บไซต์ นั่นคือ value proposition ที่ต่างกันโดยสิ้นเชิง</span></p>
+    <div class="why-panels">
+      <div class="why-panel">
+        <div class="why-icon">🚫</div>
+        <div class="why-title"><span class="en">Existing AI builders are English DIY — unusable for Thai SMEs</span><span class="th">AI builder ที่มีเป็นภาษาอังกฤษ DIY — SME ไทยใช้ไม่ได้</span></div>
+        <div class="why-desc"><span class="en">Durable (11M sites) requires: English interface, signing up, learning UX, editing content manually. A Thai restaurant owner or massage shop cannot do this. Language barrier + tech barrier + time barrier. MuteWeb removes ALL THREE.</span><span class="th">Durable (11M เว็บ) ต้องใช้: interface ภาษาอังกฤษ สมัคร เรียน UX แก้เนื้อหาเอง เจ้าของร้านอาหารไทยหรือร้านนวดทำไม่ได้ มีทั้งอุปสรรคภาษา เทคโนโลยี และเวลา MuteWeb กำจัดทั้งสาม</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-icon">💸</div>
+        <div class="why-title"><span class="en">Agencies: ฿15K-100K and 4-8 weeks wait — too expensive, too slow</span><span class="th">เอเจนซี: ฿15K-100K รอ 4-8 สัปดาห์ — แพงเกิน ช้าเกิน</span></div>
+        <div class="why-desc"><span class="en">Traditional web design agencies in Thailand charge ฿15,000-100,000 for a basic site, take 4-8 weeks, require multiple in-person meetings. A small massage shop or restaurant cannot justify this. We charge ฿2,990, deliver in 24h, via LINE chat only.</span><span class="th">เอเจนซีสร้างเว็บไทยทั่วไปคิด ฿15,000-100,000 ต่อเว็บพื้นฐาน รอ 4-8 สัปดาห์ ต้องนัดประชุมหลายครั้ง ร้านนวดหรือร้านอาหารเล็กๆ แบกรับไม่ไหว เราคิด ฿2,990 ส่งใน 24 ชั่วโมง แค่แชท LINE</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-icon">📱</div>
+        <div class="why-title"><span class="en">LINE = where Thai SMEs already live — zero friction adoption</span><span class="th">LINE = ที่ที่ SME ไทยอยู่อยู่แล้ว — adoption แบบไม่มีแรงเสียดทาน</span></div>
+        <div class="why-desc"><span class="en">Thai SMEs manage everything through LINE already — supplier orders, customer bookings, staff coordination. LINE is their operating system. MuteWeb slots directly into their existing workflow. No app download, no new platform to learn.</span><span class="th">SME ไทยจัดการทุกอย่างผ่าน LINE อยู่แล้ว — สั่งซัพพลาย จองลูกค้า ประสานงานพนักงาน LINE คือ OS ของพวกเขา MuteWeb เสียบเข้าไปในกระบวนการที่มีอยู่ ไม่ต้องโหลดแอป ไม่ต้องเรียนรู้แพลตฟอร์มใหม่</span></div>
+      </div>
+      <div class="why-panel">
+        <div class="why-icon">⚡</div>
+        <div class="why-title"><span class="en">First revenue in Week 1 — no waiting for SEO or organic growth</span><span class="th">รายได้แรกสัปดาห์ที่ 1 — ไม่รอ SEO หรือการเติบโตแบบ organic</span></div>
+        <div class="why-desc"><span class="en">Distribution: post "We build your website in 24h via LINE for ฿2,990" in Thai SME Facebook groups (Restaurant Owner TH 300K+ members, Shop Owner Thailand, Beauty Business Thailand). Direct inquiries start Day 1. Each order = immediate cash.</span><span class="th">กระจาย: โพสต์ "สร้างเว็บให้ 24 ชม. ผ่าน LINE ฿2,990" ในกลุ่ม FB SME ไทย (เจ้าของร้านอาหาร 300K+ สมาชิก, เจ้าของร้านค้าไทย, ธุรกิจความงาม) สอบถามเข้ามาวันแรก แต่ละออเดอร์ = เงินสดทันที</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- REVENUE -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">💰 <span class="en">REVENUE MODEL</span><span class="th">โมเดลรายได้</span></div>
+    <div class="section-title"><span class="en">One-time builds + monthly hosting = compounding revenue</span><span class="th">สร้างครั้งเดียว + โฮสต์รายเดือน = รายได้ทบต้น</span></div>
+    <p class="section-sub"><span class="en">Revenue from two streams: project fees (immediate cash) and monthly hosting (recurring, compounding). As the hosting base grows, MRR grows without needing more builds. Classic service-to-SaaS transition.</span><span class="th">รายได้สองสาย: ค่าสร้างเว็บ (เงินสดทันที) และโฮสต์รายเดือน (recurring ทบต้น) เมื่อฐานโฮสต์โต MRR โตโดยไม่ต้องสร้างเพิ่ม การเปลี่ยนจาก service เป็น SaaS แบบ classic</span></p>
+    <div class="revenue-row">
+      <div class="rev-highlight">
+        <div>
+          <div class="rh-label">Revenue Potential</div>
+          <div class="rh-title">Path to<br>฿33M ARR</div>
+        </div>
+        <div>
+          <div class="rh-num">฿33M</div>
+          <div class="rh-sub"><span class="en">ARR by Month 18 ($1M+)</span><span class="th">ARR ภายในเดือนที่ 18 ($1M+)</span></div>
+          <div class="rh-note">
+            <span class="en">Month 1: 20 builds × ฿2,990 = ฿59,800<br>Month 6: 200 builds/mo + 500 hosting clients<br>Month 12: 400 builds/mo + 2,000 hosting<br>Month 18: 500 builds + 4,000 hosting × ฿499 = ฿2M+ MRR</span>
+            <span class="th">เดือน 1: 20 เว็บ × ฿2,990 = ฿59,800<br>เดือน 6: 200 เว็บ/เดือน + โฮสต์ 500 เว็บ<br>เดือน 12: 400 เว็บ/เดือน + โฮสต์ 2,000 เว็บ<br>เดือน 18: 500 เว็บ + โฮสต์ 4,000 × ฿499 = MRR ฿2M+</span>
+          </div>
+        </div>
+      </div>
+      <div class="rev-tiers">
+        <div class="rev-tier" style="background:var(--surface2);">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;width:110px;flex-shrink:0;">Stream</div>
+          <div style="flex:1;font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">Details</div>
+          <div style="font-size:0.62rem;font-weight:700;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;">Price</div>
+        </div>
+        <div class="rev-tier" style="background:rgba(16,185,129,0.04);border-left:3px solid var(--primary);">
+          <div class="rt-icon">🌐</div>
+          <div class="rt-label" style="color:var(--primary);">Build ⭐</div>
+          <div class="rt-desc"><span class="en">Core: AI builds professional 5-7 page website via LINE intake. Includes Thai content, photos optimized, contact form, Google Maps embed, mobile-responsive. Delivered in 24h.</span><span class="th">หลัก: AI สร้างเว็บมืออาชีพ 5-7 หน้าผ่านการรับข้อมูล LINE เนื้อหาไทย รูปภาพ optimize ฟอร์มติดต่อ Google Maps embed รองรับมือถือ ส่งใน 24 ชั่วโมง</span></div>
+          <div class="rt-price"><div class="rt-amount">฿2,990</div><div class="rt-note">one-time · 93% margin</div></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">🚀</div>
+          <div class="rt-label">Build Pro</div>
+          <div class="rt-desc"><span class="en">Premium: 10+ pages, LINE OA chatbot integration, booking/reservation system, gallery, bilingual EN/TH, custom domain, Google Business Profile setup, basic SEO.</span><span class="th">พรีเมียม: 10+ หน้า เชื่อม LINE OA chatbot ระบบจอง แกลเลอรี 2 ภาษา EN/TH โดเมนเอง ตั้ง Google Business Profile SEO พื้นฐาน</span></div>
+          <div class="rt-price"><div class="rt-amount">฿7,990</div><div class="rt-note">one-time · premium</div></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">☁️</div>
+          <div class="rt-label">Hosting</div>
+          <div class="rt-desc"><span class="en">Monthly hosting + SSL + CDN + uptime monitoring + 1 content update/month. Recurring revenue compounding over time. 4,000 clients = ฿2M MRR alone.</span><span class="th">โฮสต์รายเดือน + SSL + CDN + ตรวจสอบ uptime + อัปเดตเนื้อหา 1 ครั้ง/เดือน รายได้ recurring ทบต้น 4,000 ลูกค้า = ฿2M MRR ล้วนๆ</span></div>
+          <div class="rt-price"><div class="rt-amount">฿499/mo</div><div class="rt-note">recurring · high LTV</div></div>
+        </div>
+        <div class="rev-tier">
+          <div class="rt-icon">📱</div>
+          <div class="rt-label">Upsells</div>
+          <div class="rt-desc"><span class="en">LINE OA setup (฿2,500), e-commerce add-on (฿4,990), monthly SEO package (฿2,990/mo), WhatsApp Business setup, Facebook Pixel + Ads setup.</span><span class="th">ตั้ง LINE OA (฿2,500) เพิ่มอีคอมเมิร์ซ (฿4,990) SEO รายเดือน (฿2,990/เดือน) WhatsApp Business ตั้ง Facebook Pixel + โฆษณา</span></div>
+          <div class="rt-price"><div class="rt-amount">฿2,500+</div><div class="rt-note">per upsell</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ROADMAP -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge">📈 <span class="en">ROADMAP</span><span class="th">แผนดำเนินงาน</span></div>
+    <div class="section-title"><span class="en">First build in Week 1 → ฿33M ARR by Month 18</span><span class="th">เว็บแรกสัปดาห์ที่ 1 → ฿33M ARR เดือนที่ 18</span></div>
+    <div class="roadmap-panel">
+      <div class="roadmap-header">
+        <span>🌐 MuteWeb — <span class="en">Milestone Timeline</span><span class="th">แผน Milestones</span></span>
+        <span class="roadmap-tag"><span class="en">First $ in Week 1 · ฿33M ARR target</span><span class="th">รายได้แรกสัปดาห์ที่ 1 · เป้า ฿33M ARR</span></span>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">⚡</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">WEEK 1–2 · LAUNCH (manual first)</span><span class="th">สัปดาห์ที่ 1–2 · เปิดตัว (manual ก่อน)</span></div>
+          <div class="roadmap-title"><span class="en">Set up LINE OA, take first 5 orders manually, validate pricing</span><span class="th">ตั้ง LINE OA รับ 5 ออเดอร์แรกด้วยมือ ตรวจสอบราคา</span></div>
+          <div class="roadmap-body"><span class="en">Don't overbuild. Set up LINE OA, build first 5 websites manually using Framer/Webflow + AI-generated content. Post in Thai SME Facebook groups. Charge ฿2,990. First ฿14,950 in revenue proves market. Measure: average time to build, quality feedback, conversion from inquiry to paid.</span><span class="th">ไม่ต้องสร้างมากเกิน ตั้ง LINE OA สร้าง 5 เว็บแรกด้วยมือโดยใช้ Framer/Webflow + เนื้อหา AI โพสต์กลุ่ม FB SME ไทย คิด ฿2,990 รายได้แรก ฿14,950 พิสูจน์ตลาด วัด: เวลาสร้างเฉลี่ย ฟีดแบคคุณภาพ conversion จาก inquiry เป็นจ่ายเงิน</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Wk 1–2</div><div class="roadmap-metric">฿15K cash</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(139,92,246,0.1);">🤖</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 1–3 · AUTOMATE PIPELINE</span><span class="th">เดือน 1–3 · อัตโนมัติ Pipeline</span></div>
+          <div class="roadmap-title"><span class="en">Build AI intake bot + template library → 20 builds/month</span><span class="th">สร้าง AI intake bot + คลัง template → 20 เว็บ/เดือน</span></div>
+          <div class="roadmap-body"><span class="en">Build LINE chatbot to handle intake questions automatically. Create 20+ industry templates (restaurant, massage, beauty salon, tour guide, clinic, shop, hotel). AI generates content from intake answers. Reduce human time to 15 min QA per site. Target: 20 builds/mo at ฿2,990 = ฿60K MRR + first 60 hosting clients at ฿499 = ฿30K MRR. Total: ฿90K MRR.</span><span class="th">สร้าง LINE chatbot จัดการคำถามรับข้อมูลอัตโนมัติ สร้าง template อุตสาหกรรม 20+ แบบ (ร้านอาหาร นวด ความงาม ไกด์ คลินิก ร้านค้า โรงแรม) AI สร้างเนื้อหาจากคำตอบ ลดเวลามนุษย์เหลือ QA 15 นาที/เว็บ เป้า: 20 เว็บ/เดือน × ฿2,990 = ฿60K + โฮสต์ 60 × ฿499 = ฿30K รวม: ฿90K MRR</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 1–3</div><div class="roadmap-metric">฿1M ARR</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(16,185,129,0.1);">📈</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 6–12 · SCALE + FRANCHISE MODEL</span><span class="th">เดือน 6–12 · ขยาย + โมเดล Franchise</span></div>
+          <div class="roadmap-title"><span class="en">200 builds/mo + partner network of local sales agents</span><span class="th">200 เว็บ/เดือน + เครือข่ายตัวแทนขาย</span></div>
+          <div class="roadmap-body"><span class="en">Recruit "MuteWeb Agents" — local Thai business people who sell MuteWeb to their networks for 20% commission. Perfect for existing IT service providers, LINE OA consultants, marketing agencies. Each agent brings 5-10 clients/month. 50 agents × 5 clients = 250 extra builds/month. Add e-commerce upsell (฿4,990). Launch dedicated industry pages (restaurants, clinics, hotels). 2,000 hosting clients × ฿499 = ฿998K MRR from hosting alone.</span><span class="th">รับสมัคร "ตัวแทน MuteWeb" — คนไทยที่ขาย MuteWeb ให้เครือข่ายของตัวเองรับค่าคอม 20% เหมาะสำหรับผู้ให้บริการ IT LINE OA consultant เอเจนซีการตลาด ตัวแทนแต่ละคนนำลูกค้า 5-10 คน/เดือน ตัวแทน 50 คน × 5 ลูกค้า = สร้างเว็บเพิ่ม 250/เดือน เพิ่ม upsell อีคอมเมิร์ซ (฿4,990) โฮสต์ 2,000 × ฿499 = ฿998K MRR จากโฮสต์อย่างเดียว</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 6–12</div><div class="roadmap-metric">฿15M ARR</div></div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-icon" style="background:rgba(245,158,11,0.12);">🏆</div>
+        <div class="roadmap-content">
+          <div class="roadmap-phase"><span class="en">MONTH 18 · ฿33M ARR MILESTONE</span><span class="th">เดือน 18 · Milestone ฿33M ARR</span></div>
+          <div class="roadmap-title"><span class="en">500 builds/mo + 4,000 hosting clients = ฿33M ARR</span><span class="th">500 เว็บ/เดือน + โฮสต์ 4,000 เว็บ = ฿33M ARR</span></div>
+          <div class="roadmap-body"><span class="en">Revenue breakdown at Month 18: 500 builds/mo × ฿3,500 avg = ฿1.75M/mo + 4,000 hosting × ฿499 = ฿2M MRR + upsells ฿300K = ฿4.05M MRR = ฿48M ARR. Potential to expand to Vietnam, Philippines with localized versions. Build-and-sell play: 4,000 recurring hosting customers = highly valuable SaaS-adjacent business for acquisition.</span><span class="th">รายได้เดือนที่ 18: 500 เว็บ/เดือน × ฿3,500 เฉลี่ย = ฿1.75M/เดือน + โฮสต์ 4,000 × ฿499 = ฿2M MRR + upsell ฿300K = ฿4.05M MRR = ฿48M ARR ขยายสู่เวียดนาม ฟิลิปปินส์ด้วยเวอร์ชัน localize โมเดล build-and-sell: ลูกค้าโฮสต์ recurring 4,000 รายเป็นธุรกิจมูลค่าสูงสำหรับถูก acquire</span></div>
+        </div>
+        <div class="roadmap-right"><div class="roadmap-time">Mo 18</div><div class="roadmap-metric" style="color:var(--primary-light);">฿33M+ ARR 🏆</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-wrap">
+    <div class="cta-chip">🌐 <span class="en">Score: 39/50 — STRONG PASS · First $ Week 1</span><span class="th">Score: 39/50 — STRONG PASS · รายได้แรกสัปดาห์ที่ 1</span></div>
+    <h2 class="cta-title">
+      <span class="en"><span class="gold">3.1M Thai SMEs</span> need a website.<br>None can use <span class="purple">English DIY tools</span>.</span>
+      <span class="th">SME ไทย<span class="gold">3.1 ล้านราย</span>ต้องการเว็บ<br>ไม่มีใครใช้<span class="purple">เครื่องมือ DIY ภาษาอังกฤษ</span>ได้</span>
+    </h2>
+    <p class="cta-sub">
+      <span class="en">Durable built 11M+ websites — but not one for a Thai massage shop or noodle restaurant. The service gap is real. Via LINE, ฿2,990, 24h delivery = mass market accessible price. First revenue Week 1 (post in FB groups, take orders manually). 93% gross margin. Hosting builds compounding MRR. No competitor in this exact form.</span>
+      <span class="th">Durable สร้างเว็บ 11M+ — แต่ไม่มีสักเว็บสำหรับร้านนวดหรือร้านก๋วยเตี๋ยวไทย ช่องว่างบริการมีจริง ผ่าน LINE ฿2,990 ส่ง 24 ชั่วโมง = ราคาตลาดมวลชน รายได้แรกสัปดาห์ที่ 1 (โพสต์กลุ่ม FB รับออเดอร์ด้วยมือ) กำไร 93% โฮสต์สร้าง MRR ทบต้น ไม่มีคู่แข่งในรูปแบบนี้โดยเฉพาะ</span>
+    </p>
+    <div class="cta-actions">
+      <a href="index.html" class="cta-btn">← <span class="en">All ideas</span><span class="th">ไอเดียทั้งหมด</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+function setLang(lang){if(lang==='th'){document.body.classList.add('show-th');}else{document.body.classList.remove('show-th');}document.querySelectorAll('.lang-btn').forEach((btn,i)=>{btn.classList.toggle('active',(i===0&&lang==='en')||(i===1&&lang==='th'));});}
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('animate');});},{threshold:0.1});
+document.querySelectorAll('.stat-panel,.why-panel,.wf-step,.roadmap-item,.rev-tier').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
