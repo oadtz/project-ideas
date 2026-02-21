@@ -1,0 +1,372 @@
+# PRD: MuteMoo — AI Fortune Telling + Data Science
+### Product Requirements Document v1.0
+**Status:** 1st Round Runner Up | **Score:** 38/50 (Highest) | **Date:** 2026-02-21
+
+---
+
+## 1. Executive Summary
+
+**MuteMoo** is an AI-powered fortune telling platform that combines traditional Thai astrology (ผูกดวง, ลัคนา, ราศี) with statistical data analysis and AI personalization, delivered primarily through LINE — Thailand's dominant messaging platform with 54M+ users. The core proposition: **"ดูดวงที่อธิบายได้ ไม่ใช่แค่เชื่อ" (Fortune telling you can explain — not just believe).**
+
+Thailand's spiritual/fortune telling market is estimated at ฿4–15.6B annually, with 75% of the population (52M people) actively engaging in fortune telling. Yet the digital landscape is dominated by outdated websites (myhora.com, payakorn.com) and expensive human astrologers (฿300–2,000/session). Globally, Co-Star has proven the model with 30M+ downloads and ~$2.5M/month revenue, while the astrology app market is projected to reach $9.9B by 2029 (20% CAGR). **Nobody has built the "Co-Star for Thai astrology"** — MuteMoo occupies this white space with a unique science + spirituality positioning that attracts both believers and skeptics.
+
+---
+
+## 2. Problem Statement
+
+### The Pain
+- **Expensive access:** Human fortune tellers charge ฿300–2,000/session with limited availability. Premium ones (หมอดูดัง) charge ฿5,000–50,000+ and have 2-6 month waiting lists.
+- **Outdated digital options:** myhora.com (est. ~2005) and payakorn.com are text-heavy, no personalization, no AI, no mobile-first design. They feel like websites from 2008.
+- **No credibility layer:** Traditional fortune telling is pure belief-based — skeptics dismiss it entirely. No one bridges the gap between astrology and data.
+- **Fragmented experience:** Users bounce between apps, websites, LINE OA fortune tellers, and in-person visits with no continuity.
+
+### Who Has It
+- **Primary:** Thai women 22-45 (heaviest fortune telling consumers), urban professionals, Bangkok + major cities
+- **Secondary:** Thai men 25-45 (business owners seeking auspicious dates for decisions), couples (compatibility checks)
+- **Tertiary:** The "curious skeptic" — educated millennials/Gen Z who say "I don't believe but..." (estimated 30% of market)
+
+### How Big
+- Thai fortune telling consultation market: **฿4B/year**
+- Total Thai spiritual market (incl. amulets, ceremonies): **฿10.4–15.6B/year**
+- Global astrology app market: **$4.75B (2025) → $9.9B (2029), 20% CAGR**
+- Asia-Pacific: **30% of global market share**
+- Monthly Google searches "ดูดวง": **5-10M+ in Thailand alone**
+
+---
+
+## 3. Solution: MuteMoo's Approach
+
+### AI + Science + Thai Culture
+
+MuteMoo doesn't replace fortune telling — it **upgrades** it:
+
+1. **Authentic Thai Astrology Engine** — Properly calculates birth charts using Thai systems (ลัคนา, ราศี, นวางค์, ดาวเคราะห์ทั้ง 9), not Western-only horoscopes
+2. **Statistical Data Layer** — Cross-references astrological positions with aggregated outcome data (career changes, relationship patterns, health trends by birth period)
+3. **AI Personalization** — GPT-class models interpret the combination of chart + data + user context into deeply personal, Thai-language readings
+4. **LINE-Native Delivery** — Meets users where they already are. No app download friction.
+
+### The Unique Angle
+Nobody in Thailand (or globally for Thai astrology) occupies the **"science + spirituality"** position. This:
+- Attracts believers who want deeper analysis
+- Attracts skeptics who are "curious about the data"
+- Creates viral shareable content ("My birth chart says X, and statistically Y% of people born that day also experienced Z")
+- Provides a defensible brand position
+
+---
+
+## 4. Target Users
+
+### Primary Persona: "Ning" — Urban Professional
+- Female, 28, Bangkok, works in marketing
+- Checks horoscope daily on Sanook/LINE NEWS
+- Has visited 2-3 fortune tellers in person (spent ฿500-2,000 each)
+- Uses LINE 3+ hours/day
+- Would pay ฿99-199/mo for something better than free horoscopes
+
+### Secondary Persona: "Boss Korn" — SME Owner
+- Male, 38, runs e-commerce business
+- Consults fortune teller before major business decisions (new hires, contracts, expansion)
+- Pays ฿2,000-5,000 per consultation
+- Wants auspicious dates, compatible business partners, lucky directions
+- Would pay ฿299-499/mo or ฿999 per deep reading
+
+### Tertiary Persona: "Film" — Gen Z Skeptic
+- Non-binary, 23, university student
+- Shares Co-Star screenshots on Twitter
+- "I don't believe in horoscopes, but mine is SO accurate 😂"
+- Attracted by the data/science angle
+- Free tier user → converts via FOMO (friends sharing premium readings)
+
+---
+
+## 5. MVP Features (Launch Scope ONLY)
+
+### 5.1 Daily Horoscope (ดวงรายวัน) — FREE
+- Personalized daily reading based on birth chart (not just sun sign)
+- Push notification via LINE at 7:00 AM
+- Covers: luck, love, career, health (brief)
+- Shareable card format (drives virality)
+
+### 5.2 Tarot Reading (ไพ่ทาโรต์) — FREE (1/day) + PREMIUM
+- Interactive card pull experience in LINE
+- AI interprets cards in context of user's birth chart + question
+- Rich card images (custom Thai-style art)
+- Free: 1 basic reading/day | Premium: unlimited + detailed spreads
+
+### 5.3 Birth Chart Analysis (ดวงชะตา) — FREE (basic) + PREMIUM (detailed)
+- Input: date, time, location of birth
+- Output: Full Thai birth chart visualization
+- Free: Basic personality + current period overview
+- Premium: Detailed 12-house analysis, planetary transits, yearly forecast
+
+### 5.4 Lucky Numbers / Colors / Directions — FREE
+- Daily lucky numbers (1-2 digit for lottery players — HUGE demand)
+- Lucky colors, directions (ทิศมงคล), and times
+- Based on birth chart + current planetary positions
+
+### 5.5 Compatibility Check (ดวงคู่) — PREMIUM
+- Input two birth charts
+- Output: compatibility score, strength areas, risk areas
+- Covers: romantic, business, friendship compatibility
+- Shareable result (viral mechanic)
+
+### 5.6 LINE Bot Interface
+- All features accessible via LINE Official Account
+- Rich menus, flex messages, LIFF (LINE Front-end Framework) for interactive UIs
+- Webhook-driven, serverless backend
+
+---
+
+## 6. Revenue Model & Pricing
+
+### Tier Structure
+
+| Tier | Price | Features |
+|------|-------|----------|
+| **Free** | ฿0 | Daily horoscope, 1 tarot/day, basic birth chart, lucky numbers |
+| **Standard** | ฿99/mo | Unlimited tarot, detailed birth chart, weekly deep dive, compatibility |
+| **Premium** | ฿199/mo | Everything + monthly forecast, career/love focus readings, priority |
+| **Deep Reading** | ฿29-99/reading | One-time detailed analysis (specific question, life event) |
+| **Special Events** | ฿499-999 | Wedding dates, shop opening, baby naming, name change |
+
+### Revenue Math: Path to $1M ARR (฿35M)
+
+**Conservative Scenario:**
+- Month 3: 10,000 free users, 200 paid (2%) × ฿99 = ฿19,800/mo
+- Month 6: 50,000 free, 2,500 paid (5%) × ฿130 avg = ฿325,000/mo (฿3.9M ARR)
+- Month 12: 200,000 free, 10,000 paid (5%) × ฿140 avg = ฿1,400,000/mo (฿16.8M ARR)
+- Month 18: 500,000 free, 25,000 paid (5%) × ฿150 avg = ฿3,750,000/mo (฿45M ARR = ~$1.3M)
+
+**Additional revenue streams:**
+- Pay-per-reading: est. ฿200K-500K/mo at scale
+- Special events (wedding dates etc.): est. ฿100K-300K/mo
+- Sponsored content / brand partnerships: ฿50K-200K/mo
+- API licensing to media publishers: ฿50K-100K/mo
+
+**Key assumption:** 5% free-to-paid conversion is conservative. Co-Star achieves ~3-5%, Nebula achieves 8-12% with aggressive paywall. Thai willingness to pay for fortune telling is higher than average.
+
+---
+
+## 7. Tech Architecture
+
+```
+┌─────────────────────────────────────────┐
+│              LINE Platform               │
+│  (Messaging API + LIFF + Rich Menus)     │
+└──────────────┬──────────────────────────┘
+               │ Webhook
+┌──────────────▼──────────────────────────┐
+│         API Gateway (Cloudflare)         │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│      Application Server (Node.js)        │
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ LINE Bot │ │ User Mgmt│ │ Payment  │  │
+│  │ Handler  │ │ + Auth   │ │ (Stripe/ │  │
+│  │          │ │          │ │  Omise)  │  │
+│  └─────────┘ └──────────┘ └──────────┘  │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│          AI + Astrology Engine            │
+│  ┌─────────────┐  ┌──────────────────┐   │
+│  │ Birth Chart  │  │ AI Interpretation│   │
+│  │ Calculator   │  │ (Claude/GPT API) │   │
+│  │ (Swiss       │  │ + Thai astrology │   │
+│  │  Ephemeris)  │  │   prompt library │   │
+│  └─────────────┘  └──────────────────┘   │
+│  ┌─────────────┐  ┌──────────────────┐   │
+│  │ Tarot Engine│  │ Statistical Data │   │
+│  │ (card logic │  │ Layer (patterns, │   │
+│  │  + imagery) │  │  correlations)   │   │
+│  └─────────────┘  └──────────────────┘   │
+└──────────────┬──────────────────────────┘
+               │
+┌──────────────▼──────────────────────────┐
+│            Data Layer                    │
+│  PostgreSQL (users, charts, readings)    │
+│  Redis (caching, rate limiting)          │
+│  S3 (card images, chart renders)         │
+└─────────────────────────────────────────┘
+```
+
+### Key Tech Decisions
+- **Birth chart:** Swiss Ephemeris (C library, gold standard) + custom Thai astrology overlay (ลัคนา calculation differs from Western)
+- **AI Model:** Claude API (best for nuanced Thai language + cultural context) with fallback to GPT-4
+- **Prompt Engineering:** Extensive Thai astrology knowledge base encoded in system prompts — trained on authentic texts (ตำราพรหมชาติ, ตำราศาสตร์ราจีน)
+- **LINE Integration:** Official LINE Messaging API + LIFF for interactive UIs (birth chart input, tarot card selection)
+- **Payment:** Omise (Thai payment gateway, PromptPay + credit card + TrueMoney Wallet)
+- **Hosting:** Cloudflare Workers (edge) + Supabase (DB) or Railway — keep costs under ฿5K/mo at launch
+
+---
+
+## 8. Go-to-Market Plan
+
+### Phase 1: Pre-Launch (Week 1-2)
+- Create LINE OA + branded profile
+- Set up TikTok account with 10 pre-made "fortune telling" short videos
+- Create Twitter/X account — daily horoscope threads (ดวงรายวัน 12 ราศี)
+- Seed 3-5 Pantip posts about "AI fortune telling" concept (organic discussion)
+- Build waitlist landing page
+
+### Phase 2: Soft Launch (Week 3-4)
+- Launch LINE bot with free features only
+- Release daily horoscope content across all channels simultaneously
+- Target: 500-1,000 LINE friends in first week
+- Gather feedback, iterate on reading quality
+- Submit to Thai tech media (Blognone, Techsauce, Brand Inside)
+
+### Phase 3: Growth Sprint (Month 2-3)
+- Activate paid tiers (฿99/mo, ฿199/mo)
+- Launch TikTok content strategy (3 videos/week):
+  - "Your birth chart reveals..." (personalized hook)
+  - "Science says people born in [month] are..." (data angle)
+  - "AI vs Human fortune teller — who's more accurate?" (controversy = views)
+- Facebook group strategy: Join top ดูดวง groups (500K-2M members), provide value
+- Collaborate with 5-10 micro-influencers (ดูดวง niche) — free premium access for reviews
+
+### Phase 4: Scale (Month 4-6)
+- Launch referral program (invite friend = free premium week)
+- Add compatibility check feature (massive viral potential — couples sharing)
+- Partner with 1-2 celebrity fortune tellers for credibility
+- SEO: Target "ดูดวงวันนี้", "ดวงรายวัน", "ไพ่ทาโรต์ออนไลน์"
+- PR push: "The startup making fortune telling scientific"
+
+---
+
+## 9. Competition Matrix
+
+| Feature | MuteMoo | myhora.com | payakorn.com | A Duang | Co-Star | Nebula | LINE OA หมอดู |
+|---------|---------|------------|--------------|---------|---------|--------|---------------|
+| AI-powered readings | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ (human) |
+| Thai astrology system | ✅ | ✅ | ✅ | ✅ | ❌ (Western) | ❌ | ✅ |
+| Data/science angle | ✅ | ❌ | ❌ | ❌ | Partial | ❌ | ❌ |
+| LINE-native | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Personalized daily | ✅ | Generic | Generic | ✅ | ✅ | ✅ | ❌ |
+| Tarot reading | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | Some |
+| Compatibility check | ✅ | Basic | ❌ | ❌ | ✅ | ✅ | Some |
+| Modern UI/UX | ✅ | ❌ (2008) | ❌ (2005) | ✅ | ✅ | ✅ | Varies |
+| Free tier | ✅ | ✅ | ✅ | ✅ | ✅ | Limited | ❌ |
+| Price (premium) | ฿99-199/mo | Free | Free | Free | $4.99/mo | $13.99/wk | ฿99-999/reading |
+
+### Competitive Positioning
+- **vs. Thai sites (myhora, payakorn):** Modern, AI-powered, personalized, mobile-first
+- **vs. A Duang:** Science angle differentiator, LINE distribution, AI vs template
+- **vs. Co-Star/Nebula:** Thai language, Thai astrology system, LINE-native, local cultural understanding
+- **vs. LINE OA fortune tellers:** Scalable (AI vs human), consistent quality, lower price, 24/7 availability
+
+---
+
+## 10. Risks & Mitigations
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| **Trust deficit** — Thais may not trust AI over human fortune tellers | HIGH | Position as "assistant to your spiritual journey, not replacement." Partner with real astrologers for credibility. Accuracy feedback loop. |
+| **AI hallucination** — Generating inaccurate or offensive readings | HIGH | Extensive prompt engineering + output filtering. Never make health/financial guarantees. Disclaimers in every reading. |
+| **Free content competition** — Sanook, Kapook, LINE NEWS all have free horoscopes | MEDIUM | They're generic (sun sign only). We're personalized (full birth chart). Differentiate on depth + science angle. |
+| **Legal risk** — Fortune telling regulations | LOW | Thailand has no specific fortune telling regulations. We're technology/entertainment, not practicing medicine or financial advice. Standard disclaimers sufficient. |
+| **Retention / churn** — Users get bored after initial novelty | MEDIUM | Daily push notifications, weekly deep dives, seasonal content (Chinese New Year, Songkran predictions), social features (compare with friends). |
+| **AI cost at scale** — Claude/GPT API costs per reading | MEDIUM | Cache common readings, use smaller models for daily horoscopes, reserve large models for premium readings. Target <฿2/reading at scale. |
+| **Copycat risk** — Easy to replicate concept | MEDIUM | First-mover advantage, brand building, data moat (user readings improve AI over time), community/social features. |
+
+---
+
+## 11. Success Metrics
+
+### Week 1
+- [ ] LINE OA launched with core features working
+- [ ] 200+ LINE friends added
+- [ ] 50+ daily active users
+- [ ] <5% error rate on birth chart calculations
+- [ ] Average reading satisfaction: 4/5 stars
+
+### Month 1
+- [ ] 3,000+ LINE friends
+- [ ] 500+ daily active users
+- [ ] 50+ paid subscribers (any tier)
+- [ ] TikTok: 10+ videos posted, 50K+ total views
+- [ ] NPS score > 40
+- [ ] Average session: 3+ messages per user/day
+
+### Month 3
+- [ ] 10,000+ LINE friends
+- [ ] 2,000+ DAU
+- [ ] 200+ paid subscribers
+- [ ] ฿20K+ MRR
+- [ ] TikTok: 30+ videos, 500K+ total views
+- [ ] 1+ media feature (Blognone, Techsauce, etc.)
+- [ ] Organic growth rate: 20%+ month-over-month
+
+---
+
+## 12. Timeline: Week 1-4 Build Plan
+
+### Week 1: Foundation
+- [ ] Set up LINE OA + Messaging API credentials
+- [ ] Implement Swiss Ephemeris integration for Thai birth chart calculation
+- [ ] Build core AI prompt library (daily horoscope, birth chart interpretation)
+- [ ] Design LINE rich menu + flex message templates
+- [ ] Set up database schema (users, charts, readings, subscriptions)
+
+### Week 2: Core Features
+- [ ] Implement daily horoscope generation + LINE push
+- [ ] Build tarot reading flow (card selection → AI interpretation)
+- [ ] Birth chart input flow via LIFF
+- [ ] Lucky numbers/colors/directions generator
+- [ ] Basic user onboarding flow
+
+### Week 3: Polish + Monetization
+- [ ] Integrate Omise payment (฿99/mo, ฿199/mo subscriptions)
+- [ ] Implement free tier limits (1 tarot/day, basic chart only)
+- [ ] Build shareable card images (for social virality)
+- [ ] Quality test all readings with 10 beta users
+- [ ] Prepare content calendar for TikTok/Twitter/Facebook
+
+### Week 4: Launch
+- [ ] Soft launch to 50 beta users (friends, family, Pantip recruits)
+- [ ] Iterate based on feedback
+- [ ] Go live publicly
+- [ ] Activate social media content strategy
+- [ ] Begin tracking all success metrics
+
+---
+
+## Appendix A: Competitor Revenue Benchmarks
+
+| Competitor | Model | Revenue | Users |
+|-----------|-------|---------|-------|
+| Co-Star | Freemium, $4.99/mo premium | ~$2.5M/mo (~$30M ARR) | 30M+ downloads |
+| Nebula | Subscription $13.99/week | ~$40-60M ARR (est.) | 10M+ downloads |
+| The Pattern | Freemium + in-app purchases | ~$5-10M ARR (est.) | 15M+ downloads |
+| Sanctuary | Live readings + subscription | ~$3-5M ARR (est.) | 5M+ downloads |
+| CeCe Astrology | Freemium | Growing (2.49M MAU, 57% YoY) | 2.49M MAU |
+| Thai LINE OA fortune tellers | Per-reading ฿99-999 | ฿50K-500K/mo (top ones) | Varies |
+
+## Appendix B: Thai Fortune Telling Market Segments
+
+| Segment | Est. Annual Value | Digital Penetration |
+|---------|------------------|-------------------|
+| In-person consultation (หมอดู) | ฿3-4B | ~5% |
+| Online consultation (LINE/video call) | ฿500M-1B | ~80% |
+| Horoscope content (media/apps) | ฿200-500M | ~95% |
+| Amulets & sacred items (พระเครื่อง) | ฿5-8B | ~30% |
+| Ceremonies & rituals (พิธีกรรม) | ฿2-3B | ~5% |
+
+## Appendix C: Key Thai Astrology Terms for AI Training
+
+| Thai | English | Importance |
+|------|---------|------------|
+| ลัคนา | Ascendant/Rising sign | Critical — base of Thai chart |
+| ราศี | Zodiac sign (Thai system) | Core |
+| นวางค์ | Navamsa chart | Advanced |
+| ผูกดวง | Cast a horoscope chart | Core process |
+| ดาวเคราะห์ทั้ง 9 | 9 planetary bodies | Core |
+| ฤกษ์ | Auspicious time/moment | High demand feature |
+| ทักษา | Taksā — Thai fortune system | Cultural unique |
+| เรือนชะตา | Astrological houses | Core |
+
+---
+
+*Document prepared by Sun, AI CEO of MuteLab*
+*For internal use — MuteLab ideation sprint 2026*
