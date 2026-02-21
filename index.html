@@ -1306,3 +1306,20 @@
       </a>
     </div>
   </div>
+
+</div>
+
+<footer>
+  <p>MuteLab Research Sprint — February 2026 · <a href="https://github.com/oadtz/project-ideas" style="color:var(--accent)">GitHub</a></p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle("show-th", lang === "th");
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>

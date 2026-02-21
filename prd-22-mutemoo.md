@@ -332,6 +332,234 @@ Nobody in Thailand (or globally for Thai astrology) occupies the **"science + sp
 
 ---
 
+## 13. Cost Analysis (ต้นทุน)
+
+### 13.1 AI API Costs per Reading
+
+| Model | Input (per 1M tokens) | Output (per 1M tokens) | Est. tokens/reading | Cost/reading |
+|-------|----------------------|----------------------|--------------------:|-------------:|
+| GPT-4o | $2.50 | $10.00 | ~2,000 in / ~1,500 out | ~$0.020 (฿0.70) |
+| GPT-4o-mini | $0.15 | $0.60 | ~2,000 in / ~1,500 out | ~$0.001 (฿0.04) |
+| Claude Sonnet 4 | $3.00 | $15.00 | ~2,000 in / ~1,500 out | ~$0.029 (฿1.00) |
+| Claude Haiku | $0.25 | $1.25 | ~2,000 in / ~1,500 out | ~$0.002 (฿0.08) |
+| Gemini 2.0 Flash | $0.10 | $0.40 | ~2,000 in / ~1,500 out | ~$0.001 (฿0.03) |
+
+**Strategy:** Use cheap models (GPT-4o-mini / Gemini Flash) for daily horoscopes & lucky numbers (high volume, low depth). Reserve Claude Sonnet or GPT-4o for premium deep readings (low volume, high value). **Blended cost target: ฿0.15–0.50/reading.**
+
+System prompt (Thai astrology knowledge base) adds ~1,500 tokens per call. This is fixed overhead — cacheable with prompt caching (50% discount on cached tokens in Claude/OpenAI).
+
+### 13.2 LINE Messaging API Costs
+
+| Item | Free tier | Cost beyond free |
+|------|-----------|-----------------|
+| Reply messages | Unlimited | ฿0 |
+| Push messages (proactive) | 500/month (free plan) | ฿0.05–0.20/message depending on plan |
+| LINE OA Premium plan | — | ฿1,490/mo (15,000 push/mo) |
+| LINE OA Pro plan | — | ฿4,490/mo (45,000 push/mo) |
+
+**Daily horoscope push to all users is the big cost driver.** At 10K users: need Pro plan (฿4,490/mo). At 50K users: need custom enterprise pricing or switch to opt-in pull model (user clicks "get today's horoscope" → reply message = free).
+
+**Mitigation:** Daily push only to premium users. Free users get horoscope when they open the chat (reply = free). Saves massive LINE costs.
+
+### 13.3 Server / Hosting Costs
+
+| Component | Service | Monthly Cost |
+|-----------|---------|-------------:|
+| API server | Cloudflare Workers (free tier → $5/mo) | ฿0–175 |
+| Database | Supabase free tier → Pro ($25/mo) | ฿0–875 |
+| Redis cache | Upstash free tier → $10/mo | ฿0–350 |
+| Image storage (tarot cards, charts) | Cloudflare R2 (10GB free) | ฿0–100 |
+| Domain + SSL | Cloudflare (free) | ฿0 |
+| Birth chart calc | Swiss Ephemeris (open source, self-hosted) | ฿0 |
+| **Total infra** | | **฿0–1,500/mo** |
+
+Infrastructure is near-zero at launch thanks to generous free tiers. Even at 50K users, infra stays under ฿5,000/mo. **AI API cost is 10-50x larger than infra cost** — that's the real cost driver.
+
+### 13.4 Birth Chart Calculation
+
+- **Swiss Ephemeris:** Open source (GPL), free for non-commercial use. Commercial license: one-time $700 (~฿24,500) OR use the free Moshier ephemeris (slightly less accurate, fine for consumer app).
+- **Alternatively:** Use free Python library `flatlib` or JavaScript `astronomia` — no cost.
+- **Thai astrology overlay:** Custom code (ลัคนา calculation, Thai house system) — built in-house, ฿0.
+- **Est. cost: ฿0** (use open source Moshier ephemeris for MVP, upgrade later if needed)
+
+### 13.5 Marketing Budget (First 3 Months)
+
+| Channel | Monthly Budget | Notes |
+|---------|---------------:|-------|
+| TikTok content creation | ฿0 | AI-generated + founder-shot videos |
+| Facebook/IG ads (testing) | ฿5,000 | Target ดูดวง interest groups, ฿0.50-2/click |
+| LINE Ads | ฿3,000 | Add friend campaigns, ฿1-5/friend |
+| Micro-influencer collabs | ฿5,000 | 5 nano-influencers × ฿1,000 or free premium |
+| Pantip / Twitter organic | ฿0 | Sweat equity |
+| PR / media outreach | ฿0 | Direct outreach to Blognone, Techsauce |
+| **Total marketing/mo** | **฿13,000** | (~$370/mo) |
+| **3-month total** | **฿39,000** | (~$1,100) |
+
+### 13.6 Monthly Burn Rate Summary
+
+| Phase | AI API | LINE | Infra | Marketing | Total Burn |
+|-------|-------:|-----:|------:|----------:|-----------:|
+| **Month 1** (1K users, 200 readings/day) | ฿900 | ฿0 (free plan) | ฿0 (free tiers) | ฿13,000 | **฿13,900** |
+| **Month 3** (10K users, 3K readings/day) | ฿13,500 | ฿4,490 (Pro) | ฿1,000 | ฿13,000 | **฿31,990** |
+| **Month 6** (50K users, 15K readings/day) | ฿67,500 | ฿4,490+ | ฿3,000 | ฿25,000 | **฿100,000** |
+| **Month 12** (200K users, 50K readings/day) | ฿225,000 | ฿15,000 | ฿8,000 | ฿50,000 | **฿298,000** |
+
+*AI API costs assume blended ฿0.15/reading average (mostly cheap models, premium readings use expensive models)*
+
+---
+
+## 14. ROI Calculation & Unit Economics
+
+### 14.1 Cost Per User Acquisition (CAC)
+
+| Channel | Est. CAC | Conversion quality |
+|---------|--------:|--------------------|
+| Organic TikTok | ฿0–2 | High intent (they searched ดูดวง) |
+| Facebook/IG ads | ฿5–15 | Medium (interest-based targeting) |
+| LINE Add Friend ads | ฿3–8 | High (direct LINE friend) |
+| Pantip / word of mouth | ฿0 | Highest quality |
+| Influencer referral | ฿5–20 | Medium-high |
+| **Blended CAC target** | **฿5–10** | |
+
+At ฿13K marketing/month and ~3,000 new users/month organic+paid = **blended CAC ~฿4–5** in early months. This is extremely low because fortune telling content is inherently viral on TikTok/Facebook.
+
+### 14.2 Cost Per Reading
+
+| Reading type | AI model | AI cost | Infra overhead | Total cost/reading |
+|-------------|----------|--------:|---------------:|-------------------:|
+| Daily horoscope (free) | GPT-4o-mini / Gemini Flash | ฿0.04 | ฿0.01 | **฿0.05** |
+| Basic tarot (free) | GPT-4o-mini | ฿0.08 | ฿0.01 | **฿0.09** |
+| Detailed birth chart (premium) | GPT-4o / Claude Sonnet | ฿0.70–1.00 | ฿0.02 | **฿0.72–1.02** |
+| Deep reading (premium) | Claude Sonnet | ฿1.00–1.50 | ฿0.02 | **฿1.02–1.52** |
+| Compatibility check (premium) | Claude Sonnet (2 charts) | ฿1.50–2.00 | ฿0.03 | **฿1.53–2.03** |
+| Special event (wedding date) | Claude Sonnet (thorough) | ฿2.00–3.00 | ฿0.05 | **฿2.05–3.05** |
+
+### 14.3 Revenue Per User Per Month (ARPU)
+
+| User type | % of base | Readings/mo | Revenue/user/mo | Cost/user/mo | Gross margin |
+|-----------|----------:|------------:|----------------:|-------------:|-------------:|
+| Free user | 95% | 30 daily + 10 tarot | ฿0 | ฿1.50 + ฿0.90 = ฿2.40 | **-฿2.40** |
+| Standard ฿99 | 3.5% | 30 daily + 30 tarot + 4 deep | ฿99 | ฿1.50 + ฿2.70 + ฿4.00 = ฿8.20 | **฿90.80 (91.7%)** |
+| Premium ฿199 | 1.2% | 30 daily + 60 tarot + 10 deep + 2 compat | ฿199 | ฿1.50 + ฿5.40 + ฿10.00 + ฿4.00 = ฿20.90 | **฿178.10 (89.5%)** |
+| Pay-per-reading | 0.3% | 1-2 deep readings | ฿60–99 avg | ฿2.00 | **฿58–97 (96.7%)** |
+
+**Blended ARPU (across all users):** ~฿6.50/user/month at 5% conversion
+
+**Key insight: Gross margins are 89-97% on paid users.** Free users cost ~฿2.40/month to serve — this is the "cost of funnel." Even at 95% free, the math works because paid margins are enormous.
+
+### 14.4 Break-Even Analysis
+
+**Monthly fixed costs:**
+- Infrastructure: ฿3,000–8,000
+- LINE OA plan: ฿4,490
+- Marketing: ฿13,000–25,000
+- **Total fixed: ฿20,500–37,500/mo**
+
+**Variable costs per user (blended):** ~฿2.40/free user/mo, net +฿85–175/paid user/mo
+
+**Break-even formula:**
+- Fixed costs ÷ (ARPU - variable cost per user) = break-even users
+- At ฿25,000 fixed, ฿6.50 ARPU, ฿2.28 variable cost:
+- **฿25,000 ÷ ฿4.22 = ~5,925 total users needed to break even**
+- At 5% conversion = ~296 paying users × ฿130 avg = ฿38,500 revenue vs ฿25,000 fixed + ฿14,200 variable = ฿39,200 cost
+- **Break-even: ~6,000 users (~Month 2-3)**
+
+### 14.5 LTV vs CAC
+
+| Metric | Conservative | Moderate | Aggressive |
+|--------|------------:|----------:|-----------:|
+| Average subscriber lifespan | 4 months | 6 months | 9 months |
+| Average monthly revenue/subscriber | ฿110 | ฿130 | ฿155 |
+| **LTV (per paying user)** | **฿440** | **฿780** | **฿1,395** |
+| CAC (blended) | ฿8 | ฿6 | ฿5 |
+| CAC (per paying user at 5% conv) | ฿160 | ฿120 | ฿100 |
+| **LTV:CAC ratio** | **2.75:1** | **6.5:1** | **14:1** |
+
+Industry benchmark: LTV:CAC > 3:1 is healthy. Even our **conservative** estimate is borderline healthy, moderate is excellent.
+
+**Churn is the big unknown.** Fortune telling apps have high initial engagement but retention depends heavily on:
+- Daily horoscope habit formation (push notifications)
+- Content freshness (weekly/monthly deep dives)
+- Social features (sharing, comparing with friends)
+- Life events (weddings, job changes trigger reactivation)
+
+---
+
+## 15. Scenario Analysis
+
+### 15.1 Conservative Scenario 🔴
+*"Slow growth, high churn, lower conversion"*
+
+| Metric | Mo 3 | Mo 6 | Mo 12 | Mo 18 |
+|--------|-----:|-----:|------:|------:|
+| Total users | 5,000 | 20,000 | 60,000 | 100,000 |
+| Paid users (3%) | 150 | 600 | 1,800 | 3,000 |
+| ARPU (paid) | ฿99 | ฿110 | ฿115 | ฿120 |
+| **MRR** | **฿14,850** | **฿66,000** | **฿207,000** | **฿360,000** |
+| Monthly burn | ฿25,000 | ฿55,000 | ฿130,000 | ฿180,000 |
+| **Monthly P&L** | **-฿10,150** | **+฿11,000** | **+฿77,000** | **+฿180,000** |
+| **ARR** | **฿178K** | **฿792K** | **฿2.5M** | **฿4.3M** |
+
+- Break-even: ~Month 5
+- ฿4.3M ARR by month 18 (~$123K) — small but profitable lifestyle business
+- Total investment to break-even: ~฿120K (~$3,400)
+
+### 15.2 Moderate Scenario 🟡
+*"Steady organic growth, decent retention, some virality"*
+
+| Metric | Mo 3 | Mo 6 | Mo 12 | Mo 18 |
+|--------|-----:|-----:|------:|------:|
+| Total users | 10,000 | 50,000 | 200,000 | 400,000 |
+| Paid users (5%) | 500 | 2,500 | 10,000 | 20,000 |
+| ARPU (paid) | ฿110 | ฿130 | ฿140 | ฿150 |
+| **MRR** | **฿55,000** | **฿325,000** | **฿1,400,000** | **฿3,000,000** |
+| Monthly burn | ฿32,000 | ฿100,000 | ฿298,000 | ฿500,000 |
+| **Monthly P&L** | **+฿23,000** | **+฿225,000** | **+฿1,102,000** | **+฿2,500,000** |
+| **ARR** | **฿660K** | **฿3.9M** | **฿16.8M** | **฿36M** |
+
+- Break-even: ~Month 2
+- ฿36M ARR by month 18 (~$1.03M) — hits the $1M milestone
+- **83% gross margin** at scale
+- Total investment to break-even: ~฿32K (~$900)
+
+### 15.3 Aggressive Scenario 🟢
+*"TikTok viral hit, influencer amplification, high conversion"*
+
+| Metric | Mo 3 | Mo 6 | Mo 12 | Mo 18 |
+|--------|-----:|-----:|------:|------:|
+| Total users | 30,000 | 150,000 | 500,000 | 1,000,000 |
+| Paid users (7%) | 2,100 | 10,500 | 35,000 | 70,000 |
+| ARPU (paid) | ฿120 | ฿145 | ฿160 | ฿170 |
+| **MRR** | **฿252,000** | **฿1,522,500** | **฿5,600,000** | **฿11,900,000** |
+| Monthly burn | ฿60,000 | ฿250,000 | ฿700,000 | ฿1,200,000 |
+| **Monthly P&L** | **+฿192,000** | **+฿1,272,500** | **+฿4,900,000** | **+฿10,700,000** |
+| **ARR** | **฿3M** | **฿18.3M** | **฿67.2M** | **฿142.8M** |
+
+- Break-even: Month 1
+- ฿142.8M ARR by month 18 (~$4.1M) — Series A territory
+- Requires: 1 viral TikTok moment + strong word-of-mouth
+- Risk: AI costs spike, need to negotiate volume discounts or fine-tune own model
+
+### 15.4 Scenario Comparison Summary
+
+| Metric | Conservative | Moderate | Aggressive |
+|--------|------------:|----------:|-----------:|
+| 18-month ARR | ฿4.3M ($123K) | ฿36M ($1.03M) | ฿142.8M ($4.1M) |
+| Total users | 100K | 400K | 1M |
+| Cumulative profit (18mo) | ฿1.5M | ฿16M | ฿70M+ |
+| Total investment needed | ฿120K | ฿32K | ฿0 (self-funded from Mo 1) |
+| Break-even month | 5 | 2 | 1 |
+| Risk level | Low | Medium | High (scale challenges) |
+
+**Bottom line:** Even the conservative scenario reaches profitability by month 5 with only ฿120K total investment (~$3,400). The unit economics work because:
+1. AI API costs are genuinely cheap (฿0.05–3.00/reading)
+2. Infrastructure is near-zero on modern serverless stacks
+3. Fortune telling content is inherently viral (organic growth)
+4. Paid user margins are 89-97%
+5. The main risk is retention/churn, not cost
+
+---
+
 ## Appendix A: Competitor Revenue Benchmarks
 
 | Competitor | Model | Revenue | Users |
