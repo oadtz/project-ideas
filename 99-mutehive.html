@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteHive — AI Agent Templates & Skills Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a14; --bg2: #120c18; --surface: #180f20; --surface2: #201628; --surface3: #281e32;
+    --border: rgba(168,85,247,0.15); --border2: rgba(168,85,247,0.28);
+    --text: #f5f0ff; --text2: #d0c0e8; --muted: #806898; --muted2: #605078;
+    --primary: #a855f7; --primary-light: #c084fc; --primary-pale: rgba(168,85,247,0.08);
+    --secondary: #f472b6; --secondary-light: #f9a8d4;
+    --green: #10b981; --red: #ef4444; --amber: #f59e0b; --gold: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(168,85,247,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(244,114,182,0.05) 0%, transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(15,10,20,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 700px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--gold); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .highlight-box { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(244,114,182,0.1)); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+  .highlight-title { font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; margin-bottom: 0.8rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--gold); background: var(--surface2); box-shadow: 0 0 30px rgba(251,191,36,0.08); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; }
+  .score-table .bar-cell { width: 120px; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--gold)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--gold); background: var(--surface2); }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--gold); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--gold); font-size: 1rem; }
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #99</span>
+  <span class="nav-badge en">🍯 AI AGENT MARKETPLACE</span>
+  <span class="nav-badge th">🍯 ตลาด AI Agent Templates</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🍯 AI AGENTS WAVE · MARKETPLACE · ECOSYSTEM</span>
+      <span class="hero-tag th">🍯 คลื่น AI Agents · ตลาด · ระบบนิเวศ</span>
+      <span class="idea-num">SPRINT #99 — FEB 22, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Hive</span></span><span class="th">Mute<span class="accent">Hive</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">The App Store for AI Agent Templates — Buy, Sell, and Deploy Pre-Built Agent Configs</span>
+      <span class="th">App Store สำหรับ AI Agent Templates — ซื้อ ขาย และ Deploy Agent Configs สำเร็จรูป</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Everyone is building AI agents. But setting them up from scratch takes hours of prompt engineering, tool configuration, and testing. What if you could buy a battle-tested "E-commerce Customer Support Agent" template for $29, deploy it in 5 minutes, and customize it for your business? MuteHive is the marketplace where AI agent builders sell their best configs — system prompts, tool setups, MCP skills, AGENTS.md files, workflow templates — and businesses buy ready-to-deploy agents. Think: Envato ThemeForest, but for AI agents. We start with the OpenClaw/Claude ecosystem and expand to all major agent platforms.</span>
+      <span class="th">ทุกคนกำลังสร้าง AI agents แต่ setup จากศูนย์ใช้เวลาหลายชั่วโมง prompt engineering, config tools, ทดสอบ ถ้าซื้อ template "E-commerce Support Agent" ที่ผ่านการทดสอบแล้วราคา $29 deploy ใน 5 นาที customize ให้ธุรกิจ? MuteHive คือตลาดที่ AI agent builders ขาย config ที่ดีที่สุด — system prompts, tool setups, MCP skills, AGENTS.md, workflow templates — และธุรกิจซื้อ agent พร้อมใช้ คิดว่าเป็น Envato ThemeForest แต่สำหรับ AI agents</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">$183B</span><span class="stat-label en">AI agent market by 2033</span><span class="stat-label th">ตลาด AI agent ภายใน 2033</span></div>
+      <div class="stat"><span class="stat-val">$0</span><span class="stat-label en">dedicated agent template marketplaces</span><span class="stat-label th">ตลาด agent template โดยเฉพาะ</span></div>
+      <div class="stat"><span class="stat-val">$6.5B</span><span class="stat-label en">Envato/ThemeForest annual (template economy)</span><span class="stat-label th">Envato/ThemeForest ต่อปี</span></div>
+      <div class="stat"><span class="stat-val">10/10</span><span class="stat-label en">founder-market fit (we ARE the users)</span><span class="stat-label th">founder-market fit (เราคือผู้ใช้)</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">37</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:74%"></div></div>
+        <div style="font-size:0.7rem;color:var(--green);margin-top:0.4rem;font-family:'Space Mono',monospace;">✅ PASS — AI AGENTS WAVE · HIGHEST IN CATEGORY</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ANALOGY ═══ -->
+<section>
+  <div class="container">
+    <div class="highlight-box">
+      <div class="highlight-title">💡 THE ANALOGY — EVERY PLATFORM SPAWNS A MARKETPLACE</div>
+      <h2 style="color:var(--gold);margin-bottom:1rem;"><span class="en">WordPress → ThemeForest ($6.5B). Shopify → App Store ($2B+). AI Agents → ???</span><span class="th">WordPress → ThemeForest ($6.5B). Shopify → App Store ($2B+). AI Agents → ???</span></h2>
+      <div class="three-col">
+        <div class="card"><div class="card-icon">🎨</div>
+          <h3>ThemeForest (WordPress)</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">WordPress powers 43% of the web. ThemeForest (Envato) became a $6.5B+ annual marketplace selling themes and templates. Top sellers earn $1M+/year. 80,000+ items available. The platform was free — the ecosystem monetized the customization.</p>
+        </div>
+        <div class="card"><div class="card-icon">🛍️</div>
+          <h3>Shopify App Store</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">Shopify has 4.6M stores. Its App Store generates $2B+/year for developers. Apps range from $5/mo to $500/mo. Shopify takes 15-20% cut. Every Shopify store needs apps — review widgets, email marketing, inventory management.</p>
+        </div>
+        <div class="card"><div class="card-icon">🤖</div>
+          <h3>AI Agent Ecosystem (NOW)</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">Claude Code, OpenClaw, CrewAI, AutoGen, LangChain — millions of developers building agents. But NO marketplace for agent templates, skills, or configs exists yet. Everyone reinvents the wheel. The "ThemeForest for agents" moment is NOW.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT'S SOLD ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">WHAT'S ON THE MARKETPLACE</div>
+    <div class="section-label th">สินค้าในตลาด</div>
+    <h2><span class="en">Not Just Prompts — Full Agent Configurations Ready to Deploy</span><span class="th">ไม่ใช่แค่ Prompts — Agent Config เต็มรูปแบบพร้อม Deploy</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">📋</div>
+        <h3 class="en">Agent Templates ($9–$99)</h3>
+        <h3 class="th">Agent Templates ($9–$99)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">Complete AGENTS.md + SOUL.md + system prompts + tool configs for specific use cases. "E-commerce Support Agent for Shopee/Lazada sellers" — includes Thai language prompts, product FAQ template, return policy handling, escalation rules. One-click deploy to OpenClaw or Claude Code.</span><span class="th">AGENTS.md + SOUL.md + system prompts + tool configs สำเร็จรูปสำหรับ use case เฉพาะ "E-commerce Support Agent สำหรับผู้ขาย Shopee/Lazada" — prompts ภาษาไทย FAQ สินค้า จัดการคืนสินค้า กฎ escalation Deploy คลิกเดียว</span></p>
+      </div>
+      <div class="card"><div class="card-icon">🔧</div>
+        <h3 class="en">MCP Skills & Tools ($5–$49)</h3>
+        <h3 class="th">MCP Skills & Tools ($5–$49)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">Reusable MCP server skills: "Thai Bank Statement Parser" (reads KBank/SCB/BBL PDFs), "Shopee API Connector" (product listing, order management), "LINE OA Message Builder" (rich messages, flex messages), "PromptPay QR Generator." Each tested, documented, plug-and-play.</span><span class="th">MCP server skills ที่ใช้ซ้ำได้: "Thai Bank Statement Parser" (อ่าน PDF KBank/SCB/BBL), "Shopee API Connector", "LINE OA Message Builder", "PromptPay QR Generator" ทดสอบแล้ว มีเอกสาร plug-and-play</span></p>
+      </div>
+      <div class="card"><div class="card-icon">🔄</div>
+        <h3 class="en">Multi-Agent Workflows ($29–$199)</h3>
+        <h3 class="th">Multi-Agent Workflows ($29–$199)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">Complete multi-agent setups: "Thai E-commerce Suite" — includes product listing agent + customer support agent + order tracking agent + review response agent, all coordinated. "Crypto Trading Desk" — market scanner agent + signal generator + risk manager + portfolio tracker. Pre-tested, pre-integrated.</span><span class="th">Multi-agent setup ครบชุด: "Thai E-commerce Suite" — agent listing + support + tracking + review ทำงานร่วมกัน "Crypto Trading Desk" — scanner + signal + risk + portfolio ทดสอบแล้ว integrate แล้ว</span></p>
+      </div>
+      <div class="card"><div class="card-icon">📚</div>
+        <h3 class="en">Prompt Libraries ($5–$29)</h3>
+        <h3 class="th">Prompt Libraries ($5–$29)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">Curated system prompts for specific industries: "Legal Thai" (50+ prompts for contracts, PDPA, labor law), "Thai Marketing" (100+ prompts for social media, ads, email). Each prompt tested with Claude/GPT with quality scores.</span><span class="th">System prompts เฉพาะอุตสาหกรรม: "Legal Thai" (50+ prompts สัญญา, PDPA, กฎหมายแรงงาน), "Thai Marketing" (100+ prompts โซเชียล, โฆษณา, อีเมล) ทดสอบกับ Claude/GPT พร้อมคะแนนคุณภาพ</span></p>
+      </div>
+      <div class="card"><div class="card-icon">🎓</div>
+        <h3 class="en">Agent Courses ($29–$149)</h3>
+        <h3 class="th">คอร์ส Agent ($29–$149)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">"Build Your First AI Agent in 2 Hours" — video course + template bundle. "OpenClaw Mastery: Deploy AI Agents 24/7" — complete guide to running agents on OpenClaw. "MCP Skills Development" — build and sell your own skills. Education layer drives marketplace adoption.</span><span class="th">"สร้าง AI Agent แรกใน 2 ชั่วโมง" — วิดีโอ + template bundle "OpenClaw Mastery" — คู่มือรัน AI agents 24/7 "MCP Skills Development" — สร้างและขาย skills ของคุณ การศึกษาดัน adoption ตลาด</span></p>
+      </div>
+      <div class="card"><div class="card-icon">⚡</div>
+        <h3 class="en">Custom Agent Building (Services)</h3>
+        <h3 class="th">สร้าง Agent ตามสั่ง (บริการ)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en">Top-rated sellers offer custom agent building. "I'll build you a custom AI agent for your Thai restaurant chain — ฿15,000." Marketplace facilitates discovery, payments, reviews. Like Fiverr but specifically for AI agent development. MuteHive takes 15-20% platform fee.</span><span class="th">ผู้ขายระดับท็อปเสนอสร้าง agent ตามสั่ง "สร้าง AI agent สำหรับร้านอาหารไทย — ฿15,000" ตลาดจัดการค้นหา ชำระเงิน รีวิว เหมือน Fiverr สำหรับ AI agent MuteHive เก็บ 15-20%</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2><span class="en">Prompt Marketplaces Exist — Agent Template Marketplaces Don't (Yet)</span><span class="th">ตลาด Prompt มีอยู่ — ตลาด Agent Template ยังไม่มี</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead><tr><th>PLATFORM</th><th>Agent Templates</th><th>MCP Skills</th><th>Multi-Agent</th><th>Deploy Integration</th><th>Revenue Share</th></tr></thead>
+        <tbody>
+          <tr><td><strong>PromptBase</strong></td><td class="no">❌ Prompts only</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td>80/20</td></tr>
+          <tr><td><strong>GPT Store (OpenAI)</strong></td><td class="partial">⚡ GPTs only</td><td class="no">❌</td><td class="no">❌</td><td class="partial">⚡ ChatGPT only</td><td>Unknown</td></tr>
+          <tr><td><strong>GitHub (free repos)</strong></td><td class="partial">⚡ Scattered</td><td class="partial">⚡ Some</td><td class="partial">⚡ Some</td><td class="no">❌ Manual</td><td>Free</td></tr>
+          <tr><td><strong>Azure Marketplace</strong></td><td class="partial">⚡ Enterprise</td><td class="no">❌</td><td class="partial">⚡</td><td class="yes">✅ Azure only</td><td>Microsoft terms</td></tr>
+          <tr class="highlight-row"><td><strong>MuteHive ✦</strong></td><td class="yes">✅ Full configs</td><td class="yes">✅ MCP native</td><td class="yes">✅ Multi-agent</td><td class="yes">✅ OpenClaw + more</td><td>80/20 → 85/15</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2><span class="en">Marketplace Commission — ThemeForest Economics Applied to AI</span><span class="th">ค่าคอมมิชชั่นตลาด — เศรษฐศาสตร์ ThemeForest สำหรับ AI</span></h2>
+    <div class="pricing-grid" style="margin-bottom:2rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier">SELLER</div>
+        <div class="pricing-price">80%</div>
+        <div class="pricing-unit">revenue share (seller keeps)</div>
+        <div class="pricing-desc">Sellers keep 80% of each sale. Top sellers earn $1K-10K+/month. MuteHive handles payments, hosting, reviews, and distribution.</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">💰 MUTELAB CUT</div>
+        <div class="pricing-tier">PLATFORM FEE</div>
+        <div class="pricing-price">20%</div>
+        <div class="pricing-unit">per transaction</div>
+        <div class="pricing-desc">MuteHive takes 20% of each sale. Plus: featured listing fees ($49/mo), verified seller badges ($19/mo), and premium placement auctions.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">BUYER PRO</div>
+        <div class="pricing-price">$19</div>
+        <div class="pricing-unit">per month (optional)</div>
+        <div class="pricing-desc">Pro buyers get: early access to new templates, 20% discount on all purchases, private Discord community, and priority custom agent requests.</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE PATH</p>
+      <div class="revenue-row"><span>5,000 template sales/yr × $30 avg × 20% cut</span><span class="revenue-val">$30K</span></div>
+      <div class="revenue-row"><span>2,000 skill sales/yr × $20 avg × 20% cut</span><span class="revenue-val">$8K</span></div>
+      <div class="revenue-row"><span>500 workflow sales/yr × $80 avg × 20% cut</span><span class="revenue-val">$8K</span></div>
+      <div class="revenue-row"><span>200 custom service × $200 avg × 20% cut</span><span class="revenue-val">$8K</span></div>
+      <div class="revenue-row"><span>100 featured sellers × $49/mo × 12</span><span class="revenue-val">$59K</span></div>
+      <div class="revenue-row"><span>500 Pro buyer subs × $19/mo × 12</span><span class="revenue-val">$114K</span></div>
+      <div class="revenue-row"><span><strong>Year 1 Total</strong></span><span class="revenue-val"><strong>$227K</strong></span></div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;"><span>Year 3 at 50K+ annual transactions: $2M+ ARR. Network effects kick in — more sellers attract more buyers attract more sellers. Classic marketplace flywheel.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยง</div>
+    <h2><span class="en">The Cold Start Problem — Classic Marketplace Challenge</span><span class="th">ปัญหา Cold Start — ความท้าทายตลาดคลาสสิก</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3>Chicken-and-Egg: No Sellers Without Buyers</h3></div>
+          <p>Every marketplace faces this. Why would sellers list if there are no buyers? Why would buyers come if there are no templates? Mitigation: MuteLab seeds the marketplace with 50+ own templates (we build agents daily!). Partner with 10-20 OpenClaw power users as launch sellers. Offer 100% revenue share for first 3 months to attract sellers.</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3>OpenAI/Anthropic Build Their Own Store</h3></div>
+          <p>OpenAI already has GPT Store. Anthropic could launch a Claude Skills marketplace. If they do, they have distribution advantage. Mitigation: Focus on cross-platform (not just one ecosystem), offer Thai/SEA localization they won't, and build community that transcends any single LLM provider.</p>
+        </div>
+      </div>
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-med">MED</span><h3>Quality Control — Bad Templates Hurt Trust</h3></div>
+          <p>If sellers upload junk templates, buyer trust evaporates. Mitigation: Review process for all listings. Automated quality testing (does this agent actually work?). Money-back guarantee. Seller ratings and verified badges. Start curated, expand to open marketplace after quality bar is established.</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-low">LOW</span><h3>Free Alternatives (GitHub)</h3></div>
+          <p>Many agent templates exist free on GitHub. Why pay? Mitigation: Same reason people pay for ThemeForest themes when free WordPress themes exist — quality, support, documentation, and guaranteed compatibility. Our templates are tested, maintained, and come with setup guides. Free GitHub repos are unmaintained and unsupported.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">37/50 — ✅ PASS · HIGHEST IN AI AGENTS WAVE CATEGORY</span><span class="th">37/50 — ✅ ผ่าน · สูงสุดในหมวดคลื่น AI Agents</span></h2>
+    <table class="score-table">
+      <tr><td class="dim">Market Potential</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Problem Severity</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Competition Gap</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Build Feasibility</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Our Advantage</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td><td class="pts">9/10</td></tr>
+      <tr class="total-row"><td><strong>TOTAL</strong></td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:74%"></div></div></td><td class="pts"><strong>37/50</strong></td></tr>
+    </table>
+    <div style="margin-top:2rem;padding:1.5rem;background:linear-gradient(135deg, rgba(168,85,247,0.08), rgba(251,191,36,0.08));border:1px solid rgba(251,191,36,0.3);border-radius:14px;">
+      <h3 style="color:var(--gold);margin-bottom:0.8rem;">CEO Assessment: Our Strongest Play in the AI Agents Category</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;">
+        <strong>Market 7/10:</strong> Not as massive as observability ($183B) or anti-SaaS ($510B) in raw TAM, but the template/marketplace economy is proven ($6.5B at Envato alone). The AI agent template market barely exists yet — timing is perfect.<br><br>
+        <strong>Problem 7/10:</strong> Everyone building agents reinvents the wheel. Setting up a good customer support agent from scratch takes 2-4 hours of prompt engineering. A $29 battle-tested template saves that time. Pain is real but not urgent — it's convenience, not crisis.<br><br>
+        <strong>Competition 7/10:</strong> PromptBase exists for prompts. GPT Store for GPTs. But NO marketplace for full agent configs, MCP skills, or multi-agent workflows. We'd be first. The gap is real but won't last forever.<br><br>
+        <strong>Build 7/10:</strong> Marketplace MVP: listing pages + Stripe payments + GitHub/download delivery + reviews. 4-week build. NOT complex engineering — it's more about curation, community, and content quality than tech.<br><br>
+        <strong>Advantage 9/10 (STRONGEST):</strong> This is where MuteHive shines. We run AI agents 24/7 on OpenClaw. We've built AGENTS.md, SOUL.md, skills, configs — we ARE the template creators. We can seed the marketplace with 50+ high-quality templates from DAY ONE. No other company has this level of hands-on agent building experience. Thanapat's CTO background + our daily agent operations = unmatched founder-market fit for this specific idea.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #99 Complete — 🍯 Highest in AI Agents Wave Category</span><span class="th">ไอเดีย #99 เสร็จ — 🍯 สูงสุดในหมวดคลื่น AI Agents</span></h2>
+    <p style="color:var(--text2);max-width:600px;margin:0 auto 2rem;"><span class="en">MuteHive scored 37/50 — the highest of the three AI Agents Wave ideas. Our 9/10 advantage score reflects the truth: we literally build and run AI agents every day. The marketplace cold start problem is real, but we can seed it ourselves. Classic "build the picks and shovels" play for the AI agent gold rush.</span><span class="th">MuteHive ได้ 37/50 — สูงสุดจาก 3 ไอเดีย AI Agents Wave คะแนนข้อได้เปรียบ 9/10 สะท้อนความจริง: เราสร้างและรัน AI agents ทุกวัน ปัญหา cold start ตลาดมีจริง แต่เราเริ่มต้นได้เอง "สร้างพลั่วและจอบ" สำหรับ AI agent gold rush</span></p>
+    <a href="index.html" class="back-link"><span class="en">← Back to All Ideas</span><span class="th">← กลับไปดูไอเดียทั้งหมด</span></a>
+  </div>
+</section>
+
+<footer><p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #99 · MUTEHIVE · AI AGENTS WAVE</p></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');}</script>
+</body>
+</html>

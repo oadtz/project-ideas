@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSwarm — Anti-SaaS AI Agent Packs Replacing Expensive Software</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a14; --bg2: #120c18; --surface: #180f20; --surface2: #201628; --surface3: #281e32;
+    --border: rgba(168,85,247,0.15); --border2: rgba(168,85,247,0.28);
+    --text: #f5f0ff; --text2: #d0c0e8; --muted: #806898; --muted2: #605078;
+    --primary: #a855f7; --primary-light: #c084fc; --primary-pale: rgba(168,85,247,0.08);
+    --secondary: #f472b6; --secondary-light: #f9a8d4;
+    --green: #10b981; --red: #ef4444; --amber: #f59e0b; --gold: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(168,85,247,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(244,114,182,0.05) 0%, transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(15,10,20,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 700px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--gold); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media(max-width:768px) { .two-col, .three-col, .four-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .highlight-box { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(244,114,182,0.1)); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+  .highlight-title { font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; margin-bottom: 0.8rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--gold); background: var(--surface2); box-shadow: 0 0 30px rgba(251,191,36,0.08); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; }
+  .score-table .bar-cell { width: 120px; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--gold)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--gold); background: var(--surface2); }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--gold); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--gold); font-size: 1rem; }
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #98</span>
+  <span class="nav-badge en">🐝 ANTI-SAAS · AI AGENT PACKS</span>
+  <span class="nav-badge th">🐝 Anti-SaaS · AI Agent Packs</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🐝 AI AGENTS WAVE · ANTI-SAAS · VERTICAL AGENTS</span>
+      <span class="hero-tag th">🐝 คลื่น AI Agents · Anti-SaaS · Vertical Agents</span>
+      <span class="idea-num">SPRINT #98 — FEB 22, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Swarm</span></span><span class="th">Mute<span class="accent">Swarm</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Pre-Built AI Agent Packs That Replace $50-500/mo SaaS Tools — For Thai & SEA Businesses</span>
+      <span class="th">AI Agent Packs สำเร็จรูปแทน SaaS ราคา $50-500/เดือน — สำหรับธุรกิจไทยและ SEA</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">The "SaaS is Dead" thesis just hit mainstream: Satya Nadella declared per-seat SaaS obsolete. Anthropic launched Claude Cowork. OpenAI launched Frontier. The Feb 2026 SaaS stock crash confirmed the market's fear. IDC predicts 70% of software vendors will abandon seat-based pricing by 2028. But who builds the REPLACEMENT? MuteSwarm: pre-configured AI agent packs that replace specific SaaS tools. Don't pay $25/seat/mo for a CRM dashboard — pay $29/mo for an AI agent that actually DOES the sales follow-ups. Start with Thai SMEs (3.2M businesses), expand to SEA.</span>
+      <span class="th">"SaaS is Dead" thesis กลายเป็นกระแส: Satya Nadella ประกาศ per-seat SaaS ล้าสมัย Anthropic เปิด Claude Cowork OpenAI เปิด Frontier SaaS stock crash ก.พ. 2026 ยืนยันความกลัว IDC คาดว่า 70% ของ vendor จะยกเลิก per-seat pricing ภายในปี 2028 แต่ใครสร้างสิ่งทดแทน? MuteSwarm: AI agent packs ที่แทน SaaS เฉพาะ อย่าจ่าย $25/seat/เดือนสำหรับ CRM — จ่าย $29/เดือนให้ AI agent ที่ follow up ลูกค้าจริงๆ เริ่มที่ SME ไทย (3.2M ธุรกิจ) ขยายไป SEA</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">$510B</span><span class="stat-label en">global SaaS market being disrupted</span><span class="stat-label th">ตลาด SaaS โลกที่กำลัง disrupt</span></div>
+      <div class="stat"><span class="stat-val">70%</span><span class="stat-label en">vendors dropping per-seat by 2028 (IDC)</span><span class="stat-label th">vendor ยกเลิก per-seat ภายใน 2028</span></div>
+      <div class="stat"><span class="stat-val">3.2M</span><span class="stat-label en">Thai SMEs — mostly no SaaS</span><span class="stat-label th">SME ไทย — ส่วนใหญ่ไม่มี SaaS</span></div>
+      <div class="stat"><span class="stat-val">Feb '26</span><span class="stat-label en">SaaS stock crash — thesis confirmed</span><span class="stat-label th">SaaS stock crash — thesis ยืนยัน</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">36</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:72%"></div></div>
+        <div style="font-size:0.7rem;color:var(--green);margin-top:0.4rem;font-family:'Space Mono',monospace;">✅ PASS — AI AGENTS WAVE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE THESIS ═══ -->
+<section>
+  <div class="container">
+    <div class="highlight-box">
+      <div class="highlight-title">📰 THE "SAAS IS DEAD" MOMENT — FEB 2026</div>
+      <h2 style="color:var(--gold);margin-bottom:1rem;"><span class="en">The SaaS Industry Just Had Its "iPhone Moment" — But In Reverse</span><span class="th">อุตสาหกรรม SaaS เพิ่งมี "iPhone Moment" — แต่กลับด้าน</span></h2>
+      <div class="three-col">
+        <div class="card"><div class="card-icon">📉</div>
+          <h3>Feb 2026 SaaS Crash</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">SaaS stocks crashed after Anthropic's Claude Cowork demo showed AI agents independently handling CRM, analytics, and support tasks. Market overreacted but signal is real: AI agents are unbundling SaaS dashboards.</p>
+        </div>
+        <div class="card"><div class="card-icon">🔮</div>
+          <h3>PitchBook Q1 2026</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">"SaaS Is Dead, Long Live SaS (Service-as-a-Service)" — AI agents shift from "software you use" to "services that do work for you." Outcome-based pricing replaces per-seat licensing. Revenue models flip entirely.</p>
+        </div>
+        <div class="card"><div class="card-icon">💰</div>
+          <h3>Forbes: Service-as-a-Service</h3>
+          <p style="font-size:0.88rem;color:var(--text2);">"Swipe a card, and an agent triages your inbox, preps your investor memo, or files your expenses. The UI itself is disappearing." The workflow once locked in Visio maps is now invisible, handled by agents calling APIs directly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PAIN ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN — SAAS FATIGUE</div>
+    <div class="section-label th">ปัญหา — SaaS Fatigue</div>
+    <h2><span class="en">Thai SMEs Pay for Dashboards Nobody Uses — Or Use Zero Tools At All</span><span class="th">SME ไทยจ่ายค่า Dashboard ไม่มีใครใช้ — หรือไม่ใช้เครื่องมือเลย</span></h2>
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">SaaS Shelfware: 70% of Seats Go Unused</h3>
+        <h3 class="th">SaaS Shelfware: 70% ของ Seats ไม่ถูกใช้</h3>
+        <p class="en">A 10-person Thai company paying $25/seat/month for CRM = $3,000/year. But only 3 people actually log in. The other 7 seats are pure waste. Multiply across CRM + project management + helpdesk + analytics = $10K+/year for dashboards that collect dust. The fundamental flaw: SaaS sells access to tools, not outcomes.</p>
+        <p class="th">บริษัทไทย 10 คนจ่าย $25/seat/เดือนสำหรับ CRM = $3,000/ปี แต่มีแค่ 3 คนที่ login จริง อีก 7 seats คือของเสียล้วนๆ คูณด้วย CRM + PM + helpdesk + analytics = $10K+/ปีสำหรับ dashboard ที่เก็บฝุ่น ข้อผิดพลาดพื้นฐาน: SaaS ขาย access ไม่ขาย outcome</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🤷</div>
+      <div class="pain-text">
+        <h3 class="en">Most Thai SMEs Skip SaaS Entirely — They Use LINE + Excel</h3>
+        <h3 class="th">SME ไทยส่วนใหญ่ข้าม SaaS ไปเลย — ใช้ LINE + Excel</h3>
+        <p class="en">Of Thailand's 3.2M SMEs, fewer than 5% use any paid SaaS tool. They manage customers via LINE groups, track finances in Excel, and do project management on paper or WhatsApp. They'll never adopt Salesforce or Monday.com — too complex, too expensive, too English. But they WOULD pay for "an agent that follows up with customers automatically on LINE."</p>
+        <p class="th">จาก SME ไทย 3.2M มีไม่ถึง 5% ที่ใช้ SaaS เสียเงิน จัดการลูกค้าผ่าน LINE กลุ่ม ติดตามการเงินใน Excel จัดการโปรเจกต์บนกระดาษ ไม่มีทางใช้ Salesforce หรือ Monday.com — ซับซ้อน แพง ภาษาอังกฤษ แต่จะจ่าย "agent ที่ follow up ลูกค้าอัตโนมัติบน LINE"</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">⚡</div>
+      <div class="pain-text">
+        <h3 class="en">The Leap: Skip SaaS Entirely → Go Straight to AI Agents</h3>
+        <h3 class="th">กระโดดข้าม: ข้าม SaaS เลย → ไปตรง AI Agents</h3>
+        <p class="en">Just like emerging markets skipped landlines for mobile phones, Thai SMEs can skip SaaS dashboards entirely and go straight to AI agents that do the work. No training. No onboarding. No "figuring out the UI." Just tell the agent what you need in Thai on LINE, and it handles CRM, follow-ups, reporting, and scheduling.</p>
+        <p class="th">เหมือนตลาดเกิดใหม่ที่ข้ามโทรศัพท์บ้านไปมือถือเลย SME ไทยสามารถข้าม SaaS dashboard ไปตรง AI agents ที่ทำงานจริง ไม่ต้องฝึกอบรม ไม่ต้อง onboard ไม่ต้อง "เข้าใจ UI" แค่บอก agent สิ่งที่ต้องการเป็นภาษาไทยบน LINE</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AGENT PACKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">AGENT PACKS — REPLACE SPECIFIC SAAS</div>
+    <div class="section-label th">Agent Packs — แทน SaaS เฉพาะ</div>
+    <h2><span class="en">Each Agent Pack Replaces a $25-500/mo SaaS Tool — Starting with Thai SME Pains</span><span class="th">แต่ละ Agent Pack แทน SaaS ราคา $25-500/เดือน — เริ่มจากปัญหา SME ไทย</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">📞</div>
+        <h3 class="en">Sales Follow-Up Agent</h3>
+        <h3 class="th">Agent ติดตามลูกค้า</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> Salesforce ($25/seat/mo), HubSpot ($45/seat/mo)<br><strong>MuteSwarm price:</strong> ฿999/mo flat<br>Monitors LINE conversations for hot leads, auto-schedules follow-ups, sends personalized messages, tracks conversion. Works on LINE — where Thai business actually happens.</span><span class="th"><strong>แทน:</strong> Salesforce ($25/seat/เดือน), HubSpot ($45/seat/เดือน)<br><strong>ราคา MuteSwarm:</strong> ฿999/เดือน<br>ติดตามสนทนา LINE หา hot leads, นัด follow-up อัตโนมัติ, ส่งข้อความส่วนตัว, วัด conversion</span></p>
+      </div>
+      <div class="card"><div class="card-icon">🎫</div>
+        <h3 class="en">Customer Support Agent</h3>
+        <h3 class="th">Agent ซัพพอร์ตลูกค้า</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> Zendesk ($55/agent/mo), Freshdesk ($35/agent/mo)<br><strong>MuteSwarm price:</strong> ฿1,499/mo flat<br>Answers customer questions on LINE/Facebook/Instagram in Thai, escalates complex issues, tracks satisfaction, generates FAQ from past conversations. No ticket system needed.</span><span class="th"><strong>แทน:</strong> Zendesk ($55/agent/เดือน), Freshdesk ($35/agent/เดือน)<br><strong>ราคา MuteSwarm:</strong> ฿1,499/เดือน<br>ตอบลูกค้าบน LINE/Facebook/IG ภาษาไทย ส่งต่อกรณีซับซ้อน วัดความพอใจ สร้าง FAQ อัตโนมัติ</span></p>
+      </div>
+      <div class="card"><div class="card-icon">📊</div>
+        <h3 class="en">Financial Reporter Agent</h3>
+        <h3 class="th">Agent รายงานการเงิน</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> QuickBooks ($30/mo), Xero ($65/mo), manual Excel<br><strong>MuteSwarm price:</strong> ฿799/mo flat<br>Reads bank statements (Thai banks), categorizes expenses, generates P&L and cash flow reports in Thai, sends weekly financial digest via LINE. Perfect for micro-businesses with no accountant.</span><span class="th"><strong>แทน:</strong> QuickBooks ($30/เดือน), Xero ($65/เดือน), Excel<br><strong>ราคา MuteSwarm:</strong> ฿799/เดือน<br>อ่าน bank statement (ธนาคารไทย) จัดหมวดรายจ่าย สร้าง P&L และ cash flow ภาษาไทย ส่ง digest LINE รายสัปดาห์</span></p>
+      </div>
+      <div class="card"><div class="card-icon">📅</div>
+        <h3 class="en">Appointment & Booking Agent</h3>
+        <h3 class="th">Agent นัดหมาย & จอง</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> Calendly ($10/mo), Acuity ($20/mo)<br><strong>MuteSwarm price:</strong> ฿499/mo flat<br>Handles appointment scheduling via LINE chat. Customer says "จองคิววันพรุ่งนี้บ่ายโมง" → agent checks availability, confirms, sends reminders, handles rescheduling. For clinics, salons, consultants.</span><span class="th"><strong>แทน:</strong> Calendly ($10/เดือน), Acuity ($20/เดือน)<br><strong>ราคา MuteSwarm:</strong> ฿499/เดือน<br>จัดการนัดหมายผ่าน LINE chat "จองคิววันพรุ่งนี้บ่ายโมง" → เช็คตารางว่าง ยืนยัน ส่งเตือน จัดการเลื่อนนัด</span></p>
+      </div>
+      <div class="card"><div class="card-icon">📦</div>
+        <h3 class="en">Inventory Tracker Agent</h3>
+        <h3 class="th">Agent ติดตามสต๊อก</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> TradeGecko/inFlow ($110/mo)<br><strong>MuteSwarm price:</strong> ฿999/mo flat<br>Tracks stock levels from POS/Shopee/Lazada sales. Alerts when items run low. Suggests reorder quantities based on historical sales velocity. Weekly stock report via LINE. Thai language, Thai platforms.</span><span class="th"><strong>แทน:</strong> TradeGecko/inFlow ($110/เดือน)<br><strong>ราคา MuteSwarm:</strong> ฿999/เดือน<br>ติดตามสต๊อกจาก POS/Shopee/Lazada แจ้งเตือนของใกล้หมด แนะนำจำนวนสั่งซื้อ รายงานสต๊อก LINE รายสัปดาห์</span></p>
+      </div>
+      <div class="card"><div class="card-icon">📢</div>
+        <h3 class="en">Social Media Agent</h3>
+        <h3 class="th">Agent โซเชียลมีเดีย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);"><span class="en"><strong>Replaces:</strong> Hootsuite ($99/mo), Buffer ($36/mo)<br><strong>MuteSwarm price:</strong> ฿799/mo flat<br>Generates and schedules Thai social media posts, replies to comments, suggests trending topics, creates captions from product photos. Covers Facebook, Instagram, TikTok — the platforms Thai SMEs actually use.</span><span class="th"><strong>แทน:</strong> Hootsuite ($99/เดือน), Buffer ($36/เดือน)<br><strong>ราคา MuteSwarm:</strong> ฿799/เดือน<br>สร้าง caption ไทย schedule โพสต์ ตอบ comment แนะนำเทรนด์ สร้าง caption จากรูปสินค้า ครอบคลุม Facebook, IG, TikTok</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2><span class="en">Giants Are Moving — But None Focus on Thai SMEs</span><span class="th">ยักษ์ใหญ่กำลังขยับ — แต่ไม่มีใครโฟกัส SME ไทย</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead><tr><th>PLATFORM</th><th>Thai Language</th><th>LINE Native</th><th>SME Pricing</th><th>Pre-built Agents</th><th>Thai Market</th></tr></thead>
+        <tbody>
+          <tr><td><strong>OpenAI Frontier</strong></td><td class="no">❌ English</td><td class="no">❌</td><td class="no">❌ Enterprise</td><td class="partial">⚡ General</td><td class="no">❌</td></tr>
+          <tr><td><strong>Salesforce Agentforce</strong></td><td class="partial">⚡ Limited</td><td class="no">❌</td><td class="no">❌ $300+/mo</td><td class="yes">✅ CRM only</td><td class="partial">⚡ Enterprise only</td></tr>
+          <tr><td><strong>Lindy.ai</strong></td><td class="no">❌ English</td><td class="no">❌</td><td class="partial">⚡ $50/mo</td><td class="yes">✅ General</td><td class="no">❌</td></tr>
+          <tr><td><strong>Relevance AI</strong></td><td class="no">❌ English</td><td class="no">❌</td><td class="partial">⚡ $49/mo</td><td class="yes">✅ General</td><td class="no">❌</td></tr>
+          <tr class="highlight-row"><td><strong>MuteSwarm ✦</strong></td><td class="yes">✅ Thai-native</td><td class="yes">✅ LINE-first</td><td class="yes">✅ ฿499-1,499</td><td class="yes">✅ Vertical packs</td><td class="yes">✅ Built for Thai</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2><span class="en">Outcome-Based SaaS — Flat Monthly per Agent Pack</span><span class="th">SaaS ตามผลลัพธ์ — รายเดือนต่อ Agent Pack</span></h2>
+    <div class="pricing-grid" style="margin-bottom:2rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier">STARTER</div>
+        <div class="pricing-price">฿499</div>
+        <div class="pricing-unit">per agent pack / month</div>
+        <div class="pricing-desc">1 agent pack (e.g., Booking Agent), basic setup, LINE integration, up to 500 interactions/month, email support.</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">🏆 POPULAR</div>
+        <div class="pricing-tier">BUSINESS</div>
+        <div class="pricing-price">฿1,499</div>
+        <div class="pricing-unit">per agent pack / month</div>
+        <div class="pricing-desc">1 agent pack (e.g., Support Agent), unlimited interactions, multi-channel (LINE + FB + IG), analytics dashboard, priority support.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">SWARM BUNDLE</div>
+        <div class="pricing-price">฿3,999</div>
+        <div class="pricing-unit">3 agent packs / month</div>
+        <div class="pricing-desc">Pick any 3 agents. They work together: Sales agent finds leads → Support agent handles questions → Financial agent tracks payments. Cross-agent intelligence.</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE PATH</p>
+      <div class="revenue-row"><span>400 Starter (฿499/mo × 12)</span><span class="revenue-val">฿2.4M</span></div>
+      <div class="revenue-row"><span>200 Business (฿1,499/mo × 12)</span><span class="revenue-val">฿3.6M</span></div>
+      <div class="revenue-row"><span>50 Swarm Bundle (฿3,999/mo × 12)</span><span class="revenue-val">฿2.4M</span></div>
+      <div class="revenue-row"><span><strong>Year 1 Total</strong></span><span class="revenue-val"><strong>฿8.4M (~$240K)</strong></span></div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;"><span>Year 3 at scale (3,000 customers): ฿60M+ ARR (~$1.7M). The "SaaS leapfrog" thesis for Thai SMEs.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยง</div>
+    <h2><span class="en">Honest Risks — This Is a Hard Play</span><span class="th">ความเสี่ยงจริง — นี่เป็นเกมยาก</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3>OpenAI/Anthropic Launch Consumer-Friendly Agents</h3></div>
+          <p>OpenAI Frontier and Claude Cowork are enterprise-focused NOW but could go consumer/SME. If Claude adds "Thai CRM agent on LINE" as a built-in feature, we're dead. Mitigation: Move fast, build Thai-specific moats (LINE OA integration, Thai bank connections, PromptPay), and lock in customers before big players localize.</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-high">HIGH</span><h3>Agent Quality — "It Gets Things Wrong"</h3></div>
+          <p>AI agents make mistakes. A sales follow-up agent that sends the wrong message to a VIP client = relationship damage. Unlike SaaS (which just shows data), agents TAKE ACTIONS. Error cost is higher. Mitigation: Human-in-the-loop approval for high-stakes actions. Quality scoring. Gradual autonomy increase as trust builds.</p>
+        </div>
+      </div>
+      <div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-med">MED</span><h3>API Costs Eat Margins</h3></div>
+          <p>Each agent pack uses LLM API calls. At ฿999/mo pricing, if an agent makes 1,000 GPT-4o calls/month = ~$15 in API costs. Margin is tight. Mitigation: Use smaller models (Claude Haiku, GPT-4o-mini) for routine tasks. Cache common responses. Only escalate to large models for complex reasoning.</p>
+        </div>
+        <div class="risk-item"><div class="risk-header"><span class="risk-badge risk-med">MED</span><h3>Thai SME Willingness to Pay</h3></div>
+          <p>Thai SMEs are notoriously price-sensitive. ฿999/mo = ฿12K/year. Many businesses hesitate at this level. Mitigation: Free trial (14 days), ROI proof ("this agent saved you 40 hours this month"), start with businesses already spending on SaaS or manual labor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">36/50 — ✅ PASS (Massive Opportunity, Hard Execution)</span><span class="th">36/50 — ✅ ผ่าน (โอกาสมหาศาล ปฏิบัติยาก)</span></h2>
+    <table class="score-table">
+      <tr><td class="dim">Market Potential</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td><td class="pts">9/10</td></tr>
+      <tr><td class="dim">Problem Severity</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim">Competition Gap</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:50%"></div></div></td><td class="pts">5/10</td></tr>
+      <tr><td class="dim">Build Feasibility</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:60%"></div></div></td><td class="pts">6/10</td></tr>
+      <tr><td class="dim">Our Advantage</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr class="total-row"><td><strong>TOTAL</strong></td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:72%"></div></div></td><td class="pts"><strong>36/50</strong></td></tr>
+    </table>
+    <div style="margin-top:2rem;padding:1.5rem;background:linear-gradient(135deg, rgba(168,85,247,0.08), rgba(251,191,36,0.08));border:1px solid rgba(251,191,36,0.3);border-radius:14px;">
+      <h3 style="color:var(--gold);margin-bottom:0.8rem;">CEO Assessment: The Biggest Wave — But Can We Ride It?</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;">
+        <strong>Market 9/10:</strong> $510B SaaS market being disrupted. IDC, PitchBook, Bain, Forbes all confirm the thesis. This is THE wave of 2025-2030. Every SaaS tool is vulnerable to agent replacement.<br><br>
+        <strong>Problem 8/10:</strong> SaaS fatigue is real. 70% shelfware. Thai SMEs either overpay for tools they don't use, or use zero tools at all. Agents that DO THE WORK (not show dashboards) solve the fundamental SaaS flaw.<br><br>
+        <strong>Competition 5/10:</strong> OpenAI Frontier, Salesforce Agentforce, Lindy, Relevance AI — big players are here. BUT none target Thai SMEs with LINE integration and Thai-language agents. The gap is geographic + cultural, not technological.<br><br>
+        <strong>Build 6/10:</strong> Building reliable, production-grade AI agents is HARD. Each vertical needs domain knowledge. Quality control is critical — agents take actions, not just show data. Starting with 1-2 packs is feasible; scaling to 6+ is a multi-quarter effort.<br><br>
+        <strong>Advantage 8/10:</strong> We run AI agents 24/7. We know what works and what breaks. Thai market + LINE integration + PromptPay = moats that global players won't build soon. Thanapat's CTO background = perfect builder.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #98 Complete — AI Agents Wave Category</span><span class="th">ไอเดีย #98 เสร็จ — หมวดคลื่น AI Agents</span></h2>
+    <p style="color:var(--text2);max-width:600px;margin:0 auto 2rem;"><span class="en">MuteSwarm rides the biggest wave in tech — the SaaS-to-Agents transition. Thai SMEs can leapfrog SaaS entirely. Hard execution but massive reward if we nail even one vertical agent pack.</span><span class="th">MuteSwarm ขี่คลื่นใหญ่สุดในเทค — การเปลี่ยนผ่าน SaaS เป็น Agents SME ไทยกระโดดข้าม SaaS ปฏิบัติยากแต่ reward มหาศาลถ้าเราทำ vertical agent pack ได้แม้แค่หนึ่ง</span></p>
+    <a href="index.html" class="back-link"><span class="en">← Back to All Ideas</span><span class="th">← กลับไปดูไอเดียทั้งหมด</span></a>
+  </div>
+</section>
+
+<footer><p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #98 · MUTESWARM · AI AGENTS WAVE</p></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');}</script>
+</body>
+</html>

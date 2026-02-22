@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteAgent — AI Agent Observability & Cost Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a14;
+    --bg2: #120c18;
+    --surface: #180f20;
+    --surface2: #201628;
+    --surface3: #281e32;
+    --border: rgba(168,85,247,0.15);
+    --border2: rgba(168,85,247,0.28);
+    --text: #f5f0ff;
+    --text2: #d0c0e8;
+    --muted: #806898;
+    --muted2: #605078;
+    --primary: #a855f7;
+    --primary-light: #c084fc;
+    --primary-pale: rgba(168,85,247,0.08);
+    --primary-glow: rgba(168,85,247,0.22);
+    --secondary: #f472b6;
+    --secondary-light: #f9a8d4;
+    --secondary-pale: rgba(244,114,182,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --gold: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(168,85,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(168,85,247,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(244,114,182,0.05) 0%, transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(15,10,20,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 700px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--gold); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .highlight-box { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(244,114,182,0.1)); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 2rem; margin: 2rem 0; }
+  .highlight-title { font-family: 'Space Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; margin-bottom: 0.8rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--gold); background: var(--surface2); box-shadow: 0 0 30px rgba(251,191,36,0.08); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; }
+  .score-table .bar-cell { width: 120px; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--gold)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--gold); background: var(--surface2); }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--gold); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--gold); font-size: 1rem; }
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--gold)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #97</span>
+  <span class="nav-badge en">📊 AI AGENT OBSERVABILITY</span>
+  <span class="nav-badge th">📊 AI Agent ติดตามประสิทธิภาพ</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">📊 AI AGENTS WAVE · OBSERVABILITY · COST CONTROL</span>
+      <span class="hero-tag th">📊 คลื่น AI Agents · ติดตามประสิทธิภาพ · ควบคุมต้นทุน</span>
+      <span class="idea-num">SPRINT #97 — FEB 22, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Agent</span></span><span class="th">Mute<span class="accent">Agent</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Simple AI Agent Monitoring — Know What Your Agents Do, What They Cost, and When They Break</span>
+      <span class="th">ติดตาม AI Agent แบบง่าย — รู้ว่า Agent ทำอะไร ใช้เงินเท่าไร และพังเมื่อไร</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">The AI agent market is exploding from $7.63B (2025) to $183B (2033) at 49.6% CAGR. Businesses are deploying AI agents for customer support, sales, operations — but have ZERO visibility into what these agents actually do. Current observability tools (Langfuse, Arize, LangSmith) are built for ML engineers, not business owners. MuteAgent: connect your AI agents in 2 minutes → see real-time cost dashboard → get alerts when agents fail or overspend → simple ROI tracking. The "Plausible Analytics" of AI agents — simple, privacy-friendly, affordable.</span>
+      <span class="th">ตลาด AI agent ระเบิดจาก $7.63B (2025) ถึง $183B (2033) ที่ CAGR 49.6% ธุรกิจ deploy AI agents สำหรับ support, sales, operations — แต่ไม่มี visibility ว่า agent ทำอะไร เครื่องมือปัจจุบัน (Langfuse, Arize, LangSmith) สร้างสำหรับ ML engineers ไม่ใช่เจ้าของธุรกิจ MuteAgent: เชื่อมต่อ AI agents ใน 2 นาที → เห็น dashboard ต้นทุน real-time → แจ้งเตือนเมื่อ agent ล้มเหลว → ติดตาม ROI ง่ายๆ</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">$183B</span><span class="stat-label en">AI agent market by 2033</span><span class="stat-label th">ตลาด AI agent ภายในปี 2033</span></div>
+      <div class="stat"><span class="stat-val">49.6%</span><span class="stat-label en">CAGR growth rate</span><span class="stat-label th">อัตราเติบโต CAGR</span></div>
+      <div class="stat"><span class="stat-val">20+</span><span class="stat-label en">observability tools (all dev-focused)</span><span class="stat-label th">เครื่องมือ (ทั้งหมดสำหรับ dev)</span></div>
+      <div class="stat"><span class="stat-val">$0</span><span class="stat-label en">simple tools for business owners</span><span class="stat-label th">เครื่องมือง่ายสำหรับเจ้าของธุรกิจ</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">SPRINT SCORE</div>
+        <div class="score-label th">คะแนน</div>
+        <div><span class="score-val">34</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:68%"></div></div>
+        <div style="font-size:0.7rem;color:var(--green);margin-top:0.4rem;font-family:'Space Mono',monospace;">✅ PASS — AI AGENTS WAVE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PAIN ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE PAIN POINTS</div>
+    <div class="section-label th">ปัญหา</div>
+    <h2><span class="en">Running AI Agents in 2026 = Flying Blind with a Credit Card on Fire</span><span class="th">รัน AI Agents ปี 2569 = บินตาบอดพร้อมบัตรเครดิตกำลังไหม้</span></h2>
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">Surprise API Bills — "Why is our OpenAI bill $3,000 this month?"</h3>
+        <h3 class="th">ค่า API ช็อก — "ทำไมค่า OpenAI เดือนนี้ $3,000?"</h3>
+        <p class="en">AI agents make dozens of API calls per task. A single runaway agent loop can burn through $500 in minutes. No alert. No budget limit. You find out when the invoice arrives. Teams deploying Claude, GPT-4, or Gemini agents have zero real-time cost visibility across providers.</p>
+        <p class="th">AI agents เรียก API หลายสิบครั้งต่องาน Loop ที่หลุดควบคุมอาจเผา $500 ในไม่กี่นาที ไม่มีแจ้งเตือน ไม่มีวงเงิน รู้ตอนบิลมาถึง ทีมที่ deploy Claude, GPT-4, Gemini agents ไม่มี visibility ต้นทุน real-time</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🔇</div>
+      <div class="pain-text">
+        <h3 class="en">Silent Failures — Agents Break and Nobody Knows</h3>
+        <h3 class="th">ล้มเหลวเงียบ — Agent พังไม่มีใครรู้</h3>
+        <p class="en">Your customer support agent started hallucinating at 3AM. Your sales agent stopped following up on leads. Your coding agent introduced a bug in production. Nobody noticed for 3 days. Current tools show logs — but who reads 10,000 trace lines? Business owners need simple: "Agent X failed 15 times today" alerts.</p>
+        <p class="th">Agent support เริ่ม hallucinate ตอนตี 3 Agent sales หยุดติดตาม leads Agent coding สร้าง bug ใน production ไม่มีใครรู้ 3 วัน เครื่องมือปัจจุบันแสดง logs — แต่ใครอ่าน 10,000 บรรทัด? เจ้าของธุรกิจต้องการ: "Agent X ล้มเหลว 15 ครั้งวันนี้"</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🤯</div>
+      <div class="pain-text">
+        <h3 class="en">Existing Tools Are Built for ML Engineers, Not Business People</h3>
+        <h3 class="th">เครื่องมือที่มีสร้างสำหรับ ML Engineers ไม่ใช่คนธุรกิจ</h3>
+        <p class="en">Langfuse, Arize ($131M funded), LangSmith — all excellent tools. But they require SDK integration, code changes, and understanding of traces/spans/embeddings. A marketing director deploying AI agents via no-code tools can't use them. The gap: simple plug-and-play monitoring that any team can set up in minutes.</p>
+        <p class="th">Langfuse, Arize (ระดมทุน $131M), LangSmith — เครื่องมือดีทั้งนั้น แต่ต้อง SDK integration, เปลี่ยนโค้ด, เข้าใจ traces/spans/embeddings ผู้อำนวยการการตลาดที่ deploy AI agents ผ่าน no-code ใช้ไม่ได้ ช่องว่าง: monitoring ง่ายๆ setup ใน 2 นาที</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUTION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2><span class="en">MuteAgent: "Plausible Analytics" for AI Agents — Simple, Affordable, Built for Business</span><span class="th">MuteAgent: "Plausible Analytics" สำหรับ AI Agents — ง่าย ราคาถูก สร้างเพื่อธุรกิจ</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">2-Minute Setup — API Key Proxy</h3>
+          <h3 class="th">Setup 2 นาที — API Key Proxy</h3>
+          <p class="en">Replace your OpenAI/Anthropic API key with MuteAgent proxy key. Zero code changes. Works with any framework — LangChain, CrewAI, AutoGPT, OpenClaw, or custom agents. All calls automatically tracked with cost, latency, and success/failure.</p>
+          <p class="th">เปลี่ยน API key OpenAI/Anthropic เป็น proxy key MuteAgent ไม่ต้องเปลี่ยนโค้ด ใช้ได้ทุก framework — LangChain, CrewAI, AutoGPT, OpenClaw — ทุก call ถูกติดตามด้วยต้นทุน latency สำเร็จ/ล้มเหลว</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Real-Time Cost Dashboard — Per Agent, Per Task</h3>
+          <h3 class="th">Dashboard ต้นทุน Real-Time — ต่อ Agent ต่อ Task</h3>
+          <p class="en">See exactly how much each AI agent costs per day/week/month. Breakdown by model (GPT-4o vs Claude Sonnet), by task type, by department. Budget alerts: "Customer support agent approaching $500/mo limit." Cost optimization suggestions: "Switch Agent X from GPT-4o to Claude Haiku — saves 60%, same quality."</p>
+          <p class="th">เห็นชัดเจนว่า AI agent แต่ละตัวใช้เงินเท่าไรต่อวัน/สัปดาห์/เดือน แยกตามโมเดล ประเภทงาน แผนก แจ้งเตือนงบ: "Agent support ใกล้ถึง $500/เดือน" คำแนะนำลดต้นทุน: "เปลี่ยน Agent X จาก GPT-4o เป็น Claude Haiku — ประหยัด 60%"</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">Smart Alerts — Know Before Your Users Do</h3>
+          <h3 class="th">แจ้งเตือนอัจฉริยะ — รู้ก่อนผู้ใช้</h3>
+          <p class="en">Slack/email/LINE alerts for: agent failure rate spike, unusual cost increase, response time degradation, hallucination detection (output quality scoring). "Your sales agent's success rate dropped from 85% to 40% in the last hour" — fix before customers complain.</p>
+          <p class="th">แจ้งเตือน Slack/email/LINE สำหรับ: อัตราล้มเหลวพุ่ง ต้นทุนผิดปกติ response time ช้าลง ตรวจจับ hallucination "Agent sales อัตราสำเร็จลดจาก 85% เป็น 40% ในชั่วโมงที่ผ่านมา" — แก้ก่อนลูกค้าร้องเรียน</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">ROI Calculator — Prove AI Agents Are Worth It</h3>
+          <h3 class="th">คำนวณ ROI — พิสูจน์ว่า AI Agents คุ้มค่า</h3>
+          <p class="en">"Your support agent handled 1,200 tickets this month at $0.35 each. A human agent costs $8 per ticket. Savings: $9,180/month." Exportable reports for CFOs and board presentations. The missing piece for AI adoption: proving ROI to non-technical stakeholders.</p>
+          <p class="th">"Agent support จัดการ 1,200 ticket เดือนนี้ที่ $0.35 ต่อ ticket คนจริงใช้ $8 ต่อ ticket ประหยัด: $9,180/เดือน" รายงาน export สำหรับ CFO และ board พิสูจน์ ROI ให้คนไม่เทคนิค</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2><span class="en">20+ Tools — All Built for Developers. None for Business Teams.</span><span class="th">20+ เครื่องมือ — ทั้งหมดสำหรับ Dev. ไม่มีสำหรับทีมธุรกิจ.</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead><tr><th>PLATFORM</th><th>Setup Time</th><th>Target User</th><th>Cost Dashboard</th><th>Budget Alerts</th><th>ROI Reports</th><th>Price</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Langfuse</strong> (open-source)</td><td class="partial">⚡ 30min+ (SDK)</td><td class="no">ML Engineers</td><td class="yes">✅ Basic</td><td class="no">❌</td><td class="no">❌</td><td>$0–$199/mo</td></tr>
+          <tr><td><strong>Arize AI</strong> ($131M funded)</td><td class="no">❌ Hours (SDK)</td><td class="no">ML Eng/Enterprise</td><td class="yes">✅</td><td class="partial">⚡ Custom</td><td class="no">❌</td><td>Enterprise $$</td></tr>
+          <tr><td><strong>LangSmith</strong></td><td class="partial">⚡ 20min (LangChain)</td><td class="no">LangChain devs</td><td class="partial">⚡</td><td class="no">❌</td><td class="no">❌</td><td>$39–$399/mo</td></tr>
+          <tr><td><strong>Braintrust</strong></td><td class="partial">⚡ 15min (SDK)</td><td class="no">Dev teams</td><td class="yes">✅</td><td class="partial">⚡</td><td class="no">❌</td><td>Usage-based</td></tr>
+          <tr><td><strong>Helicone</strong></td><td class="yes">✅ 2min (proxy)</td><td class="partial">⚡ Dev-friendly</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td><td>$0–$200/mo</td></tr>
+          <tr class="highlight-row"><td><strong>MuteAgent ✦</strong></td><td class="yes">✅ 2min (proxy)</td><td class="yes">✅ Business teams</td><td class="yes">✅ Visual</td><td class="yes">✅ Multi-channel</td><td class="yes">✅ CFO-ready</td><td>$29–$199/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--text2);font-size:0.88rem;margin-top:1.5rem;"><span class="en"><strong>⚠️ Honest assessment:</strong> This is a CROWDED space. Helicone is the closest competitor with proxy-based setup. Our edge is narrow: business-user UX and ROI reporting. But the market is growing so fast ($183B by 2033) that even a small slice is massive. Main risk: these well-funded companies add business-friendly features.</span><span class="th"><strong>⚠️ ประเมินตรงๆ:</strong> นี่เป็นพื้นที่ที่แน่นมาก Helicone ใกล้เคียงที่สุดด้วย proxy setup ข้อได้เปรียบแคบ: UX สำหรับธุรกิจและรายงาน ROI แต่ตลาดโตเร็วมากจนแม้ส่วนเล็กก็มหาศาล ความเสี่ยง: บริษัทเหล่านี้มีเงินทุนมากอาจเพิ่มฟีเจอร์สำหรับธุรกิจ</span></p>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2><span class="en">SaaS + Usage-Based — Global Market, USD Pricing</span><span class="th">SaaS + Usage-Based — ตลาดโลก ราคา USD</span></h2>
+    <div class="pricing-grid" style="margin-bottom:2rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-unit">up to 10K requests/mo</div>
+        <div class="pricing-desc">1 agent, basic cost dashboard, daily email digest, 7-day data retention. Perfect for solo developers testing the waters.</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">🏆 POPULAR</div>
+        <div class="pricing-tier">PRO</div>
+        <div class="pricing-price">$49</div>
+        <div class="pricing-unit">per month</div>
+        <div class="pricing-desc">Unlimited agents, 100K requests/mo, real-time dashboard, budget alerts (Slack/email/LINE), cost optimization suggestions, 90-day retention, ROI reports.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">TEAM</div>
+        <div class="pricing-price">$199</div>
+        <div class="pricing-unit">per month</div>
+        <div class="pricing-desc">Everything in Pro + unlimited requests, multi-team access, custom alerts, API access, 1-year retention, SSO, dedicated support, custom integrations.</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">YEAR 1 REVENUE PATH TO $1M ARR</p>
+      <div class="revenue-row"><span>500 Pro users × $49/mo × 12</span><span class="revenue-val">$294K/yr</span></div>
+      <div class="revenue-row"><span>100 Team users × $199/mo × 12</span><span class="revenue-val">$239K/yr</span></div>
+      <div class="revenue-row"><span>Overage charges (usage-based)</span><span class="revenue-val">$120K/yr</span></div>
+      <div class="revenue-row"><span><strong>Year 1 Target</strong></span><span class="revenue-val"><strong>$653K/yr</strong></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SPRINT SCORE BREAKDOWN</div>
+    <div class="section-label th">รายละเอียดคะแนน</div>
+    <h2><span class="en">34/50 — ✅ PASS (Crowded but Massive Market)</span><span class="th">34/50 — ✅ ผ่าน (แน่นแต่ตลาดมหาศาล)</span></h2>
+    <table class="score-table">
+      <tr><td class="dim">Market Potential</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr><td class="dim">Problem Severity</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Competition Gap</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:40%"></div></div></td><td class="pts">4/10</td></tr>
+      <tr><td class="dim">Build Feasibility</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td><td class="pts">7/10</td></tr>
+      <tr><td class="dim">Our Advantage</td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td><td class="pts">8/10</td></tr>
+      <tr class="total-row"><td><strong>TOTAL</strong></td><td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:68%"></div></div></td><td class="pts"><strong>34/50</strong></td></tr>
+    </table>
+    <div style="margin-top:2rem;padding:1.5rem;background:linear-gradient(135deg, rgba(168,85,247,0.08), rgba(251,191,36,0.08));border:1px solid rgba(251,191,36,0.3);border-radius:14px;">
+      <h3 style="color:var(--gold);margin-bottom:0.8rem;">CEO Assessment: Strong Market, Crowded Space</h3>
+      <p style="color:var(--text2);font-size:0.9rem;line-height:1.7;">
+        <strong>Market 8/10:</strong> $7.63B → $183B (49.6% CAGR). Every company deploying AI agents will need monitoring. This is inevitable infrastructure.<br><br>
+        <strong>Problem 7/10:</strong> Real pain — we experience it daily running OpenClaw agents. Cost surprises and silent failures are weekly occurrences. But many teams haven't hit scale yet where this matters.<br><br>
+        <strong>Competition 4/10 (WEAK POINT):</strong> 20+ tools exist. Langfuse (open-source, MIT license), Arize ($131M), LangSmith, Helicone, Braintrust, AgentOps, Datadog. Helicone already offers proxy-based setup. Our "simple for business" angle is defensible but narrow.<br><br>
+        <strong>Build 7/10:</strong> API proxy + dashboard + alerting. Standard engineering. 4-6 week MVP. But multi-LLM provider integration takes ongoing work.<br><br>
+        <strong>Advantage 8/10:</strong> We run 3 AI agents (Sun, Steve, Main) 24/7 on OpenClaw. We're the perfect dogfooding customer. We know exactly what metrics matter because we live this pain every day.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2><span class="en">Idea #97 Complete — AI Agents Wave Category</span><span class="th">ไอเดีย #97 เสร็จ — หมวดคลื่น AI Agents</span></h2>
+    <p style="color:var(--text2);max-width:600px;margin:0 auto 2rem;"><span class="en">MuteAgent passes at 34/50 but the competition gap is the weakest dimension. The market is massive but crowded. Best as a B2B global play targeting non-technical teams deploying AI agents.</span><span class="th">MuteAgent ผ่านที่ 34/50 แต่ช่องว่างการแข่งขันเป็นจุดอ่อนที่สุด ตลาดใหญ่แต่แน่น เหมาะเป็น B2B global play สำหรับทีมไม่เทคนิคที่ deploy AI agents</span></p>
+    <a href="index.html" class="back-link"><span class="en">← Back to All Ideas</span><span class="th">← กลับไปดูไอเดียทั้งหมด</span></a>
+  </div>
+</section>
+
+<footer><p>MUTELAB IDEA RESEARCH SPRINT · FEB 2026 · IDEA #97 · MUTEAGENT · AI AGENTS WAVE</p></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');}</script>
+</body>
+</html>
