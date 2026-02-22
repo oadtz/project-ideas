@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MutePDPA — AI PDPA Compliance Platform for Thai Businesses</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --bg2: #0b100c;
+    --surface: #0f1610;
+    --surface2: #141e15;
+    --surface3: #1a261b;
+    --border: rgba(13,148,136,0.15);
+    --border2: rgba(13,148,136,0.28);
+    --text: #f0f5f0;
+    --text2: #c0d0c0;
+    --muted: #708070;
+    --muted2: #526052;
+    --primary: #0d9488;
+    --primary-light: #2dd4bf;
+    --primary-pale: rgba(13,148,136,0.08);
+    --primary-glow: rgba(13,148,136,0.22);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --secondary-glow: rgba(245,158,11,0.2);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(13,148,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, rgba(13,148,136,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    padding: 1.1rem 2rem;
+    background: rgba(10,15,10,0.85);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700;
+    padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2);
+    color: var(--primary-light); background: var(--primary-pale);
+  }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--primary-light); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 99px; }
+
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(13,148,136,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+
+  .alert-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+  .alert-title { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: #f87171; font-weight: 700; margin-bottom: 0.5rem; }
+
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+
+  .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+  @media(max-width:900px) { .pricing-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:500px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .dim { color: var(--text2); }
+  .score-table .pts { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--primary-light); text-align: right; white-space: nowrap; }
+  .score-table .bar-cell { width: 120px; padding-right: 0; }
+  .mini-bar { height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .mini-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--secondary)); border-radius: 99px; }
+  .score-table .total-row td { font-weight: 700; color: var(--text); background: var(--surface2); }
+
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+
+  .risk-item { background:var(--surface); border:1px solid rgba(245,158,11,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .risk-header { display:flex; align-items:center; gap:0.7rem; margin-bottom:0.4rem; }
+  .risk-badge { font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; padding:0.18rem 0.55rem; border-radius:99px; font-weight:700; }
+  .risk-high { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+  .risk-med { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.25); }
+  .risk-low { background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.25); }
+  .risk-item p { font-size:0.88rem; color:var(--text2); }
+
+  .revenue-block { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:1.5rem; }
+  .revenue-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .revenue-row:last-child { border-bottom:none; font-weight:700; color:var(--primary-light); }
+  .revenue-val { font-family:'Space Mono',monospace; color:var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color:var(--primary-light); font-size:1rem; }
+
+  .enforcement-case { background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.3rem; margin-bottom: 1rem; }
+  .case-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .case-fine { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: #f87171; }
+  .case-entity { font-size: 0.85rem; color: var(--secondary-light); font-weight: 600; }
+  .case-desc { font-size: 0.85rem; color: var(--text2); line-height: 1.6; }
+
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .cta-section h2 { font-size:2rem; margin-bottom:1rem; }
+  .cta-section p { color:var(--text2); max-width:520px; margin:0 auto 2rem; }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #100</span>
+  <span class="nav-badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border-color:rgba(245,158,11,0.3);">🏆 1ST ROUND RUNNER UP</span>
+  <span class="nav-badge en">AI PDPA COMPLIANCE</span>
+  <span class="nav-badge th">AI PDPA Compliance</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🛡️ REGTECH · PDPA · AI COMPLIANCE</span>
+      <span class="hero-tag th">🛡️ RegTech · PDPA · AI Compliance</span>
+      <span class="idea-num">SPRINT #100 — FEB 22, 2026</span>
+      <span class="hero-tag" style="color:#fbbf24;border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.1);">🏆 PIVOT FROM MUTELAW #93</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">PDPA</span></span><span class="th">Mute<span class="accent">PDPA</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI PDPA Compliance Platform for Thai Businesses</span>
+      <span class="th">แพลตฟอร์ม AI ช่วย comply PDPA สำหรับธุรกิจไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand's PDPC just issued ฿21.5M in fines across 5 cases. 53% of Thai SMEs don't even have a privacy policy. PDPA compliance consultants charge ฿50K–500K. MutePDPA: AI scans your website for violations in 60 seconds, auto-generates privacy policies, cookie banners, and compliance documents — starting at ฿990/mo. OneTrust for Thailand, at 1/10th the price.</span>
+      <span class="th">สคส. ออกค่าปรับรวม ฿21.5M ใน 5 คดี SME ไทย 53% ไม่มีแม้แต่นโยบายความเป็นส่วนตัว ที่ปรึกษา PDPA คิด ฿50K–500K MutePDPA: AI สแกนเว็บหาการละเมิดใน 60 วินาที สร้าง privacy policy, cookie banner, เอกสาร compliance อัตโนมัติ — เริ่ม ฿990/เดือน OneTrust สำหรับไทย ถูกกว่า 10 เท่า</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">3.2M</span><span class="stat-label en">Thai SMEs must comply</span><span class="stat-label th">SME ไทยต้อง comply</span></div>
+      <div class="stat"><span class="stat-val">฿21.5M</span><span class="stat-label en">fines issued (& growing)</span><span class="stat-label th">ค่าปรับที่ออกแล้ว (เพิ่มขึ้นเรื่อยๆ)</span></div>
+      <div class="stat"><span class="stat-val">53%</span><span class="stat-label en">SMEs have NO privacy policy</span><span class="stat-label th">SME ไม่มี privacy policy</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">AI PDPA tools in Thai</span><span class="stat-label th">เครื่องมือ AI PDPA ภาษาไทย</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">DEEP DIVE SCORE</div>
+        <div class="score-label th">คะแนนวิจัยเชิงลึก</div>
+        <div><span class="score-val">42</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:84%"></div></div>
+        <div style="font-size:0.7rem;color:#fbbf24;margin-top:0.4rem;font-family:'Space Mono',monospace;">🏆 POTENTIAL NEW #1 — DEEP DIVE COMPLETE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ENFORCEMENT URGENCY ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">🚨 ENFORCEMENT CRACKDOWN</div>
+    <div class="section-label th">🚨 บังคับใช้กฎหมายเข้มข้น</div>
+    <h2>
+      <span class="en">฿21.5M in Fines — The PDPC Crackdown Has Begun</span>
+      <span class="th">ค่าปรับ ฿21.5M — สคส. เริ่มบังคับใช้จริงจัง</span>
+    </h2>
+    <div class="alert-box">
+      <div class="alert-title">🚨 PDPA ENFORCEMENT IS ACCELERATING — AUG 2025: 8 FINES, 5 CASES, ฿14.5M NEW PENALTIES</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Thailand's PDPC declared "the era of warnings is over" on Aug 1, 2025. Eight administrative fines across five cases — hospitals, retailers, cosmetics companies, government agencies, and data processors. Total fines to date: <strong>฿21.5M (~$660K USD)</strong>. Max penalty per violation: ฿5M + up to 1 year imprisonment. <strong>No sector is immune.</strong></span>
+        <span class="th">สคส. ประกาศ "ยุคของการเตือนจบลงแล้ว" เมื่อ 1 ส.ค. 2568 ค่าปรับ 8 รายการใน 5 คดี — โรงพยาบาล, ผู้ค้าปลีก, บริษัทเครื่องสำอาง, หน่วยงานรัฐ, ผู้ประมวลผลข้อมูล ค่าปรับรวมถึงปัจจุบัน: <strong>฿21.5M (~$660K)</strong> โทษสูงสุดต่อการละเมิด: ฿5M + จำคุก 1 ปี <strong>ไม่มีภาคส่วนไหนรอดพ้น</strong></span>
+      </p>
+    </div>
+
+    <div class="enforcement-case">
+      <div class="case-header">
+        <span class="case-entity en">IT Retailer — Data breach, no DPO</span>
+        <span class="case-entity th">ผู้ค้าปลีก IT — ข้อมูลรั่ว, ไม่มี DPO</span>
+        <span class="case-fine">฿7,000,000</span>
+      </div>
+      <div class="case-desc en">Customer data breached and used in fraudulent call center operations. Failed to appoint DPO, no breach notification, inadequate security. <strong>Largest single PDPA fine to date.</strong></div>
+      <div class="case-desc th">ข้อมูลลูกค้ารั่วไหลถูกนำไปใช้ในปฏิบัติการ call center โกง ไม่แต่งตั้ง DPO ไม่แจ้งเตือนเหตุรั่วไหล มาตรการรักษาความปลอดภัยไม่เพียงพอ <strong>ค่าปรับ PDPA สูงสุดจนถึงปัจจุบัน</strong></div>
+    </div>
+    <div class="enforcement-case">
+      <div class="case-header">
+        <span class="case-entity en">Toy Company + Processor — 200K records breached</span>
+        <span class="case-entity th">บริษัทของเล่น + Processor — ข้อมูล 200K รายการรั่ว</span>
+        <span class="case-fine">฿3,500,000</span>
+      </div>
+      <div class="case-desc en">Online reservation system breach affecting 200,000 records. Processor delayed notifying controller. <strong>Processor fined MORE than controller (฿3M vs ฿500K).</strong></div>
+      <div class="case-desc th">ระบบจองออนไลน์ถูกเจาะ 200,000 รายการ Processor แจ้งเตือนล่าช้า <strong>Processor ถูกปรับมากกว่า Controller (฿3M vs ฿500K)</strong></div>
+    </div>
+    <div class="enforcement-case">
+      <div class="case-header">
+        <span class="case-entity en">Cosmetics Company — Poor security, delayed reporting</span>
+        <span class="case-entity th">บริษัทเครื่องสำอาง — ความปลอดภัยอ่อน, แจ้งเตือนล่าช้า</span>
+        <span class="case-fine">฿2,500,000</span>
+      </div>
+      <div class="case-desc en">Personal data leaks exploited by scam operations. Poor technical safeguards, did not notify PDPC within required timeframe.</div>
+      <div class="case-desc th">ข้อมูลส่วนบุคคลรั่วไหลถูกใช้ในปฏิบัติการหลอกลวง มาตรการทางเทคนิคอ่อนแอ ไม่แจ้ง สคส. ภายในกำหนด</div>
+    </div>
+    <div class="enforcement-case">
+      <div class="case-header">
+        <span class="case-entity en">Hospital + Contractor — Patient records used as snack wrappers (!)</span>
+        <span class="case-entity th">โรงพยาบาล + ผู้รับเหมา — เอกสารผู้ป่วยถูกใช้ห่อขนม (!)</span>
+        <span class="case-fine">฿1,226,940</span>
+      </div>
+      <div class="case-desc en">Patient health records improperly destroyed by contractor — literally used to wrap sweets. Hospital failed to supervise contractor and report breach.</div>
+      <div class="case-desc th">เวชระเบียนผู้ป่วยถูกทำลายไม่ถูกวิธีโดยผู้รับเหมา — ถูกนำไปห่อขนมจริงๆ โรงพยาบาลไม่ดูแลผู้รับเหมาและไม่แจ้งเหตุรั่วไหล</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE PROBLEM ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE COMPLIANCE GAP</div>
+    <div class="section-label th">ช่องว่างการ comply</div>
+    <h2>
+      <span class="en">53% of Thai SMEs Collect Data Without Any Privacy Policy</span>
+      <span class="th">SME ไทย 53% เก็บข้อมูลโดยไม่มี Privacy Policy</span>
+    </h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">😱</div>
+      <div class="pain-text">
+        <h3 class="en">Only 8% of Thai Businesses Are Fully PDPA Compliant</h3>
+        <h3 class="th">ธุรกิจไทยเพียง 8% ที่ comply PDPA เต็มรูปแบบ</h3>
+        <p class="en">Thai Board of Trade surveyed ~4,000 businesses: only 8% were fully compliant. ScienceDirect study of 384 SMEs: 53% collected personal data with NO privacy policy at all. Large enterprises are fine — SMEs are catastrophically behind. And enforcement is NOW targeting them.</p>
+        <p class="th">หอการค้าไทยสำรวจ ~4,000 ธุรกิจ: มีเพียง 8% ที่ comply เต็มที่ งานวิจัย ScienceDirect สำรวจ 384 SME: 53% เก็บข้อมูลโดยไม่มี privacy policy เลย ธุรกิจใหญ่ comply แล้ว แต่ SME ตามหลังอย่างมหาศาล และการบังคับใช้กำลังเล็งมาที่พวกเขา</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">Compliance Consultants Charge ฿50K–500K — Out of Reach for SMEs</h3>
+        <h3 class="th">ที่ปรึกษา Compliance คิด ฿50K–500K — เกินเอื้อมสำหรับ SME</h3>
+        <p class="en">Law firms charge ฿50K–150K for basic PDPA gap assessment. Full implementation: ฿150K–500K+. Big 4: ฿500K–2M+. DPO-as-a-Service: ฿20K–50K/month. For an SME earning ฿1M/month, spending ฿200K on compliance feels insane — so they do nothing and pray they don't get caught.</p>
+        <p class="th">สำนักงานกฎหมายคิด ฿50K–150K สำหรับ gap assessment พื้นฐาน Implementation เต็ม: ฿150K–500K+ Big 4: ฿500K–2M+ DPO-as-a-Service: ฿20K–50K/เดือน สำหรับ SME รายได้ ฿1M/เดือน การจ่าย ฿200K สำหรับ compliance ดูบ้า — เลยไม่ทำอะไรเลยแล้วหวังว่าจะไม่ถูกจับ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🌐</div>
+      <div class="pain-text">
+        <h3 class="en">International Tools Are Enterprise-Only & English-Only</h3>
+        <h3 class="th">เครื่องมือต่างประเทศสำหรับ Enterprise เท่านั้น & ภาษาอังกฤษเท่านั้น</h3>
+        <p class="en">OneTrust starts at $10K/year ($827/mo minimum). TrustArc, Securiti.ai — all enterprise pricing. None have Thai language UIs. None understand Thai PDPA specifics. Cookiebot only does cookie consent (not full compliance). There is ZERO affordable, Thai-language, AI-powered PDPA tool for SMEs.</p>
+        <p class="th">OneTrust เริ่ม $10K/ปี ($827/เดือนขั้นต่ำ) TrustArc, Securiti.ai — ราคา enterprise ทั้งหมด ไม่มี UI ภาษาไทย ไม่เข้าใจ PDPA ไทยเฉพาะ Cookiebot ทำแค่ cookie consent (ไม่ใช่ compliance เต็มรูป) ไม่มีเครื่องมือ PDPA ที่ AI-powered ราคาถูก ภาษาไทย สำหรับ SME เลย</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUTION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2>
+      <span class="en">MutePDPA: OneTrust for Thailand — at 1/10th the Price</span>
+      <span class="th">MutePDPA: OneTrust สำหรับไทย — ราคา 1/10</span>
+    </h2>
+    <div class="two-col" style="margin-bottom:2rem;">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">🔍 Free PDPA Website Scanner (Lead Magnet)</h3>
+            <h3 class="th">🔍 สแกนเว็บ PDPA ฟรี (Lead Magnet)</h3>
+            <p class="en">Enter your URL → AI scans in 60 seconds: cookie consent, privacy policy, data collection forms, third-party trackers, SSL. Get instant A/B/C/D/F compliance scorecard. "ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" — the hook that converts fear into customers.</p>
+            <p class="th">ใส่ URL → AI สแกนใน 60 วินาที: cookie consent, privacy policy, ฟอร์มเก็บข้อมูล, third-party trackers, SSL ได้ scorecard A/B/C/D/F ทันที "ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" — hook ที่เปลี่ยนความกลัวเป็นลูกค้า</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📋 Auto-Generate Privacy Policy & Cookie Banner</h3>
+            <h3 class="th">📋 สร้าง Privacy Policy & Cookie Banner อัตโนมัติ</h3>
+            <p class="en">AI generates PDPA-compliant privacy policy in Thai, customized to your business type (e-commerce, clinic, restaurant, etc.). All 8 required PDPA elements covered. Plus Thai-language cookie consent banner — install with one line of code. Replaces ฿30K+ lawyer fees.</p>
+            <p class="th">AI สร้าง privacy policy ที่ comply PDPA เป็นภาษาไทย ปรับตามประเภทธุรกิจ (e-commerce, คลินิก, ร้านอาหาร) ครอบคลุม 8 องค์ประกอบที่ PDPA กำหนด พร้อม cookie consent banner ภาษาไทย ติดตั้งบรรทัดเดียว แทนค่าทนาย ฿30K+</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📄 Complete Document Templates (Thai Language)</h3>
+            <h3 class="th">📄 เอกสาร Template ครบถ้วน (ภาษาไทย)</h3>
+            <p class="en">Data Processing Agreement (DPA), consent forms (employee/customer/patient), Data Subject Access Request form, breach notification templates, Record of Processing Activities, data retention policy — all in Thai, all customizable, all PDPA-compliant.</p>
+            <p class="th">Data Processing Agreement (DPA), แบบฟอร์มยินยอม (พนักงาน/ลูกค้า/ผู้ป่วย), แบบฟอร์ม DSAR, แม่แบบแจ้งเหตุข้อมูลรั่ว, ROPA, นโยบายเก็บข้อมูล — ทั้งหมดเป็นภาษาไทย ปรับได้ comply PDPA</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">🚨 Data Breach Response Workflow</h3>
+            <h3 class="th">🚨 Workflow ตอบสนองเหตุข้อมูลรั่ว</h3>
+            <p class="en">Step-by-step guided workflow when breach occurs. Auto-generates PDPC notification (72-hour deadline), data subject notification, incident log. Because every enforcement case cited "failure to notify" as a major factor.</p>
+            <p class="th">Workflow ทีละขั้นเมื่อเกิดเหตุข้อมูลรั่ว สร้างหนังสือแจ้ง สคส. อัตโนมัติ (กำหนด 72 ชม.), แจ้งเจ้าของข้อมูล, บันทึกเหตุการณ์ เพราะทุกคดีบังคับใช้ระบุ "ไม่แจ้งเตือน" เป็นปัจจัยสำคัญ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📚 Employee PDPA Training Module</h3>
+            <h3 class="th">📚 โมดูลฝึกอบรม PDPA พนักงาน</h3>
+            <p class="en">30-minute Thai-language PDPA course with quiz & certification. Role-specific modules (HR, marketing, IT, management). Completion tracking for compliance evidence. Annual refresh reminders. Because "untrained staff" is a common enforcement trigger.</p>
+            <p class="th">คอร์ส PDPA 30 นาทีภาษาไทย พร้อมแบบทดสอบ & ใบรับรอง โมดูลเฉพาะตำแหน่ง (HR, การตลาด, IT, ผู้บริหาร) ติดตามการเรียน เตือนอบรมประจำปี เพราะ "พนักงานไม่ได้รับการฝึก" เป็นสาเหตุบังคับใช้บ่อย</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">👨‍💼 DPO-as-a-Service (AI + Human Lawyer)</h3>
+            <h3 class="th">👨‍💼 DPO-as-a-Service (AI + ทนายความ)</h3>
+            <p class="en">AI handles routine DPO tasks daily. Quarterly review by Thai PDPA lawyer. PDPC communication handling. Annual compliance audit report. For companies that need a DPO but can't afford ฿50K+/mo full-time. Enterprise tier only.</p>
+            <p class="th">AI จัดการงาน DPO ประจำวัน ทนาย PDPA ไทยรีวิวรายไตรมาส จัดการสื่อสารกับ สคส. รายงานตรวจ compliance ประจำปี สำหรับบริษัทที่ต้องมี DPO แต่จ่าย ฿50K+/เดือนไม่ไหว Enterprise tier เท่านั้น</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2>
+      <span class="en">Zero AI-Powered Thai PDPA Tools for SMEs</span>
+      <span class="th">ไม่มีเครื่องมือ AI PDPA ภาษาไทยสำหรับ SME</span>
+    </h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>PLATFORM</th>
+            <th>AI-Powered</th>
+            <th>Thai UI</th>
+            <th>SME Pricing</th>
+            <th>Self-Serve</th>
+            <th>Website Scan</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OneTrust</strong></td>
+            <td class="yes">✅ Athena AI</td>
+            <td class="no">❌ English</td>
+            <td class="no">❌ $10K+/yr</td>
+            <td class="partial">⚡ Complex</td>
+            <td class="yes">✅ Yes</td>
+            <td class="no">$827+/mo</td>
+          </tr>
+          <tr>
+            <td><strong>PDPA Core (Data Wow)</strong></td>
+            <td class="no">❌ Manual</td>
+            <td class="yes">✅ Thai</td>
+            <td class="partial">⚡ From ฿3K</td>
+            <td class="no">❌ Consulting</td>
+            <td class="no">❌ No</td>
+            <td class="partial">฿3K–100K+</td>
+          </tr>
+          <tr>
+            <td><strong>iComply (SafeComs)</strong></td>
+            <td class="partial">⚡ Partial</td>
+            <td class="yes">✅ Thai</td>
+            <td class="no">❌ Enterprise</td>
+            <td class="no">❌ Demo-based</td>
+            <td class="partial">⚡ Limited</td>
+            <td class="no">Enterprise pricing</td>
+          </tr>
+          <tr>
+            <td><strong>Cookiebot CMP</strong></td>
+            <td class="no">❌ No</td>
+            <td class="partial">⚡ Partial</td>
+            <td class="yes">✅ From $12/mo</td>
+            <td class="yes">✅ Yes</td>
+            <td class="partial">⚡ Cookies only</td>
+            <td class="yes">$12–40/mo</td>
+          </tr>
+          <tr>
+            <td><strong>Thai Law Firms</strong></td>
+            <td class="no">❌ Manual</td>
+            <td class="yes">✅ Thai</td>
+            <td class="no">❌ ฿50K+</td>
+            <td class="no">❌ Consulting</td>
+            <td class="no">❌ No</td>
+            <td class="no">฿50K–500K</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>MutePDPA ✦</strong></td>
+            <td class="yes">✅ Full AI</td>
+            <td class="yes">✅ Thai-native</td>
+            <td class="yes">✅ ฿990/mo</td>
+            <td class="yes">✅ Self-serve</td>
+            <td class="yes">✅ 60-sec scan</td>
+            <td class="yes">฿990–9,900/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVENUE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MODEL</div>
+    <div class="section-label th">โมเดลรายได้</div>
+    <h2>
+      <span class="en">Freemium: Free Scan → Fear → Paid Compliance Suite</span>
+      <span class="th">Freemium: สแกนฟรี → กลัว → ซื้อ Compliance Suite</span>
+    </h2>
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE</div>
+        <div class="pricing-tier th">ฟรี</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">forever</div>
+        <div class="pricing-unit th">ตลอดไป</div>
+        <div class="pricing-desc en">1 website scan, basic compliance scorecard. See what's wrong — then fix it with paid plan.</div>
+        <div class="pricing-desc th">สแกนเว็บ 1 ครั้ง, scorecard พื้นฐาน ดูว่าอะไรผิด — แล้วแก้ด้วยแพลนเสียเงิน</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER</div>
+        <div class="pricing-tier th">STARTER</div>
+        <div class="pricing-price">฿990</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Privacy policy generator, cookie consent banner, 3 document templates, monthly re-scan.</div>
+        <div class="pricing-desc th">สร้าง privacy policy, cookie banner, template 3 ฉบับ, สแกนรายเดือน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">BUSINESS</div>
+        <div class="pricing-tier th">BUSINESS</div>
+        <div class="pricing-price">฿2,990</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Everything + breach workflow, employee training (20 seats), DSAR management, all templates, compliance dashboard.</div>
+        <div class="pricing-desc th">ทุกอย่าง + workflow ข้อมูลรั่ว, ฝึกอบรมพนักงาน (20 คน), DSAR, template ทั้งหมด, dashboard</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">ENTERPRISE</div>
+        <div class="pricing-tier th">ENTERPRISE</div>
+        <div class="pricing-price">฿9,900</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Everything + DPO-as-a-Service, quarterly lawyer review, unlimited training, API, annual audit report.</div>
+        <div class="pricing-desc th">ทุกอย่าง + DPO-as-a-Service, ทนายรีวิวรายไตรมาส, ฝึกอบรมไม่จำกัด, API, รายงานตรวจประจำปี</div>
+      </div>
+    </div>
+
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">18-MONTH REVENUE PROJECTION (MODERATE)</p>
+      <div class="revenue-row">
+        <span class="en">Month 6: 400 Starter + 80 Business + 5 Enterprise</span>
+        <span class="th">เดือน 6: Starter 400 + Business 80 + Enterprise 5</span>
+        <span class="revenue-val">฿685K/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 12: 1,000 Starter + 300 Business + 15 Enterprise</span>
+        <span class="th">เดือน 12: Starter 1,000 + Business 300 + Enterprise 15</span>
+        <span class="revenue-val">฿2.03M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 18: 1,500 Starter + 500 Business + 30 Enterprise</span>
+        <span class="th">เดือน 18: Starter 1,500 + Business 500 + Enterprise 30</span>
+        <span class="revenue-val">฿3.47M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en"><strong>Year 1 ARR (Moderate)</strong></span>
+        <span class="th"><strong>ARR ปีที่ 1 (ปานกลาง)</strong></span>
+        <span class="revenue-val"><strong>฿24.3M (~$700K)</strong></span>
+      </div>
+      <div class="revenue-row" style="font-size:0.8rem;color:var(--muted);font-weight:normal;">
+        <span class="en">Break-even: Month 5-6 | Total investment: ~฿555K | 18-mo profit: ~฿18M</span>
+        <span class="th">คุ้มทุน: เดือน 5-6 | ลงทุนรวม: ~฿555K | กำไร 18 เดือน: ~฿18M</span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GTM ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">GO-TO-MARKET</div>
+    <div class="section-label th">กลยุทธ์เข้าตลาด</div>
+    <h2>
+      <span class="en">"ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" — Fear Sells</span>
+      <span class="th">"ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" — ความกลัวขายได้</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">😱</div>
+        <h3 class="en">Fear-Driven Free Scan</h3>
+        <h3 class="th">สแกนฟรี กระตุ้นด้วยความกลัว</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Facebook/LINE ads targeting Thai SME owners: "ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" (Free website check before ฿5M fine). Every new enforcement case = free marketing. Scan shows 12 violations → fear → paid conversion. Expected: 15-20% free-to-paid conversion.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">โฆษณา Facebook/LINE เจาะเจ้าของ SME ไทย: "ตรวจเว็บฟรี ก่อนโดนปรับ ฿5M" ทุกคดีบังคับใช้ใหม่ = marketing ฟรี สแกนพบ 12 จุดผิด → กลัว → ซื้อ คาด: conversion ฟรี→เสียเงิน 15-20%</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3 class="en">Accountant & Lawyer Partnerships</h3>
+        <h3 class="th">พันธมิตรนักบัญชี & ทนาย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Thai accountants serve 100K+ SMEs. They're already asked "help me with PDPA." Partner: 20% referral commission. "Add PDPA compliance to your service offering." Same for law firms — white-label our tool for their clients.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">นักบัญชีไทยให้บริการ SME 100K+ คน ลูกค้าถามเรื่อง PDPA อยู่แล้ว ร่วมมือ: คอมมิชชั่น 20% "เพิ่ม PDPA compliance ในบริการของคุณ" เช่นเดียวกับสำนักงานกฎหมาย white-label เครื่องมือเรา</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📰</div>
+        <h3 class="en">PDPA Content & Webinars</h3>
+        <h3 class="th">Content PDPA & Webinars</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Monthly webinar: "PDPA Enforcement Updates — New Cases & How to Protect Your Business." Blog articles on every enforcement case (SEO). Thai PDPA guides. Facebook group posts. Position as THE PDPA authority for Thai businesses.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Webinar รายเดือน: "อัปเดต PDPA — คดีใหม่ & วิธีป้องกันธุรกิจ" บทความบล็อกทุกคดีบังคับใช้ (SEO) คู่มือ PDPA ไทย โพสต์กลุ่ม Facebook วางตำแหน่งเป็น authority เรื่อง PDPA สำหรับธุรกิจไทย</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TIMELINE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">BUILD TIMELINE</div>
+    <div class="section-label th">ไทม์ไลน์การสร้าง</div>
+    <h2><span class="en">6-Week MVP — Website Scanner First</span><span class="th">6 สัปดาห์ MVP — เริ่มจาก Website Scanner</span></h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 1–2</div>
+        <div class="tl-title en">Website Scanner + PDPA Knowledge Base</div>
+        <div class="tl-title th">Website Scanner + ฐานข้อมูล PDPA</div>
+        <div class="tl-desc en">Build headless browser crawler: cookie detection, privacy policy analysis, form consent check, tracker identification. Load full PDPA law text (160 sections) + sub-regulations + all enforcement decisions into vector DB. RAG pipeline for AI-powered compliance analysis.</div>
+        <div class="tl-desc th">สร้าง crawler: ตรวจ cookie, วิเคราะห์ privacy policy, เช็คฟอร์ม consent, ระบุ tracker โหลด PDPA ฉบับเต็ม (160 มาตรา) + กฎย่อย + คำสั่งบังคับใช้ลง vector DB RAG pipeline สำหรับวิเคราะห์ compliance ด้วย AI</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 3</div>
+        <div class="tl-title en">Privacy Policy Generator + Cookie Banner</div>
+        <div class="tl-title th">สร้าง Privacy Policy + Cookie Banner</div>
+        <div class="tl-desc en">AI-powered privacy policy generator: input business type → output Thai PDPA-compliant policy. Cookie consent banner with one-line embed code. Test with 20 real Thai business websites.</div>
+        <div class="tl-desc th">สร้าง privacy policy ด้วย AI: ใส่ประเภทธุรกิจ → ได้ policy ที่ comply PDPA ภาษาไทย Cookie banner ติดตั้งบรรทัดเดียว ทดสอบกับเว็บธุรกิจไทยจริง 20 เว็บ</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 4</div>
+        <div class="tl-title en">Document Templates + Dashboard</div>
+        <div class="tl-title th">Document Templates + Dashboard</div>
+        <div class="tl-desc en">DPA, consent forms, DSAR forms, breach notification templates. User dashboard showing compliance status, scan history, document library. PromptPay + Stripe billing integration.</div>
+        <div class="tl-desc th">DPA, แบบฟอร์ม consent, แบบฟอร์ม DSAR, template แจ้งเหตุรั่ว Dashboard แสดงสถานะ compliance, ประวัติสแกน, คลังเอกสาร PromptPay + Stripe billing</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 5–6</div>
+        <div class="tl-title en">Beta Launch — 50 Businesses</div>
+        <div class="tl-title th">Beta Launch — 50 ธุรกิจ</div>
+        <div class="tl-desc en">Beta with 50 Thai SMEs. Collect feedback on scan accuracy, document quality. Iterate. Prepare marketing materials. Soft launch free scanner to Facebook/LINE groups.</div>
+        <div class="tl-desc th">Beta กับ SME ไทย 50 ราย เก็บ feedback ความแม่นยำสแกน คุณภาพเอกสาร ปรับปรุง เตรียมสื่อ marketing Soft launch scanner ฟรีในกลุ่ม Facebook/LINE</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 8</div>
+        <div class="tl-title en">Public Launch 🚀</div>
+        <div class="tl-title th">เปิดตัว 🚀</div>
+        <div class="tl-desc en">Full public launch with all tiers. Facebook ads, partnership outreach, content marketing kickoff. Target: 10,000 free scans in first month.</div>
+        <div class="tl-desc th">เปิดตัวเต็มทุก tier โฆษณา Facebook, เข้าหาพันธมิตร, เริ่ม content marketing เป้าหมาย: 10,000 สแกนฟรีในเดือนแรก</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ RISKS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">RISKS & MITIGATIONS</div>
+    <div class="section-label th">ความเสี่ยง & การบรรเทา</div>
+    <h2><span class="en">Honest Risk Assessment</span><span class="th">ประเมินความเสี่ยงตรงไปตรงมา</span></h2>
+
+    <div class="risk-item">
+      <div class="risk-header">
+        <span class="risk-badge risk-low">LOW</span>
+        <h3 class="en">Enforcement fading</h3>
+        <h3 class="th">การบังคับใช้จะลดลง</h3>
+      </div>
+      <p class="en">PDPC explicitly stated "zero data leakage" goal. Fines INCREASING each year. International pressure from EU trade alignment. Global trend: enforcement only gets stronger. Businesses already scared won't stop buying compliance insurance.</p>
+      <p class="th">สคส. ประกาศเป้า "ข้อมูลรั่วเป็นศูนย์" ค่าปรับเพิ่มขึ้นทุกปี แรงกดดันจากการค้า EU แนวโน้มโลก: บังคับใช้เข้มขึ้นเท่านั้น ธุรกิจที่กลัวแล้วจะไม่หยุดซื้อ compliance insurance</p>
+    </div>
+    <div class="risk-item">
+      <div class="risk-header">
+        <span class="risk-badge risk-med">MEDIUM</span>
+        <h3 class="en">AI accuracy for compliance guidance</h3>
+        <h3 class="th">ความแม่นยำ AI สำหรับคำแนะนำ compliance</h3>
+      </div>
+      <p class="en">PDPA is a single law (~160 sections) — much smaller scope than "all Thai law." Compliance is checklist/process, not interpretation. Legal advisor reviews all templates. Focus on scanning (objective) over advice (subjective). Clear "not legal advice" disclaimers.</p>
+      <p class="th">PDPA เป็นกฎหมายเดียว (~160 มาตรา) ขอบเขตเล็กกว่า "กฎหมายไทยทั้งหมด" มาก Compliance เป็น checklist/กระบวนการ ไม่ใช่การตีความ ที่ปรึกษากฎหมายรีวิว template ทั้งหมด เน้นสแกน (วัตถุวิสัย) มากกว่าคำแนะนำ (อัตวิสัย) ข้อจำกัดความ "ไม่ใช่คำแนะนำทางกฎหมาย"</p>
+    </div>
+    <div class="risk-item">
+      <div class="risk-header">
+        <span class="risk-badge risk-med">MEDIUM</span>
+        <h3 class="en">Competition from Big 4 & law firms</h3>
+        <h3 class="th">แข่งกับ Big 4 & สำนักงานกฎหมาย</h3>
+      </div>
+      <p class="en">Big 4 targets enterprises (฿500K+), we target SMEs (฿990/mo). Law firms offer one-time consulting, we offer ongoing automation. Neither has self-serve, AI-powered, Thai-language tools. Win on price (10-50x cheaper) + convenience (self-serve) + comprehensiveness.</p>
+      <p class="th">Big 4 เจาะ enterprise (฿500K+) เราเจาะ SME (฿990/เดือน) สำนักงานกฎหมายให้คำปรึกษาครั้งเดียว เราให้ automation ต่อเนื่อง ไม่มีใครมีเครื่องมือ AI ภาษาไทยที่ใช้งานเอง ชนะด้วยราคา (ถูกกว่า 10-50 เท่า) + ความสะดวก + ครบถ้วน</p>
+    </div>
+    <div class="risk-item">
+      <div class="risk-header">
+        <span class="risk-badge risk-med">MEDIUM-HIGH</span>
+        <h3 class="en">Existing Thai PDPA startups add AI</h3>
+        <h3 class="th">Startup PDPA ไทยที่มีอยู่เพิ่ม AI</h3>
+      </div>
+      <p class="en">PDPA Core (Data Wow, 2K+ users) or SafeComs/iComply could add AI. Mitigation: move fast — first-mover in AI+Thai+SME. Build brand as "the PDPA compliance tool." Partnership-driven distribution creates switching costs.</p>
+      <p class="th">PDPA Core (Data Wow, 2K+ ผู้ใช้) หรือ SafeComs/iComply อาจเพิ่ม AI บรรเทา: เคลื่อนตัวเร็ว — first-mover ใน AI+ไทย+SME สร้างแบรนด์เป็น "เครื่องมือ comply PDPA" Distribution ผ่านพันธมิตรสร้าง switching costs</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOUNDER FIT ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">FOUNDER-MARKET FIT</div>
+    <div class="section-label th">ความเหมาะสมผู้ก่อตั้ง</div>
+    <h2>
+      <span class="en">OneTrust Was Built by Tech People, Not Lawyers — So Can MutePDPA</span>
+      <span class="th">OneTrust สร้างโดยคนเทค ไม่ใช่ทนาย — MutePDPA ก็ทำได้เหมือนกัน</span>
+    </h2>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-icon">💻</div>
+        <h3 class="en">Thanapat = CTO Who Builds AI Agents Daily</h3>
+        <h3 class="th">ธนาพัฒน์ = CTO ที่สร้าง AI Agent ทุกวัน</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Website scanner, RAG pipeline, document generation, SaaS billing — all well within Thanapat's daily toolkit. He literally runs AI agents (Sun, Steve, Oat) on production infrastructure. Building a compliance scanner is simpler than what he already does.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Website scanner, RAG pipeline, สร้างเอกสาร, SaaS billing — ทั้งหมดอยู่ใน toolkit ประจำวันของธนาพัฒน์ เขารัน AI agents (Sun, Steve, Oat) บน production infrastructure อยู่แล้ว การสร้าง compliance scanner ง่ายกว่าสิ่งที่เขาทำอยู่แล้ว</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3 class="en">PDPA = Tech Compliance, Not Legal Advice</h3>
+        <h3 class="th">PDPA = Tech Compliance ไม่ใช่คำแนะนำทางกฎหมาย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Unlike MuteLaw's broad legal AI (needs lawyer co-founder), PDPA compliance is process-driven: scan → detect → generate documents → monitor. OneTrust founders Kabir Barday was a tech entrepreneur, not a lawyer. $5.1B valuation. Part-time PDPA lawyer retainer (฿30K/mo) handles edge cases.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ต่างจาก MuteLaw ที่เป็น AI กฎหมายกว้าง (ต้องมีทนายเป็น co-founder) PDPA compliance เป็นกระบวนการ: สแกน → ตรวจจับ → สร้างเอกสาร → monitor ผู้ก่อตั้ง OneTrust คือ Kabir Barday นักธุรกิจเทค ไม่ใช่ทนาย มูลค่า $5.1B จ้างทนาย PDPA part-time (฿30K/เดือน) จัดการกรณีพิเศษ</p>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;padding:1.2rem 1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;">
+      <p style="font-size:0.95rem;color:var(--text);">
+        <span class="en"><strong>Founder-Market Fit: 7/10</strong> — Up from MuteLaw's 5/10. Technical CTO building tech compliance tool = natural fit. Not a 9/10 because no existing distribution network or PDPA domain expertise yet. But OneTrust proved tech founders can build compliance empires.</span>
+        <span class="th"><strong>Founder-Market Fit: 7/10</strong> — เพิ่มจาก MuteLaw 5/10 CTO เทคนิคสร้างเครื่องมือ tech compliance = เหมาะตามธรรมชาติ ไม่ใช่ 9/10 เพราะยังไม่มี distribution network หรือความเชี่ยวชาญ PDPA แต่ OneTrust พิสูจน์แล้วว่าผู้ก่อตั้งเทคสร้างอาณาจักร compliance ได้</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SCORING ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">SCORING</div>
+    <div class="section-label th">คะแนน</div>
+    <h2><span class="en">42/50 — Potential New #1</span><span class="th">42/50 — อาจเป็น #1 ใหม่</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="score-table">
+        <tr>
+          <td class="dim en">Market Potential</td>
+          <td class="dim th">ศักยภาพตลาด</td>
+          <td class="pts">8/10</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:80%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="dim en">Problem Severity</td>
+          <td class="dim th">ความรุนแรงของปัญหา</td>
+          <td class="pts">9/10</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="dim en">Competition Gap</td>
+          <td class="dim th">ช่องว่างการแข่งขัน</td>
+          <td class="pts">9/10</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="dim en">Build Feasibility</td>
+          <td class="dim th">ความเป็นไปได้ในการสร้าง</td>
+          <td class="pts">9/10</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:90%"></div></div></td>
+        </tr>
+        <tr>
+          <td class="dim en">Our Advantage</td>
+          <td class="dim th">ข้อได้เปรียบ</td>
+          <td class="pts">7/10</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:70%"></div></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="en"><strong>TOTAL</strong></td>
+          <td class="th"><strong>รวม</strong></td>
+          <td class="pts" style="font-size:1.2rem;">42/50</td>
+          <td class="bar-cell"><div class="mini-bar"><div class="mini-fill" style="width:84%"></div></div></td>
+        </tr>
+      </table>
+    </div>
+    <div style="margin-top:1.5rem;padding:1rem 1.5rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:12px;">
+      <p style="font-size:0.88rem;color:var(--secondary-light);font-weight:600;">
+        <span class="en">📊 MutePDPA 42/50 > MuteEvent 40/50 > MuteLaw 35/50. If confirmed, this is the new #1 idea from 100 sprints. Regulatory forcing function + zero AI competition + fast to build + good unit economics = strongest combination yet.</span>
+        <span class="th">📊 MutePDPA 42/50 > MuteEvent 40/50 > MuteLaw 35/50 ถ้ายืนยัน นี่คือไอเดีย #1 ใหม่จาก 100 sprints กฎหมายบังคับ + ไม่มีคู่แข่ง AI + สร้างเร็ว + unit economics ดี = ชุดรวมที่แข็งแกร่งที่สุด</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">Deep Dive Complete</span><span class="th">วิจัยเชิงลึกเสร็จสมบูรณ์</span></h2>
+    <p>
+      <span class="en">MutePDPA — AI PDPA Compliance for Thai Businesses. Pivot from MuteLaw #93. Score: 42/50. Potential new #1 from 100 idea sprints.</span>
+      <span class="th">MutePDPA — AI PDPA Compliance สำหรับธุรกิจไทย Pivot จาก MuteLaw #93 คะแนน: 42/50 อาจเป็น #1 ใหม่จาก 100 sprints</span>
+    </p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB — IDEA SPRINT #100 — MUTEPDPA — DEEP DIVE — FEB 2026</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-th').classList.toggle('active', lang === 'th');
+  localStorage.setItem('lang', lang);
+}
+const saved = localStorage.getItem('lang');
+if (saved === 'th') setLang('th');
+</script>
+</body>
+</html>
