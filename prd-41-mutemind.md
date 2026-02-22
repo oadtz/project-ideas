@@ -1,367 +1,413 @@
-# PRD: MuteMind — AI Mental Health Companion on LINE
-### Product Requirements Document v1.0
-**Status:** Deep Dive Complete | **Score:** 33/50 | **Date:** 2026-02-21
+# PRD: MuteMind #41 — AI Mental Health Companion on LINE
+
+**Version:** 1.0  
+**Date:** February 22, 2026  
+**Author:** Sun (AI CEO, MuteLab)  
+**Score:** 33/50 — 2nd Round Runner Up  
+**Status:** PRD Complete — Ready to Build  
+
+---
+
+## ⚠️ SAFETY DISCLAIMER (NON-NEGOTIABLE)
+
+> **MuteMind is NOT a replacement for professional mental health treatment.**  
+> MuteMind is a **wellness companion** — providing mental health literacy, CBT-based self-help exercises, mood tracking, and emotional support.  
+> It does NOT diagnose, treat, or prescribe. It ALWAYS refers to professionals for clinical needs.  
+> **Crisis protocol:** Any mention of self-harm → immediate redirect to สายด่วนสุขภาพจิต 1323 + emergency 1669.  
+> **Legal position:** "AI wellness companion for mental health literacy" (ดูแลใจ) — NOT therapy (บำบัด).
 
 ---
 
 ## 1. Executive Summary
 
-**MuteMind** is an AI-powered mental health wellness companion on LINE, Thailand's dominant messaging platform (67M users). Using evidence-based Cognitive Behavioral Therapy (CBT) and mindfulness techniques, MuteMind provides anonymous, 24/7, Thai-language emotional support. The core proposition: **"เพื่อนคุยเมื่อไม่มีใครให้คุย"** — The friend to talk to when no one else is there.
+MuteMind is an AI mental health companion on LINE for Thai users — offering evidence-based CBT exercises, daily mood tracking, guided journaling, and crisis referral. Thailand has 5M+ undiagnosed depression cases, ~1 psychiatrist per 100K people, and extreme cultural stigma ("ไปหาจิตแพทย์ = บ้า"). LINE has 54M Thai MAU — making it the perfect stigma-free entry point.
 
-Thailand has an estimated 5M+ people with undiagnosed depression, only ~1 psychiatrist per 100,000 population, and extreme cultural stigma where seeking mental health help = "บ้า" (crazy). Globally, the model is proven: Woebot ($114M raised, ~$700M valuation) and Wysa (6M+ users, FDA Breakthrough Device Designation, 45+ papers). **Nobody has built this in Thai on LINE.** MuteMind addresses this gap.
+**The thesis:** Woebot ($114M raised, ~$700M val) and Wysa (6M+ users, 45+ papers) prove the model. Thailand has ZERO AI mental health chatbots in Thai on LINE. B2B corporate wellness is the real revenue engine.
 
-**Revenue path:** B2C freemium hooks users; B2B corporate wellness is the real revenue engine. Conservative path to ฿8.4M ARR ($263K) in 24 months; moderate path to ฿20M ARR ($625K).
-
----
-
-## ⚖️ 2. LEGAL & REGULATORY ANALYSIS (CRITICAL)
-
-> **This section is the most important part of this PRD.** Thanapat needs to know exactly what we can and cannot do legally in Thailand before committing resources.
-
-### 2.1 Legal Positioning: "Wellness Companion" — NOT Therapy
-
-**MuteMind MUST be positioned as a wellness/information tool, NOT a therapy or medical service.**
-
-This is not just marketing — it's the fundamental legal strategy that determines whether we need clinical licenses, medical device registration, and face medical liability.
-
-| Category | What We DO (Wellness) | What We DON'T DO (Therapy) |
-|---|---|---|
-| Conversation | Empathetic listening, emotional support | Diagnose conditions |
-| Exercises | General CBT psychoeducation, breathing, mindfulness | Individualized clinical treatment plans |
-| Assessment | Mood check-ins (how are you feeling?) | Clinical diagnostic instruments (PHQ-9 as diagnosis) |
-| Claims | "Helps you understand your emotions" | "Treats depression" or "Cures anxiety" |
-| Crisis | Refers to professionals immediately | Provides crisis intervention directly |
-| Branding | "ดูแลใจ" (take care of mind) | "บำบัด" (therapy/treatment) |
-
-### 2.2 Key Laws & Regulations
-
-**1. Mental Health Act 2008 (พ.ร.บ.สุขภาพจิต พ.ศ.2551):**
-- Regulates clinical treatment in psychiatric settings
-- Only licensed professionals can provide "mental health treatment" (การบำบัดรักษา)
-- **Impact:** Does NOT apply to MuteMind IF positioned as wellness. Applies IF we claim to treat.
-
-**2. Thai FDA / Medical Device Act:**
-- Software as Medical Device (SaMD) classification is evolving in Thailand
-- **Impact:** MuteMind likely does NOT need อย. approval as wellness tool
-- Risk: If we add clinical diagnostic features, reclassification possible
-- Precedent: Woebot and Wysa avoided general FDA clearance for depression/anxiety tools
-
-**3. PDPA (Personal Data Protection Act):**
-- Mental health data = **sensitive personal data** under Section 26
-- Requirements: Explicit consent, purpose limitation, data minimization, DPO, breach notification
-- **Critical risk:** LLM API calls send sensitive data to foreign servers → cross-border transfer issue
-- Mitigation: Thailand-hosted database, DPAs with all processors, explicit consent flows
-
-**4. Professional Licensing:**
-- No license required for wellness tools/life coaching
-- Clinical psychology/psychiatry licenses required for diagnosis and treatment
-- **Strategy:** Clinical Advisory Board provides oversight WITHOUT making MuteMind a clinical service
-
-### 2.3 Liability Risk — User Harm
-
-**The #1 legal risk.** If a user self-harms after using MuteMind, we face potential negligence claims.
-
-**International precedent:**
-- BetterHelp: FTC fined $7.8M for sharing mental health data with advertisers (2023)
-- Character.AI: Lawsuit after teen suicide, alleging AI chatbot encouraged harmful behavior (2024)
-- No Thai precedent yet, but the direction is clear: AI providers CAN be held liable
-
-**Mandatory mitigations (non-negotiable for launch):**
-1. Clinical Advisory Board reviewing all AI conversation designs
-2. Automated suicide risk detection (keyword + sentiment analysis)
-3. Immediate crisis escalation protocol (1323 hotline, emergency 1669)
-4. Multi-layer disclaimers in Thai ("This is not therapy. If you are in crisis, call 1323.")
-5. Professional liability insurance
-6. Conversation logging for quality review and legal defense
-7. Terms of Service with liability limitation clauses
-
-### 2.4 Advertising & Marketing Restrictions
-
-**Safe language:** "ดูแลใจ", "เพื่อนคุย", "ข้อมูลสุขภาพจิต", "ฝึกสติ"
-**Forbidden language:** "บำบัด", "รักษา", "วินิจฉัย", "หาย" (cure/heal)
-
-### 2.5 Corporate Wellness (B2B) Legal
-
-- Employee participation MUST be opt-in
-- Employer CANNOT access individual employee data (PDPA)
-- Aggregate/anonymized metrics only for HR dashboard
-- Employee consent required even if employer provides the tool
-
-### 2.6 Insurance Partnership Requirements
-
-No insurance license needed. Partners will require:
-- PDPA compliance certification
-- Data security audit
-- Professional liability insurance
-- Clinical oversight evidence
-
-### 2.7 Legal Setup Budget
-
-| Item | Cost (฿) |
-|---|---|
-| Company registration | 15,000-30,000 |
-| Health tech legal consultation | 50,000-150,000 |
-| PDPA compliance setup | 80,000-200,000 |
-| ToS + Privacy Policy drafting | 30,000-80,000 |
-| Professional liability insurance | 30,000-80,000/yr |
-| **Total** | **฿205,000-540,000** |
-
-### 2.8 Legal Verdict
-
-> **✅ MuteMind CAN operate legally in Thailand as a wellness companion.** The regulatory landscape is navigable IF we: (1) never claim to provide therapy/treatment, (2) build robust crisis protocols, (3) comply with PDPA for sensitive health data, (4) have clinical advisors on board, and (5) carry appropriate insurance. The biggest risk is not regulation — it's **liability if a user harms themselves.** This requires engineering-level safety investment, not just legal disclaimers.
+**7-day prototype:** LINE OA → daily mood check-in (emoji scale) → AI empathetic chat (CBT-based) → crisis detection with 1323 redirect → weekly mood report. Free trial → ฿199/mo subscription.
 
 ---
 
-## 3. Problem Statement
+## 2. MVP Features (7-Day Prototype)
 
-### The Pain
-- **5M+ undiagnosed:** Only 1.5M Thais officially diagnosed with depression. Estimated actual: 5-7M.
-- **Severe shortage:** ~1 psychiatrist per 100K population (Thailand has ~700 total). WHO recommends 1:10K.
-- **Wait times:** 1-3 months for public hospital psychiatric appointment. Rural areas: virtually zero access.
-- **Stigma:** "ไปหาจิตแพทย์ = บ้า" — the single biggest barrier to treatment in Thailand
-- **Cost:** Private psychiatrist ฿1,500-3,000/visit. Ooca online: ฿1,500+/session. Out of reach for most.
-- **Crisis:** 1323 hotline overwhelmed, inconsistent quality, limited hours.
+### 2.1 Core Feature: Daily Mood Check-In
+- **Trigger:** LINE push notification at user-chosen time (default: 9 AM, 9 PM)
+- **Interface:** LINE Flex Message with emoji mood scale (1-10)
+  - 😭 1-2 (Very Low) → 😔 3-4 (Low) → 😐 5-6 (Okay) → 😊 7-8 (Good) → 🥰 9-10 (Great)
+- **Follow-up:** Based on mood score, AI asks one contextual question:
+  - Low mood: "อยากเล่าให้ฟังไหม ว่าวันนี้เกิดอะไรขึ้น?" (Want to tell me what happened today?)
+  - Good mood: "เยี่ยมเลย! อะไรทำให้รู้สึกดีวันนี้?" (Great! What made you feel good today?)
+- **Data stored:** timestamp, mood_score, emoji, optional note
 
-### Who Has It
-- **Primary:** Thai adults 18-40, urban professionals, experiencing stress/anxiety/mild-moderate depression
-- **Secondary:** University students (high stress, low resources, high stigma)
-- **Tertiary:** Corporate employees (burnout, workplace stress — employer may provide)
+### 2.2 Core Feature: AI Chat Companion
+- **Personality:** Warm, empathetic, non-judgmental Thai speaker. Name: "มายด์" (Mind)
+- **Base model:** Claude/GPT-4 with carefully crafted system prompt
+- **Conversation style:**
+  - Active listening + validation first ("เข้าใจเลย ฟังดูเหนื่อยมากเลยวันนี้")
+  - CBT-based gentle reframing (when appropriate, not forced)
+  - Thai cultural awareness (กรรม, หน้า, family dynamics, สังคมไทย)
+  - Warm informal Thai (ภาษาพูด not ภาษาราชการ)
+- **Session limits (free):** 10 messages/day
+- **Session limits (paid):** Unlimited
 
-### How Big
-- Thai population with mental health needs: 5-10M people
-- Treatment gap: 60-70% receive no care
-- Global AI mental health market: ~$3.5B (2025), 20%+ CAGR
-- Thai corporate wellness market: ฿5-10B/year (mental health fastest-growing segment)
+### 2.3 Core Feature: Journaling Prompts
+- **Trigger:** After mood check-in OR on-demand via Rich Menu
+- **AI-guided prompts based on mood:**
+  - Low: "ลองเขียน 3 สิ่งที่ทำได้ดีวันนี้ แม้จะเล็กน้อย" (Write 3 things you did well today, even small ones)
+  - Medium: "วันนี้มีอะไรที่อยากจดจำไว้ไหม?" (Anything worth remembering today?)
+  - High: "อะไรทำให้วันนี้พิเศษ? ลองเขียนไว้เพื่อวันที่ยากลำบาก" (What made today special? Write it for tough days)
+- **Output:** Stored in user's private journal, viewable via LIFF web app
+
+### 2.4 Core Feature: Crisis Detection & Escalation (NON-NEGOTIABLE)
+- **Keyword detection layer:** Thai crisis keywords/phrases:
+  - "ฆ่าตัวตาย", "ไม่อยากอยู่", "ตายดีกว่า", "อยากตาย", "ทำร้ายตัวเอง", "กรีดแขน", "กินยาตาย", "หมดหวัง", "ไม่มีทางออก", "ไม่ไหวแล้ว"
+  - + English equivalents + transliterated variants
+- **Sentiment analysis layer:** Persistent low mood (score ≤2 for 3+ consecutive days)
+- **Escalation protocol:**
+  1. **Immediate:** AI responds with empathy + crisis resources
+     > "ขอบคุณที่ไว้วางใจเล่าให้ฟัง ฉันเป็นห่วงมากเลย สิ่งที่คุณรู้สึกสำคัญมาก และมีคนพร้อมช่วยเหลือ"
+     > "กรุณาโทร สายด่วนสุขภาพจิต 1323 (ฟรี 24 ชม.) หรือ 1669 กรณีฉุกเฉิน"
+  2. **LINE Flex Message:** Clickable tel: links for 1323 and 1669
+  3. **Continued care:** AI stays in conversation but gently encourages professional help
+  4. **Backend flag:** High-risk conversation flagged for clinical advisor review within 24 hours
+- **NEVER:** AI must never:
+  - Discuss methods of self-harm
+  - Validate suicidal thoughts as reasonable
+  - Suggest user is beyond help
+  - Act as a crisis counselor (refer only)
+
+### 2.5 Core Feature: Weekly Mood Report
+- **Delivery:** Every Sunday via LINE message
+- **Content:** LIFF web page showing:
+  - 7-day mood chart (line graph)
+  - Average mood score + trend (↑↓→)
+  - AI-generated insight: "สัปดาห์นี้อารมณ์คุณดีขึ้นเฉลี่ย 1.2 จุด ดีใจด้วย! 🎉"
+  - Suggestion for next week (based on patterns)
+- **CTA (free users):** "อยากดู insight ย้อนหลัง 30 วัน? อัปเกรด Premium ฿199/เดือน"
+
+### 2.6 MVP Feature Summary
+
+| Feature | Free (7-day trial) | Free (after trial) | Personal ฿199/mo | Premium ฿499/mo |
+|---|---|---|---|---|
+| Daily mood check-in | ✅ | ✅ | ✅ | ✅ |
+| AI chat | 10 msg/day | 3 msg/day | Unlimited | Unlimited |
+| Journaling prompts | ✅ | ❌ | ✅ | ✅ |
+| Weekly mood report | ✅ | Basic only | ✅ Full | ✅ Full |
+| Crisis detection/referral | ✅ Always | ✅ Always | ✅ Always | ✅ Always |
+| Monthly insights | ❌ | ❌ | ✅ | ✅ |
+| Guided programs | ❌ | ❌ | ❌ | ✅ (anxiety, sleep, stress) |
+| Therapist directory | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
-## 4. Solution: MuteMind's Approach
+## 3. User Flow
 
-### Architecture
+### 3.1 First Visit → Onboarding (Day 0)
 
 ```
-User (LINE Chat)
-    ↓
-LINE Messaging API (Webhook)
-    ↓
-MuteMind Backend (Node.js/Python)
-    ├── Safety Layer (crisis detection, keyword filter, risk scoring)
-    ├── Session Manager (conversation context, user profile)
-    ├── CBT Engine (structured exercise flows)
-    └── LLM API (GPT-4/Gemini for empathetic Thai responses)
-    ↓
-Response → LINE (Flex Messages, Rich Menu, LIFF)
-    ↓
-Escalation (if needed) → 1323 / Emergency / Human therapist
+1. User adds MuteMind LINE OA (via QR code, LINE search, or referral link)
+2. Welcome message:
+   "สวัสดี 🧡 ยินดีต้อนรับสู่ MuteMind
+    เพื่อนดูแลใจ AI ของคุณ
+    พร้อมรับฟัง ไม่ตัดสิน ตลอด 24 ชั่วโมง"
+3. Disclaimer (REQUIRED before first interaction):
+   "⚠️ MuteMind เป็นเพื่อนดูแลใจ ไม่ใช่การรักษาทางการแพทย์
+    หากรู้สึกไม่ปลอดภัย โทร 1323 (ฟรี 24 ชม.)
+    [ยอมรับข้อตกลง] [อ่านเพิ่มเติม]"
+4. User taps [ยอมรับ]
+5. Onboarding questions (warm, conversational):
+   - "เรียกคุณว่าอะไรดี?" (What should I call you?) → nickname
+   - "ตอนนี้คุณรู้สึกยังไง?" (How are you feeling?) → first mood check
+   - "อยากให้เตือนเช็คอารมณ์ตอนกี่โมง?" (When should I remind you?) → notification time
+6. First AI interaction (2-3 messages of warm, empathetic exchange)
+7. Rich Menu appears: [เช็คอารมณ์] [คุยกับมายด์] [สมุดบันทึก] [รายงาน]
 ```
 
-### What Makes It Different
-1. **LINE-native:** Zero friction, no app download, 67M Thai users already there
-2. **Anonymous:** No real name, no ID, no face — stigma eliminated
-3. **Thai-first:** Built for Thai cultural context, Thai language, Thai mental health landscape
-4. **Wellness positioning:** Legally clean, scalable, no clinical license required
-5. **AI + Human escalation:** AI handles 90%+ of conversations; humans for crisis and Therapy+ tier
+### 3.2 Daily Habit Loop (Day 1-7)
+
+```
+Morning:
+  → Push notification: "เช้านี้เป็นยังไงบ้าง? 🌤️"
+  → User taps → mood check-in (emoji scale)
+  → AI responds based on mood + offers journaling prompt
+  → If low mood: gentle CBT exercise suggestion
+
+Evening:
+  → Push notification: "วันนี้ผ่านไปเป็นยังไง? 🌙"
+  → Second mood check-in
+  → AI reflection prompt or gratitude exercise
+  → "พรุ่งนี้เจอกันนะ ฝันดี 💤"
+
+Anytime:
+  → User can initiate chat via Rich Menu [คุยกับมายด์]
+  → AI companion available for open conversation
+  → CBT techniques woven naturally into dialogue
+```
+
+### 3.3 Free Trial → Conversion (Day 7)
+
+```
+Day 7 morning:
+  → Weekly mood report delivered (LIFF)
+  → Shows 7-day mood journey + insights
+  → CTA: "ช่วง 7 วันที่ผ่านมา คุณเช็คอารมณ์ X ครั้ง
+          และอารมณ์ดีขึ้นเฉลี่ย Y จุด 🎉
+          อยากดูแลใจต่อไหม?"
+  → [ใช้ต่อ ฿199/เดือน] [ใช้แบบฟรี (จำกัด)]
+```
+
+### 3.4 Ongoing Engagement (Month 1+)
+
+```
+Weekly:
+  → Sunday mood report + insights
+  → New journaling prompt theme
+
+Monthly (paid users):
+  → 30-day mood analysis
+  → AI-generated mental wellness tips based on patterns
+  → "เดือนนี้คุณมีแนวโน้มอารมณ์ต่ำในวันอาทิตย์ ลองวางแผนทำกิจกรรมที่ชอบไหม?"
+
+Premium (฿499/mo):
+  → Guided 4-week programs:
+    - "จัดการความวิตกกังวล" (Managing Anxiety) — 28-day CBT program
+    - "นอนหลับดีขึ้น" (Better Sleep) — sleep hygiene + relaxation
+    - "จัดการความเครียดจากงาน" (Work Stress Management)
+  → Therapist directory: curated list of Thai therapists + Ooca referral
+```
 
 ---
 
-## 5. MVP Features (Month 1-3)
+## 4. Pricing
 
-### Must Have (P0)
-- [ ] LINE Bot with natural Thai conversation
-- [ ] Mood check-in (emoji scale + short text)
-- [ ] Basic CBT exercises (thought reframing, 3 good things, cognitive distortions)
-- [ ] Breathing exercise timer
-- [ ] **Crisis detection + 1323 referral (CRITICAL)**
-- [ ] Disclaimer flow (first interaction + periodic reminders)
-- [ ] Privacy consent flow (PDPA compliance)
-- [ ] Conversation logging (encrypted, access-controlled)
-
-### Should Have (P1)
-- [ ] Mood tracking dashboard (LIFF web app)
-- [ ] Sleep hygiene tips
-- [ ] Gratitude journaling
-- [ ] Daily check-in reminder (LINE push message)
-- [ ] Basic mindfulness/meditation guidance
-
-### Nice to Have (P2)
-- [ ] Personalized CBT program (4-8 week structured course)
-- [ ] Mood pattern analytics
-- [ ] Premium paywall (฿199/mo)
-- [ ] Therapist directory and referral
-
----
-
-## 6. Pricing
+### 4.1 B2C Pricing
 
 | Tier | Price | Features | Target |
 |---|---|---|---|
-| **Free** | ฿0 | AI chat, mood check-in, breathing, basic CBT | Mass adoption, funnel |
-| **Wellness Pro** | ฿199/mo | Guided programs, journaling, sleep tools, analytics | Self-care serious users |
-| **Therapy+** | ฿499/mo | All Pro + video sessions with licensed therapist | Users needing human support |
-| **Enterprise** | ฿50-150/emp/mo | Employee access, anonymized HR dashboard, burnout detection | Corporate wellness |
+| **Free Trial** | ฿0 (7 days) | All features unlocked | Everyone — try before buy |
+| **Free (post-trial)** | ฿0 | 3 msg/day + basic mood tracking | Users who can't afford / aren't ready |
+| **Personal** | ฿199/mo | Unlimited chat + journaling + weekly insights + monthly reports | Core paid users |
+| **Premium** | ฿499/mo | + Guided programs (anxiety, sleep, stress) + therapist directory + priority response | Power users, severe need |
+
+**Payment:** LINE Pay, credit card, PromptPay via Omise/Stripe
+
+### 4.2 B2B Corporate Wellness
+
+| Tier | Price | Includes | Target |
+|---|---|---|---|
+| **Starter** | ฿80/emp/mo (min 50 emp) | Employee access + anonymized usage report | Startups, small offices |
+| **Professional** | ฿60/emp/mo (min 200 emp) | + HR wellness dashboard + quarterly insights | Mid-size companies |
+| **Enterprise** | ฿50/emp/mo (min 1,000 emp) | + Custom branding + dedicated support + API integration | Large corporates, BPOs |
+
+**Key:** HR sees ONLY aggregate data (team stress levels, usage rates). NEVER individual data. PDPA-compliant.
+
+### 4.3 Revenue Projections (Moderate Scenario)
+
+| Month | B2C Users (paid) | B2C Revenue/mo | B2B Companies | B2B Revenue/mo | Total/mo | ARR |
+|---|---|---|---|---|---|---|
+| 3 | 200 | ฿40K | 1 pilot | ฿10K | ฿50K | ฿600K |
+| 6 | 800 | ฿160K | 3 | ฿80K | ฿240K | ฿2.9M |
+| 12 | 2,000 | ฿400K | 10 | ฿300K | ฿700K | ฿8.4M |
+| 18 | 3,000 | ฿600K | 18 | ฿500K | ฿1.1M | ฿13.2M |
+| 24 | 3,500 | ฿700K | 25 | ฿660K | ฿1.5M | ฿18M |
+
+**Break-even:** Month 10-16 depending on burn rate.
 
 ---
 
-## 7. Competition Matrix
+## 5. Tech Stack
 
-| | MuteMind | Ooca | Woebot | Wysa | DMIND |
-|---|---|---|---|---|---|
-| **Thai** | ✅ | ✅ | ❌ | ❌ | ✅ |
-| **LINE** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **AI** | ✅ | ❌ (human) | ✅ | ✅ | ❌ (forms) |
-| **24/7** | ✅ | ❌ | ✅ | ✅ | ✅ (limited) |
-| **Anonymous** | ✅ | Partial | ✅ | ✅ | Partial |
-| **CBT** | ✅ | ✅ | ✅ | ✅ | ❌ |
-| **B2B** | ✅ | ✅ | ✅ | ✅ | ❌ |
-| **Price** | Free-฿499 | ฿1,500+/session | ~฿140-420 | ~฿140-420 | Free |
-| **Clinical evidence** | ❌ (TBD) | ✅ | ✅ | ✅ 45+ papers | ❌ |
+### 5.1 Architecture
 
-**MuteMind's moat:** Thai + LINE + AI + Anonymous. No one else has all four.
-**MuteMind's weakness:** Zero clinical evidence, zero clinical team expertise.
+```
+[User on LINE] → LINE Messaging API (Webhook)
+                     ↓
+              [Backend: Node.js/Python on Railway/Render]
+                     ↓
+              ┌──────┴──────┐
+              │              │
+        [Safety Layer]  [LLM Router]
+        - Keyword scan   - Claude API (primary)
+        - Sentiment       - GPT-4 (fallback)
+        - Risk scoring    - System prompt + context
+              │              │
+              └──────┬──────┘
+                     ↓
+              [Supabase / PlanetScale]
+              - User profiles
+              - Mood entries
+              - Conversation logs (encrypted)
+              - Journal entries
+                     ↓
+              [Analytics: Mixpanel/PostHog]
+              - Usage metrics
+              - Retention
+              - Mood trends
+                     ↓
+              [LIFF Web App]
+              - Mood dashboard
+              - Weekly/monthly reports
+              - Settings
+              - Payment (Omise)
+```
+
+### 5.2 AI System Prompt (Core)
+
+```
+You are มายด์ (Mind), a warm and empathetic AI wellness companion on LINE.
+You speak informal Thai (ภาษาพูด) with a caring, non-judgmental tone.
+
+RULES:
+1. You are NOT a therapist, doctor, or medical professional. Never claim to be.
+2. You provide wellness support, mental health literacy, and evidence-based self-help.
+3. You use CBT techniques gently: thought reframing, behavioral activation, gratitude, breathing.
+4. You ALWAYS validate feelings first before suggesting any technique.
+5. You are culturally aware of Thai society: face culture, family expectations, Buddhist context.
+6. If user mentions self-harm, suicide, or severe distress → IMMEDIATELY provide 1323 + 1669 contacts.
+7. You NEVER discuss methods of self-harm or validate suicidal intent.
+8. You recommend professional help when needs exceed your scope.
+9. You maintain conversation context within a session but do not reference past sessions unless user brings it up.
+10. You use Thai emoji naturally but not excessively.
+
+TONE: Like a caring older sibling (พี่) who listens well and gently guides.
+LANGUAGE: Thai (ภาษาพูด), with occasional English terms when natural in Thai context.
+```
+
+### 5.3 Safety Layer (Pre-LLM)
+
+```python
+CRISIS_KEYWORDS_TH = [
+    "ฆ่าตัวตาย", "อยากตาย", "ไม่อยากอยู่", "ตายดีกว่า",
+    "ทำร้ายตัวเอง", "กรีดแขน", "กินยาตาย", "หมดหวัง",
+    "ไม่มีทางออก", "ไม่ไหวแล้ว", "จบชีวิต", "ฆ่าตัว",
+    "ยาพิษ", "แขวนคอ", "กระโดดตึก"
+]
+
+CRISIS_KEYWORDS_EN = [
+    "kill myself", "suicide", "want to die", "end my life",
+    "self-harm", "cut myself", "overdose", "no way out"
+]
+
+def check_crisis(message: str) -> bool:
+    """Pre-LLM safety check. If True, bypass LLM and send crisis response."""
+    text = message.lower()
+    for kw in CRISIS_KEYWORDS_TH + CRISIS_KEYWORDS_EN:
+        if kw in text:
+            return True
+    # Additional: sentiment score check
+    if sentiment_score(text) < CRISIS_THRESHOLD:
+        return True
+    return False
+```
+
+### 5.4 Data Privacy (PDPA Compliance)
+
+- **Database:** Thailand-region Supabase/AWS (ap-southeast-1 Bangkok)
+- **Encryption:** AES-256 at rest, TLS 1.3 in transit
+- **LLM API calls:** Anonymized user_id only, no PII in prompts
+- **Consent flow:** Explicit opt-in before first interaction (PDPA Section 26)
+- **Data retention:** Conversation logs auto-deleted after 90 days (configurable)
+- **Data export:** Users can request full data export (PDPA right)
+- **Data deletion:** Users can request full deletion (PDPA right)
+- **DPA:** Signed Data Processing Agreements with all cloud/AI providers
 
 ---
 
-## 8. Cost Analysis
+## 6. Success Metrics & Go/Kill Thresholds
 
-### Monthly Operating Costs
+### 6.1 Prototype Phase (Week 1-4)
 
-| Phase | Monthly Cost | Notes |
+| Metric | Go ✅ | Continue ⚠️ | Kill ❌ |
+|---|---|---|---|
+| LINE OA friends added (Week 2) | >500 | 200-500 | <200 |
+| Day-7 retention | >40% | 20-40% | <20% |
+| Daily mood check-in completion | >60% of active | 30-60% | <30% |
+| AI chat sessions/user/week | >3 | 1-3 | <1 |
+| NPS score | >50 | 30-50 | <30 |
+| Crisis detection false positive rate | <5% | 5-15% | >15% |
+
+### 6.2 Growth Phase (Month 3-12)
+
+| Metric | Go ✅ | Continue ⚠️ | Kill ❌ |
+|---|---|---|---|
+| Monthly active users (Month 6) | >5,000 | 1,000-5,000 | <1,000 |
+| Free → paid conversion | >3% | 1-3% | <1% |
+| Paid user retention (Month 3) | >70% | 50-70% | <50% |
+| B2B pilot companies (Month 6) | >3 | 1-3 | 0 |
+| Average mood improvement (8-week cohort) | >0.5pt | 0-0.5pt | Negative |
+
+### 6.3 Safety Metrics (CRITICAL — Zero Tolerance)
+
+| Metric | Threshold | Action |
 |---|---|---|
-| Month 1-6 (MVP) | ฿100K-200K | LLM ฿15-30K, hosting ฿5-10K, clinical advisors ฿30-60K, marketing ฿20-50K |
-| Month 7-12 (Growth) | ฿190K-465K | Scaling LLM costs, expanded marketing, more clinical oversight |
-| Month 13-24 (Scale) | ฿390K-990K | High LLM usage, B2B sales, expanded team |
-
-### Initial Investment Required
-
-| Item | Cost (฿) |
-|---|---|
-| Legal setup (entity, PDPA, ToS) | 205K-540K |
-| MVP development (if outsourced) | 0 (built by Oat) |
-| Clinical Advisory Board setup | 50K-100K |
-| Marketing/launch budget | 50K-100K |
-| **Total initial** | **฿305K-740K (~$9.5K-$23K)** |
+| Harm incidents linked to MuteMind | 0 | Immediate product shutdown + investigation |
+| Crisis detection miss rate | <1% | Pause new users, retrain model |
+| Harmful AI response | 0 per 10K conversations | Immediate prompt revision + clinical review |
+| PDPA data breach | 0 | Immediate notification + remediation |
+| User complaint about harmful content | <0.01% of sessions | Clinical review within 24 hours |
 
 ---
 
-## 9. ROI Scenarios (24 Months)
+## 7. Risks & Mitigations
 
-### Conservative (60% probability)
-- Users: 80K free, 1,500 paid B2C, 10 B2B clients
-- Revenue: ฿8.4M ARR ($263K)
-- Total investment: ฿6M over 24 months
-- ROI: 40% positive
-- Break-even: Month 14-16
-
-### Moderate (30% probability)
-- Users: 200K free, 3,500 paid B2C, 25 B2B clients
-- Revenue: ฿20M ARR ($625K)
-- Total investment: ฿10M over 24 months
-- ROI: 100% positive
-- Break-even: Month 10-12
-
-### Aggressive (10% probability)
-- Users: 500K free, 8,000 paid B2C, 50 B2B clients
-- Revenue: ฿42M ARR ($1.3M)
-- Total investment: ฿18M over 24 months
-- ROI: 133% positive
-- Break-even: Month 8-10
-
----
-
-## 10. 30-Day Validation Plan
-
-### Week 1: Legal & Clinical Foundation
-- [ ] Consult Thai health tech lawyer (identify firm via Thai Fintech Association network)
-- [ ] PDPA compliance assessment for sensitive health data on LINE
-- [ ] Begin outreach to 5-10 psychiatrists/psychologists for advisory board
-- [ ] Draft Terms of Service and Privacy Policy
-
-### Week 2: MVP Build
-- [ ] LINE Bot setup (Messaging API, webhook, Rich Menu)
-- [ ] Build conversation engine with safety guardrails
-- [ ] Implement crisis detection keywords + escalation flow
-- [ ] Create 3-5 CBT exercise conversation flows
-- [ ] Mood check-in feature (emoji scale + tracking)
-
-### Week 3: Private Pilot
-- [ ] Recruit 50-100 private testers (mental health advocates, university students, friends)
-- [ ] Run 1-week pilot — track engagement, mood improvement, safety incidents
-- [ ] Clinical advisor reviews conversation logs for quality/safety
-- [ ] Iterate on conversation quality and safety detection
-
-### Week 4: B2B Outreach + Public Prep
-- [ ] Cold outreach to 10 HR directors (Bangkok tech companies, BPOs)
-- [ ] Create B2B pitch deck with pilot data
-- [ ] Prepare LINE Official Account for public launch
-- [ ] Plan social media launch (Thai mental health communities, Twitter/X)
-- [ ] Decision point: Go / adjust / kill
-
-### Success Metrics for 30-Day Validation
-- [ ] Clinical advisor recruited (at least 1 psychiatrist or clinical psychologist)
-- [ ] Legal structure clear (company type, positioning, disclaimers)
-- [ ] 50+ pilot users with >3 conversations each
-- [ ] Average mood improvement signal (even small) in pilot data
-- [ ] Zero safety incidents in pilot
-- [ ] 2+ positive B2B conversations (interest, not commitment)
-- [ ] Total cost under ฿100K
-
----
-
-## 11. Go-to-Market Strategy
-
-### Phase 1: Seed (Month 1-3)
-- **Channel:** Thai mental health Twitter/X communities, university counseling partnerships, mental health advocate influencers
-- **Strategy:** Free tool → organic word of mouth → "เพื่อนคุยฟรี" positioning
-- **Target:** 5K users, 100 daily active
-- **Cost:** ฿50-100K
-
-### Phase 2: Growth (Month 4-6)
-- **Channel:** LINE Ads, TikTok mental health content, corporate HR events
-- **Strategy:** B2C awareness + first B2B pilots
-- **Target:** 50K users, 1K daily active, 3-5 corporate pilots
-- **Cost:** ฿200-400K
-
-### Phase 3: Scale (Month 7-12)
-- **Channel:** Insurance partnerships, DMH collaboration, PR/media
-- **Strategy:** B2B scaling, clinical evidence publication, credibility building
-- **Target:** 200K users, 5K daily active, 15+ corporate clients
-- **Cost:** ฿500K-1M
-
-### Phase 4: Expand (Month 13-24)
-- **Channel:** SEA expansion planning, regional partnerships
-- **Strategy:** Thailand market leader → regional expansion (Vietnam, Philippines)
-- **Target:** 500K+ users, 25+ corporate clients, insurance partnerships live
-
----
-
-## 12. Key Risks & Decision Points
-
-| Risk | Kill Switch? | Decision Trigger |
+| Risk | Severity | Mitigation |
 |---|---|---|
-| Cannot recruit clinical advisor | YES | If no advisor by Week 3, pause project |
-| Legal consultation reveals showstopper | YES | If lawyer says "can't operate as wellness tool," kill |
-| Safety incident in pilot | PAUSE | Any self-harm incident → immediate review with clinical advisor |
-| Zero B2B interest after 20 outreach | ADJUST | Pivot to pure B2C or kill B2B timeline |
-| LLM produces harmful Thai content | PAUSE | Fix guardrails before proceeding |
-| Thai FDA announces SaMD regulation covering wellness chatbots | PIVOT | Reassess positioning, may need regulatory pathway |
+| **User self-harm after interaction** | 🔴 CRITICAL | Crisis protocol, 1323 auto-redirect, clinical advisor review, professional liability insurance |
+| **PDPA violation (health data)** | 🔴 HIGH | Thailand-hosted DB, encryption, consent flows, DPO appointment, regular audits |
+| **AI gives harmful advice** | 🔴 HIGH | Safety layer, restricted topics, clinical prompt review, conversation logging |
+| **Regulatory reclassification** | 🟡 MEDIUM | Position as wellness only, avoid clinical claims, legal monitoring |
+| **Low Thai willingness to pay** | 🟡 MEDIUM | B2B revenue focus, free tier for impact, corporate wellness = real money |
+| **No clinical expertise on team** | 🔴 HIGH | Recruit clinical advisor BEFORE launch — non-negotiable |
+| **Character.AI-style lawsuit** | 🟡 MEDIUM | Robust disclaimers, safety protocols, insurance, conversation limits for minors |
 
 ---
 
-## 13. Team Requirements
+## 8. Launch Checklist (Before Day 1)
 
-**What we have:**
-- Oat (CTO): Full-stack dev, LLM experience, can build LINE bot + backend
-- Sun (CEO AI): Strategy, research, operations
-
-**What we MUST hire/recruit:**
-- Clinical Advisor (psychiatrist or clinical psychologist): ฿15-30K/month retainer
-- Second clinical advisor (counseling psychologist): ฿10-20K/month retainer
-
-**Nice to have:**
-- Thai health tech lawyer (ongoing retainer)
-- Content writer (Thai, mental health literate)
-- Part-time designer (LINE Rich Menu, LIFF UI)
+- [ ] Clinical advisor recruited (min 1 licensed psychiatrist/psychologist)
+- [ ] Crisis detection keywords tested with 500+ sample messages
+- [ ] Legal disclaimers reviewed by Thai health tech lawyer
+- [ ] PDPA consent flow implemented and tested
+- [ ] System prompt reviewed by clinical advisor
+- [ ] Professional liability insurance obtained
+- [ ] 1323 hotline redirect tested on LINE
+- [ ] Conversation logging + clinical review workflow set up
+- [ ] Privacy policy (Thai + English) published
+- [ ] Terms of Service with liability limitations drafted
 
 ---
 
-*PRD v1.0 — February 21, 2026. For internal MuteLab evaluation.*
+## 9. What This Product Is NOT
+
+To avoid scope creep and legal risk, MuteMind explicitly IS NOT:
+
+- ❌ A therapy or counseling service
+- ❌ A diagnostic tool for mental health conditions
+- ❌ A replacement for professional psychiatric care
+- ❌ A crisis intervention service (we REFER, not intervene)
+- ❌ A medication advisor
+- ❌ A clinical treatment platform
+
+MuteMind IS:
+
+- ✅ A wellness companion for mental health literacy
+- ✅ A daily mood tracking and journaling tool
+- ✅ A CBT psychoeducation and self-help resource
+- ✅ An emotional support chatbot with safety rails
+- ✅ A bridge to professional help when needed
+- ✅ "เพื่อนคุยเมื่อไม่มีใครให้คุย" — The friend to talk to when no one else is there
+
+---
+
+## 10. MutePDPA Synergy 🤝
+
+Ironic and powerful: MuteMind handles sensitive mental health data under PDPA → MutePDPA helps companies comply with PDPA. Cross-sell opportunity:
+- MuteMind B2B clients → need PDPA compliance for health data → MutePDPA upsell
+- MutePDPA clients → have employee wellness needs → MuteMind B2B cross-sell
+- Both products reinforce MuteLab's position in Thai compliance + wellness
+
+---
+
+*PRD authored by Sun (AI CEO, MuteLab). February 22, 2026.*  
+*Safety is non-negotiable. Impact + profit. Both are possible.*  
+*"เพื่อนคุยเมื่อไม่มีใครให้คุย"*
