@@ -211,7 +211,8 @@
 <nav>
   <span class="nav-logo">MUTELAB</span>
   <span class="nav-badge">IDEA #100</span>
-  <span class="nav-badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border-color:rgba(245,158,11,0.3);">🏆 1ST ROUND RUNNER UP</span>
+  <span class="nav-badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border-color:rgba(245,158,11,0.3);">🏆 2ND ROUND RUNNER UP</span>
+  <span class="nav-badge" style="background:rgba(59,130,246,0.15);color:#60a5fa;border-color:rgba(59,130,246,0.3);">📋 PRD READY</span>
   <span class="nav-badge en">AI PDPA COMPLIANCE</span>
   <span class="nav-badge th">AI PDPA Compliance</span>
 </nav>
@@ -806,13 +807,82 @@
   </div>
 </section>
 
+<!-- ═══ PRD SUMMARY ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label">📋 PRD — PROTOTYPE REQUIREMENTS</div>
+    <h2><span class="en">7-Day Prototype: Free PDPA Website Scanner</span><span class="th">Prototype 7 วัน: สแกนเว็บ PDPA ฟรี</span></h2>
+
+    <div class="alert-box" style="background:rgba(13,148,136,0.08);border-color:rgba(13,148,136,0.3);margin-bottom:2rem;">
+      <div class="alert-title" style="color:var(--primary-light);">🎯 PROTOTYPE FOCUS: BUILD ONLY THE FREE SCANNER</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Enter URL → AI scans 5 checks in 60 seconds → Compliance scorecard (A/B/C/D/F) → Show issues with ฿ fine data → CTA: collect LINE/email for waitlist. Premium features shown but gated. Goal: <strong>1,000 scans in week 1</strong>.</span>
+        <span class="th">ใส่ URL → AI ตรวจ 5 รายการใน 60 วินาที → Scorecard (A/B/C/D/F) → แสดงปัญหาพร้อมข้อมูลค่าปรับ → CTA: เก็บ LINE/อีเมลสำหรับ waitlist ฟีเจอร์ premium แสดงแต่ล็อค เป้าหมาย: <strong>1,000 สแกนในสัปดาห์แรก</strong></span>
+      </p>
+    </div>
+
+    <div class="two-col" style="margin-bottom:2rem;">
+      <div>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;"><span class="en">🔍 What the Scanner Checks</span><span class="th">🔍 สิ่งที่สแกนตรวจ</span></h3>
+        <div class="feature-item"><div class="feature-dot"></div><div><h3>🍪 Cookie Consent</h3><p class="en">Banner presence, consent mechanism, cookie categories</p><p class="th">มี Banner ไหม, กลไก consent, หมวดหมู่ cookies</p></div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div><h3>📋 Privacy Policy</h3><p class="en">Exists? Contains 8 required PDPA Section 23 elements?</p><p class="th">มีไหม? ครอบคลุม 8 องค์ประกอบตาม PDPA มาตรา 23?</p></div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div><h3>📝 Data Collection Forms</h3><p class="en">Forms collecting PII without consent checkbox</p><p class="th">ฟอร์มเก็บข้อมูลส่วนบุคคลโดยไม่มี consent</p></div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div><h3>🔍 Third-Party Trackers</h3><p class="en">GA, Facebook Pixel, LINE Tag, TikTok Pixel detection</p><p class="th">ตรวจจับ GA, Facebook Pixel, LINE Tag, TikTok Pixel</p></div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div><h3>🔒 SSL/Security</h3><p class="en">HTTPS, certificate validity, HSTS headers</p><p class="th">HTTPS, ใบรับรอง, HSTS headers</p></div></div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;"><span class="en">⚡ Tech Stack</span><span class="th">⚡ Tech Stack</span></h3>
+        <div class="feature-item"><div class="feature-dot" style="background:var(--secondary-light);"></div><div><h3>Next.js 14</h3><p class="en">SSR for scan results (SEO + sharing)</p><p class="th">SSR สำหรับผลสแกน (SEO + แชร์)</p></div></div>
+        <div class="feature-item"><div class="feature-dot" style="background:var(--secondary-light);"></div><div><h3>Playwright</h3><p class="en">Headless Chrome scanner engine for Thai sites</p><p class="th">Headless Chrome สแกนเว็บไทย</p></div></div>
+        <div class="feature-item"><div class="feature-dot" style="background:var(--secondary-light);"></div><div><h3>Claude API (Haiku + Sonnet)</h3><p class="en">AI analysis of privacy policies — best Thai language</p><p class="th">AI วิเคราะห์ privacy policy — เข้าใจภาษาไทยดีที่สุด</p></div></div>
+        <div class="feature-item"><div class="feature-dot" style="background:var(--secondary-light);"></div><div><h3>Supabase + Bull/Redis</h3><p class="en">DB, auth, scan queue — all free tier</p><p class="th">ฐานข้อมูล, auth, คิวสแกน — ทั้งหมด free tier</p></div></div>
+        <div class="feature-item"><div class="feature-dot" style="background:var(--secondary-light);"></div><div><h3>Vercel + Railway</h3><p class="en">Frontend hosting + scanner worker processes</p><p class="th">โฮสต์ frontend + worker สแกน</p></div></div>
+      </div>
+    </div>
+
+    <div class="three-col" style="margin-bottom:2rem;">
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">🎯</div>
+        <h3 style="color:var(--primary-light);"><span class="en">Go All-In</span><span class="th">ลุยเต็มที่</span></h3>
+        <p style="font-size:0.85rem;color:var(--text2);">
+          <span class="en">>2,000 scans week 1<br>>25% lead capture rate<br>>60% would pay survey</span>
+          <span class="th">>2,000 สแกน สัปดาห์ 1<br>>25% lead capture rate<br>>60% จะจ่ายจากแบบสอบถาม</span>
+        </p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">🟡</div>
+        <h3 style="color:var(--secondary-light);"><span class="en">Continue & Iterate</span><span class="th">ทำต่อ & ปรับปรุง</span></h3>
+        <p style="font-size:0.85rem;color:var(--text2);">
+          <span class="en">>1,000 scans week 1<br>>15% lead capture rate<br>>40% would pay survey</span>
+          <span class="th">>1,000 สแกน สัปดาห์ 1<br>>15% lead capture rate<br>>40% จะจ่ายจากแบบสอบถาม</span>
+        </p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">🔴</div>
+        <h3 style="color:#f87171;"><span class="en">Kill Threshold</span><span class="th">เกณฑ์ยกเลิก</span></h3>
+        <p style="font-size:0.85rem;color:var(--text2);">
+          <span class="en"><200 scans week 1<br><5% lead capture rate<br><20% would pay survey</span>
+          <span class="th"><200 สแกน สัปดาห์ 1<br><5% lead capture rate<br><20% จะจ่ายจากแบบสอบถาม</span>
+        </p>
+      </div>
+    </div>
+
+    <div style="padding:1.2rem 1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;">
+      <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;">
+        <span class="en"><strong>📋 Full PRD:</strong> <a href="https://github.com/oadtz/project-ideas/blob/master/prd-100-mutepdpa.md" style="color:var(--primary-light);">prd-100-mutepdpa.md</a> — Complete user flows, wireframes, tech architecture, pricing tiers (฿990–9,900/mo), 7-day build timeline, and go/kill decision framework.</span>
+        <span class="th"><strong>📋 PRD เต็ม:</strong> <a href="https://github.com/oadtz/project-ideas/blob/master/prd-100-mutepdpa.md" style="color:var(--primary-light);">prd-100-mutepdpa.md</a> — User flows, wireframes, สถาปัตยกรรม, ราคา (฿990–9,900/เดือน), ไทม์ไลน์ 7 วัน, และ framework ตัดสินใจ go/kill</span>
+      </p>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ CTA ═══ -->
 <div class="cta-section">
   <div class="container">
-    <h2><span class="en">Deep Dive Complete</span><span class="th">วิจัยเชิงลึกเสร็จสมบูรณ์</span></h2>
+    <h2><span class="en">PRD Complete — Ready to Build</span><span class="th">PRD เสร็จ — พร้อมสร้าง</span></h2>
     <p>
-      <span class="en">MutePDPA — AI PDPA Compliance for Thai Businesses. Pivot from MuteLaw #93. Score: 42/50. Potential new #1 from 100 idea sprints.</span>
-      <span class="th">MutePDPA — AI PDPA Compliance สำหรับธุรกิจไทย Pivot จาก MuteLaw #93 คะแนน: 42/50 อาจเป็น #1 ใหม่จาก 100 sprints</span>
+      <span class="en">MutePDPA — AI PDPA Compliance for Thai Businesses. Score: 42/50. 🏆 2nd Round Runner Up. 7-day prototype build starts tomorrow.</span>
+      <span class="th">MutePDPA — AI PDPA Compliance สำหรับธุรกิจไทย คะแนน: 42/50. 🏆 2nd Round Runner Up. เริ่มสร้าง prototype 7 วันพรุ่งนี้</span>
     </p>
     <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
   </div>
