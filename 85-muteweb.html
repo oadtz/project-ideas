@@ -185,7 +185,7 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
-      <div class="hero-chip animate d1" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:#fbbf24;">🏆 <span class="en">1ST ROUND RUNNER UP — DEEP DIVE COMPLETE</span><span class="th">รองชนะเลิศรอบแรก — วิเคราะห์เชิงลึกเสร็จ</span></div>
+      <div class="hero-chip animate d1" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#60a5fa;">📋 <span class="en">2ND ROUND RUNNER UP — PRD COMPLETE · READY TO BUILD</span><span class="th">รองชนะเลิศรอบ 2 — PRD เสร็จ · พร้อมสร้าง</span></div>
       <h1 class="animate d2">
         <span class="en">Get a <span class="gold">Beautiful Website</span><br>via <span class="purple">LINE in 24h</span></span>
         <span class="th">ได้<span class="gold">เว็บสวยมืออาชีพ</span><br>ผ่าน<span class="purple">LINE ใน 24 ชั่วโมง</span></span>
@@ -481,8 +481,87 @@
 
   <div class="divider"></div>
 
+  <!-- PRD SECTION -->
+  <section class="section" style="padding-top:0;">
+    <div class="section-badge" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:#60a5fa;">📋 <span class="en">PRD — PRODUCT REQUIREMENTS DOCUMENT</span><span class="th">PRD — เอกสารข้อกำหนดผลิตภัณฑ์</span></div>
+    <div class="section-title"><span class="en">MVP: AI Website Generator Prototype — 7-Day Build</span><span class="th">MVP: Prototype สร้างเว็บ AI — สร้างภายใน 7 วัน</span></div>
+    <p class="section-sub"><span class="en">Web form → user inputs business info → AI generates preview in 60 seconds → 3 style options → "เปิดเว็บเลย" CTA → collect contact → convert. MuteEvent #96 merged as event template category.</span><span class="th">ฟอร์มเว็บ → กรอกข้อมูลธุรกิจ → AI สร้างตัวอย่างเว็บใน 60 วินาที → 3 สไตล์ → CTA "เปิดเว็บเลย" → เก็บข้อมูลติดต่อ → convert MuteEvent #96 รวมเป็น template งานอีเวนต์</span></p>
+
+    <!-- User Flow -->
+    <div class="workflow" style="grid-template-columns:repeat(3,1fr);margin-bottom:2rem;">
+      <div class="wf-step">
+        <div class="wf-num">FLOW_01</div>
+        <div class="wf-icon" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2);">📝</div>
+        <div class="wf-title"><span class="en">Input Form (8 Fields)</span><span class="th">ฟอร์มกรอกข้อมูล (8 ช่อง)</span></div>
+        <div class="wf-desc"><span class="en">Business name, type (8 industry dropdown incl. Events), phone, hours, description, logo/photo upload. Event mode: couple names, date, venue, PromptPay toggle.</span><span class="th">ชื่อธุรกิจ ประเภท (8 อุตสาหกรรม รวมงานอีเวนต์) เบอร์ เวลา รายละเอียด อัปโหลดรูป โหมดงาน: ชื่อคู่ วันที่ สถานที่ PromptPay</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">FLOW_02</div>
+        <div class="wf-icon" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2);">✨</div>
+        <div class="wf-title"><span class="en">AI Generates 3 Styles (60s)</span><span class="th">AI สร้าง 3 สไตล์ (60 วินาที)</span></div>
+        <div class="wf-desc"><span class="en">Claude Sonnet generates Thai content → fills industry template → outputs 3 style variants: Modern Minimal, Warm & Friendly, Bold Professional. Live scrollable previews.</span><span class="th">Claude Sonnet สร้างเนื้อหาไทย → ใส่ template → 3 สไตล์: Modern Minimal, Warm & Friendly, Bold Professional ดูตัวอย่างจริงได้</span></div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">FLOW_03</div>
+        <div class="wf-icon" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2);">🚀</div>
+        <div class="wf-title"><span class="en">CTA → Lead Capture</span><span class="th">CTA → เก็บข้อมูล</span></div>
+        <div class="wf-desc"><span class="en">"เปิดเว็บเลย" → shows 3 pricing tiers → collects LINE/email/phone → enters sales pipeline. Secondary: share preview link (7-day validity, built-in virality).</span><span class="th">"เปิดเว็บเลย" → แสดงราคา 3 ระดับ → เก็บ LINE/อีเมล/เบอร์ → เข้า pipeline รอง: แชร์ลิงก์ตัวอย่าง (7 วัน, virality ในตัว)</span></div>
+      </div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="why-panels" style="grid-template-columns:repeat(3,1fr);margin-bottom:2rem;">
+      <div class="why-panel" style="border-color:rgba(16,185,129,0.3);text-align:center;">
+        <div style="font-size:1.8rem;">🟢</div>
+        <div class="why-title">Basic</div>
+        <div style="font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:800;color:var(--primary);">฿1,990</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:-0.3rem;">+ ฿299/เดือน</div>
+        <div class="why-desc" style="font-size:0.78rem;text-align:left;"><span class="en">5 pages · subdomain.muteweb.co · SSL + CDN · Contact form · Google Maps · Basic SEO · 1 update/mo · 2 free revisions</span><span class="th">5 หน้า · subdomain.muteweb.co · SSL + CDN · ฟอร์มติดต่อ · Google Maps · SEO พื้นฐาน · อัปเดต 1 ครั้ง/เดือน · แก้ฟรี 2 รอบ</span></div>
+      </div>
+      <div class="why-panel" style="border-color:rgba(59,130,246,0.4);text-align:center;background:rgba(59,130,246,0.04);">
+        <div style="font-size:1.8rem;">🔵</div>
+        <div class="why-title"><span class="en">Pro ⭐ Recommended</span><span class="th">Pro ⭐ แนะนำ</span></div>
+        <div style="font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:800;color:#60a5fa;">฿4,990</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:-0.3rem;">+ ฿499/เดือน</div>
+        <div class="why-desc" style="font-size:0.78rem;text-align:left;"><span class="en">10 pages · Custom domain (1st yr free) · LINE OA link · Gallery · Bilingual TH/EN · Google Business Profile · Analytics · 2 updates/mo · 3 free revisions</span><span class="th">10 หน้า · โดเมนเอง (ปีแรกฟรี) · เชื่อม LINE OA · แกลเลอรี · 2 ภาษา · Google Business Profile · Analytics · อัปเดต 2 ครั้ง/เดือน · แก้ฟรี 3 รอบ</span></div>
+      </div>
+      <div class="why-panel" style="border-color:rgba(139,92,246,0.3);text-align:center;">
+        <div style="font-size:1.8rem;">🟣</div>
+        <div class="why-title">Business</div>
+        <div style="font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:800;color:var(--secondary-light);">฿9,990</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:-0.3rem;">+ ฿899/เดือน</div>
+        <div class="why-desc" style="font-size:0.78rem;text-align:left;"><span class="en">15+ pages · Custom domain · E-commerce (50 products) · Booking system · LINE OA chatbot · Advanced SEO · 4 updates/mo · 5 free revisions · Priority support</span><span class="th">15+ หน้า · โดเมนเอง · อีคอมเมิร์ซ (50 สินค้า) · ระบบจอง · LINE OA chatbot · SEO ขั้นสูง · อัปเดต 4 ครั้ง/เดือน · แก้ฟรี 5 รอบ · support ด่วน</span></div>
+      </div>
+    </div>
+
+    <!-- Tech + Metrics -->
+    <div class="why-panels">
+      <div class="why-panel" style="border-color:rgba(59,130,246,0.3);">
+        <div class="why-icon" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);">⚙️</div>
+        <div class="why-title"><span class="en">Tech Stack — ฿0 MVP Cost</span><span class="th">Tech Stack — MVP ฿0</span></div>
+        <div class="why-desc"><span class="en"><strong>Frontend:</strong> Next.js 14 + Tailwind (Vercel free) · <strong>AI:</strong> Claude Sonnet 4 (~฿35/site) · <strong>Templates:</strong> 8 industry HTML/Tailwind · <strong>Hosting:</strong> Cloudflare Pages (free, unlimited) · <strong>Storage:</strong> Cloudflare R2 · <strong>DB:</strong> Supabase (free) · <strong>Event widget:</strong> PromptPay QR generator · <strong>Build time:</strong> 7 days</span><span class="th"><strong>Frontend:</strong> Next.js 14 + Tailwind (Vercel ฟรี) · <strong>AI:</strong> Claude Sonnet 4 (~฿35/เว็บ) · <strong>Templates:</strong> 8 อุตสาหกรรม HTML/Tailwind · <strong>Hosting:</strong> Cloudflare Pages (ฟรี ไม่จำกัด) · <strong>Storage:</strong> Cloudflare R2 · <strong>DB:</strong> Supabase (ฟรี) · <strong>Event widget:</strong> PromptPay QR · <strong>สร้าง:</strong> 7 วัน</span></div>
+      </div>
+      <div class="why-panel" style="border-color:rgba(16,185,129,0.3);">
+        <div class="why-icon">📊</div>
+        <div class="why-title"><span class="en">Go/Kill Metrics — Week 1</span><span class="th">เกณฑ์ Go/Kill — สัปดาห์ที่ 1</span></div>
+        <div class="why-desc"><span class="en"><strong>🟢 GO:</strong> >200 sites generated, >15% CTA click, >20 contacts, >3 paid · <strong>🟡 CONTINUE:</strong> 50-200 generated, 5-15% CTA, 5-20 contacts · <strong>🔴 KILL:</strong> <50 generated, <5% CTA, <5 contacts · <strong>North Star:</strong> Number of live hosted websites (compounds MRR forever)</span><span class="th"><strong>🟢 GO:</strong> สร้างเว็บ >200, CTA >15%, ติดต่อ >20, จ่ายเงิน >3 · <strong>🟡 ต่อ:</strong> สร้าง 50-200, CTA 5-15%, ติดต่อ 5-20 · <strong>🔴 KILL:</strong> สร้าง <50, CTA <5%, ติดต่อ <5 · <strong>ดาวเหนือ:</strong> จำนวนเว็บที่โฮสต์จริง (MRR ทบต้นตลอดกาล)</span></div>
+      </div>
+    </div>
+
+    <!-- MuteEvent Merge Note -->
+    <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:14px;padding:1.25rem;margin-top:1.5rem;">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--secondary-light);font-family:'Space Mono',monospace;margin-bottom:0.4rem;">🎊 MUTEEVENT #96 → MERGED INTO MUTEWEB</div>
+      <div style="font-size:0.85rem;color:var(--text2);line-height:1.6;">
+        <span class="en">Event websites (weddings, ordinations, funerals, birthdays) are now a <strong>template category</strong> within MuteWeb — not a separate product. The "ซอง PromptPay" QR widget is an optional feature on event templates. Same AI engine, same pricing tiers, same hosting. This reduces dev cost by ~40% and simplifies the product line.</span>
+        <span class="th">เว็บงานอีเวนต์ (แต่งงาน บวช งานศพ วันเกิด) เป็น<strong>หมวด template</strong> ใน MuteWeb ไม่ใช่ผลิตภัณฑ์แยก widget "ซอง PromptPay" QR เป็นฟีเจอร์เสริมใน template อีเวนต์ ใช้ AI engine เดียว ราคาเดียว โฮสต์เดียว ลดต้นทุน dev ~40%</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <div class="cta-wrap">
-    <div class="cta-chip" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:#fbbf24;">🏆 <span class="en">Score: 41/50 — DEEP DIVE COMPLETE · 1st Round Runner Up</span><span class="th">Score: 41/50 — วิเคราะห์เชิงลึกเสร็จ · รองชนะเลิศรอบแรก</span></div>
+    <div class="cta-chip" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#60a5fa;">📋 <span class="en">Score: 41/50 — PRD COMPLETE · 2nd Round Runner Up</span><span class="th">Score: 41/50 — PRD เสร็จ · รองชนะเลิศรอบ 2</span></div>
     <h2 class="cta-title">
       <span class="en"><span class="gold">3.1M Thai SMEs</span> need a website.<br>None can use <span class="purple">English DIY tools</span>.</span>
       <span class="th">SME ไทย<span class="gold">3.1 ล้านราย</span>ต้องการเว็บ<br>ไม่มีใครใช้<span class="purple">เครื่องมือ DIY ภาษาอังกฤษ</span>ได้</span>
