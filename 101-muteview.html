@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteView — AI Property Visual Tour for Thai Real Estate</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f18;
+    --surface: #13131f;
+    --surface2: #1a1a2e;
+    --surface3: #222236;
+    --border: rgba(139,92,246,0.15);
+    --border2: rgba(139,92,246,0.25);
+    --text: #f0f0f5;
+    --text2: #c8c8d8;
+    --muted: #7878a0;
+    --muted2: #5a5a7a;
+    --primary: #8b5cf6;
+    --primary-light: #a78bfa;
+    --primary-pale: rgba(139,92,246,0.08);
+    --primary-glow: rgba(139,92,246,0.2);
+    --secondary: #06b6d4;
+    --secondary-light: #22d3ee;
+    --secondary-pale: rgba(6,182,212,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(6,182,212,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--primary); color: white; }
+  .lang-btn:hover:not(.active) { color: var(--primary); }
+
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+
+  .topbar {
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 2rem;
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 52px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 1rem; }
+  .back-link {
+    color: var(--primary); text-decoration: none; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    font-weight: 600; transition: opacity 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .back-link:hover { opacity: 0.7; }
+  .topbar-divider { width: 1px; height: 20px; background: var(--border); }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.95rem; font-weight: 700; color: var(--text);
+    font-family: 'Space Mono', monospace;
+  }
+  .logo-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.7rem; font-weight: 800;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .topbar-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+    color: var(--text2); font-size: 0.7rem;
+  }
+
+  .hero { padding: 3.5rem 0 2rem; }
+  .hero-content { max-width: 700px; }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary-pale); border: 1px solid rgba(139,92,246,0.25);
+    color: var(--primary-light); border-radius: 8px; padding: 0.35rem 0.9rem;
+    font-size: 0.75rem; font-weight: 700; margin-bottom: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 3.8rem);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 1.25rem; color: var(--text);
+  }
+  .hero h1 .hl { color: var(--primary); }
+  .hero h1 .hl2 { color: var(--secondary-light); }
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted); line-height: 1.75;
+    margin-bottom: 2rem; max-width: 580px;
+  }
+  .hero-sub strong { color: var(--text2); }
+  .score-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .score-card {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 0.75rem 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .score-num { font-size: 1.8rem; font-weight: 800; color: var(--primary); font-family: 'Space Mono', monospace; }
+  .score-meta { font-size: 0.72rem; color: var(--muted); }
+  .score-meta strong { color: var(--text2); display: block; font-size: 0.82rem; margin-bottom: 0.1rem; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .stat-panel::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .stat-panel:hover { border-color: var(--border2); }
+  .stat-panel:hover::after { opacity: 1; }
+  .stat-icon { font-size: 1.4rem; margin-bottom: 0.75rem; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); font-family: 'Space Mono', monospace; margin-bottom: 0.4rem; }
+  .stat-num .hl { color: var(--primary); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+  .section { padding: 4rem 0; }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.3rem 0.8rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    font-family: 'Space Mono', monospace; margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .section-title {
+    font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.2;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.7; }
+
+  .workflow {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .wf-step {
+    background: var(--surface); padding: 2rem 1.5rem;
+    transition: background 0.2s;
+  }
+  .wf-step:hover { background: var(--surface2); }
+  .wf-num {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .wf-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--primary-pale); border: 1px solid rgba(139,92,246,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; margin-bottom: 1rem;
+  }
+  .wf-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .wf-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  .comp-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .comp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.75rem;
+    transition: all 0.2s;
+  }
+  .comp-card:hover { border-color: var(--border2); }
+  .comp-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .comp-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+  .comp-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .price-tier {
+    background: var(--surface); padding: 1.75rem 1.25rem;
+    transition: background 0.2s; text-align: center;
+  }
+  .price-tier:hover { background: var(--surface2); }
+  .price-tier.featured {
+    background: var(--surface2);
+    border-top: 3px solid var(--primary);
+  }
+  .pt-name {
+    font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .pt-price {
+    font-size: 1.8rem; font-weight: 800; color: var(--text);
+    font-family: 'Space Mono', monospace; margin-bottom: 0.25rem;
+  }
+  .pt-price .hl { color: var(--primary); }
+  .pt-period { font-size: 0.72rem; color: var(--muted); margin-bottom: 1rem; }
+  .pt-features { list-style: none; text-align: left; }
+  .pt-features li {
+    font-size: 0.78rem; color: var(--muted); padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(139,92,246,0.08);
+  }
+  .pt-features li:last-child { border-bottom: none; }
+
+  .score-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden;
+  }
+  .score-item {
+    background: var(--surface); padding: 1.25rem;
+    text-align: center; transition: background 0.2s;
+  }
+  .score-item:hover { background: var(--surface2); }
+  .si-score {
+    font-size: 2rem; font-weight: 800; color: var(--primary);
+    font-family: 'Space Mono', monospace; margin-bottom: 0.4rem;
+  }
+  .si-label { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+
+  .verdict {
+    background: linear-gradient(145deg, var(--surface2) 0%, var(--surface3) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px; padding: 3rem;
+    text-align: center; margin: 3rem 0 5rem;
+    position: relative; overflow: hidden;
+  }
+  .verdict::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  .verdict h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+  .verdict h2 .hl { color: var(--amber); }
+  .verdict p { color: var(--muted); font-size: 0.95rem; line-height: 1.7; max-width: 600px; margin: 0 auto 1.5rem; }
+  .verdict-conditions {
+    text-align: left; max-width: 500px; margin: 0 auto;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem;
+  }
+  .verdict-conditions h4 {
+    font-size: 0.72rem; color: var(--primary); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 0.75rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .verdict-conditions li {
+    font-size: 0.85rem; color: var(--text2); margin-bottom: 0.5rem;
+    list-style: none; padding-left: 1.5rem; position: relative;
+  }
+  .verdict-conditions li::before {
+    content: '→'; position: absolute; left: 0; color: var(--primary);
+    font-family: 'Space Mono', monospace;
+  }
+
+  footer {
+    text-align: center; padding: 2rem 0;
+    color: var(--muted2); font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .workflow { grid-template-columns: 1fr; }
+    .comp-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="document.body.classList.remove('show-th');this.classList.add('active');this.nextElementSibling.classList.remove('active');">EN</button>
+  <button class="lang-btn" onclick="document.body.classList.add('show-th');this.classList.add('active');this.previousElementSibling.classList.remove('active');">TH</button>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <a href="index.html" class="back-link">← Dashboard</a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-logo">
+        <div class="logo-icon">M</div>
+        MuteView
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot"></span>
+      <span>Deep Dive #101</span>
+      <span class="topbar-badge">📊 34/50</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-chip">
+        <span class="en">🎬 DEEP DIVE #101 — AI PROPERTY VISUAL TOUR</span>
+        <span class="th">🎬 DEEP DIVE #101 — AI วิดีโอทัวร์อสังหาฯ</span>
+      </div>
+      <h1>
+        <span class="en"><span class="hl">AI Drone Shots</span> from<br>Property Photos.<br>Price: <span class="hl2">฿500</span>, Not ฿25,000</span>
+        <span class="th"><span class="hl">AI ถ่ายมุมโดรน</span> จาก<br>รูปถ่ายบ้าน<br>ราคา <span class="hl2">฿500</span> ไม่ใช่ ฿25,000</span>
+      </h1>
+      <p class="hero-sub">
+        <span class="en">Upload property photos → AI creates <strong>drone flyovers, cinematic walk-throughs, and marketing videos</strong> in minutes. 10-50x cheaper than hiring a drone photographer. Built for <strong>Thai agents, developers & property owners</strong>.</span>
+        <span class="th">อัปโหลดรูปบ้าน → AI สร้าง<strong>ภาพมุมโดรน วิดีโอเดินชมบ้าน และคลิปการตลาด</strong>ในไม่กี่นาที ถูกกว่าจ้างถ่ายจริง 10-50 เท่า สำหรับ<strong>นายหน้า นักพัฒนา และเจ้าของอสังหาฯ ไทย</strong></span>
+      </p>
+      <div class="score-row">
+        <div class="score-card">
+          <div class="score-num">34</div>
+          <div class="score-meta">
+            <strong><span class="en">Deep Dive Score</span><span class="th">คะแนน Deep Dive</span></strong>
+            <span class="en">out of 50 · 🟡 Conditional</span>
+            <span class="th">จาก 50 · 🟡 มีเงื่อนไข</span>
+          </div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:var(--secondary-light);">0</div>
+          <div class="score-meta">
+            <strong><span class="en">Thai Competitors</span><span class="th">คู่แข่งไทย</span></strong>
+            <span class="en">Zero AI property video tools</span>
+            <span class="th">ไม่มีเครื่องมือ AI วิดีโออสังหาฯ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-panel">
+      <div class="stat-icon">🏢</div>
+      <div class="stat-num"><span class="hl">$29.5B</span></div>
+      <div class="stat-label">
+        <span class="en">Thai real estate market (2024)</span>
+        <span class="th">ตลาดอสังหาฯ ไทย (2024)</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">📋</div>
+      <div class="stat-num">300K+</div>
+      <div class="stat-label">
+        <span class="en">Property transfers/year</span>
+        <span class="th">โอนกรรมสิทธิ์/ปี</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">👤</div>
+      <div class="stat-num">30-80K</div>
+      <div class="stat-label">
+        <span class="en">Active agents (est.)</span>
+        <span class="th">นายหน้าที่ใช้งาน (ประมาณ)</span>
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="stat-icon">💰</div>
+      <div class="stat-num"><span class="hl">95%</span></div>
+      <div class="stat-label">
+        <span class="en">Cost savings vs real drone</span>
+        <span class="th">ประหยัดเทียบโดรนจริง</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">⚡ HOW IT WORKS</span>
+      <span class="th">⚡ วิธีการทำงาน</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Photos In → Videos Out. 5 Minutes.</span>
+      <span class="th">ส่งรูป → ได้วิดีโอ 5 นาที</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">No drones. No videographers. No CAAT permits. Just upload photos and let AI do the rest.</span>
+      <span class="th">ไม่ต้องใช้โดรน ไม่ต้องจ้างช่างภาพ ไม่ต้องขอ กพท. แค่อัปโหลดรูปแล้วให้ AI ทำ</span>
+    </p>
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">Step 01</div>
+        <div class="wf-icon">📸</div>
+        <div class="wf-title">
+          <span class="en">Upload Photos</span>
+          <span class="th">อัปโหลดรูป</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Upload 5-20 property photos — exterior, interior, amenities. Phone photos work fine.</span>
+          <span class="th">อัปโหลดรูปบ้าน 5-20 รูป — ภายนอก ภายใน สิ่งอำนวยความสะดวก ถ่ายมือถือก็ได้</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">Step 02</div>
+        <div class="wf-icon">🤖</div>
+        <div class="wf-title">
+          <span class="en">AI Generates Video</span>
+          <span class="th">AI สร้างวิดีโอ</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">AI creates drone flyovers, walk-through animations, and cinematic transitions with music & captions.</span>
+          <span class="th">AI สร้างภาพมุมโดรน แอนิเมชันเดินชม และทรานซิชันภาพยนตร์ พร้อมเพลงและคำบรรยาย</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">Step 03</div>
+        <div class="wf-icon">🎬</div>
+        <div class="wf-title">
+          <span class="en">Download & Share</span>
+          <span class="th">ดาวน์โหลดและแชร์</span>
+        </div>
+        <div class="wf-desc">
+          <span class="en">Get videos in 3 formats: Reels (9:16), YouTube (16:9), Square (1:1). Share on DDProperty, Facebook, LINE.</span>
+          <span class="th">รับวิดีโอ 3 รูปแบบ: Reels (9:16), YouTube (16:9), จตุรัส (1:1) แชร์บน DDProperty, Facebook, LINE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET OPPORTUNITY -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">📊 MARKET OPPORTUNITY</span>
+      <span class="th">📊 โอกาสตลาด</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Zero Competition in Thailand</span>
+      <span class="th">ไม่มีคู่แข่งในไทย</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">AutoReel & HomeReel dominate the US market but are English-only, USD-priced. No one has localized for Thailand.</span>
+      <span class="th">AutoReel และ HomeReel ครองตลาดสหรัฐ แต่ภาษาอังกฤษอย่างเดียว ราคา USD ยังไม่มีใครทำสำหรับไทย</span>
+    </p>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-icon">🇺🇸</div>
+        <h3>
+          <span class="en">AutoReel (US Market Leader)</span>
+          <span class="th">AutoReel (ผู้นำตลาด US)</span>
+        </h3>
+        <p>
+          <span class="en">~$396/yr. Photos → drone flyovers in 5 min. G2: "10x cheaper, 10x faster." But English-only, US MLS-focused. No Thai language, no PromptPay, no LINE integration.</span>
+          <span class="th">~$396/ปี รูป → ภาพโดรน 5 นาที G2: "ถูกกว่า เร็วกว่า 10 เท่า" แต่ภาษาอังกฤษอย่างเดียว ไม่มีภาษาไทย ไม่มี PromptPay ไม่มี LINE</span>
+        </p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🇹🇭</div>
+        <h3>
+          <span class="en">Spacely AI (Bangkok — Adjacent)</span>
+          <span class="th">Spacely AI (กรุงเทพ — ต่างสาย)</span>
+        </h3>
+        <p>
+          <span class="en">Raised $1M for AI interior DESIGN renders. Different product — they do room visualization, not video tours. Proves Thai PropTech gets funded.</span>
+          <span class="th">ระดมทุน $1M สำหรับ AI ออกแบบตกแต่งภายใน ผลิตภัณฑ์ต่างกัน — ทำ visualization ห้อง ไม่ใช่วิดีโอทัวร์ พิสูจน์ว่า Thai PropTech ได้ทุน</span>
+        </p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">📸</div>
+        <h3>
+          <span class="en">Traditional Drone Shoots</span>
+          <span class="th">ถ่ายโดรนแบบดั้งเดิม</span>
+        </h3>
+        <p>
+          <span class="en">฿5,000-25,000+ per shoot. Needs CAAT permits, weather-dependent, scheduling hassles. Bangkok Video Productions charges ฿25,000/DAY.</span>
+          <span class="th">฿5,000-25,000+ ต่อครั้ง ต้องขอ กพท. ขึ้นกับสภาพอากาศ นัดยาก Bangkok Video Productions คิด ฿25,000/วัน</span>
+        </p>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon">🚫</div>
+        <h3>
+          <span class="en">Most Thai Agents: No Video At All</span>
+          <span class="th">นายหน้าไทยส่วนใหญ่: ไม่มีวิดีโอเลย</span>
+        </h3>
+        <p>
+          <span class="en">The real competition is "doing nothing." Most agents post phone photos on Facebook groups. Too expensive + complicated = no video. MuteView makes it instant.</span>
+          <span class="th">คู่แข่งจริง คือ "ไม่ทำอะไร" นายหน้าส่วนใหญ่โพสต์รูปมือถือใน Facebook กลุ่ม แพงเกินไป + ยุ่งเกินไป = ไม่มีวิดีโอ MuteView ทำให้ทันที</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">💰 PRICING MODEL</span>
+      <span class="th">💰 โมเดลราคา</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">From Free to Agency-Scale</span>
+      <span class="th">จากฟรีถึงระดับเอเจนซี่</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">COGS per video: ฿70-175. Margin: 50-75%. Not SaaS-like 90% margin — API costs are real.</span>
+      <span class="th">ต้นทุนต่อวิดีโอ: ฿70-175 กำไร: 50-75% ไม่ใช่ SaaS margin 90% — ค่า API จริง</span>
+    </p>
+    <div class="pricing-grid">
+      <div class="price-tier">
+        <div class="pt-name">Free</div>
+        <div class="pt-price">฿<span class="hl">0</span></div>
+        <div class="pt-period"><span class="en">forever</span><span class="th">ตลอดไป</span></div>
+        <ul class="pt-features">
+          <li>2 videos/month</li>
+          <li>720p quality</li>
+          <li>Watermarked</li>
+          <li>—</li>
+        </ul>
+      </div>
+      <div class="price-tier featured">
+        <div class="pt-name">Starter</div>
+        <div class="pt-price">฿<span class="hl">499</span></div>
+        <div class="pt-period">/mo (~$14)</div>
+        <ul class="pt-features">
+          <li>10 videos/month</li>
+          <li>Full HD 1080p</li>
+          <li>No watermark</li>
+          <li>3 formats</li>
+        </ul>
+      </div>
+      <div class="price-tier">
+        <div class="pt-name">Pro</div>
+        <div class="pt-price">฿<span class="hl">1,499</span></div>
+        <div class="pt-period">/mo (~$43)</div>
+        <ul class="pt-features">
+          <li>50 videos/month</li>
+          <li>Custom branding</li>
+          <li>Priority render</li>
+          <li>Thai voiceover</li>
+        </ul>
+      </div>
+      <div class="price-tier">
+        <div class="pt-name">Agency</div>
+        <div class="pt-price">฿<span class="hl">3,999</span></div>
+        <div class="pt-period">/mo (~$114)</div>
+        <ul class="pt-features">
+          <li>Unlimited videos</li>
+          <li>API access</li>
+          <li>White-label</li>
+          <li>Dedicated support</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORING -->
+  <div class="section">
+    <div class="section-badge">
+      <span class="en">📊 DEEP DIVE SCORING</span>
+      <span class="th">📊 คะแนน DEEP DIVE</span>
+    </div>
+    <h2 class="section-title">
+      <span class="en">Score: 34/50 — Conditional Pass</span>
+      <span class="th">คะแนน: 34/50 — ผ่านมีเงื่อนไข</span>
+    </h2>
+    <p class="section-sub">
+      <span class="en">Strong competition gap and technical feasibility, but moderate market pain and low defensibility pull the score down.</span>
+      <span class="th">ช่องว่างการแข่งขันและความเป็นไปได้ทางเทคนิคแข็งแรง แต่ปัญหาตลาดปานกลางและความสามารถป้องกันต่ำดึงคะแนนลง</span>
+    </p>
+    <div class="score-grid">
+      <div class="score-item">
+        <div class="si-score">8</div>
+        <div class="si-label">
+          <span class="en">Competition Gap</span>
+          <span class="th">ช่องว่างแข่งขัน</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="si-score">8</div>
+        <div class="si-label">
+          <span class="en">Technical Feasibility</span>
+          <span class="th">ความเป็นไปได้ทางเทคนิค</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="si-score">7</div>
+        <div class="si-label">
+          <span class="en">Market Size</span>
+          <span class="th">ขนาดตลาด</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="si-score">7</div>
+        <div class="si-label">
+          <span class="en">Time to Revenue</span>
+          <span class="th">เวลาถึงรายได้</span>
+        </div>
+      </div>
+      <div class="score-item">
+        <div class="si-score">7</div>
+        <div class="si-label">
+          <span class="en">Passive Income</span>
+          <span class="th">รายได้อัตโนมัติ</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:2rem;">
+      <div class="score-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="score-item">
+          <div class="si-score" style="color:var(--amber);">6</div>
+          <div class="si-label">
+            <span class="en">Revenue Potential</span>
+            <span class="th">ศักยภาพรายได้</span>
+          </div>
+        </div>
+        <div class="score-item">
+          <div class="si-score" style="color:var(--amber);">6</div>
+          <div class="si-label">
+            <span class="en">Distribution</span>
+            <span class="th">การกระจาย</span>
+          </div>
+        </div>
+        <div class="score-item">
+          <div class="si-score" style="color:var(--amber);">5</div>
+          <div class="si-label">
+            <span class="en">Problem Severity</span>
+            <span class="th">ความรุนแรงปัญหา</span>
+          </div>
+        </div>
+        <div class="score-item">
+          <div class="si-score" style="color:var(--amber);">5</div>
+          <div class="si-label">
+            <span class="en">Founder-Market Fit</span>
+            <span class="th">ทีม-ตลาด Fit</span>
+          </div>
+        </div>
+        <div class="score-item">
+          <div class="si-score" style="color:var(--red);">4</div>
+          <div class="si-label">
+            <span class="en">Defensibility</span>
+            <span class="th">ป้อมปราการ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <h2>
+      <span class="en">🟡 <span class="hl">Conditional Pass</span> — 34/50</span>
+      <span class="th">🟡 <span class="hl">ผ่านมีเงื่อนไข</span> — 34/50</span>
+    </h2>
+    <p>
+      <span class="en">Interesting opportunity with zero Thai competition, but the core question is: <strong>do Thai agents care enough about video to pay ฿499/mo?</strong> The "problem" is more "nice to have" than "burning pain."</span>
+      <span class="th">โอกาสน่าสนใจ ไม่มีคู่แข่งไทย แต่คำถามหลัก: <strong>นายหน้าไทยแคร์วิดีโอพอจะจ่าย ฿499/เดือนไหม?</strong> "ปัญหา" เป็น "ดีถ้ามี" มากกว่า "เจ็บปวดมาก"</span>
+    </p>
+    <div class="verdict-conditions">
+      <h4>
+        <span class="en">Proceed to Round 2 IF:</span>
+        <span class="th">ไป Round 2 ถ้า:</span>
+      </h4>
+      <ul>
+        <li>
+          <span class="en">Landing page test: >3% conversion from Thai agent ads</span>
+          <span class="th">ทดสอบ landing page: conversion >3% จากโฆษณานายหน้าไทย</span>
+        </li>
+        <li>
+          <span class="en">Generate 10 sample videos — get positive feedback from 5+ agents</span>
+          <span class="th">สร้างตัวอย่างวิดีโอ 10 ชิ้น — feedback ดีจากนายหน้า 5+ คน</span>
+        </li>
+        <li>
+          <span class="en">COGS per video stays under ฿100 with Kling API</span>
+          <span class="th">ต้นทุนต่อวิดีโอต่ำกว่า ฿100 ด้วย Kling API</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span class="en">MuteView Deep Dive #101 · Part of <a href="index.html">MuteLab 100 Ideas Sprint</a> · Feb 2026</span>
+  <span class="th">MuteView Deep Dive #101 · ส่วนหนึ่งของ <a href="index.html">MuteLab 100 Ideas Sprint</a> · ก.พ. 2026</span>
+</footer>
+
+</body>
+</html>
