@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSpy — TikTok Shop Thailand Competitor Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a080c;--surface:#140e1a;--surface2:#1a1224;--border:rgba(236,72,153,0.12);--border2:rgba(236,72,153,0.28);--text:#fff0f8;--text2:#d4b8c8;--muted:#886880;--primary:#ec4899;--primary-light:#f472b6;--primary-pale:rgba(236,72,153,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#22c55e;--teal:#14b8a6;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(236,72,153,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(236,72,153,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 5%,rgba(236,72,153,0.07) 0%,transparent 55%),radial-gradient(ellipse at 25% 95%,rgba(20,184,166,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,8,12,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .spy-table{background:var(--surface);border:1px solid var(--border2);border-radius:16px;overflow:hidden;margin-bottom:2rem;}
+  .spy-table-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;background:var(--surface2);padding:0.8rem 1rem;font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+  .spy-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;padding:0.9rem 1rem;border-top:1px solid var(--border);align-items:center;transition:background 0.2s;}
+  .spy-row:hover{background:rgba(236,72,153,0.04);}
+  .spy-product{display:flex;align-items:center;gap:0.7rem;}
+  .spy-thumb{width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+  .spy-product-info{flex:1;}
+  .spy-product-name{font-size:0.82rem;font-weight:600;line-height:1.3;}
+  .spy-product-seller{font-size:0.68rem;color:var(--muted);}
+  .spy-val{font-family:'Space Mono',monospace;font-size:0.8rem;font-weight:700;}
+  .spy-trend-up{color:var(--green);}
+  .spy-trend-down{color:var(--red);}
+  .spy-trend-neutral{color:var(--muted);}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #120</span>
+  <span class="nav-badge" style="background:rgba(236,72,153,0.15);color:#f472b6;border-color:rgba(236,72,153,0.3);">🔍 TIKTOK SHOP · ANALYTICS · THAILAND</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🔍 TIKTOK SHOP THAILAND · COMPETITOR INTELLIGENCE</span>
+      <span class="hero-tag th">🔍 TikTok Shop ไทย · ข่าวกรองคู่แข่ง</span>
+      <span class="idea-num">SPRINT #120 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Spy</span></span><span class="th">Mute<span class="accent">Spy</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">TikTok Shop Thailand — Know What Your Competitors Are Selling Before They Sell It</span>
+      <span class="th">TikTok Shop ไทย — รู้ว่าคู่แข่งขายอะไร ก่อนที่พวกเขาจะขาย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand is TikTok Shop's most competitive battleground in SEA. Chinese sellers use enterprise tools costing $200+/month to spy on the market. Thai sellers use Google and gut instinct. MuteSpy levels the playing field: Thai-language TikTok Shop analytics, trending product tracking, competitor shop deep dives, and viral content analysis — built for Thai sellers, priced for Thai SMEs.</span>
+      <span class="th">ไทยคือสนามรบที่แข่งขันดุเดือดที่สุดของ TikTok Shop ใน SEA นักขายจีนใช้เครื่องมือระดับ enterprise ราคา $200+/เดือนสอดส่องตลาด นักขายไทยใช้ Google กับสัญชาตญาณ MuteSpy ทำให้เท่าเทียม: analytics TikTok Shop ภาษาไทย, ติดตามสินค้า trending, วิเคราะห์ร้านคู่แข่งเชิงลึก, วิเคราะห์ content viral — สร้างสำหรับนักขายไทย ราคาสำหรับ SME ไทย</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">$4.6B</span><span class="stat-label en">Thailand TikTok GMV H1 2025</span><span class="stat-label th">GMV TikTok Shop ไทย H1 2025</span></div>
+      <div class="stat"><span class="stat-val">500K+</span><span class="stat-label en">Active Thai TikTok sellers</span><span class="stat-label th">นักขาย TikTok ไทย Active</span></div>
+      <div class="stat"><span class="stat-val">$200+</span><span class="stat-label en">What Chinese tools cost/month</span><span class="stat-label th">ราคาเครื่องมือจีน/เดือน</span></div>
+      <div class="stat"><span class="stat-val">฿890</span><span class="stat-label en">MuteSpy Pro price</span><span class="stat-label th">ราคา MuteSpy Pro</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// LIVE DASHBOARD PREVIEW</div>
+    <h2><span class="en">Real-Time Thailand TikTok Shop Intelligence</span><span class="th">ข่าวกรอง TikTok Shop ไทย Real-Time</span></h2>
+
+    <div class="spy-table">
+      <div class="spy-table-header">
+        <span><span class="en">Product · Seller</span><span class="th">สินค้า · ผู้ขาย</span></span>
+        <span><span class="en">7-Day Sales</span><span class="th">ยอดขาย 7 วัน</span></span>
+        <span><span class="en">Revenue</span><span class="th">รายได้</span></span>
+        <span><span class="en">Trend</span><span class="th">Trend</span></span>
+        <span><span class="en">Price</span><span class="th">ราคา</span></span>
+      </div>
+      <div class="spy-row">
+        <div class="spy-product"><div class="spy-thumb">🧴</div><div class="spy-product-info"><div class="spy-product-name"><span class="en">SPF50 Sunscreen Cream 50ml</span><span class="th">ครีมกันแดด SPF50 50ml</span></div><div class="spy-product-seller">@BeautyTopTH · <span class="en">Beauty</span><span class="th">ความงาม</span></div></div></div>
+        <div class="spy-val">4,821</div>
+        <div class="spy-val">฿482,100</div>
+        <div class="spy-val spy-trend-up">▲ +127%</div>
+        <div class="spy-val">฿99</div>
+      </div>
+      <div class="spy-row">
+        <div class="spy-product"><div class="spy-thumb">👗</div><div class="spy-product-info"><div class="spy-product-name"><span class="en">Korean Style Dress (3 colors)</span><span class="th">ชุดสไตล์เกาหลี (3 สี)</span></div><div class="spy-product-seller">@FashionBKK · <span class="en">Fashion</span><span class="th">แฟชั่น</span></div></div></div>
+        <div class="spy-val">3,204</div>
+        <div class="spy-val">฿576,720</div>
+        <div class="spy-val spy-trend-up">▲ +89%</div>
+        <div class="spy-val">฿180</div>
+      </div>
+      <div class="spy-row">
+        <div class="spy-product"><div class="spy-thumb">📱</div><div class="spy-product-info"><div class="spy-product-name"><span class="en">Phone Stand Adjustable Desk</span><span class="th">ขาตั้งโทรศัพท์ปรับได้</span></div><div class="spy-product-seller">@GadgetsTH · <span class="en">Electronics</span><span class="th">อิเล็กทรอนิกส์</span></div></div></div>
+        <div class="spy-val">2,890</div>
+        <div class="spy-val">฿289,000</div>
+        <div class="spy-val spy-trend-neutral">→ +12%</div>
+        <div class="spy-val">฿100</div>
+      </div>
+      <div class="spy-row">
+        <div class="spy-product"><div class="spy-thumb">🍵</div><div class="spy-product-info"><div class="spy-product-name"><span class="en">Matcha Latte Mix Sachet 10pcs</span><span class="th">มัทฉะลาเต้ซอง 10 ชิ้น</span></div><div class="spy-product-seller">@DrinkTrend · <span class="en">Food & Bev</span><span class="th">อาหาร&เครื่องดื่ม</span></div></div></div>
+        <div class="spy-val">2,140</div>
+        <div class="spy-val">฿321,000</div>
+        <div class="spy-val spy-trend-down">▼ -8%</div>
+        <div class="spy-val">฿150</div>
+      </div>
+    </div>
+
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🔥</div>
+        <h3><span class="en">Trending Product Alerts</span><span class="th">แจ้งเตือนสินค้า Trending</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Get notified when a product in your category starts going viral in Thailand — before it hits critical mass. First movers win in TikTok Shop. Daily digest + real-time alerts.</span><span class="th">รับแจ้งเตือนเมื่อสินค้าในหมวดคุณเริ่ม viral ในไทย — ก่อนถึงจุดอิ่มตัว ผู้บุกเบิกชนะใน TikTok Shop สรุปรายวัน + แจ้งเตือน real-time</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏪</div>
+        <h3><span class="en">Shop Deep Dive</span><span class="th">วิเคราะห์ร้านเชิงลึก</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Analyze any TikTok Shop Thailand competitor: all their products, best performers, pricing history, estimated monthly revenue, LIVE schedule, top-performing videos.</span><span class="th">วิเคราะห์คู่แข่ง TikTok Shop ไทยทุกราย: สินค้าทั้งหมด ตัวทำงานดีที่สุด ประวัติราคา รายได้ต่อเดือนโดยประมาณ ตาราง LIVE วิดีโอที่ทำงานดีที่สุด</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎬</div>
+        <h3><span class="en">Viral Content Analysis</span><span class="th">วิเคราะห์ Content Viral</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Which TikTok videos are driving the most sales in your category? Analyze hooks, captions, product demos, hashtags. Get a "content formula" for your niche.</span><span class="th">TikTok วิดีโอไหนขายได้มากที่สุดในหมวดคุณ? วิเคราะห์ hook, caption, การ demo สินค้า, hashtag รับ "สูตร content" สำหรับ niche ของคุณ</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// PRICING</div>
+    <h2><span class="en">Pricing — Thai Prices, Global Intelligence</span><span class="th">ราคา — ราคาไทย ข่าวกรองระดับโลก</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">STARTER</div>
+        <div class="pricing-price">฿390</div>
+        <div class="pricing-unit"><span class="en">/month</span><span class="th">/เดือน</span></div>
+        <div class="pricing-desc"><span class="en">Trending product alerts (1 category), 5 competitor shop tracks, weekly digest report</span><span class="th">แจ้งเตือน trending (1 หมวด), ติดตามร้านคู่แข่ง 5 ร้าน, รายงานรายสัปดาห์</span></div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier">PRO</div>
+        <div class="pricing-price">฿890</div>
+        <div class="pricing-unit"><span class="en">/month</span><span class="th">/เดือน</span></div>
+        <div class="pricing-desc"><span class="en">All categories, 20 competitor shops, viral content analysis, keyword opportunity finder, real-time alerts, price history charts, daily digest</span><span class="th">ทุกหมวด, ร้านคู่แข่ง 20 ร้าน, วิเคราะห์ content viral, ค้นหาโอกาส keyword, แจ้งเตือน real-time, กราฟประวัติราคา, สรุปรายวัน</span></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">BRAND</div>
+        <div class="pricing-price">฿3,490</div>
+        <div class="pricing-unit"><span class="en">/month · team of 5</span><span class="th">/เดือน · ทีม 5 คน</span></div>
+        <div class="pricing-desc"><span class="en">Everything Pro × 5 users, unlimited competitors, custom reports, API access, dedicated account manager</span><span class="th">ทุกอย่าง Pro × 5 users, คู่แข่งไม่จำกัด, รายงาน custom, API access, account manager ส่วนตัว</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.5rem;">
+      <h3><span class="en">Competition Landscape & Market Size</span><span class="th">ภูมิทัศน์การแข่งขันและขนาดตลาด</span></h3>
+      <div class="two-col" style="margin-top:1rem;">
+        <div>
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem;"><span class="en">Why MuteSpy Wins vs Chinese Tools</span><span class="th">ทำไม MuteSpy ชนะเครื่องมือจีน</span></h3>
+          <ul style="font-size:0.82rem;color:var(--text2);list-style:none;line-height:2;">
+            <li>🌏 <span class="en">Thai-first UI: Thai product names, categories, search</span><span class="th">Thai-first UI: ชื่อสินค้าไทย หมวด การค้นหา</span></li>
+            <li>💰 <span class="en">฿890 vs $200+ — 10× cheaper for Thai SMEs</span><span class="th">฿890 vs $200+ — ถูกกว่า 10× สำหรับ SME ไทย</span></li>
+            <li>📞 <span class="en">Thai customer support via LINE (not Mandarin)</span><span class="th">Support ลูกค้าไทยผ่าน LINE (ไม่ใช่ภาษาจีน)</span></li>
+            <li>🎯 <span class="en">Thailand market only = more accurate local insights</span><span class="th">ตลาดไทยอย่างเดียว = insights ท้องถิ่นแม่นยำกว่า</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:0.9rem;margin-bottom:0.5rem;"><span class="en">Revenue Model</span><span class="th">โมเดลรายได้</span></h3>
+          <ul style="font-size:0.82rem;color:var(--text2);list-style:none;line-height:2;">
+            <li>🎯 <span class="en">TAM: 500K sellers × ฿890 = ฿445M/mo potential</span><span class="th">TAM: 500K นักขาย × ฿890 = ฿445M/เดือน potential</span></li>
+            <li>📊 <span class="en">1,124 Pro users = ฿1M MRR target</span><span class="th">1,124 Pro users = เป้า ฿1M MRR</span></li>
+            <li>⏱️ <span class="en">Time to ฿1M MRR: 5-7 months</span><span class="th">เวลาถึง ฿1M MRR: 5-7 เดือน</span></li>
+            <li>🔗 <span class="en">Distribution: TikTok Thailand partner seeding</span><span class="th">Distribution: Seed ผ่าน partner TikTok Thailand</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <p style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:1rem;">// MUTELAB RESEARCH WAVE 2 · FEB 24, 2026</p>
+    <h2 style="font-size:2rem;margin-bottom:1rem;"><span class="en">Stop Guessing. Start Spying.</span><span class="th">หยุดเดา เริ่มสอดส่อง</span></h2>
+    <p style="color:var(--text2);max-width:500px;margin:0 auto 2rem;"><span class="en">In a market growing 100% YoY, the sellers with market intelligence win. Thai-first, 10× cheaper than Chinese tools.</span><span class="th">ในตลาดที่โต 100% YoY นักขายที่มีข่าวกรองตลาดชนะ Thai-first ถูกกว่าเครื่องมือจีน 10 เท่า</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับไปหน้า Ideas ทั้งหมด</span></a>
+  </div>
+</div>
+
+<footer>
+  <p>MUTELAB · IDEA #120 · WAVE 2 RESEARCH · FEB 24, 2026 · TIKTOK SHOP INTELLIGENCE THAILAND</p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle("show-th", lang === "th");
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>

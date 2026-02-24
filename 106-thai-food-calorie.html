@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCal — Thai Food Calorie Camera</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a08;
+    --surface: #16120e;
+    --surface2: #1c1814;
+    --surface3: #24201a;
+    --border: rgba(245,158,11,0.15);
+    --border2: rgba(245,158,11,0.3);
+    --text: #fcf5f0;
+    --text2: #d8ccc0;
+    --muted: #887868;
+    --muted2: #686048;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-pale: rgba(245,158,11,0.08);
+    --secondary: #10b981;
+    --secondary-light: #34d399;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(245,158,11,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.05) 0%, transparent 60%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(15,10,8,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(245,158,11,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid var(--border2); border-radius: 10px; transition: all 0.2s; }
+  .back-link:hover { background: var(--primary-pale); }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted2); letter-spacing: 0.06em; }
+  .proof-badge { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(245,158,11,0.12); border: 1px solid var(--border2); border-radius: 99px; padding: 0.4rem 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; color: var(--primary-light); font-weight: 700; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #106</span>
+  <span class="nav-badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border-color:rgba(245,158,11,0.35);">🍜 B2C · CAMERA · HEALTH</span>
+  <span class="nav-badge en">WAVE 1.5: HW+B2C</span>
+  <span class="nav-badge th">เวฟ 1.5: HW+B2C</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag">🍜 THAI FOOD CALORIE CAMERA · AI NUTRITION</span>
+      <span class="idea-num">SPRINT #106 — FEB 24, 2026</span>
+      <span class="hero-tag" style="color:#34d399;border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.1);">💪 PROVEN MODEL — Cal AI = $1M MRR</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Cal</span></span><span class="th">Mute<span class="accent">Cal</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Thai Food Calorie Camera — Snap, Know, Track</span>
+      <span class="th">กล้องแคลอรีอาหารไทย — ถ่าย รู้ ติดตาม</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Global calorie apps can't tell ข้าวมันไก่ from ข้าวหมูแดง. Cal AI hit $1M MRR in 6 months, $20M ARR — built by a 17-year-old. The model works. MuteCal is the same idea, trained on Thai food specifically. 50,000+ Thai dishes in the database. Photo → instant calorie + protein + carb + fat estimate. 6-week MVP, 6-12 months to ฿1M.</span>
+      <span class="th">แอปแคลอรีสากลแยกข้าวมันไก่กับข้าวหมูแดงไม่ออก Cal AI ทำ $1M MRR ใน 6 เดือน, $20M ARR — สร้างโดยเด็กอายุ 17 โมเดลใช้ได้ MuteCal คือไอเดียเดียวกัน เทรนกับอาหารไทยโดยเฉพาะ อาหารไทย 50,000+ เมนูในฐานข้อมูล ถ่ายรูป → รู้แคลอรี + โปรตีน + คาร์บ + ไขมันทันที MVP 6 สัปดาห์ 6-12 เดือนถึง ฿1M</span>
+    </p>
+    <div class="proof-badge">✅ PROVEN: Cal AI BUILT BY 17-YEAR-OLD → $1M MRR IN 6 MONTHS</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">50K+</span><span class="stat-label en">Thai dishes in database</span><span class="stat-label th">อาหารไทยในฐานข้อมูล</span></div>
+      <div class="stat"><span class="stat-val">฿99</span><span class="stat-label en">per month subscription</span><span class="stat-label th">ต่อเดือน subscription</span></div>
+      <div class="stat"><span class="stat-val">6wk</span><span class="stat-label en">MVP build time</span><span class="stat-label th">เวลาสร้าง MVP</span></div>
+      <div class="stat"><span class="stat-val">6-12mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M รายได้</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GAP -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE GAP</div>
+    <div class="section-label th">ช่องว่าง</div>
+    <h2>
+      <span class="en">Global Apps Fail at Thai Food — We Built for Thai Food From Day One</span>
+      <span class="th">แอปสากลล้มเหลวกับอาหารไทย — เราสร้างเพื่ออาหารไทยตั้งแต่วันแรก</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Cal AI Trained on Western Food</h3>
+            <h3 class="th">Cal AI เทรนกับอาหารตะวันตก</h3>
+            <p class="en">Cal AI's training data is 90%+ Western food. Pizza, burgers, pasta — recognized perfectly. ส้มตำ, ต้มยำ, ข้าวผัด — "unknown food" or wrong guess. This is the gap.</p>
+            <p class="th">ข้อมูลเทรนของ Cal AI เป็นอาหารตะวันตก 90%+ พิซซ่า เบอร์เกอร์ พาสต้า — จำได้สมบูรณ์ ส้มตำ ต้มยำ ข้าวผัด — "อาหารที่ไม่รู้จัก" หรือเดาผิด นี่คือช่องว่าง</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Nutrition Database</h3>
+            <h3 class="th">ฐานข้อมูลโภชนาการไทย</h3>
+            <p class="en">We use Thailand's official food nutrition database (ฐานข้อมูลสารอาหาร). Street food, home cooking, restaurant dishes — all calibrated to Thai portions and ingredients.</p>
+            <p class="th">เราใช้ฐานข้อมูลโภชนาการอาหารไทยอย่างเป็นทางการ (ฐานข้อมูลสารอาหาร) อาหารริมทาง อาหารบ้าน อาหารร้านอาหาร — ปรับเทียบกับส่วนผสมและปริมาณไทยทั้งหมด</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Thai Health Crisis = Huge Market</h3>
+            <h3 class="th">วิกฤตสุขภาพไทย = ตลาดใหญ่</h3>
+            <p class="en">Thailand has one of Asia's highest diabetes rates. Obesity is rising fast. Health consciousness is exploding. Diabetics, fitness enthusiasts, dieters — all need accurate Thai food tracking.</p>
+            <p class="th">ไทยมีอัตราเบาหวานสูงสุดแห่งหนึ่งในเอเชีย โรคอ้วนเพิ่มขึ้นเร็ว ความตระหนักเรื่องสุขภาพระเบิด ผู้ป่วยเบาหวาน คนรักฟิตเนส คนลดน้ำหนัก — ทุกคนต้องการติดตามอาหารไทยที่แม่นยำ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Street Food Complexity</h3>
+            <h3 class="th">ความซับซ้อนของอาหารริมทาง</h3>
+            <p class="en">Thai street food has complex portion estimation. ผัดไทย from a street cart vs restaurant = different oil/noodle ratio. Our AI learns these variations and adjusts. Nobody else does this for Thai food.</p>
+            <p class="th">อาหารริมทางไทยมีการประเมินปริมาณที่ซับซ้อน ผัดไทยจากรถเข็ง vs ร้านอาหาร = สัดส่วนน้ำมัน/เส้นต่างกัน AI ของเราเรียนรู้ความแตกต่างเหล่านี้และปรับ ไม่มีใครทำสิ่งนี้สำหรับอาหารไทย</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="container">
+    <div class="section-label en">FEATURES</div>
+    <div class="section-label th">ฟีเจอร์</div>
+    <h2>
+      <span class="en">Photo → Nutrition in 2 Seconds</span>
+      <span class="th">ถ่ายรูป → โภชนาการใน 2 วินาที</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3 class="en">Instant Recognition</h3>
+        <h3 class="th">จำแนกทันที</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Point camera at any Thai dish → AI identifies the dish + estimates portion size → calorie + macro breakdown. 2 seconds total. Works offline.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ชี้กล้องที่อาหารไทย → AI จำแนกเมนู + ประเมินปริมาณ → แคลอรี + macro breakdown 2 วินาทีทั้งหมด ใช้ได้ offline</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🥗</div>
+        <h3 class="en">50,000+ Thai Dishes</h3>
+        <h3 class="th">อาหารไทย 50,000+ เมนู</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">ส้มตำ, ต้มยำ, ข้าวผัด, ผัดไทย, แกงเขียวหวาน, มัสมัน, ลูกทุ่ง street food, regional specialties (อีสาน, เหนือ, ใต้), desserts, drinks.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ส้มตำ ต้มยำ ข้าวผัด ผัดไทย แกงเขียวหวาน มัสมัน อาหารริมทาง ของภูมิภาค (อีสาน เหนือ ใต้) ขนมหวาน เครื่องดื่ม</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Macro Tracking</h3>
+        <h3 class="th">ติดตาม Macro</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Calories, protein, carbs, fat, fiber, sodium. Daily/weekly/monthly reports. Goal tracking for weight loss, muscle gain, diabetes management.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">แคลอรี โปรตีน คาร์บ ไขมัน ไฟเบอร์ โซเดียม รายงานรายวัน/รายสัปดาห์/รายเดือน ติดตามเป้าหมายลดน้ำหนัก เพิ่มกล้าม ควบคุมเบาหวาน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3 class="en">Smart Learning</h3>
+        <h3 class="th">เรียนรู้อัจฉริยะ</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">User corrections improve the model. "That was 2 portions, not 1" → AI learns. Over time, accuracy becomes personalized to each user's eating habits.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">การแก้ไขของผู้ใช้ปรับปรุงโมเดล "นั่นเป็น 2 ที่ ไม่ใช่ 1" → AI เรียนรู้ เมื่อเวลาผ่านไป ความแม่นยำปรับให้เหมาะกับนิสัยการกินของแต่ละคน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3 class="en">Meal Logging</h3>
+        <h3 class="th">บันทึกมื้ออาหาร</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Quick logging: photo → save. Food diary auto-generated. Export for doctor/nutritionist. Reminders to log meals.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">บันทึกรวดเร็ว: ถ่ายรูป → บันทึก food diary สร้างอัตโนมัติ export ให้หมอ/นักโภชนาการ เตือนให้บันทึกมื้ออาหาร</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3 class="en">Diabetes-Friendly Mode</h3>
+        <h3 class="th">โหมดเหมาะกับเบาหวาน</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Special mode for diabetics: GI estimation, carb counting for insulin dosing, blood sugar tracking integration, alerts for high-sugar foods.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">โหมดพิเศษสำหรับเบาหวาน: ประเมิน GI นับคาร์บสำหรับฉีดอินซูลิน ผสานติดตามน้ำตาลในเลือด แจ้งเตือนอาหารน้ำตาลสูง</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2>
+      <span class="en">Same Model as Cal AI — Works Like Magic</span>
+      <span class="th">โมเดลเดียวกับ Cal AI — ใช้ได้เหมือนเวทมนตร์</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE TIER</div>
+        <div class="pricing-tier th">ฟรี</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">3 scans/day</div>
+        <div class="pricing-unit th">สแกน 3 ครั้ง/วัน</div>
+        <div class="pricing-desc en">Basic tracking. Hook users with daily limit friction. Convert to unlimited.</div>
+        <div class="pricing-desc th">ติดตามพื้นฐาน ดึงดูดผู้ใช้ด้วย friction ของ limit รายวัน แปลงเป็น unlimited</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">MONTHLY</div>
+        <div class="pricing-tier th">รายเดือน</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit en">per month unlimited</div>
+        <div class="pricing-unit th">ต่อเดือน ไม่จำกัด</div>
+        <div class="pricing-desc en">Unlimited scans, full reports, goal tracking, meal logging, diabetes mode.</div>
+        <div class="pricing-desc th">สแกนไม่จำกัด รายงานครบ ติดตามเป้าหมาย บันทึกมื้ออาหาร โหมดเบาหวาน</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">ANNUAL</div>
+        <div class="pricing-tier th">รายปี</div>
+        <div class="pricing-price">฿799</div>
+        <div class="pricing-unit en">per year (save ฿389)</div>
+        <div class="pricing-unit th">ต่อปี (ประหยัด ฿389)</div>
+        <div class="pricing-desc en">All premium features + export for healthcare providers + priority model updates.</div>
+        <div class="pricing-desc th">ฟีเจอร์พรีเมี่ยมทั้งหมด + export ให้ provider ดูแลสุขภาพ + อัพเดทโมเดลลำดับความสำคัญ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MATH</div>
+    <div class="section-label th">คณิตศาสตร์รายได้</div>
+    <h2>
+      <span class="en">840 Annual Subs = ฿670K — Plus Monthly</span>
+      <span class="th">สมาชิกรายปี 840 คน = ฿670K — บวกรายเดือน</span>
+    </h2>
+    <div class="two-col">
+      <div class="revenue-block">
+        <div class="revenue-row">
+          <span class="en">Monthly subs at ฿99 needed for ฿1M</span>
+          <span class="th">สมาชิกรายเดือนที่ต้องการ</span>
+          <span class="revenue-val">842/mo</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Annual subs at ฿799 needed</span>
+          <span class="th">สมาชิกรายปีที่ต้องการ</span>
+          <span class="revenue-val">1,252</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Thai health-conscious market</span>
+          <span class="th">ตลาดคนรักสุขภาพไทย</span>
+          <span class="revenue-val">5M+ potential</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Time to ฿1M</span>
+          <span class="th">เวลาถึง ฿1M</span>
+          <span class="revenue-val">6-12 months</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💡</div>
+        <h3 class="en">Cal AI Blueprint</h3>
+        <h3 class="th">Blueprint ของ Cal AI</h3>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="en">Cal AI: viral TikTok marketing + impulse ฿29-per-scan option + subscription upsell. Built by a 17-year-old solo developer. Hit $1M MRR in 6 months. The model is proven. We just apply it to Thai food, which global apps handle poorly. Clear gap, clear demand, proven playbook.</p>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="th">Cal AI: การตลาด TikTok ไวรัล + ตัวเลือก ฿29/สแกน + subscription upsell สร้างโดย developer เดี่ยวอายุ 17 ถึง $1M MRR ใน 6 เดือน โมเดลพิสูจน์แล้ว เราแค่นำไปใช้กับอาหารไทย ซึ่งแอปสากลจัดการแย่มาก ช่องว่างชัด อุปสงค์ชัด playbook พิสูจน์แล้ว</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2 class="en">🍜 Thai Food Deserves Its Own Calorie App</h2>
+    <h2 class="th">🍜 อาหารไทยสมควรมีแอปแคลอรีเป็นของตัวเอง</h2>
+    <p class="en">6-week MVP. Vision API + Thai food database + Cal AI playbook. Health is universal — Thai food tracking doesn't exist yet.</p>
+    <p class="th">MVP 6 สัปดาห์ Vision API + ฐานข้อมูลอาหารไทย + playbook ของ Cal AI สุขภาพเป็นสากล — ติดตามอาหารไทยยังไม่มีใครทำ</p>
+    <a href="index.html" class="back-link">← <span class="en">Back to MuteLab Ideas</span><span class="th">กลับไปที่ MuteLab Ideas</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB · IDEA #106 · MUTECAL · HW+B2C WAVE 1.5 · FEB 2026</p>
+  </div>
+</footer>
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => { b.classList.toggle('active', b.id === 'btn-' + lang); });
+}
+</script>
+</body>
+</html>

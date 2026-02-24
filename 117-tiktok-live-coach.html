@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteLIVE — AI Coach สำหรับ TikTok LIVE Selling Thailand</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080a0a;--surface:#0f1a14;--surface2:#162010;--border:rgba(34,197,94,0.12);--border2:rgba(34,197,94,0.28);--text:#f0fff4;--text2:#b8d4c0;--muted:#6a8872;--primary:#22c55e;--primary-light:#4ade80;--primary-pale:rgba(34,197,94,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--red:#ff3e3e;--pink:#ec4899;--teal:#14b8a6;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(34,197,94,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 15% 10%,rgba(34,197,94,0.07) 0%,transparent 55%),radial-gradient(ellipse at 90% 85%,rgba(245,158,11,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,10,10,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .live-demo{background:var(--surface);border:2px solid var(--border2);border-radius:20px;padding:2rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+  .live-badge{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(255,62,62,0.15);border:1px solid rgba(255,62,62,0.3);color:var(--red);font-family:'Space Mono',monospace;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;padding:0.3rem 0.8rem;border-radius:99px;margin-bottom:1rem;}
+  .live-badge::before{content:'';width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+  .alert-row{display:flex;align-items:center;gap:0.8rem;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:0.8rem 1rem;margin-bottom:0.6rem;}
+  .alert-icon{font-size:1.2rem;flex-shrink:0;}
+  .alert-text{font-size:0.85rem;color:var(--text2);line-height:1.4;}
+  .alert-time{font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);margin-left:auto;white-space:nowrap;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#000;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comp-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+  .comp-table th,.comp-table td{padding:0.7rem 1rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem;}
+  .comp-table th{background:var(--surface2);color:var(--muted);font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .comp-table td:first-child{font-weight:600;color:var(--text);}
+  .good{color:var(--primary-light);}
+  .bad{color:var(--red);}
+  .ok{color:var(--secondary-light);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #117</span>
+  <span class="nav-badge" style="background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3);">🎥 TIKTOK SHOP · LIVE COMMERCE · AI</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🎥 TIKTOK SHOP · LIVE SELLING · AI COACH</span>
+      <span class="hero-tag th">🎥 TikTok Shop · LIVE ขายสด · AI Coach</span>
+      <span class="idea-num">SPRINT #117 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">LIVE</span></span><span class="th">Mute<span class="accent">LIVE</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Real-Time Coach for Thai TikTok LIVE Sellers</span>
+      <span class="th">AI Coach แบบ Real-Time สำหรับคนขาย TikTok LIVE ในไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand is TikTok Shop's #2 market in Southeast Asia with $4.6B GMV in H1 2025 alone. 90% of top Thai sellers use LIVE selling — but most fly blind: no script prompts, no viewer drop alerts, no product rotation signals. MuteLIVE is the AI co-pilot that sits beside your live stream, watching your metrics and whispering in your ear what to do next.</span>
+      <span class="th">ไทยเป็นตลาด TikTok Shop อันดับ 2 ในเอเชียตะวันออกเฉียงใต้ด้วย GMV $4.6B ใน H1 2025 เพียงครึ่งปี 90% ของนักขาย Top ใช้ LIVE ขายสด แต่ส่วนใหญ่ขายแบบ "ตาบอด" ไม่มี script, ไม่มีแจ้งเตือนเมื่อคนออก, ไม่รู้ว่าควรโชว์สินค้าชิ้นไหนตอนนี้ MuteLIVE คือ AI co-pilot ที่นั่งข้างคุณตลอด LIVE วิเคราะห์ metrics และบอกคุณว่าควรทำอะไรต่อไป</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">฿200B</span><span class="stat-label en">Thai TikTok Shop GMV 2024</span><span class="stat-label th">GMV TikTok Shop ไทย ปี 2567</span></div>
+      <div class="stat"><span class="stat-val">500K+</span><span class="stat-label en">Active TikTok Shop sellers TH</span><span class="stat-label th">นักขาย TikTok Shop ไทย Active</span></div>
+      <div class="stat"><span class="stat-val">100%</span><span class="stat-label en">YoY growth Thailand H1 2025</span><span class="stat-label th">Growth YoY Thailand H1 2568</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">Thai-specific LIVE selling tools</span><span class="stat-label th">เครื่องมือ LIVE ขายไทย-specific</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// THE PROBLEM</div>
+    <h2><span class="en">LIVE Selling is Thailand's #1 E-commerce Channel — With Zero Tooling</span><span class="th">LIVE ขายสดคือ #1 E-commerce ไทย — แต่ไม่มีเครื่องมือเลย</span></h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">😰</div>
+      <div class="pain-text">
+        <h3><span class="en">Dead air and awkward pauses kill conversions</span><span class="th">ช่วง dead air ทำให้คนออกและยอดขายตก</span></h3>
+        <p><span class="en">Most Thai TikTok sellers go LIVE without a script. When they lose momentum, viewers leave. A 30-second dead zone can lose 200+ viewers who never come back.</span><span class="th">นักขายไทยส่วนใหญ่เปิด LIVE โดยไม่มี script เมื่อหมดมุก คนดูก็ออก ช่วง dead air 30 วินาทีทำให้สูญ 200+ คน ที่ไม่กลับมา</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📉</div>
+      <div class="pain-text">
+        <h3><span class="en">No real-time analytics during the stream</span><span class="th">ไม่มี analytics real-time ระหว่าง LIVE</span></h3>
+        <p><span class="en">TikTok's native dashboard shows basics. Sellers don't know which product demo caused a viewer spike, when to call out their best-selling items, or how many people added to cart vs. bought.</span><span class="th">TikTok native แสดงแค่ข้อมูลพื้นฐาน นักขายไม่รู้ว่าสินค้าไหนทำให้คนเพิ่ม, ควรพูดสินค้าขายดีเมื่อไหร่, หรือมีกี่คนกด add cart แต่ยังไม่จ่าย</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🎯</div>
+      <div class="pain-text">
+        <h3><span class="en">Product rotation timing is guesswork</span><span class="th">การสลับสินค้าเป็นแค่การเดา</span></h3>
+        <p><span class="en">Pro Thai LIVE sellers know you should show 5-7 products per session, but when to switch? When to bring back a hot item? When to drop a flash discount? There's no signal — just gut feeling.</span><span class="th">นักขาย Pro รู้ว่าควรโชว์ 5-7 สินค้าต่อ session แต่ควรสลับเมื่อไหร่? ควรเรียกสินค้า hot กลับมาเมื่อไหร่? ควรลด flash discount ตอนไหน? ไม่มี signal เลย แค่สัญชาตญาณ</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🔧</div>
+      <div class="pain-text">
+        <h3><span class="en">Competitor intelligence is zero for Thai sellers</span><span class="th">ข้อมูลคู่แข่งเป็นศูนย์สำหรับนักขายไทย</span></h3>
+        <p><span class="en">Chinese sellers use Kalodata, FastMoss, Pipiads to spy on competitors. Thai sellers? Google and gut. These tools cost $100+/month and are all in Chinese with no Thai support.</span><span class="th">นักขายจีนใช้ Kalodata, FastMoss, Pipiads สอดส่องคู่แข่ง นักขายไทย? ใช้ Google กับสัญชาตญาณ เครื่องมือพวกนี้ราคา $100+/เดือน และเป็นภาษาจีนทั้งหมด ไม่มีรองรับภาษาไทย</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// LIVE DEMO</div>
+    <h2><span class="en">Your AI Coach During a LIVE Session</span><span class="th">AI Coach ของคุณระหว่าง LIVE</span></h2>
+
+    <div class="live-demo">
+      <div class="live-badge">🔴 LIVE NOW — <span class="en">MuteLIVE Active</span><span class="th">MuteLIVE กำลังทำงาน</span></div>
+
+      <div class="alert-row">
+        <div class="alert-icon">⚡</div>
+        <div class="alert-text"><span class="en"><strong>Viewer spike +47 in 30 seconds</strong> — Quick! Introduce your best-seller now while you have attention</span><span class="th"><strong>คนดูเพิ่ม +47 ใน 30 วินาที</strong> — เร็ว! แนะนำสินค้าขายดีตอนนี้ขณะที่ทุกคนสนใจ</span></div>
+        <div class="alert-time">14:32:01</div>
+      </div>
+      <div class="alert-row">
+        <div class="alert-icon">🛒</div>
+        <div class="alert-text"><span class="en"><strong>82 people added to cart</strong> — Only 12 purchased. Time for urgency: "Only 50 left! Flash price 5 minutes!"</span><span class="th"><strong>82 คนกด Add to Cart</strong> — ซื้อแค่ 12 คน ถึงเวลา urgency: "เหลือ 50 ชิ้น! ราคา flash 5 นาที!"</span></div>
+        <div class="alert-time">14:35:18</div>
+      </div>
+      <div class="alert-row">
+        <div class="alert-icon">📉</div>
+        <div class="alert-text"><span class="en"><strong>Viewers dropping -15%</strong> — Switch products! Suggested: Blue Bag (your top performer last session)</span><span class="th"><strong>คนดูลด -15%</strong> — เปลี่ยนสินค้า! แนะนำ: กระเป๋าสีน้ำเงิน (สินค้าทำงานได้ดีที่สุดของ session ที่แล้ว)</span></div>
+        <div class="alert-time">14:41:55</div>
+      </div>
+      <div class="alert-row">
+        <div class="alert-icon">💬</div>
+        <div class="alert-text"><span class="en"><strong>Script prompt:</strong> "You've been live 45 minutes — perfect time for giveaway announcement to re-energize"</span><span class="th"><strong>Script แนะนำ:</strong> "LIVE ไปแล้ว 45 นาที — เวลาดีมากสำหรับประกาศของแจก เพื่อ re-energize คนดู"</span></div>
+        <div class="alert-time">14:45:00</div>
+      </div>
+    </div>
+
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3><span class="en">Real-Time AI Alerts</span><span class="th">แจ้งเตือน AI Real-Time</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">MuteLIVE monitors your TikTok API metrics every 30 seconds and pushes smart alerts: viewer trends, cart abandonment spikes, optimal moments to introduce new products.</span><span class="th">MuteLIVE ดู TikTok API metrics ทุก 30 วินาทีและส่ง alert อัจฉริยะ: แนวโน้มคนดู, cart abandonment spike, ช่วงเวลาที่ดีที่สุดในการแนะนำสินค้าใหม่</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3><span class="en">AI Script Generator</span><span class="th">AI สร้าง Script</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Input your product list, generate a 2-hour LIVE script with hooks, urgency lines, giveaway moments, and product transition cues — all in Thai, tuned for your audience.</span><span class="th">ใส่รายการสินค้า AI สร้าง script LIVE 2 ชั่วโมงพร้อม hook, ประโยค urgency, ช่วงของแจก, และสัญญาณเปลี่ยนสินค้า — ภาษาไทยทั้งหมด ปรับตามกลุ่มลูกค้าคุณ</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🕵️</div>
+        <h3><span class="en">Competitor LIVE Spy</span><span class="th">สอดส่องคู่แข่ง LIVE</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Track top Thai sellers in your category. See which products they're pushing, their viewer peaks, pricing strategies. In Thai. No Chinese language barrier.</span><span class="th">ติดตาม Top Seller ไทยในหมวดหมู่ของคุณ ดูสินค้าที่พวกเขากำลัง push, ช่วงคนดูสูงสุด, กลยุทธ์ราคา ภาษาไทย ไม่มีกำแพงภาษาจีน</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// COMPETITION</div>
+    <h2><span class="en">Existing Tools Have a Fatal Flaw: No Thai Support</span><span class="th">เครื่องมือที่มีอยู่มีจุดตาย: ไม่รองรับไทย</span></h2>
+
+    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th><span class="en">Tool</span><span class="th">เครื่องมือ</span></th>
+            <th><span class="en">Market</span><span class="th">ตลาด</span></th>
+            <th><span class="en">Thai Language</span><span class="th">ภาษาไทย</span></th>
+            <th><span class="en">LIVE Alerts</span><span class="th">แจ้งเตือน LIVE</span></th>
+            <th><span class="en">Price/Month</span><span class="th">ราคา/เดือน</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Kalodata</td><td><span class="en">Global (Chinese)</span><span class="th">Global (จีน)</span></td><td class="bad">✗ <span class="en">No</span><span class="th">ไม่มี</span></td><td class="good">✓</td><td>$99–299</td></tr>
+          <tr><td>FastMoss</td><td><span class="en">Global (Chinese)</span><span class="th">Global (จีน)</span></td><td class="bad">✗ <span class="en">No</span><span class="th">ไม่มี</span></td><td class="ok">Partial</td><td>$79–199</td></tr>
+          <tr><td>Shoplus</td><td>SEA</td><td class="ok">Partial</td><td class="bad">✗</td><td>$49–149</td></tr>
+          <tr><td>TikTok Native</td><td>Global</td><td class="good">✓</td><td class="bad">✗</td><td>Free</td></tr>
+          <tr style="background:rgba(34,197,94,0.05)"><td><strong>MuteLIVE</strong></td><td><strong style="color:var(--primary-light)"><span class="en">Thailand</span><span class="th">ไทย</span></strong></td><td class="good"><strong>✓ Thai-first</strong></td><td class="good"><strong>✓ Real-time</strong></td><td style="color:var(--primary-light)"><strong>฿790</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// PRICING</div>
+    <h2><span class="en">Pricing — Less Than One Returned Order</span><span class="th">ราคา — น้อยกว่าออเดอร์ที่ถูกคืนหนึ่งรายการ</span></h2>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">STARTER</div>
+        <div class="pricing-price">฿390</div>
+        <div class="pricing-unit"><span class="en">/month · up to 8 hrs LIVE/mo</span><span class="th">/เดือน · LIVE ไม่เกิน 8 ชม./เดือน</span></div>
+        <div class="pricing-desc"><span class="en">Script generator, post-LIVE analytics, 3 competitor trackers</span><span class="th">สร้าง Script, analytics หลัง LIVE, ติดตามคู่แข่ง 3 ราย</span></div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier">PRO</div>
+        <div class="pricing-price">฿790</div>
+        <div class="pricing-unit"><span class="en">/month · unlimited LIVE hours</span><span class="th">/เดือน · LIVE ไม่จำกัดชั่วโมง</span></div>
+        <div class="pricing-desc"><span class="en">Real-time AI alerts, cart drop notifications, script prompts during LIVE, 10 competitor trackers, monthly performance report</span><span class="th">แจ้งเตือน AI real-time, แจ้งเตือน cart drop, script prompt ระหว่าง LIVE, ติดตามคู่แข่ง 10 ราย, รายงาน performance รายเดือน</span></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">AGENCY</div>
+        <div class="pricing-price">฿2,490</div>
+        <div class="pricing-unit"><span class="en">/month · 5 shop accounts</span><span class="th">/เดือน · 5 บัญชี Shop</span></div>
+        <div class="pricing-desc"><span class="en">Everything in Pro × 5 accounts, dedicated support, custom alert rules, white-label reporting</span><span class="th">ทุกอย่างใน Pro × 5 บัญชี, support ตรง, ตั้งค่า alert เอง, รายงาน white-label</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// MARKET SIZE</div>
+    <h2><span class="en">The Numbers That Matter</span><span class="th">ตัวเลขที่สำคัญ</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <h3><span class="en">TAM — Total Addressable Market</span><span class="th">TAM — ตลาดที่เข้าถึงได้ทั้งหมด</span></h3>
+          <p style="font-size:0.9rem;color:var(--text2);margin-bottom:1rem;"><span class="en">500,000 active Thai TikTok Shop sellers. Even at 10% adoption and ฿790/month average = <strong style="color:var(--primary-light)">฿474M ARR</strong></span><span class="th">นักขาย TikTok Shop ไทย Active 500,000 ราย แม้แค่ 10% adoption ที่ ฿790/เดือน = <strong style="color:var(--primary-light)">฿474M ARR</strong></span></p>
+          <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Thailand TikTok Shop GMV: $5.7B in 2024 → $12B+ projected 2026. We capture seller tool spending as a % of GMV (estimated 0.5–1%).</span><span class="th">TikTok Shop Thailand GMV: $5.7B ปี 2024 → คาดการณ์ $12B+ ปี 2026 เราเก็บส่วนค่าเครื่องมือในฐานะ % ของ GMV</span></p>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3><span class="en">Path to ฿1M MRR</span><span class="th">เส้นทางสู่ ฿1M MRR</span></h3>
+          <ul style="font-size:0.9rem;color:var(--text2);list-style:none;line-height:2;">
+            <li>🎯 <span class="en">Month 1-2: LINE Group seeding (TikTok seller communities)</span><span class="th">เดือน 1-2: Seed ผ่าน LINE Group (ชุมชนนักขาย TikTok)</span></li>
+            <li>📊 <span class="en">Month 3: 200 paying users = ฿158,000 MRR</span><span class="th">เดือน 3: 200 users จ่ายเงิน = ฿158,000 MRR</span></li>
+            <li>🚀 <span class="en">Month 6: TikTok Thailand partnership + 1,265 users = ฿1M MRR</span><span class="th">เดือน 6: Partnership TikTok Thailand + 1,265 users = ฿1M MRR</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <p style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:1rem;">// MUTELAB RESEARCH WAVE 2 · FEB 24, 2026</p>
+    <h2 style="font-size:2rem;margin-bottom:1rem;"><span class="en">Stop Flying Blind on LIVE</span><span class="th">หยุดขาย LIVE แบบตาบอด</span></h2>
+    <p style="color:var(--text2);max-width:500px;margin:0 auto 2rem;"><span class="en">Thailand's TikTok LIVE market is exploding. The sellers who win are the ones with data. Be first.</span><span class="th">ตลาด TikTok LIVE ไทยกำลังระเบิด นักขายที่ชนะคือคนที่มีข้อมูล มาก่อน</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับไปหน้า Ideas ทั้งหมด</span></a>
+  </div>
+</div>
+
+<footer>
+  <p>MUTELAB · IDEA #117 · WAVE 2 RESEARCH · FEB 24, 2026 · TIKTOK LIVE COMMERCE</p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle("show-th", lang === "th");
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CondoChat — Super App สำหรับผู้อยู่อาศัยคอนโด & นิติบุคคลไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080a08;--surface:#0f160f;--surface2:#151e15;--border:rgba(20,184,166,0.12);--border2:rgba(20,184,166,0.28);--text:#f0fff8;--text2:#b0d4c8;--muted:#5a8878;--primary:#14b8a6;--primary-light:#2dd4bf;--primary-pale:rgba(20,184,166,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(20,184,166,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(20,184,166,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 5%,rgba(20,184,166,0.07) 0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(168,85,247,0.04) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,10,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:900px){.four-col{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.two-col,.three-col,.four-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .feature-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;}
+  .feature-icon{font-size:2rem;margin-bottom:0.6rem;}
+  .feature-name{font-size:0.88rem;font-weight:700;margin-bottom:0.3rem;}
+  .feature-desc{font-size:0.75rem;color:var(--muted);line-height:1.5;}
+  .user-split{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:1.5rem;}
+  @media(max-width:768px){.user-split{grid-template-columns:1fr;}}
+  .user-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;}
+  .user-box-title{font-size:0.75rem;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);}
+  .user-item{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;font-size:0.85rem;}
+  .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#000;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;text-align:left;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #121</span>
+  <span class="nav-badge" style="background:rgba(20,184,166,0.15);color:#2dd4bf;border-color:rgba(20,184,166,0.3);">🏢 PROPTECH · CONDO · URBAN LIVING</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🏢 URBAN LIVING · CONDO APP · THAI PROPTECH</span>
+      <span class="hero-tag th">🏢 ชีวิตในเมือง · แอปคอนโด · PropTech ไทย</span>
+      <span class="idea-num">SPRINT #121 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Condo<span class="accent">Chat</span></span><span class="th">Condo<span class="accent">Chat</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">The Super App for Thai Condo Residents & Juristic Offices</span>
+      <span class="th">Super App สำหรับผู้อยู่อาศัยคอนโดและนิติบุคคลไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Bangkok has 800,000+ condo units. Residents deal with parcel anxiety, maintenance chaos, anonymous neighbor complaints, and paper-based fee payments — while juristic offices manage everything through LINE groups and Excel. CondoChat is the resident-facing super app that connects residents and juristic offices: parcel alerts, visitor QR codes, facility booking, PromptPay fee collection, and community announcements — all in one LINE-integrated app.</span>
+      <span class="th">Bangkok มีคอนโด 800,000+ ยูนิต ผู้อยู่อาศัยเจอปัญหา พัสดุ, การซ่อมแซมที่วุ่นวาย, การร้องเรียนนิรนาม, และการจ่ายค่าส่วนกลางแบบกระดาษ — ในขณะที่นิติบุคคลจัดการทุกอย่างผ่าน LINE group และ Excel CondoChat คือ super app ฝั่งผู้อยู่อาศัยที่เชื่อม residents และนิติบุคคล: แจ้งเตือนพัสดุ, QR code ผู้มาเยือน, จองสิ่งอำนวยความสะดวก, จ่ายค่าส่วนกลาง PromptPay, และประกาศชุมชน — ทั้งหมดในแอป integrated กับ LINE</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">800K+</span><span class="stat-label en">Bangkok condo units (2025)</span><span class="stat-label th">ยูนิตคอนโด Bangkok (2568)</span></div>
+      <div class="stat"><span class="stat-val">10M+</span><span class="stat-label en">Bangkok metro population by 2030</span><span class="stat-label th">ประชากร Bangkok metro ถึงปี 2573</span></div>
+      <div class="stat"><span class="stat-val">฿1,500</span><span class="stat-label en">B2B price per building/month</span><span class="stat-label th">ราคา B2B ต่ออาคาร/เดือน</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">Resident-facing condo apps in Thailand</span><span class="th">แอปคอนโดฝั่ง Resident ในไทย</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// THE PROBLEM</div>
+    <h2><span class="en">800,000 Condo Units. Still Running on LINE Groups & Excel.</span><span class="th">800,000 ยูนิตคอนโด ยังวิ่งด้วย LINE Group และ Excel</span></h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">📦</div>
+      <div class="pain-text">
+        <h3><span class="en">Parcel hell — residents miss packages, juristic is overwhelmed</span><span class="th">นรกพัสดุ — ผู้อยู่อาศัยพลาดพัสดุ นิติบุคคลจมอยู่กับงาน</span></h3>
+        <p><span class="en">Thailand's e-commerce boom means every condo gets 50-200+ parcels daily. Staff call/message residents one by one. A notification system + QR pickup code would eliminate 80% of this workload.</span><span class="th">การบูมของ e-commerce ไทยหมายความว่าทุกคอนโดได้รับพัสดุ 50-200+ ชิ้น/วัน เจ้าหน้าที่โทร/ส่งข้อความผู้อยู่อาศัยทีละคน ระบบ notification + QR code รับพัสดุจะลดภาระงาน 80% ได้</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🔧</div>
+      <div class="pain-text">
+        <h3><span class="en">Maintenance requests disappear into LINE group black holes</span><span class="th">คำขอซ่อมแซมหายไปใน black hole LINE group</span></h3>
+        <p><span class="en">Residents report broken AC, leaky pipes, broken elevators via LINE group. Messages get buried. Juristic offices have no ticket system. Residents have no status update. Everyone frustrated.</span><span class="th">ผู้อยู่อาศัยรายงาน แอร์เสีย ท่อรั่ว ลิฟต์พัง ผ่าน LINE group ข้อความถูกฝัง นิติบุคคลไม่มีระบบ ticket ผู้อยู่อาศัยไม่ได้รับการอัปเดตสถานะ ทุกคนหงุดหงิด</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🏊</div>
+      <div class="pain-text">
+        <h3><span class="en">Facility booking is still paper + phone calls</span><span class="th">การจองสิ่งอำนวยความสะดวกยังเป็นกระดาษ + โทรศัพท์</span></h3>
+        <p><span class="en">Booking the gym, swimming pool, co-working space, or BBQ area means calling or visiting the juristic office in person during business hours. 2025 technology still pending.</span><span class="th">การจองยิม สระว่ายน้ำ co-working space หรือพื้นที่บาร์บีคิวต้องโทรหรือไปที่สำนักงานนิติบุคคลด้วยตนเองในเวลาทำการ เทคโนโลยี 2025 ยังรอ</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">💰</div>
+      <div class="pain-text">
+        <h3><span class="en">Common area fees: paper bills, bank transfers, zero automation</span><span class="th">ค่าส่วนกลาง: บิลกระดาษ โอนธนาคาร ไม่มีระบบอัตโนมัติ</span></h3>
+        <p><span class="en">Monthly common area fees (ค่าส่วนกลาง) are still collected via paper bills slid under doors. Juristic offices manually verify 200-500 bank transfers per month. PromptPay integration + automated reconciliation = massive time save.</span><span class="th">ค่าส่วนกลางรายเดือนยังเก็บผ่านบิลกระดาษที่สอดใต้ประตู นิติบุคคลตรวจสอบการโอนธนาคาร 200-500 รายการ/เดือนด้วยตนเอง PromptPay + automated reconciliation = ประหยัดเวลามหาศาล</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// FEATURES</div>
+    <h2><span class="en">Everything a Condo Needs — One App for Both Sides</span><span class="th">ทุกอย่างที่คอนโดต้องการ — แอปเดียวสำหรับทั้งสองฝ่าย</span></h2>
+
+    <div class="user-split">
+      <div class="user-box">
+        <div class="user-box-title">🏠 <span class="en">Resident Features (Free)</span><span class="th">ฟีเจอร์ผู้อยู่อาศัย (ฟรี)</span></div>
+        <div class="user-item">📦 <span class="en">Parcel arrival notification + QR pickup code</span><span class="th">แจ้งพัสดุมาถึง + QR code รับพัสดุ</span></div>
+        <div class="user-item">🔧 <span class="en">Submit maintenance request with photo + status tracking</span><span class="th">แจ้งซ่อมพร้อมรูปภาพ + ติดตามสถานะ</span></div>
+        <div class="user-item">🏊 <span class="en">Book gym/pool/facilities instantly in-app</span><span class="th">จองยิม/สระ/สิ่งอำนวยความสะดวกในแอปทันที</span></div>
+        <div class="user-item">💰 <span class="en">Pay common area fees via PromptPay + get receipt</span><span class="th">จ่ายค่าส่วนกลาง PromptPay + รับใบเสร็จ</span></div>
+        <div class="user-item">🚗 <span class="en">Generate visitor QR code for car park access</span><span class="th">สร้าง QR code ผู้มาเยือนสำหรับเข้าที่จอดรถ</span></div>
+        <div class="user-item">📢 <span class="en">Community announcements + voting on juristic decisions</span><span class="th">ประกาศชุมชน + โหวตตัดสินใจนิติบุคคล</span></div>
+      </div>
+      <div class="user-box">
+        <div class="user-box-title">🏢 <span class="en">Juristic Office Features (Paid)</span><span class="th">ฟีเจอร์สำนักงานนิติบุคคล (จ่ายเงิน)</span></div>
+        <div class="user-item">📊 <span class="en">Parcel management dashboard — log, notify, track pickup</span><span class="th">แดชบอร์ดจัดการพัสดุ — บันทึก แจ้ง ติดตามรับ</span></div>
+        <div class="user-item">🎫 <span class="en">Maintenance ticket system with assignment + history</span><span class="th">ระบบ ticket ซ่อมบำรุงพร้อมมอบหมาย + ประวัติ</span></div>
+        <div class="user-item">💳 <span class="en">Automated fee reconciliation — PromptPay → resident record auto-updated</span><span class="th">Reconciliation ค่าส่วนกลางอัตโนมัติ PromptPay → อัปเดต record ผู้อยู่อาศัยอัตโนมัติ</span></div>
+        <div class="user-item">📋 <span class="en">Delinquent fee reports + LINE notification to late payers</span><span class="th">รายงานค้างชำระ + แจ้งเตือน LINE ผู้ค้างชำระ</span></div>
+        <div class="user-item">🔑 <span class="en">Visitor + contractor access log with QR validation</span><span class="th">บันทึกผู้มาเยือน + ผู้รับเหมาด้วยการตรวจสอบ QR</span></div>
+        <div class="user-item">📣 <span class="en">Broadcast to all residents or specific floors/units</span><span class="th">Broadcast ถึงผู้อยู่อาศัยทั้งหมดหรือชั้น/ยูนิตเฉพาะ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// PRICING & COMPETITION</div>
+    <h2><span class="en">B2B Pricing (Juristic Pays, Residents Use Free)</span><span class="th">ราคา B2B (นิติบุคคลจ่าย ผู้อยู่อาศัยใช้ฟรี)</span></h2>
+
+    <div class="pricing-grid">
+      <div class="pricing-card featured">
+        <div class="pricing-badge">CORE PRODUCT</div>
+        <div class="pricing-tier">PER BUILDING</div>
+        <div class="pricing-price">฿1,500</div>
+        <div class="pricing-unit"><span class="en">/month · up to 200 units</span><span class="th">/เดือน · ไม่เกิน 200 ยูนิต</span></div>
+        <div class="pricing-desc">
+          <ul style="list-style:none;line-height:2;">
+            <li>✓ <span class="en">Unlimited resident accounts</span><span class="th">บัญชีผู้อยู่อาศัยไม่จำกัด</span></li>
+            <li>✓ <span class="en">Parcel management (unlimited)</span><span class="th">จัดการพัสดุ (ไม่จำกัด)</span></li>
+            <li>✓ <span class="en">Maintenance ticketing</span><span class="th">ระบบ ticket ซ่อมบำรุง</span></li>
+            <li>✓ <span class="en">PromptPay fee collection</span><span class="th">เก็บค่าส่วนกลาง PromptPay</span></li>
+            <li>✓ <span class="en">Facility booking</span><span class="th">จองสิ่งอำนวยความสะดวก</span></li>
+            <li>✓ <span class="en">LINE integration + notifications</span><span class="th">LINE integration + แจ้งเตือน</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">LARGE COMPLEX</div>
+        <div class="pricing-price">฿3,500</div>
+        <div class="pricing-unit"><span class="en">/month · 201–600 units</span><span class="th">/เดือน · 201–600 ยูนิต</span></div>
+        <div class="pricing-desc">
+          <ul style="list-style:none;line-height:2;">
+            <li>✓ <span class="en">Everything in Core</span><span class="th">ทุกอย่างใน Core</span></li>
+            <li>✓ <span class="en">Multi-building management</span><span class="th">จัดการหลายอาคาร</span></li>
+            <li>✓ <span class="en">Staff role management</span><span class="th">จัดการบทบาทเจ้าหน้าที่</span></li>
+            <li>✓ <span class="en">Advanced analytics & reports</span><span class="th">Analytics และรายงานขั้นสูง</span></li>
+            <li>✓ <span class="en">API integration (Silverman sync)</span><span class="th">API integration (sync Silverman)</span></li>
+            <li>✓ <span class="en">Priority LINE support</span><span class="th">Priority LINE support</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:1.5rem;">
+      <h3><span class="en">Competition & Market Size</span><span class="th">การแข่งขันและขนาดตลาด</span></h3>
+      <div class="two-col" style="margin-top:1rem;">
+        <div>
+          <h3 style="font-size:0.9rem;margin-bottom:0.8rem;"><span class="en">Why This Isn't Covered by Silverman</span><span class="th">ทำไม Silverman ไม่ครอบคลุมสิ่งนี้</span></h3>
+          <ul style="font-size:0.82rem;color:var(--text2);list-style:none;line-height:2;">
+            <li>🏢 <span class="en">Silverman.app: B2B accounting for juristic staff only</span><span class="th">Silverman.app: B2B บัญชีสำหรับเจ้าหน้าที่นิติเท่านั้น</span></li>
+            <li>🏠 <span class="en">CondoChat: B2C app for residents + connects to juristic</span><span class="th">CondoChat: B2C สำหรับ residents + เชื่อมนิติบุคคล</span></li>
+            <li>🤝 <span class="en">Can integrate with Silverman (complementary, not competitive)</span><span class="th">รวมกับ Silverman ได้ (complementary ไม่ใช่ competitors)</span></li>
+            <li>📱 <span class="en">No resident-facing app exists in Thai market today</span><span class="th">ยังไม่มีแอปฝั่ง resident ในตลาดไทยวันนี้</span></div></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:0.9rem;margin-bottom:0.8rem;"><span class="en">Revenue Path</span><span class="th">เส้นทางรายได้</span></h3>
+          <ul style="font-size:0.82rem;color:var(--text2);list-style:none;line-height:2;">
+            <li>🎯 <span class="en">TAM: 5,000 Bangkok condo buildings × ฿1,500/mo = ฿90M/mo</span><span class="th">TAM: 5,000 อาคาร Bangkok × ฿1,500/เดือน = ฿90M/เดือน</span></li>
+            <li>📊 <span class="en">฿1M MRR = 667 buildings (13% of Bangkok condos)</span><span class="th">฿1M MRR = 667 อาคาร (13% คอนโด Bangkok)</span></li>
+            <li>🏗️ <span class="en">BD strategy: partner with major developers (SC Asset, AP, Sansiri)</span><span class="th">กลยุทธ์ BD: partner กับ developer ใหญ่ (SC Asset, AP, Sansiri)</span></li>
+            <li>⏱️ <span class="en">Time to ฿1M MRR: 10-14 months (longer BD cycle)</span><span class="th">เวลาถึง ฿1M MRR: 10-14 เดือน (BD cycle ยาวกว่า)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <p style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:1rem;">// MUTELAB RESEARCH WAVE 2 · FEB 24, 2026</p>
+    <h2 style="font-size:2rem;margin-bottom:1rem;"><span class="en">Bangkok is Building Up. Time to Build the OS for Condo Life.</span><span class="th">Bangkok กำลังสูงขึ้น ถึงเวลาสร้าง OS สำหรับชีวิตในคอนโด</span></h2>
+    <p style="color:var(--text2);max-width:550px;margin:0 auto 2rem;"><span class="en">800,000+ condo units. 0 resident-facing super apps. First mover in Thai PropTech gets the whole stack — residents, juristic, developers, eventually insurance and services.</span><span class="th">800,000+ ยูนิตคอนโด 0 super app ฝั่ง resident ผู้บุกเบิก PropTech ไทยได้ทั้งหมด — residents, นิติบุคคล, developers, และ insurance + services ในที่สุด</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับไปหน้า Ideas ทั้งหมด</span></a>
+  </div>
+</div>
+
+<footer>
+  <p>MUTELAB · IDEA #121 · WAVE 2 RESEARCH · FEB 24, 2026 · THAI PROPTECH · CONDO LIVING</p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle("show-th", lang === "th");
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>

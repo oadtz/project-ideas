@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GigPocket — แอปรายรับ-รายจ่ายสำหรับไรเดอร์ Grab · LINE MAN · Robinhood</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080f;--surface:#10101c;--surface2:#14142a;--border:rgba(139,92,246,0.12);--border2:rgba(139,92,246,0.28);--text:#f0eeff;--text2:#b8b0d4;--muted:#6a6488;--primary:#8b5cf6;--primary-light:#a78bfa;--primary-pale:rgba(139,92,246,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#22c55e;--red:#ef4444;--orange:#f97316;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(139,92,246,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 10%,rgba(139,92,246,0.06) 0%,transparent 55%),radial-gradient(ellipse at 20% 90%,rgba(245,158,11,0.04) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,8,15,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .app-mockup{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:1.5rem;margin-bottom:2rem;}
+  .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+  .app-title{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--primary-light);font-weight:700;}
+  .app-date{font-size:0.7rem;color:var(--muted);}
+  .income-row{display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.8rem;border-radius:10px;margin-bottom:0.5rem;}
+  .income-grab{background:rgba(0,180,120,0.08);border:1px solid rgba(0,180,120,0.15);}
+  .income-lm{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);}
+  .income-rh{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.15);}
+  .income-platform{font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem;}
+  .income-amount{font-family:'Space Mono',monospace;font-size:0.9rem;font-weight:700;}
+  .income-grab .income-amount{color:#00b478;}
+  .income-lm .income-amount{color:var(--green);}
+  .income-rh .income-amount{color:var(--orange);}
+  .total-row{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--primary-pale);border:1px solid var(--border2);border-radius:10px;margin-top:0.5rem;}
+  .total-label{font-size:0.85rem;font-weight:700;}
+  .total-amount{font-family:'Space Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--primary-light);}
+  .insight-row{display:flex;align-items:center;gap:0.8rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:0.8rem 1rem;margin-top:1rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #118</span>
+  <span class="nav-badge" style="background:rgba(139,92,246,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.3);">🛵 GIG ECONOMY · FINTECH · RIDERS</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🛵 GIG ECONOMY · INCOME TRACKER · THAI RIDERS</span>
+      <span class="hero-tag th">🛵 Gig Economy · ติดตามรายรับ · ไรเดอร์ไทย</span>
+      <span class="idea-num">SPRINT #118 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Gig<span class="accent">Pocket</span></span><span class="th">Gig<span class="accent">Pocket</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">The Financial Dashboard for Thai Grab, LINE MAN & Robinhood Riders</span>
+      <span class="th">แอปการเงินสำหรับไรเดอร์ Grab, LINE MAN และ Robinhood ในไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand has 500,000–800,000 active gig riders — but most juggle 2-3 platforms and have no single view of their real income after fuel, tolls, and bike maintenance. GigPocket aggregates earnings from every platform, auto-tracks deductible expenses via receipt scan, and generates income proof documents that actual banks accept for loans.</span>
+      <span class="th">ไทยมีไรเดอร์ gig 500,000–800,000 คน แต่ส่วนใหญ่วิ่ง 2-3 แพลตฟอร์มและไม่มีภาพรวมรายได้จริงหลังหักค่าน้ำมัน ค่าทางด่วน และค่าซ่อมมอเตอร์ไซค์ GigPocket รวมรายได้จากทุกแพลตฟอร์ม ติดตามค่าใช้จ่ายที่หักภาษีได้อัตโนมัติผ่านสแกนใบเสร็จ และสร้างเอกสารรายได้ที่ธนาคารรับได้จริงสำหรับขอสินเชื่อ</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">800K</span><span class="stat-label en">Active gig riders in Thailand</span><span class="stat-label th">ไรเดอร์ Gig Active ในไทย</span></div>
+      <div class="stat"><span class="stat-val">3</span><span class="stat-label en">Avg platforms per active rider</span><span class="stat-label th">เฉลี่ยแพลตฟอร์มต่อไรเดอร์ Active</span></div>
+      <div class="stat"><span class="stat-val">฿0</span><span class="stat-label en">Thai gig income tracker exists today</span><span class="stat-label th">แอปติดตามรายได้ gig ไทย</span></div>
+      <div class="stat"><span class="stat-val">$1B</span><span class="stat-label en">Thai gig market GMV by 2028</span><span class="stat-label th">GMV ตลาด Gig ไทย ปี 2571</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// THE PROBLEM</div>
+    <h2><span class="en">Riding 3 Apps, Managing 0 Data</span><span class="th">วิ่ง 3 แอป จัดการข้อมูล 0</span></h2>
+
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3><span class="en">Can't see real income after expenses</span><span class="th">ไม่เห็นรายได้จริงหลังหักค่าใช้จ่าย</span></h3>
+        <p><span class="en">A Grab + LINE MAN rider may earn ฿1,200/day gross but net only ฿700 after fuel ฿300 + toll ฿120 + maintenance amortization ฿80. Most riders don't track this and wonder why they can't save.</span><span class="th">ไรเดอร์ที่วิ่ง Grab + LINE MAN อาจได้รับ ฿1,200/วัน แต่ net แค่ ฿700 หลังหักน้ำมัน ฿300 + ทางด่วน ฿120 + ค่าซ่อมตัดจ่าย ฿80 ไรเดอร์ส่วนใหญ่ไม่ track สิ่งเหล่านี้และสงสัยว่าทำไมออมไม่ได้</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🏦</div>
+      <div class="pain-text">
+        <h3><span class="en">Banks don't recognize gig income for loans</span><span class="th">ธนาคารไม่รับรายได้ Gig สำหรับสินเชื่อ</span></h3>
+        <p><span class="en">Thai banks require 3–6 months of payslips for personal loans. A rider earning ฿40,000/month consistently gets rejected because their income source is classified as "informal." GigPocket generates certified income summaries.</span><span class="th">ธนาคารไทยต้องการสลิปเงินเดือน 3–6 เดือนสำหรับสินเชื่อส่วนบุคคล ไรเดอร์ที่ได้ ฿40,000/เดือนสม่ำเสมอยังโดนปฏิเสธเพราะแหล่งรายได้จัดเป็น "informal" GigPocket สร้างสรุปรายได้รับรอง</span></p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📅</div>
+      <div class="pain-text">
+        <h3><span class="en">No smart scheduling — most riders guess peak hours</span><span class="th">ไม่มีตารางอัจฉริยะ — ส่วนใหญ่เดา peak hours</span></h3>
+        <p><span class="en">Surge pricing patterns in Bangkok are complex. Grab prime time differs from LINE MAN peak. Rain = food delivery surge. A data-driven schedule could increase income 20–30% with the same hours worked.</span><span class="th">รูปแบบ Surge pricing ใน Bangkok ซับซ้อน Grab prime time ต่างจาก LINE MAN peak ฝนตก = surge ส่งอาหาร ตารางงานที่ขับเคลื่อนด้วยข้อมูลสามารถเพิ่มรายได้ 20–30% ด้วยชั่วโมงงานเท่าเดิม</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// APP PREVIEW</div>
+    <h2><span class="en">Your Money, Clearly — Across All Platforms</span><span class="th">เงินของคุณ ชัดเจน — ทุกแพลตฟอร์ม</span></h2>
+
+    <div class="app-mockup">
+      <div class="app-header">
+        <span class="app-title">GIGPOCKET — <span class="en">Today's Summary</span><span class="th">สรุปวันนี้</span></span>
+        <span class="app-date"><span class="en">Mon Feb 24, 2026</span><span class="th">จ. 24 ก.พ. 2569</span></span>
+      </div>
+      <div class="income-row income-grab">
+        <span class="income-platform">🟢 Grab <span style="color:var(--muted);font-size:0.72rem;"><span class="en">14 trips</span><span class="th">14 เที่ยว</span></span></span>
+        <span class="income-amount">+฿680</span>
+      </div>
+      <div class="income-row income-lm">
+        <span class="income-platform">🟩 LINE MAN <span style="color:var(--muted);font-size:0.72rem;"><span class="en">9 orders</span><span class="th">9 ออเดอร์</span></span></span>
+        <span class="income-amount">+฿420</span>
+      </div>
+      <div class="income-row income-rh">
+        <span class="income-platform">🟠 Robinhood <span style="color:var(--muted);font-size:0.72rem;"><span class="en">5 orders</span><span class="th">5 ออเดอร์</span></span></span>
+        <span class="income-amount">+฿190</span>
+      </div>
+      <div class="income-row" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);margin-top:0.5rem;">
+        <span class="income-platform">⛽ <span class="en">Expenses (fuel + toll)</span><span class="th">ค่าใช้จ่าย (น้ำมัน + ทางด่วน)</span></span>
+        <span class="income-amount" style="color:var(--red);">−฿340</span>
+      </div>
+      <div class="total-row">
+        <span class="total-label"><span class="en">Net Income Today</span><span class="th">รายได้สุทธิวันนี้</span></span>
+        <span class="total-amount">฿950</span>
+      </div>
+      <div class="insight-row">
+        <span style="font-size:1.2rem;">💡</span>
+        <span style="font-size:0.82rem;color:var(--text2);"><span class="en"><strong>GigPocket AI:</strong> Tomorrow morning 7-9AM, Grab surge +45% expected near Asoke BTS. Shift 2 Robinhood orders to Grab during this window.</span><span class="th"><strong>GigPocket AI:</strong> พรุ่งนี้เช้า 7-9 น. คาดว่า Grab surge +45% ใกล้ BTS อโศก เลื่อน 2 ออเดอร์ Robinhood มาวิ่ง Grab ในช่วงนี้</span></span>
+      </div>
+    </div>
+
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3><span class="en">One-Click Platform Connect</span><span class="th">เชื่อมแพลตฟอร์มคลิกเดียว</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Connect Grab, LINE MAN, Robinhood via OAuth. GigPocket pulls earnings automatically — no manual entry needed. Works with InDrive and Bolt too.</span><span class="th">เชื่อม Grab, LINE MAN, Robinhood ผ่าน OAuth GigPocket ดึงรายได้อัตโนมัติ ไม่ต้องกรอกเอง ใช้ได้กับ InDrive และ Bolt ด้วย</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3><span class="en">Receipt Scan & Auto-Categorize</span><span class="th">สแกนใบเสร็จ & แยกประเภทอัตโนมัติ</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Snap fuel receipts, maintenance invoices. AI reads and categorizes in Thai. Build your deductible expense file effortlessly for year-end tax filing.</span><span class="th">ถ่ายรูปใบเสร็จน้ำมัน ใบแจ้งซ่อม AI อ่านและแยกประเภทเป็นภาษาไทย สร้างแฟ้มค่าใช้จ่ายหักภาษีได้โดยไม่ต้องพยายาม สำหรับยื่นภาษีปลายปี</span></p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏦</div>
+        <h3><span class="en">Bank-Ready Income Report</span><span class="th">รายงานรายได้สำหรับธนาคาร</span></h3>
+        <p style="font-size:0.9rem;color:var(--text2);"><span class="en">Generate a 6-month income summary with verified platform data. Formatted to Thai bank requirements. Used for loan applications, rental agreements, and visa income proof.</span><span class="th">สร้างสรุปรายได้ 6 เดือนพร้อมข้อมูลแพลตฟอร์มที่ยืนยันแล้ว จัดรูปแบบตามมาตรฐานธนาคารไทย ใช้สำหรับขอสินเชื่อ สัญญาเช่า และหลักฐานรายได้วีซ่า</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">// PRICING</div>
+    <h2><span class="en">Freemium — Free for Basic, ฿149 for Power</span><span class="th">Freemium — ฟรีพื้นฐาน ฿149 สำหรับ Power</span></h2>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit"><span class="en">forever</span><span class="th">ตลอดไป</span></div>
+        <div class="pricing-desc"><span class="en">Connect 2 platforms, daily income summary, basic expense tracking, 30-day history</span><span class="th">เชื่อม 2 แพลตฟอร์ม, สรุปรายได้รายวัน, ติดตามค่าใช้จ่ายพื้นฐาน, ประวัติ 30 วัน</span></div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier">PRO</div>
+        <div class="pricing-price">฿149</div>
+        <div class="pricing-unit"><span class="en">/month</span><span class="th">/เดือน</span></div>
+        <div class="pricing-desc"><span class="en">All platforms, AI peak hour predictions, receipt scan (unlimited), bank-ready income report, tax summary, 1-year history</span><span class="th">ทุกแพลตฟอร์ม, AI พยากรณ์ peak hours, สแกนใบเสร็จ (ไม่จำกัด), รายงานรายได้สำหรับธนาคาร, สรุปภาษี, ประวัติ 1 ปี</span></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">TEAM</div>
+        <div class="pricing-price">฿490</div>
+        <div class="pricing-unit"><span class="en">/month · 5 riders</span><span class="th">/เดือน · 5 ไรเดอร์</span></div>
+        <div class="pricing-desc"><span class="en">For fleet operators and gig cooperatives. Team dashboard, collective income reporting, group loan prep package</span><span class="th">สำหรับผู้ควบคุมกองยานและสหกรณ์ gig แดชบอร์ดทีม รายงานรายได้รวม แพ็คเกจเตรียมขอสินเชื่อกลุ่ม</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <div class="card">
+        <h3><span class="en">Path to ฿1M MRR</span><span class="th">เส้นทางสู่ ฿1M MRR</span></h3>
+        <div class="two-col" style="margin-top:1rem;">
+          <ul style="font-size:0.9rem;color:var(--text2);list-style:none;line-height:2.2;">
+            <li>🛵 <span class="en">TAM: 800,000 riders × ฿149/mo = ฿1.19B ARR potential</span><span class="th">TAM: 800,000 ไรเดอร์ × ฿149/เดือน = ฿1.19B ARR potential</span></li>
+            <li>📲 <span class="en">Distribution: LINE groups for Grab/LINE MAN riders (massive networks)</span><span class="th">Distribution: LINE group สำหรับไรเดอร์ Grab/LINE MAN (เครือข่ายขนาดใหญ่มาก)</span></li>
+            <li>🎯 <span class="en">Target: 6,711 paying users × ฿149 = ฿1M MRR</span><span class="th">เป้าหมาย: 6,711 users จ่ายเงิน × ฿149 = ฿1M MRR</span></li>
+          </ul>
+          <ul style="font-size:0.9rem;color:var(--text2);list-style:none;line-height:2.2;">
+            <li>📅 <span class="en">Month 1-2: Seed 3 Bangkok Grab rider LINE groups</span><span class="th">เดือน 1-2: Seed 3 LINE group ไรเดอร์ Grab Bangkok</span></li>
+            <li>🏦 <span class="en">Month 3: Partner with SCB/KBank for income verification feature</span><span class="th">เดือน 3: Partner กับ SCB/KBank สำหรับฟีเจอร์ยืนยันรายได้</span></li>
+            <li>⏱️ <span class="en">Estimated time to ฿1M MRR: 7-9 months</span><span class="th">เวลาโดยประมาณถึง ฿1M MRR: 7-9 เดือน</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <p style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:1rem;">// MUTELAB RESEARCH WAVE 2 · FEB 24, 2026</p>
+    <h2 style="font-size:2rem;margin-bottom:1rem;"><span class="en">800,000 Riders. Zero Tools. First Mover Wins.</span><span class="th">800,000 ไรเดอร์ ไม่มีเครื่องมือ ผู้บุกเบิกชนะ</span></h2>
+    <p style="color:var(--text2);max-width:500px;margin:0 auto 2rem;"><span class="en">Thailand's gig economy is reaching $1B GMV by 2028. The riders powering it deserve proper financial tools — in Thai, for Thai platforms.</span><span class="th">Gig economy ไทยจะถึง GMV $1B ภายในปี 2571 ไรเดอร์ที่ขับเคลื่อนมันสมควรได้เครื่องมือการเงินที่เหมาะสม — ภาษาไทย สำหรับแพลตฟอร์มไทย</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับไปหน้า Ideas ทั้งหมด</span></a>
+  </div>
+</div>
+
+<footer>
+  <p>MUTELAB · IDEA #118 · WAVE 2 RESEARCH · FEB 24, 2026 · GIG ECONOMY FINTECH</p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle("show-th", lang === "th");
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent.trim() === lang.toUpperCase());
+  });
+}
+</script>
+</body>
+</html>
