@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCare — Elderly Watch → LINE Alert for Thai Families</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>:root{--bg:#0a0f0a;--surface:#0f1610;--surface2:#141e15;--surface3:#1a261b;--border:rgba(13,148,136,0.15);--border2:rgba(13,148,136,0.28);--text:#f0f5f0;--text2:#c0d0c0;--muted:#708070;--primary:#0d9488;--primary-light:#2dd4bf;--primary-pale:rgba(13,148,136,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#10b981;--red:#ef4444;--amber:#f59e0b}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6}.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(13,148,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.03) 1px,transparent 1px);background-size:48px 48px}.grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 0%,rgba(13,148,136,0.07) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(245,158,11,0.05) 0%,transparent 60%)}.container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2}.lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface)}.lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Space Mono',monospace}.lang-btn.active{background:var(--primary);color:#fff}body:not(.show-th) .th{display:none}body.show-th .en{display:none}nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,15,10,0.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}.nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light)}.nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted)}.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem}.hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem}.hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale)}.idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted)}.hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;margin-bottom:0.5rem}.hero h1 .accent{color:var(--primary-light)}.hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem}.hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem}.hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem}.stat{display:flex;flex-direction:column;gap:0.2rem}.stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light)}.stat-label{font-size:0.75rem;color:var(--muted)}.score-banner{display:inline-flex;align-items:center;gap:1.2rem;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:1rem 1.8rem;margin-bottom:2rem}.score-val{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--primary-light)}.score-bar{width:140px;height:8px;background:var(--surface3);border-radius:99px;overflow:hidden}.score-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:99px}section{padding:5rem 0;border-top:1px solid var(--border)}.section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase}h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:1.5rem}h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem}.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}@media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr}}.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem}.card:hover{border-color:var(--border2)}.card-icon{font-size:1.8rem;margin-bottom:0.8rem}.alert-box{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:1.5rem;margin-bottom:2rem}.alert-title{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#f87171;font-weight:700;margin-bottom:0.5rem}.pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem}.pain-emoji{font-size:1.4rem;flex-shrink:0}.pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem}.feature-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.4rem}.feature-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-light);flex-shrink:0;margin-top:0.45rem}.feature-item p{font-size:0.9rem;color:var(--text2);margin-top:0.2rem}.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-bottom:2.5rem}@media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}.pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative}.pricing-card.featured{border-color:var(--border2);background:var(--surface2)}.pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace}.pricing-tier{font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem}.pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem}.pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem}.pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5}.revenue-block{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:1.5rem}.revenue-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.9rem}.revenue-row:last-child{border-bottom:none;font-weight:700;color:var(--primary-light)}.revenue-val{font-family:'Space Mono',monospace;color:var(--secondary-light)}.cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border)}.back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px}footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center}footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted2)}</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle"><button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button><button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button></div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #104</span>
+  <span class="nav-badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border-color:rgba(168,85,247,0.3);">👴 HW+B2C</span>
+  <span class="nav-badge en">ELDERLY CARE</span>
+  <span class="nav-badge th">ดูแลผู้สูงอายุ</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">👴 ELDERTECH · SMARTWATCH · LINE</span>
+      <span class="hero-tag th">👴 ElderTech · Smartwatch · LINE</span>
+      <span class="idea-num">WAVE 1.5 — HW+B2C RESEARCH — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Care</span></span><span class="th">Mute<span class="accent">Care</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Elderly Smartwatch → LINE Alert — แม่ล้มแล้วใครจะรู้?</span>
+      <span class="th">Smartwatch ผู้สูงอายุ → แจ้งเตือน LINE — แม่ล้มแล้วใครจะรู้?</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand: 13.6M elderly, adding 1M/year. 3.9M live alone. 1 in 3 over 65 falls yearly. No Thai LINE-based solution exists. MuteCare: smartwatch monitors parent — fall detection, heart rate, GPS, SOS — alerts family via LINE. ฿149/month vs losing mom on the floor for 6 hours. ★★★★★ Highest moat rating. Insurance partnership potential.</span>
+      <span class="th">ไทย: ผู้สูงอายุ 13.6M เพิ่ม 1M/ปี 3.9M อยู่คนเดียว 1 ใน 3 อายุ 65+ ล้มทุกปี ไม่มีวิธีแก้ไทยบน LINE MuteCare: smartwatch ดูแลพ่อแม่ — ตรวจจับล้ม หัวใจ GPS SOS — แจ้งเตือนครอบครัว LINE ฿149/เดือน vs แม่นอนพื้น 6 ชม. ★★★★★ Moat สูงสุด มีศักยภาพร่วมกับประกัน</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">13.6M</span><span class="stat-label en">elderly Thais (60+)</span><span class="stat-label th">ผู้สูงอายุไทย</span></div>
+      <div class="stat"><span class="stat-val">+1M/yr</span><span class="stat-label en">growing every year</span><span class="stat-label th">เพิ่มทุกปี</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">Thai LINE solutions</span><span class="stat-label th">วิธีแก้ไทยบน LINE</span></div>
+      <div class="stat"><span class="stat-val">★★★★★</span><span class="stat-label en">highest moat</span><span class="stat-label th">moat สูงสุด</span></div>
+    </div>
+    <div class="score-banner">
+      <div><span class="score-val">37</span><span style="color:var(--muted)">/50</span></div>
+      <div><div class="score-bar"><div class="score-fill" style="width:74%"></div></div></div>
+      <div style="font-size:0.7rem;color:#c084fc;font-family:'Space Mono',monospace;">👴 ★★★★★ HIGHEST MOAT · SOCIAL IMPACT · INSURANCE POTENTIAL</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">😰 THE FEAR</div>
+    <div class="section-label th">😰 ความกลัว</div>
+    <h2><span class="en">1 in 3 Thais Over 65 Falls Every Year — Family Finds Out Hours Later</span><span class="th">1 ใน 3 คนไทย 65+ ล้มทุกปี — ครอบครัวรู้ชั่วโมงต่อมา</span></h2>
+    <div class="alert-box">
+      <div class="alert-title">🚨 THAILAND AGING CRISIS: 2025 DATA</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Thailand is officially an "Aged Society" (20%+ over 60). Will be "Super-Aged" (31%) by 2040. KPMG identifies elderly care as #1 underserved market. 3.9M elderly Thais live alone. Falls are #1 cause of disability. Healthcare costs: ฿12B+/year.</span>
+        <span class="th">ไทยเป็น "สังคมผู้สูงอายุ" (20%+ 60+) จะเป็น "Super-Aged" (31%) ภายใน 2040 KPMG ระบุการดูแลผู้สูงอายุเป็นตลาด #1 ที่ไม่มีใครบริการ 3.9M อยู่คนเดียว การล้มเป็นสาเหตุ #1 ของความพิการ ค่ารักษา: ฿12B+/ปี</span>
+      </p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📱</div>
+      <div class="pain-text">
+        <h3 class="en">Every Existing Solution Is English-Only, SMS-Based, US-Only</h3>
+        <h3 class="th">วิธีแก้ที่มีเป็นอังกฤษ SMS สหรัฐฯ เท่านั้น</h3>
+        <p class="en">Medical Guardian ($42.95/mo): US only, SMS alerts. Bay Alarm: $199 hardware + monthly. Life Alert: 1980s tech. None have LINE integration. None support Thai.</p>
+        <p class="th">Medical Guardian ($42.95/เดือน): สหรัฐฯ เท่านั้น SMS Bay Alarm: $199 + รายเดือน Life Alert: เทคยุค 80 ไม่มี integrate LINE ไม่รองรับไทย</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">💚</div>
+      <div class="pain-text">
+        <h3 class="en">Thai Families Already Use LINE — Meet Them There</h3>
+        <h3 class="th">ครอบครัวไทยใช้ LINE อยู่แล้ว — พบที่นั่น</h3>
+        <p class="en">Every Thai family has a LINE group. "ครอบครัว❤️" with parents, siblings, kids. Alerts should arrive here — not SMS nobody reads, not email nobody checks at 2am.</p>
+        <p class="th">ทุกครอบครัวไทยมีกลุ่ม LINE "ครอบครัว❤️" พร้อมพ่อแม่ พี่น้อง ลูก การแจ้งเตือนควรมาที่นี่ ไม่ใช่ SMS ไม่ใช่อีเมลที่ไม่มีใครเช็คตี 2</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SOLUTION</div>
+    <div class="section-label th">วิธีแก้</div>
+    <h2><span class="en">MuteCare: Smartwatch → LINE Family Group</span><span class="th">MuteCare: Smartwatch → LINE กลุ่มครอบครัว</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🫀 Fall Detection via Smartwatch</h3>
+          <h3 class="th">🫀 ตรวจจับการล้ม</h3>
+          <p class="en">Apple Watch, Samsung Watch, Xiaomi Band. Detects sudden impact + horizontal position = fall. LINE alert in 10 seconds. "แม่ล้ม! 14:32 พิกัด: ห้องนอน"</p>
+          <p class="th">Apple Watch, Samsung Watch, Xiaomi Band ตรวจจับ impact + แนวนอน = ล้ม แจ้ง LINE ใน 10 วินาที "แม่ล้ม! 14:32 พิกัด: ห้องนอน"</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">❤️ Heart Rate Monitoring</h3>
+          <h3 class="th">❤️ ตรวจหัวใจ</h3>
+          <p class="en">Continuous heart rate tracking. Alert on abnormal patterns: too high (>120 resting), too low (<50), irregular rhythm. Early warning for heart attack risk.</p>
+          <p class="th">ติดตามอัตราหัวใจต่อเนื่อง แจ้งเตือนผิดปกติ: สูงเกิน (>120 พัก) ต่ำเกิน (<50) จังหวะผิดปกติ เตือนล่วงหน้าหัวใจวาย</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📍 GPS Location Tracking</h3>
+          <h3 class="th">📍 GPS ติดตามตำแหน่ง</h3>
+          <p class="en">Real-time GPS. Geofencing alerts if parent leaves safe zone (home, temple, market). Find wandering elderly with dementia. One tap: "แม่อยู่ไหน?"</p>
+          <p class="th">GPS เรียลไทม์ แจ้งเตือน geofencing ถ้าพ่อแม่ออกจากโซนปลอดภัย (บ้าน วัด ตลาด) หาผู้สูงอายุเดินหาย แตะเดียว: "แม่อยู่ไหน?"</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🆘 SOS Button</h3>
+          <h3 class="th">🆘 ปุ่ม SOS</h3>
+          <p class="en">One tap on watch → LINE alert to all family members. "แม่กด SOS! โปรดโทรหา" Includes GPS coordinates. Two-way voice call from watch.</p>
+          <p class="th">แตะนาฬิกาครั้งเดียว → แจ้ง LINE ทุกคนในครอบครัว "แม่กด SOS! โปรดโทร" พร้อมพิกัด GPS โทรสองทางจากนาฬิกา</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">💊 Medication Reminders</h3>
+          <h3 class="th">💊 เตือนทานยา</h3>
+          <p class="en">Watch buzzes at medication time. LINE reminder to family: "แม่ยังไม่ได้ทานยาเบาหวาน 08:00" Confirms when taken or alerts if missed.</p>
+          <p class="th">นาฬิกาสั่นเมื่อถึงเวลาทานยา เตือน LINE ครอบครัว: "แม่ยังไม่ได้ทานยาเบาหวาน 08:00" ยืนยันเมื่อทานแล้วหรือแจ้งถ้าลืม</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📊 Health Dashboard for Family</h3>
+          <h3 class="th">📊 Dashboard สุขภาพ</h3>
+          <p class="en">Web/app dashboard shows: heart rate history, activity levels, sleep quality, medication compliance. Weekly health report to LINE. Export for doctor visits.</p>
+          <p class="th">Dashboard แสดง: ประวัติหัวใจ ระดับกิจกรรม คุณภาพการนอน การทานยา รายงานสุขภาพรายสัปดาห์ทาง LINE ส่งออกไปหาหมอ</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2><span class="en">Subscription Model — Insurance Partnership Potential</span><span class="th">Subscription — มีศักยภาพร่วมกับประกัน</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit">7-day trial</div>
+        <div class="pricing-desc en">Fall detection, 1 family contact, basic dashboard.</div>
+        <div class="pricing-desc th">ตรวจจับล้ม ผู้ติดต่อ 1 คน dashboard พื้นฐาน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">FAMILY PLAN</div>
+        <div class="pricing-tier">FAMILY</div>
+        <div class="pricing-price">฿149</div>
+        <div class="pricing-unit">/month · ฿1,499/year</div>
+        <div class="pricing-desc en">Full monitoring, 5 contacts, GPS, SOS, medication, LINE alerts, health reports.</div>
+        <div class="pricing-desc th">ตรวจทั้งหมด 5 คนติดต่อ GPS SOS ยา LINE รายงานสุขภาพ</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">B2B / INSURANCE</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-unit">volume pricing</div>
+        <div class="pricing-desc en">White-label for Thai insurance companies. Bundle with life insurance, health policies.</div>
+        <div class="pricing-desc th">White-label สำหรับประกันไทย รวมกับประกันชีวิต ประกันสุขภาพ</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <div class="revenue-row"><span>Month 6: 2,000 paying families</span><span class="revenue-val">฿298K/mo</span></div>
+      <div class="revenue-row"><span>Month 12: 5,000 families + 2 insurance partners</span><span class="revenue-val">฿750K/mo</span></div>
+      <div class="revenue-row"><span><strong>Year 1 Cumulative</strong></span><span class="revenue-val"><strong>฿5.2M</strong></span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SCORING</div>
+    <div class="section-label th">คะแนน</div>
+    <h2><span class="en">37/50 — ★★★★★ Highest Moat Rating</span><span class="th">37/50 — ★★★★★ Moat สูงสุด</span></h2>
+    <p style="color:var(--text2);margin-bottom:1.5rem;">
+      <span class="en">Market: 7/10 · Problem: 9/10 · Competition: 9/10 · Build: 7/10 · Advantage: 5/10</span>
+      <span class="th">ตลาด: 7/10 · ปัญหา: 9/10 · การแข่งขัน: 9/10 · สร้าง: 7/10 · ข้อได้เปรียบ: 5/10</span>
+    </p>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">🛡️</div><h3>★★★★★ Moat</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">WatchOS + Wear OS + LINE API + HealthKit + Thai healthcare system knowledge. Very hard to replicate.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">WatchOS + Wear OS + LINE API + HealthKit + ความรู้ระบบสุขภาพไทย ก๊อปยากมาก</p></div>
+      <div class="card"><div class="card-icon">🤝</div><h3>Insurance Partners</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Thai insurance companies (Muang Thai, Roojai, AIA) would LOVE to bundle this. Reduces claims, shows care.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">บริษัทประกันไทย (เมืองไทย รุ้จี้ AIA) อยากรวมแพ็คเกจนี้มาก ลดเคลม แสดงความใส่ใจ</p></div>
+      <div class="card"><div class="card-icon">💚</div><h3>Social Impact</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Genuinely helps Thai families. Saves lives. Parents live longer, children worry less. Meaningful work.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">ช่วยครอบครัวไทยจริง ช่วยชีวิต พ่อแม่อยู่นานขึ้น ลูกห่วงน้อยลง งานที่มีความหมาย</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">💚 What If Mom Falls and Nobody Knows?</span><span class="th">💚 ถ้าแม่ล้มและไม่มีใครรู้?</span></h2>
+    <p><span class="en">MuteCare — Elderly Watch → LINE Alert. Score: 37/50. ★★★★★ Highest moat. 6-12 months to ฿1M. Insurance partnership potential.</span><span class="th">MuteCare — Smartwatch → LINE Alert คะแนน: 37/50 ★★★★★ Moat สูงสุด 6-12 เดือนสู่ ฿1M มีศักยภาพร่วมประกัน</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer><p>MUTELAB — WAVE 1.5 HW+B2C — IDEA #104 — MUTECARE — ELDERLY WATCH → LINE — FEB 2026</p></footer>
+<script>function setLang(lang){document.body.classList.toggle('show-th',lang==='th');document.getElementById('btn-en').classList.toggle('active',lang==='en');document.getElementById('btn-th').classList.toggle('active',lang==='th');localStorage.setItem('lang',lang)}if(localStorage.getItem('lang')==='th')setLang('th')</script>
+</body>
+</html>

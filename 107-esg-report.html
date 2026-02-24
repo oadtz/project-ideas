@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteESG — AI ช่วยทำ ESG One Report สำหรับบริษัทไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080f0a;
+    --bg2: #0a120c;
+    --surface: #0d1810;
+    --surface2: #112015;
+    --surface3: #162a1a;
+    --border: rgba(34,197,94,0.12);
+    --border2: rgba(34,197,94,0.25);
+    --text: #eef5ef;
+    --text2: #b8d0bb;
+    --muted: #5a7860;
+    --primary: #16a34a;
+    --primary-light: #4ade80;
+    --primary-pale: rgba(22,163,74,0.08);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --green: #22c55e;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'Sora','Noto Sans Thai',sans-serif; overflow-x:hidden; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .grid-bg { position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image: linear-gradient(rgba(34,197,94,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(245,158,11,0.025) 1px,transparent 1px);
+    background-size:48px 48px; }
+  .grid-bg::after { content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 20% 10%, rgba(22,163,74,0.08) 0%,transparent 55%), radial-gradient(ellipse at 85% 90%, rgba(245,158,11,0.06) 0%,transparent 55%); }
+  .container { max-width:1180px; margin:0 auto; padding:0 2rem; position:relative; z-index:2; }
+  .lang-toggle { position:fixed; top:1.3rem; right:2rem; z-index:100; display:flex; border-radius:10px; overflow:hidden; border:1px solid var(--border2); background:var(--surface); box-shadow:0 2px 12px rgba(0,0,0,0.4); font-family:'Space Mono',monospace; }
+  .lang-btn { padding:0.4rem 0.9rem; font-size:0.72rem; font-weight:700; cursor:pointer; border:none; background:transparent; color:var(--muted); transition:all 0.2s; font-family:'Space Mono',monospace; letter-spacing:0.04em; }
+  .lang-btn.active { background:var(--primary); color:#fff; }
+  body:not(.show-th) .th { display:none; }
+  body.show-th .en { display:none; }
+  nav { position:fixed; top:0; left:0; right:0; z-index:90; padding:1.1rem 2rem; background:rgba(8,15,10,0.88); backdrop-filter:blur(18px); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:1rem; }
+  .nav-logo { font-family:'Space Mono',monospace; font-size:0.85rem; font-weight:700; color:var(--primary-light); letter-spacing:0.06em; }
+  .nav-badge { font-family:'Space Mono',monospace; font-size:0.62rem; padding:0.2rem 0.6rem; border-radius:99px; border:1px solid var(--border2); color:var(--muted); letter-spacing:0.06em; }
+  .hero { min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:8rem 0 5rem; }
+  .hero-meta { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1.8rem; }
+  .hero-tag { font-family:'Space Mono',monospace; font-size:0.68rem; letter-spacing:0.12em; font-weight:700; padding:0.35rem 0.9rem; border-radius:99px; border:1px solid var(--border2); color:var(--primary-light); background:var(--primary-pale); }
+  .idea-num { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--muted); letter-spacing:0.08em; }
+  .hero h1 { font-size:clamp(2.6rem,6vw,4.4rem); font-weight:800; line-height:1.1; letter-spacing:-0.03em; margin-bottom:0.5rem; }
+  .hero h1 .accent { color:var(--primary-light); }
+  .hero-sub { font-size:clamp(1rem,2vw,1.35rem); color:var(--secondary-light); font-weight:600; margin-bottom:1.5rem; }
+  .hero-desc { font-size:1.05rem; color:var(--text2); max-width:680px; line-height:1.75; margin-bottom:2.5rem; }
+  .hero-stats { display:flex; gap:2.5rem; flex-wrap:wrap; margin-bottom:2.5rem; }
+  .stat { display:flex; flex-direction:column; gap:0.2rem; }
+  .stat-val { font-family:'Space Mono',monospace; font-size:1.5rem; font-weight:700; color:var(--primary-light); }
+  .stat-label { font-size:0.75rem; color:var(--muted); letter-spacing:0.04em; }
+  section { padding:5rem 0; border-top:1px solid var(--border); }
+  .section-label { font-family:'Space Mono',monospace; font-size:0.68rem; letter-spacing:0.14em; font-weight:700; color:var(--primary-light); margin-bottom:0.8rem; text-transform:uppercase; }
+  h2 { font-size:clamp(1.6rem,3vw,2.2rem); font-weight:700; letter-spacing:-0.025em; margin-bottom:1.5rem; }
+  h3 { font-size:1.1rem; font-weight:700; margin-bottom:0.6rem; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+  .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+  @media(max-width:768px) { .two-col,.three-col { grid-template-columns:1fr; } }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; transition:border-color 0.2s,box-shadow 0.2s; }
+  .card:hover { border-color:var(--border2); box-shadow:0 4px 24px rgba(22,163,74,0.1); }
+  .card-icon { font-size:1.8rem; margin-bottom:0.8rem; }
+  .alert-box { background:rgba(22,163,74,0.08); border:1px solid rgba(22,163,74,0.3); border-radius:14px; padding:1.5rem; margin-bottom:2rem; }
+  .alert-title { font-family:'Space Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; color:var(--primary-light); font-weight:700; margin-bottom:0.5rem; }
+  .pain-item { display:flex; gap:1rem; align-items:flex-start; background:var(--surface); border:1px solid rgba(239,68,68,0.18); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:1rem; }
+  .pain-emoji { font-size:1.4rem; flex-shrink:0; margin-top:0.1rem; }
+  .pain-text p { font-size:0.92rem; color:var(--text2); margin-top:0.3rem; }
+  .feature-item { display:flex; gap:1rem; align-items:flex-start; margin-bottom:1.4rem; }
+  .feature-dot { width:8px; height:8px; border-radius:50%; background:var(--primary-light); flex-shrink:0; margin-top:0.45rem; }
+  .feature-item p { font-size:0.9rem; color:var(--text2); margin-top:0.2rem; }
+  .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns:1fr; } }
+  .pricing-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem 1.2rem; text-align:center; position:relative; }
+  .pricing-card.featured { border-color:var(--border2); background:var(--surface2); }
+  .pricing-badge { position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--primary); color:#fff; font-size:0.6rem; font-weight:700; letter-spacing:0.1em; padding:0.25rem 0.7rem; border-radius:99px; font-family:'Space Mono',monospace; }
+  .pricing-tier { font-size:0.72rem; color:var(--muted); letter-spacing:0.08em; margin-bottom:0.4rem; }
+  .pricing-price { font-family:'Space Mono',monospace; font-size:1.5rem; font-weight:700; color:var(--primary-light); margin-bottom:0.2rem; }
+  .pricing-unit { font-size:0.7rem; color:var(--muted); margin-bottom:0.8rem; }
+  .pricing-desc { font-size:0.8rem; color:var(--text2); line-height:1.5; }
+  .comp-table { width:100%; border-collapse:collapse; }
+  .comp-table th { padding:0.7rem 1rem; text-align:left; font-size:0.75rem; letter-spacing:0.06em; color:var(--muted); border-bottom:1px solid var(--border2); font-family:'Space Mono',monospace; }
+  .comp-table td { padding:0.85rem 1rem; border-bottom:1px solid var(--border); font-size:0.88rem; }
+  .yes { color:var(--green); font-weight:700; }
+  .no { color:var(--red); }
+  .partial { color:var(--amber); }
+  .highlight-row td { background:var(--surface2); }
+  .highlight-row td:first-child { border-left:3px solid var(--primary); }
+  .timeline { position:relative; padding-left:2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--primary),var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+  .revenue-block { background:var(--surface2); border:1px solid var(--border2); border-radius:14px; padding:1.5rem; }
+  .revenue-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
+  .revenue-row:last-child { border-bottom:none; font-weight:700; color:var(--primary-light); }
+  .revenue-val { font-family:'Space Mono',monospace; color:var(--secondary-light); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); letter-spacing:0.06em; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #107</span>
+  <span class="nav-badge" style="background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3);">🌿 ESG · CARBON · CLIMATE</span>
+  <span class="nav-badge en">AI ESG REPORTING</span>
+  <span class="nav-badge th">AI รายงาน ESG</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🌿 REGTECH · ESG · CLIMATE ACT</span>
+      <span class="hero-tag th">🌿 RegTech · ESG · พ.ร.บ.การเปลี่ยนแปลงสภาพภูมิอากาศ</span>
+      <span class="idea-num">SPRINT #107 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">ESG</span></span><span class="th">Mute<span class="accent">ESG</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI ESG One Report Generator for Thai Listed Companies & Supply Chain SMEs</span>
+      <span class="th">AI สร้างรายงาน ESG One Report อัตโนมัติ — สำหรับบริษัทในตลาดหลักทรัพย์และ SME ในห่วงโซ่อุปทาน</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand's Climate Change Act is incoming. SEC already mandates ESG in annual "One Report" (Form 56-1). ASEDG launched April 2025 — SMEs in supply chains now need ESG reports. Yet no affordable Thai tool exists. MuteESG auto-generates SEC-compliant ESG sections in Thai — saving your compliance team weeks of manual work.</span>
+      <span class="th">พ.ร.บ.การเปลี่ยนแปลงสภาพภูมิอากาศกำลังจะบังคับใช้ ก.ล.ต. กำหนดให้เปิดเผย ESG ใน "แบบ 56-1 One Report" แล้ว ASEDG เปิดตัวเม.ย. 2568 — SME ในห่วงโซ่อุปทานต้องทำรายงาน ESG แต่ไม่มีเครื่องมือราคาถูกในไทย MuteESG สร้าง ESG section ที่ถูกต้องตาม ก.ล.ต. โดยอัตโนมัติ — ประหยัดเวลาทีมหลายสัปดาห์</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">1,000+</span><span class="stat-label en">Thai listed companies</span><span class="stat-label th">บริษัทในตลาดหลักทรัพย์ไทย</span></div>
+      <div class="stat"><span class="stat-val">2027</span><span class="stat-label en">Climate Act enforcement</span><span class="stat-label th">บังคับใช้กฎหมายสภาพอากาศ</span></div>
+      <div class="stat"><span class="stat-val">฿0</span><span class="stat-label en">Thai ESG tools for SMEs</span><span class="stat-label th">เครื่องมือ ESG ไทยสำหรับ SME</span></div>
+      <div class="stat"><span class="stat-val">Scope 1-3</span><span class="stat-label en">emissions — auto-calculated</span><span class="stat-label th">การปล่อยก๊าซ — คำนวณอัตโนมัติ</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE COMPLIANCE TSUNAMI</div>
+    <div class="section-label th">คลื่นยักษ์ด้านกฎระเบียบ</div>
+    <h2>
+      <span class="en">ESG is Now Mandatory — And No One Has the Tools</span>
+      <span class="th">ESG เป็นข้อบังคับแล้ว — แต่ไม่มีใครมีเครื่องมือ</span>
+    </h2>
+    <div class="alert-box">
+      <div class="alert-title">⚠️ REGULATORY TSUNAMI: 4 MAJOR TRIGGERS HITTING 2025-2027</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Thailand Climate Change Act heading to parliament. EU CBAM hits Thai exporters. SEC tightens One Report ESG requirements. ASEDG V1 launched April 2025 for supply chain SMEs. Companies that ignore this will pay — just like PDPC enforcement proved with ฿21.5M in fines.</span>
+        <span class="th">พ.ร.บ.การเปลี่ยนแปลงสภาพภูมิอากาศกำลังเข้าสู่รัฐสภา EU CBAM กระทบผู้ส่งออกไทย ก.ล.ต. เข้มงวด ESG ใน One Report ASEDG V1 เปิดตัวเม.ย. 2568 สำหรับ SME ห่วงโซ่อุปทาน บริษัทที่ไม่ดำเนินการจะเสียหาย — เหมือนที่ PDPC พิสูจน์ด้วยค่าปรับ ฿21.5M</span>
+      </p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📋</div>
+      <div class="pain-text">
+        <h3 class="en">One Report ESG Section Takes 3-6 Weeks of Manual Work</h3>
+        <h3 class="th">ESG Section ใน One Report ใช้เวลา 3-6 สัปดาห์ทำด้วยมือ</h3>
+        <p class="en">Thai listed companies must disclose climate change risks, environmental preservation efforts, carbon footprint, inequality reduction in their annual 56-1 Form. Compliance teams spend weeks gathering data from departments, calculating emissions, writing disclosures. Then consultants charge ฿200K-500K to help. MuteESG automates 80% of this.</p>
+        <p class="th">บริษัทในตลาดหลักทรัพย์ต้องเปิดเผยความเสี่ยงจากการเปลี่ยนแปลงสภาพอากาศ การอนุรักษ์สิ่งแวดล้อม คาร์บอนฟุตพรินต์ ในแบบ 56-1 ทีม compliance ใช้เวลาหลายสัปดาห์รวบรวมข้อมูลจากทุกแผนก คำนวณการปล่อยก๊าซ เขียน disclosure แล้วยังต้องจ่ายที่ปรึกษา ฿200K-500K MuteESG ทำอัตโนมัติ 80%</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🏭</div>
+      <div class="pain-text">
+        <h3 class="en">SMEs in Global Supply Chains Face ESG Demands They Can't Meet</h3>
+        <h3 class="th">SME ในห่วงโซ่อุปทานโลกต้องเผชิญข้อกำหนด ESG ที่ทำไม่ได้</h3>
+        <p class="en">ASEDG launched April 2025 — simplified ESG guide for SMEs. But MNCs are now demanding ESG data from Thai suppliers. EU supply chain due diligence law affects companies with Thai suppliers. SMEs have zero tools. ESGpedia (Singapore) is too expensive. Global tools aren't in Thai.</p>
+        <p class="th">ASEDG เปิดตัวเม.ย. 2568 — คู่มือ ESG แบบง่ายสำหรับ SME แต่บริษัทข้ามชาติเริ่มขอข้อมูล ESG จากซัพพลายเออร์ไทย กฎหมาย due diligence ห่วงโซ่อุปทาน EU กระทบบริษัทที่มีซัพพลายเออร์ไทย SME ไม่มีเครื่องมือ ESGpedia (สิงคโปร์) แพงเกินไป เครื่องมือโลกไม่เป็นภาษาไทย</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🌡️</div>
+      <div class="pain-text">
+        <h3 class="en">Climate Change Act + Carbon Pricing Coming 2027 — Prepare Now or Pay Later</h3>
+        <h3 class="th">พ.ร.บ.สภาพอากาศ + คาร์บอนไพรซิง จะมาปี 2570 — เตรียมตอนนี้หรือจ่ายทีหลัง</h3>
+        <p class="en">Large emitters face mandatory reporting 2027-2028. Carbon tax + ETS proposed. Enforceable carbon pricing ~2030. Companies that start measuring now will have 3-year head start in cost optimization. Those that wait will scramble — and pay consultants 10x more.</p>
+        <p class="th">ผู้ปล่อยก๊าซรายใหญ่ต้องรายงานภาคบังคับปี 2570-2571 เสนอภาษีคาร์บอน + ETS คาร์บอนไพรซิงบังคับ ~2573 บริษัทที่เริ่มวัดตอนนี้จะมีความได้เปรียบ 3 ปีในการลดต้นทุน คนที่รอจะต้องจ่ายที่ปรึกษามากกว่า 10 เท่า</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2>
+      <span class="en">MuteESG: From Raw Data to SEC-Ready ESG Report in Hours, Not Weeks</span>
+      <span class="th">MuteESG: จากข้อมูลดิบสู่รายงาน ESG พร้อมส่ง ก.ล.ต. ใน ชั่วโมง ไม่ใช่ สัปดาห์</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📊 Scope 1, 2, 3 Emissions Calculator</h3>
+            <h3 class="th">📊 คำนวณการปล่อยก๊าซ Scope 1, 2, 3</h3>
+            <p class="en">Input your energy bills, fleet data, business activities → AI calculates GHG emissions per IPCC methodology. Supports Thai grid emission factors. Exports ready-to-paste into 56-1 Form.</p>
+            <p class="th">ใส่ค่าไฟ ข้อมูลยานพาหนะ กิจกรรมธุรกิจ → AI คำนวณการปล่อยก๊าซตาม IPCC รองรับค่า emission factor ของสายส่งไฟฟ้าไทย Export พร้อมใส่แบบ 56-1</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📝 Auto-Generate 56-1 One Report ESG Sections</h3>
+            <h3 class="th">📝 สร้าง ESG Section แบบ 56-1 อัตโนมัติ</h3>
+            <p class="en">AI writes all required ESG sections in Thai: climate risk management, environmental preservation, carbon footprint narrative, social impact, governance. Aligned to ก.ล.ต. requirements. Human-review ready drafts.</p>
+            <p class="th">AI เขียน ESG ทุก section ที่ต้องการเป็นภาษาไทย: การจัดการความเสี่ยงสภาพอากาศ การอนุรักษ์สิ่งแวดล้อม การเล่าเรื่องคาร์บอน ผลกระทบสังคม governance สอดคล้องกับข้อกำหนด ก.ล.ต. ร่างพร้อมให้มนุษย์ตรวจ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">🌱 T-VER Carbon Credit Tracker</h3>
+            <h3 class="th">🌱 ติดตาม T-VER Carbon Credit</h3>
+            <p class="en">Track your voluntary carbon credits on TGO registry. Calculate offset requirements. Plan reduction strategies. When Climate Change Act passes, you're ready for mandatory reporting — not starting from scratch.</p>
+            <p class="th">ติดตาม carbon credit อาสาสมัครในทะเบียน TGO คำนวณความต้องการ offset วางแผนลดการปล่อยก๊าซ เมื่อพ.ร.บ.สภาพอากาศผ่าน คุณพร้อมสำหรับรายงานภาคบังคับ — ไม่ต้องเริ่มใหม่</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📦 ASEDG Framework for Supply Chain SMEs</h3>
+            <h3 class="th">📦 กรอบ ASEDG สำหรับ SME ในห่วงโซ่อุปทาน</h3>
+            <p class="en">Simplified ESG reporting aligned to ASEDG (ASEAN Simplified ESG Disclosure Guide). Designed for SMEs: just answer simple questions about your operations → get ESG disclosure package ready to send to MNC customers.</p>
+            <p class="th">รายงาน ESG แบบง่ายตาม ASEDG (คู่มือ ESG อาเซียนแบบง่าย) ออกแบบสำหรับ SME: ตอบคำถามง่ายๆ เกี่ยวกับการดำเนินงาน → ได้แพ็คเกจ ESG พร้อมส่งให้ลูกค้าบริษัทข้ามชาติ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">📈 ESG Score Dashboard & Benchmarking</h3>
+            <h3 class="th">📈 Dashboard คะแนน ESG & เปรียบเทียบ</h3>
+            <p class="en">Track your ESG performance over time. Compare against industry peers. Get AI recommendations for improvement. Show progress to investors, customers, and regulators. Annual trend charts for board presentations.</p>
+            <p class="th">ติดตามผลการดำเนินงาน ESG ตลอดเวลา เปรียบเทียบกับบริษัทในอุตสาหกรรมเดียวกัน รับคำแนะนำ AI เพื่อปรับปรุง แสดงความคืบหน้าให้นักลงทุน ลูกค้า หน่วยงานกำกับดูแล กราฟแนวโน้มรายปีสำหรับนำเสนอบอร์ด</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">🔔 Regulatory Alert Feed</h3>
+            <h3 class="th">🔔 ฟีดแจ้งเตือนกฎระเบียบ</h3>
+            <p class="en">Automatically tracks Climate Change Act progress, SEC ESG updates, TGO carbon credit rules, ASEDG revisions. Get alerts before deadlines, not after. Never miss a regulatory change that affects your reporting requirements.</p>
+            <p class="th">ติดตามความคืบหน้าพ.ร.บ.สภาพอากาศ การอัปเดต ESG ก.ล.ต. กฎ carbon credit TGO การแก้ไข ASEDG โดยอัตโนมัติ รับแจ้งเตือนก่อนกำหนด ไม่ใช่หลัง ไม่พลาดการเปลี่ยนแปลงกฎระเบียบที่กระทบการรายงานของคุณ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section>
+  <div class="container">
+    <div class="section-label en">COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">แผนที่คู่แข่ง</div>
+    <h2>
+      <span class="en">Zero Affordable Thai ESG Tools — A Wide Open Market</span>
+      <span class="th">ไม่มีเครื่องมือ ESG ไทยราคาถูก — ตลาดที่เปิดกว้าง</span>
+    </h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr><th>PLATFORM</th><th>Thai UI</th><th>SEC 56-1 Ready</th><th>ASEDG Support</th><th>SME Pricing</th><th>Carbon Tracking</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>ESGpedia (Singapore)</strong></td><td class="no">❌</td><td class="no">❌</td><td class="partial">⚡ Partial</td><td class="no">❌ Enterprise</td><td class="yes">✅</td></tr>
+          <tr><td><strong>Persefoni (US)</strong></td><td class="no">❌ English</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌ $50K+/yr</td><td class="yes">✅</td></tr>
+          <tr><td><strong>Watershed (US)</strong></td><td class="no">❌ English</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌ Enterprise</td><td class="yes">✅</td></tr>
+          <tr><td><strong>Big 4 Consultants</strong></td><td class="yes">✅ Thai</td><td class="partial">⚡ Manual</td><td class="partial">⚡ Manual</td><td class="no">❌ ฿200K-500K</td><td class="partial">⚡ Manual</td></tr>
+          <tr class="highlight-row"><td><strong>MuteESG ✦</strong></td><td class="yes">✅ Thai-native</td><td class="yes">✅ Automated</td><td class="yes">✅ Full support</td><td class="yes">✅ ฿2,990/mo</td><td class="yes">✅ T-VER</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2>
+      <span class="en">Affordable for SMEs, Powerful for Listed Companies</span>
+      <span class="th">ราคาที่ SME จ่ายได้ ฟังก์ชันที่บริษัทในตลาดหลักทรัพย์ต้องการ</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">SME PLAN</div>
+        <div class="pricing-tier th">แผน SME</div>
+        <div class="pricing-price">฿2,990</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">ASEDG framework report, Scope 1+2 calculator, basic carbon tracking, Thai language reports. Perfect for SMEs in MNC supply chains.</div>
+        <div class="pricing-desc th">รายงาน ASEDG, คำนวณ Scope 1+2, ติดตาม carbon พื้นฐาน, รายงานภาษาไทย เหมาะสำหรับ SME ในห่วงโซ่อุปทาน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">LISTED COMPANY</div>
+        <div class="pricing-tier th">บริษัทในตลาดหลักทรัพย์</div>
+        <div class="pricing-price">฿9,900</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Full 56-1 ESG section automation, Scope 1+2+3, T-VER tracking, regulatory alerts, benchmarking, board presentation exports.</div>
+        <div class="pricing-desc th">อัตโนมัติ ESG section 56-1 เต็ม, Scope 1+2+3, ติดตาม T-VER, แจ้งเตือนกฎระเบียบ, เปรียบเทียบ, export สำหรับบอร์ด</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">ENTERPRISE</div>
+        <div class="pricing-tier th">ENTERPRISE</div>
+        <div class="pricing-price">฿29,900</div>
+        <div class="pricing-unit en">/month</div>
+        <div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Multi-entity consolidation, auditor-ready exports, API access, dedicated ESG advisor, carbon strategy roadmap, supply chain ESG collection portal.</div>
+        <div class="pricing-desc th">รวมหลายนิติบุคคล, export สำหรับผู้สอบบัญชี, API, ที่ปรึกษา ESG, แผนลดคาร์บอน, พอร์ทัลเก็บข้อมูล ESG ห่วงโซ่อุปทาน</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE POTENTIAL</div>
+    <div class="section-label th">ศักยภาพรายได้</div>
+    <h2>
+      <span class="en">฿1M ARR Reachable in 4-6 Months</span>
+      <span class="th">ARR ฿1M เป็นไปได้ใน 4-6 เดือน</span>
+    </h2>
+    <div class="revenue-block">
+      <div class="revenue-row">
+        <span class="en">Month 3: 10 Listed × ฿9,900 + 50 SME × ฿2,990</span>
+        <span class="th">เดือน 3: Listed 10 × ฿9,900 + SME 50 × ฿2,990</span>
+        <span class="revenue-val">฿248,500/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 6: 30 Listed × ฿9,900 + 150 SME × ฿2,990</span>
+        <span class="th">เดือน 6: Listed 30 × ฿9,900 + SME 150 × ฿2,990</span>
+        <span class="revenue-val">฿745,500/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 12: 80 Listed + 400 SME + 3 Enterprise</span>
+        <span class="th">เดือน 12: Listed 80 + SME 400 + Enterprise 3</span>
+        <span class="revenue-val">฿2.1M/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en"><strong>Year 2 ARR (2027 enforcement wave)</strong></span>
+        <span class="th"><strong>ARR ปีที่ 2 (คลื่นบังคับใช้ 2570)</strong></span>
+        <span class="revenue-val"><strong>฿50M+</strong></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section>
+  <div class="container">
+    <div class="section-label en">BUILD TIMELINE</div>
+    <div class="section-label th">ไทม์ไลน์การสร้าง</div>
+    <h2><span class="en">8-Week MVP → Listed Company Pilot</span><span class="th">MVP 8 สัปดาห์ → Pilot กับบริษัทในตลาดหลักทรัพย์</span></h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 1-2</div><div class="tl-title en">Emissions Calculator + Thai Regulatory Knowledge Base</div><div class="tl-title th">เครื่องคำนวณการปล่อยก๊าซ + ฐานข้อมูลกฎระเบียบไทย</div><div class="tl-desc en">Build Scope 1+2 calculator with Thai grid emission factors. Load SEC One Report requirements, ASEDG framework, Climate Change Act draft into RAG pipeline.</div><div class="tl-desc th">สร้างเครื่องคำนวณ Scope 1+2 พร้อมค่า emission factor ของสายส่งไทย โหลดข้อกำหนด One Report ก.ล.ต. กรอบ ASEDG ร่างพ.ร.บ.สภาพอากาศลง RAG pipeline</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 3-4</div><div class="tl-title en">56-1 ESG Section Generator</div><div class="tl-title th">สร้าง ESG Section แบบ 56-1</div><div class="tl-desc en">AI generates draft ESG disclosures from company inputs. Thai-language output aligned to ก.ล.ต. template. Test with 5 volunteer listed companies.</div><div class="tl-desc th">AI สร้างร่าง ESG disclosure จากข้อมูลบริษัท ผลลัพธ์ภาษาไทยสอดคล้องกับแม่แบบ ก.ล.ต. ทดสอบกับ 5 บริษัทอาสา</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 5-6</div><div class="tl-title en">ASEDG Module + Dashboard</div><div class="tl-title th">โมดูล ASEDG + Dashboard</div><div class="tl-desc en">Build SME questionnaire aligned to ASEDG V1. User dashboard, report history, compliance tracker. PromptPay + Stripe billing.</div><div class="tl-desc th">สร้างแบบสอบถาม SME ตาม ASEDG V1 Dashboard ผู้ใช้ ประวัติรายงาน ติดตาม compliance PromptPay + Stripe</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-week">WEEK 7-8</div><div class="tl-title en">Beta Launch → Accounting Firm Partnerships</div><div class="tl-title th">Beta Launch → พันธมิตรสำนักงานบัญชี</div><div class="tl-desc en">Soft launch to 3-5 accounting firms. Their clients need ESG reports — we white-label the tool. Target: first paying customer within 60 days of launch.</div><div class="tl-desc th">Soft launch ให้ 3-5 สำนักงานบัญชี ลูกค้าของพวกเขาต้องการรายงาน ESG — white-label เครื่องมือ เป้าหมาย: ลูกค้าจ่ายเงินรายแรกภายใน 60 วัน</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2>
+      <span class="en">The 2027 Enforcement Wave Is Coming — Build Now</span>
+      <span class="th">คลื่นบังคับใช้ปี 2570 กำลังมา — สร้างตอนนี้</span>
+    </h2>
+    <p>
+      <span class="en">MuteESG is the Thai ESG compliance platform for the regulatory era. Thanapat's Water Ledger expertise = unfair advantage in environmental data systems. Be the default tool when the Climate Change Act hits.</span>
+      <span class="th">MuteESG คือแพลตฟอร์ม ESG compliance ไทยสำหรับยุคกฎระเบียบ ความเชี่ยวชาญ Water Ledger ของธนาพัฒน์ = ข้อได้เปรียบในระบบข้อมูลสิ่งแวดล้อม กลายเป็นเครื่องมือหลักเมื่อพ.ร.บ.สภาพอากาศมาถึง</span>
+    </p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #107 — MUTEESG — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>
+function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}
+const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteReg — AI ติดตามกฎระเบียบไทยแบบเรียลไทม์</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080f;--surface:#0d0d18;--surface2:#111120;--border:rgba(96,165,250,0.12);--border2:rgba(96,165,250,0.28);--text:#f0f4ff;--text2:#b8c8e0;--muted:#5060a0;--primary:#2563eb;--primary-light:#60a5fa;--primary-pale:rgba(37,99,235,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#10b981;--red:#ef4444;--amber:#f59e0b;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(96,165,250,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(37,99,235,0.07) 0%,transparent 55%),radial-gradient(ellipse at 85% 90%,rgba(245,158,11,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,8,15,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .reg-alert{background:var(--surface);border:1px solid rgba(96,165,250,0.25);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;display:flex;gap:1rem;align-items:flex-start;}
+  .reg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:0.4rem;}
+  .reg-dot.new{background:#ef4444;}
+  .reg-dot.pending{background:#f59e0b;}
+  .reg-dot.watch{background:#60a5fa;}
+  .reg-body p{font-size:0.88rem;color:var(--text2);margin-top:0.2rem;}
+  .reg-tag{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;padding:0.15rem 0.5rem;border-radius:99px;border:1px solid;margin-right:0.3rem;}
+  .tag-pdpa{color:#60a5fa;border-color:rgba(96,165,250,0.3);}
+  .tag-esg{color:#4ade80;border-color:rgba(74,222,128,0.3);}
+  .tag-climate{color:#a78bfa;border-color:rgba(167,139,250,0.3);}
+  .tag-labor{color:#fb923c;border-color:rgba(251,146,60,0.3);}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #110</span>
+  <span class="nav-badge" style="background:rgba(37,99,235,0.15);color:#60a5fa;border-color:rgba(37,99,235,0.3);">⚖️ REGTECH · COMPLIANCE INTELLIGENCE</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">⚖️ REGULATORY INTELLIGENCE · AI COMPLIANCE ALERTS</span>
+      <span class="hero-tag th">⚖️ ข่าวกรองกฎระเบียบ · แจ้งเตือน AI Compliance</span>
+      <span class="idea-num">SPRINT #110 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Reg</span></span><span class="th">Mute<span class="accent">Reg</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Thai Regulatory Intelligence Platform — Bloomberg Terminal for Thai Compliance Officers</span>
+      <span class="th">แพลตฟอร์มข่าวกรองกฎระเบียบไทย — Bloomberg Terminal สำหรับ Compliance Officer ไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai regulations scatter across 50+ government websites, in PDF format, often only in Thai, published without notice. Missing one regulatory change can cost your company millions in fines. MuteReg monitors PDPA, ESG, Climate Act, Labor Law, Tax, SEC — and delivers AI-summarized alerts the moment anything changes.</span>
+      <span class="th">กฎระเบียบไทยกระจายอยู่บนเว็บไซต์รัฐบาลกว่า 50 แห่ง ในรูป PDF มักเฉพาะภาษาไทย เผยแพร่โดยไม่แจ้งเตือน พลาดการเปลี่ยนแปลงกฎระเบียบอาจทำให้บริษัทเสียค่าปรับหลายล้าน MuteReg ติดตาม PDPA ESG พ.ร.บ.สภาพอากาศ กฎหมายแรงงาน ภาษี ก.ล.ต. — และส่งแจ้งเตือนสรุป AI ทันทีที่มีการเปลี่ยนแปลง</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">50+</span><span class="stat-label en">Thai govt sites monitored</span><span class="stat-label th">เว็บรัฐไทยที่ติดตาม</span></div>
+      <div class="stat"><span class="stat-val">฿21.5M</span><span class="stat-label en">PDPA fines — ignorance cost</span><span class="stat-label th">ค่าปรับ PDPA — ราคาของการไม่รู้</span></div>
+      <div class="stat"><span class="stat-val">24/7</span><span class="stat-label en">regulatory monitoring</span><span class="stat-label th">ติดตามกฎระเบียบตลอดเวลา</span></div>
+      <div class="stat"><span class="stat-val">80K</span><span class="stat-label en">Thai lawyers need this</span><span class="stat-label th">ทนายไทยต้องการสิ่งนี้</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">LIVE REGULATORY FEED (DEMO)</div>
+    <div class="section-label th">ฟีดกฎระเบียบสด (ตัวอย่าง)</div>
+    <h2><span class="en">Never Miss a Thai Regulatory Change Again</span><span class="th">ไม่พลาดการเปลี่ยนแปลงกฎระเบียบไทยอีกต่อไป</span></h2>
+
+    <div class="reg-alert">
+      <div class="reg-dot new"></div>
+      <div class="reg-body">
+        <div style="margin-bottom:0.4rem;"><span class="reg-tag tag-pdpa">PDPA</span><span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);">🔴 NEW — FEB 2026</span></div>
+        <h3 style="font-size:0.95rem;" class="en">PDPC Issues New DPO Appointment Guidelines</h3>
+        <h3 style="font-size:0.95rem;" class="th">สคส. ออกแนวทางการแต่งตั้ง DPO ใหม่</h3>
+        <p class="en">PDPC October 2025 notification requires companies processing data at scale to appoint a DPO. AI Summary: Companies with >5,000 data subjects OR processing sensitive data must designate a DPO by Q2 2026. Penalties for non-compliance up to ฿3M per violation.</p>
+        <p class="th">การแจ้งเตือน สคส. ตุลาคม 2568 กำหนดให้บริษัทที่ประมวลผลข้อมูลในวงกว้างต้องแต่งตั้ง DPO สรุป AI: บริษัทที่มีเจ้าของข้อมูล >5,000 คน หรือประมวลผลข้อมูลอ่อนไหวต้องกำหนด DPO ภายใน Q2 2569 โทษไม่ปฏิบัติตามสูงสุด ฿3M ต่อการละเมิด</p>
+      </div>
+    </div>
+    <div class="reg-alert">
+      <div class="reg-dot pending"></div>
+      <div class="reg-body">
+        <div style="margin-bottom:0.4rem;"><span class="reg-tag tag-climate">CLIMATE ACT</span><span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);">🟡 PENDING — PARLIAMENT Q1 2026</span></div>
+        <h3 style="font-size:0.95rem;" class="en">Thailand Climate Change Act — 3rd Reading Expected Q2 2026</h3>
+        <h3 style="font-size:0.95rem;" class="th">พ.ร.บ.การเปลี่ยนแปลงสภาพภูมิอากาศไทย — อ่านวาระ 3 คาด Q2 2569</h3>
+        <p class="en">AI Summary: Large emitters (>25,000 tCO2e/year) face mandatory reporting from 2027-28. Carbon pricing mechanism expected ~2030. Companies should begin measuring Scope 1+2 emissions NOW to establish baseline. Subsidiary laws to be drafted by DCCE within 2 years of enactment.</p>
+        <p class="th">สรุป AI: ผู้ปล่อยก๊าซรายใหญ่ (>25,000 tCO2e/ปี) ต้องรายงานภาคบังคับตั้งแต่ปี 2570-71 กลไกคาร์บอนไพรซิงคาด ~2573 บริษัทควรเริ่มวัด Scope 1+2 ตอนนี้เพื่อกำหนด baseline กฎระเบียบรอง DCCE ร่างภายใน 2 ปีหลังบังคับใช้</p>
+      </div>
+    </div>
+    <div class="reg-alert">
+      <div class="reg-dot watch"></div>
+      <div class="reg-body">
+        <div style="margin-bottom:0.4rem;"><span class="reg-tag tag-esg">ESG · SEC</span><span style="font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);">🔵 WATCH — TIGHTENING IN 2026</span></div>
+        <h3 style="font-size:0.95rem;" class="en">SEC Tightening One Report ESG Disclosure Requirements</h3>
+        <h3 style="font-size:0.95rem;" class="th">ก.ล.ต. เข้มงวดข้อกำหนดเปิดเผย ESG ใน One Report</h3>
+        <p class="en">AI Summary: SEC expected to add specific quantitative metrics for Scope 1+2 emissions in 2026 filing. Listed companies should prepare GHG inventory NOW. Peer companies already disclosing — early movers avoid negative investor sentiment.</p>
+        <p class="th">สรุป AI: ก.ล.ต. คาดว่าจะเพิ่มตัวชี้วัดเชิงปริมาณสำหรับ Scope 1+2 ในการยื่นปี 2569 บริษัทในตลาดหลักทรัพย์ควรเตรียม GHG inventory ตอนนี้ บริษัทคู่แข่งเปิดเผยแล้ว บริษัทที่เคลื่อนไหวก่อนหลีกเลี่ยงความรู้สึกด้านลบจากนักลงทุน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">COVERAGE</div><div class="section-label th">ขอบเขตครอบคลุม</div>
+    <h2><span class="en">Every Thai Regulation That Affects Your Business</span><span class="th">ทุกกฎระเบียบไทยที่กระทบธุรกิจของคุณ</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">🛡️</div><h3>PDPA / สคส.</h3><p style="font-size:0.88rem;color:var(--text2);" class="en">All enforcement decisions, new notifications, DPO requirements, breach reporting updates, ministerial regulations.</p><p style="font-size:0.88rem;color:var(--text2);" class="th">คำสั่งบังคับใช้ทั้งหมด การแจ้งเตือนใหม่ ข้อกำหนด DPO อัปเดตรายงานการรั่วไหล กฎกระทรวง</p></div>
+      <div class="card"><div class="card-icon">🌿</div><h3 class="en">ESG / Climate / Carbon</h3><h3 class="th">ESG / สภาพอากาศ / คาร์บอน</h3><p style="font-size:0.88rem;color:var(--text2);" class="en">Climate Change Act progress, SEC One Report changes, TGO T-VER updates, ASEDG revisions, EU CBAM impact on Thai exporters.</p><p style="font-size:0.88rem;color:var(--text2);" class="th">ความคืบหน้าพ.ร.บ.สภาพอากาศ การเปลี่ยน One Report ก.ล.ต. อัปเดต T-VER TGO การแก้ไข ASEDG ผลกระทบ EU CBAM ต่อผู้ส่งออกไทย</p></div>
+      <div class="card"><div class="card-icon">👷</div><h3 class="en">Labor / Tax / Corporate</h3><h3 class="th">แรงงาน / ภาษี / นิติบุคคล</h3><p style="font-size:0.88rem;color:var(--text2);" class="en">Labor Protection Act changes, Social Security updates, Revenue Department tax announcements, DBD corporate law amendments, BOI incentive changes.</p><p style="font-size:0.88rem;color:var(--text2);" class="th">การเปลี่ยนแปลงพ.ร.บ.คุ้มครองแรงงาน อัปเดตประกันสังคม ประกาศภาษีกรมสรรพากร การแก้ไขกฎหมายนิติบุคคล DBD การเปลี่ยน BOI</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div><div class="section-label th">ราคา</div>
+    <h2><span class="en">Less Than One Compliance Fine</span><span class="th">ถูกกว่าค่าปรับ compliance หนึ่งครั้ง</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card"><div class="pricing-tier">PROFESSIONAL</div><div class="pricing-price">฿2,990</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">3 regulatory domains, daily digest, AI summaries, LINE alert integration, 1 user.</div><div class="pricing-desc th">3 โดเมนกฎระเบียบ สรุปประจำวัน สรุป AI ผสาน LINE แจ้งเตือน 1 ผู้ใช้</div></div>
+      <div class="pricing-card featured"><div class="pricing-badge">LAW FIRM FAVORITE</div><div class="pricing-tier">FIRM</div><div class="pricing-price">฿9,900</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">All domains, real-time alerts, searchable regulatory database, client-specific custom tracking, 10 users, white-label digest for client newsletters.</div><div class="pricing-desc th">ทุกโดเมน แจ้งเตือนเรียลไทม์ ฐานข้อมูลกฎระเบียบค้นหาได้ ติดตามเฉพาะลูกค้า 10 ผู้ใช้ สรุป white-label สำหรับจดหมายข่าวลูกค้า</div></div>
+      <div class="pricing-card"><div class="pricing-tier">ENTERPRISE API</div><div class="pricing-price">฿29,900</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">Full API access, custom regulatory domains, integration with internal compliance systems, dedicated regulatory analyst, raw data exports.</div><div class="pricing-desc th">API เต็มรูปแบบ โดเมนกฎระเบียบกำหนดเอง ผสานระบบ compliance ภายใน นักวิเคราะห์กฎระเบียบเฉพาะ export ข้อมูลดิบ</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">The Compliance Landscape Changes Daily. MuteReg Watches It For You.</span><span class="th">กฎระเบียบเปลี่ยนทุกวัน MuteReg เฝ้าดูแทนคุณ</span></h2>
+  <p><span class="en">From PDPA to Climate Act — never miss a regulatory change that could cost your clients millions.</span><span class="th">จาก PDPA ถึงพ.ร.บ.สภาพอากาศ — ไม่พลาดการเปลี่ยนแปลงกฎระเบียบที่อาจทำให้ลูกค้าเสียหายหลายล้าน</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #110 — MUTEREG — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>

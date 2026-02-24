@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSnap — AI Photo Booth for Thai Festivals</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0a0f0a; --bg2: #0b100c; --surface: #0f1610; --surface2: #141e15; --surface3: #1a261b; --border: rgba(13,148,136,0.15); --border2: rgba(13,148,136,0.28); --text: #f0f5f0; --text2: #c0d0c0; --muted: #708070; --muted2: #526052; --primary: #0d9488; --primary-light: #2dd4bf; --primary-pale: rgba(13,148,136,0.08); --secondary: #f59e0b; --secondary-light: #fbbf24; --green: #10b981; --red: #ef4444; --amber: #f59e0b; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora','Noto Sans Thai',sans-serif; overflow-x: hidden; line-height: 1.6; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(13,148,136,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(245,158,11,0.03) 1px,transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 30% 0%,rgba(13,148,136,0.07) 0%,transparent 60%), radial-gradient(ellipse at 80% 100%,rgba(245,158,11,0.05) 0%,transparent 60%); }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: 'Space Mono',monospace; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(10,15,10,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono',monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); }
+  .nav-badge { font-family: 'Space Mono',monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono',monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono',monospace; font-size: 0.68rem; color: var(--muted); }
+  .hero h1 { font-size: clamp(2.6rem,6vw,4.4rem); font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem,2vw,1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono',monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-val { font-family: 'Space Mono',monospace; font-size: 2rem; font-weight: 700; color: var(--primary-light); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg,var(--primary),var(--secondary)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono',monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem,3vw,2.2rem); font-weight: 700; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col,.three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .alert-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+  .alert-title { font-family: 'Space Mono',monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: #f87171; font-weight: 700; margin-bottom: 0.5rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; margin-bottom: 2.5rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono',monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono',monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono',monospace; color: var(--secondary-light); }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid var(--border2); border-radius: 10px; }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono',monospace; font-size: 0.65rem; color: var(--muted2); }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #103</span>
+  <span class="nav-badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border-color:rgba(168,85,247,0.3);">📸 HW+B2C</span>
+  <span class="nav-badge en">AI PHOTO BOOTH</span>
+  <span class="nav-badge th">AI Photo Booth</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">📸 CAMERA AI · FESTIVALS · B2C</span>
+      <span class="hero-tag th">📸 Camera AI · เทศกาล · B2C</span>
+      <span class="idea-num">WAVE 1.5 — HW+B2C RESEARCH — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Snap</span></span><span class="th">Mute<span class="accent">Snap</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Photo Booth for Thai Festivals — สงกรานต์ ลอยกระทง ปีใหม่</span>
+      <span class="th">AI Photo Booth สำหรับเทศกาลไทย — สงกรานต์ ลอยกระทง ปีใหม่</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Cal AI hit $1M MRR in 6 months with a phone camera. Thai festivals are bigger. Songkran draws 40M participants. MuteSnap: AI creates stunning festival photos — water splashes, lanterns, fireworks — one tap, share on LINE/TikTok. 3-6 months to ฿1M. Highest viral coefficient (5-10x) of all HW ideas.</span>
+      <span class="th">Cal AI ทำ $1M MRR ใน 6 เดือนด้วยกล้องโทรศัพท์ เทศกาลไทยใหญ่กว่า สงกรานต์ดึงดูด 40 ล้านคน MuteSnap: AI สร้างภาพเทศกาลสวยงาม — น้ำกระเด็น โคมไฟ ดอกไม้ไฟ — แตะครั้งเดียว แชร์ Line/TikTok 3-6 เดือนสู่ ฿1M Viral coefficient สูงสุด (5-10x) ของไอเดีย HW ทั้งหมด</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">50M</span><span class="stat-label en">Thai smartphone users</span><span class="stat-label th">ผู้ใช้สมาร์ทโฟนไทย</span></div>
+      <div class="stat"><span class="stat-val">40M</span><span class="stat-label en">Songkran participants</span><span class="stat-label th">ผู้เข้าร่วมสงกรานต์</span></div>
+      <div class="stat"><span class="stat-val">3-6mo</span><span class="stat-label en">fastest to ฿1M</span><span class="stat-label th">เร็วสู่ ฿1M</span></div>
+      <div class="stat"><span class="stat-val">5-10x</span><span class="stat-label en">viral coefficient</span><span class="stat-label th">viral coefficient</span></div>
+    </div>
+    <div class="score-banner">
+      <div><span class="score-val">38</span><span style="color:var(--muted)">/50</span></div>
+      <div><div class="score-bar"><div class="score-fill" style="width:76%"></div></div></div>
+      <div style="font-size:0.7rem;color:#c084fc;font-family:'Space Mono',monospace;">📸 #2 RANKING · HIGHEST VIRAL · 4 WEEKS MVP</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">📸 THE OPPORTUNITY</div>
+    <div class="section-label th">📸 โอกาส</div>
+    <h2><span class="en">Cal AI Made $20M/Year — Thai Festivals Are Bigger</span><span class="th">Cal AI ทำ $20M/ปี — เทศกาลไทยใหญ่กว่า</span></h2>
+    <div class="alert-box">
+      <div class="alert-title">📸 CAL AI CASE STUDY: $1M MRR IN 6 MONTHS, BUILT BY A 17-YEAR-OLD</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Phone camera + AI + viral sharing = $20M ARR. Same formula works for Thai festivals where photo-sharing is at absolute cultural peak. No Thai-first AI photo app exists.</span>
+        <span class="th">กล้องโทรศัพท์ + AI + viral sharing = $20M ARR สูตรเดียวกันใช้ได้กับเทศกาลไทยที่การแชร์ภาพถึงพีคทางวัฒนธรรม ไม่มีแอป AI ภาพไทยเป็น First</span>
+      </p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📱</div>
+      <div class="pain-text">
+        <h3 class="en">Thais Take 300M+ Photos During Songkran — Most Look Terrible</h3>
+        <h3 class="th">คนไทยถ่าย 300M+ ภาพในสงกรานต์ — ส่วนใหญ่ดูไม่ดี</h3>
+        <p class="en">Phone cameras can't handle backlit water splashes. Festival lighting is harsh. No app creates authentic Thai festival aesthetic — golden temples, lanterns, water fights.</p>
+        <p class="th">กล้องโทรศัพท์รับมือน้ำกระเด็นกลับแสงไม่ได้ แสงเทศกาลรุนแรง ไม่มีแอปสร้างสุนทรียศาสตร์เทศกาลไทยแท้ — วัดทอง โคมไฟ สงครามน้ำ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🎨</div>
+      <div class="pain-text">
+        <h3 class="en">Existing Apps Are Korean/Japanese — Not Thai</h3>
+        <h3 class="th">แอปที่มีเป็นเกาหลี/ญี่ปุ่น — ไม่ใช่ไทย</h3>
+        <p class="en">Snow, B612, Lensa — all built for Korean/Japanese aesthetics. No Songkran themes, no Loy Krathong lanterns, no Thai dress filters. Thai users deserve an app built for their culture.</p>
+        <p class="th">Snow, B612, Lensa — ทั้งหมดสร้างสำหรับสุนทรียศาสตร์เกาหลี/ญี่ปุ่น ไม่มีธีมสงกรานต์ ไม่มีโคมลอยกระทง ไม่มีฟิลเตอร์ชุดไทย</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SOLUTION</div>
+    <div class="section-label th">วิธีแก้</div>
+    <h2><span class="en">MuteSnap: Thai Festival Photo Magic — One Tap</span><span class="th">MuteSnap: ความมหัศจรรย์ภาพเทศกาลไทย — แตะครั้งเดียว</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🌊 Songkran Water Splash AI</h3>
+          <h3 class="th">🌊 AI น้ำสงกรานต์</h3>
+          <p class="en">Realistic water splashes, droplets, mist effects. Background replaced with Songkran crowds or temple backdrop.</p>
+          <p class="th">น้ำกระเด็น หยดน้ำ เอฟเฟกต์หมอกจริง เปลี่ยนพื้นหลังเป็นฝูงชนสงกรานต์หรือวัด</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🏮 Loy Krathong Lantern Magic</h3>
+          <h3 class="th">🏮 โคมลอยกระทง</h3>
+          <p class="en">Float in a sea of glowing lanterns. River at dusk with floating krathongs. Most shared photo in November.</p>
+          <p class="th">ลอยในทะเลโคม แม่น้ำยามพลบค่ำพร้อมกระทง ภาพที่แชร์มากที่สุดในพฤศจิกายน</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🎆 New Year Fireworks Composer</h3>
+          <h3 class="th">🎆 ดอกไม้ไฟปีใหม่</h3>
+          <p class="en">Central World countdown, Wat Arun fireworks. Gold and red bursts. Most dramatic selfie.</p>
+          <p class="th">เคาท์ดาวน์เซ็นทรัลเวิลด์ ดอกไม้ไฟวัดอรุณ ระเบิดทองแดง เซลฟี่ดราม่าที่สุด</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">👘 Thai Traditional Dress AR</h3>
+          <h3 class="th">👘 ชุดไทย AR</h3>
+          <p class="en">Try on Thai dress via AR overlay. Northern Lanna, Northeastern silk, Central court styles.</p>
+          <p class="th">ลองชุดไทยผ่าน AR ล้านนา ไหมอีสาน ราชสำนักกลาง</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🍜 Thai Food Photography Enhancer</h3>
+          <h3 class="th">🍜 เพิ่มความสวยอาหารไทย</h3>
+          <p class="en">AI identifies Thai dish → perfect color grading → beautiful food photography. Tom Yum glows red-gold.</p>
+          <p class="th">AI ระบุจานไทย → ปรับสีสมบูรณ์ → ภาพอาหารสวย ต้มยำเรืองแดงทอง</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📤 One-Tap LINE/TikTok Share</h3>
+          <h3 class="th">📤 แชร์ LINE/TikTok แตะเดียว</h3>
+          <p class="en">Every output designed to be shared. Output IS the marketing. 5-10x viral coefficient.</p>
+          <p class="th">ทุก output ออกแบบให้แชร์ Output คือ marketing Viral coefficient 5-10x</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2><span class="en">Per-Session + Subscription — Low Friction, High Volume</span><span class="th">ต่อ Session + Subscription — แรงต้านต่ำ ปริมาณสูง</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit">2 photos/day</div>
+        <div class="pricing-desc en">All themes. Watermarked output. Viral discovery.</div>
+        <div class="pricing-desc th">ทุกธีม มีลายน้ำ ค้นพบแบบ viral</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST BOUGHT</div>
+        <div class="pricing-tier">SESSION</div>
+        <div class="pricing-price">฿29</div>
+        <div class="pricing-unit">10 premium photos</div>
+        <div class="pricing-desc en">Songkran purchase. No watermark. One-time buy.</div>
+        <div class="pricing-desc th">ซื้อสงกรานต์ ไม่มีลายน้ำ ซื้อครั้งเดียว</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">UNLIMITED</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit">/month</div>
+        <div class="pricing-desc en">Unlimited photos, HD export, early access.</div>
+        <div class="pricing-desc th">ภาพไม่จำกัด ส่งออก HD เข้าถึงก่อน</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <div class="revenue-row"><span>Songkran Week: 500K downloads, 3% buy ฿29</span><span class="revenue-val">฿435K/3 days</span></div>
+      <div class="revenue-row"><span>Month 6: 20K subs + daily sessions</span><span class="revenue-val">฿850K/mo</span></div>
+      <div class="revenue-row"><span><strong>Year 1 (with festival spikes)</strong></span><span class="revenue-val"><strong>฿8.5M</strong></span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SCORING</div>
+    <div class="section-label th">คะแนน</div>
+    <h2><span class="en">38/50 — Highest Viral Coefficient</span><span class="th">38/50 — Viral Coefficient สูงสุด</span></h2>
+    <p style="color:var(--text2);margin-bottom:1.5rem;">
+      <span class="en">Market: 8/10 · Problem: 7/10 · Competition: 8/10 · Build: 8/10 · Advantage: 7/10</span>
+      <span class="th">ตลาด: 8/10 · ปัญหา: 7/10 · การแข่งขัน: 8/10 · สร้าง: 8/10 · ข้อได้เปรียบ: 7/10</span>
+    </p>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">🎯</div><h3>4 Weeks MVP</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Camera API + AI filters + Thai themes. React Native. Launch before Songkran.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">Camera API + AI filters + ธีมไทย React Native เปิดก่อนสงกรานต์</p></div>
+      <div class="card"><div class="card-icon">🚀</div><h3>5-10x Viral</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Every shared photo is free marketing. TikTok challenge. LINE group spreading.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">ทุกภาพที่แชร์คือ marketing ฟรี TikTok challenge กระจายใน LINE</p></div>
+      <div class="card"><div class="card-icon">🏆</div><h3>#2 Ranking</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Fastest to ฿1M. 3-6 months. Cal AI proved the model works.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">เร็วที่สุดสู่ ฿1M 3-6 เดือน Cal AI พิสูจน์แล้วว่า model ใช้ได้</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">📸 Songkran Is 7 Weeks Away</span><span class="th">📸 สงกรานต์อีก 7 สัปดาห์</span></h2>
+    <p><span class="en">MuteSnap — Thai Festival AI Photo Booth. Score: 38/50. 4-week MVP. Launch before Songkran 2026.</span><span class="th">MuteSnap — AI Photo Booth เทศกาลไทย คะแนน: 38/50 MVP 4 สัปดาห์ เปิดก่อนสงกรานต์ 2026</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer><p>MUTELAB — WAVE 1.5 HW+B2C — IDEA #103 — MUTESNAP — THAI AI PHOTO BOOTH — FEB 2026</p></footer>
+<script>
+function setLang(lang) { document.body.classList.toggle('show-th', lang === 'th'); document.getElementById('btn-en').classList.toggle('active', lang === 'en'); document.getElementById('btn-th').classList.toggle('active', lang === 'th'); localStorage.setItem('lang', lang); }
+if (localStorage.getItem('lang') === 'th') setLang('th');
+</script>
+</body>
+</html>

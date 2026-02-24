@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteFood — ชุดเอกสาร Compliance ร้านอาหาร/F&B ครบจบในที่เดียว</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0802;--surface:#141004;--surface2:#1c1808;--border:rgba(234,179,8,0.12);--border2:rgba(234,179,8,0.28);--text:#fff8e0;--text2:#d4c880;--muted:#806840;--primary:#ca8a04;--primary-light:#facc15;--primary-pale:rgba(202,138,4,0.08);--secondary:#ea580c;--secondary-light:#fb923c;--green:#10b981;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(234,179,8,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(234,88,12,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 15%,rgba(202,138,4,0.08) 0%,transparent 55%),radial-gradient(ellipse at 80% 85%,rgba(234,88,12,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,8,2,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .doc-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:0.9rem 1.2rem;margin-bottom:0.7rem;}
+  .doc-icon{font-size:1.2rem;flex-shrink:0;}
+  .doc-text{font-size:0.88rem;color:var(--text2);}
+  .doc-name{font-weight:700;color:var(--text);margin-bottom:0.15rem;}
+  .kit-box{background:var(--surface);border:2px solid var(--border2);border-radius:16px;padding:2rem;margin-bottom:1.5rem;}
+  .kit-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;}
+  .kit-title{font-size:1.2rem;font-weight:700;}
+  .kit-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .kit-unit{font-size:0.7rem;color:var(--muted);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #111</span>
+  <span class="nav-badge" style="background:rgba(234,179,8,0.15);color:#facc15;border-color:rgba(234,179,8,0.3);">🍜 F&B COMPLIANCE TEMPLATES</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🍜 RESTAURANT · FOOD SAFETY · อย. COMPLIANCE</span>
+      <span class="hero-tag th">🍜 ร้านอาหาร · ความปลอดภัยอาหาร · อย. Compliance</span>
+      <span class="idea-num">SPRINT #111 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Food</span></span><span class="th">Mute<span class="accent">Food</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Complete F&B Compliance Document Kit — HACCP, GMP, อย. Applications, SOPs</span>
+      <span class="th">ชุดเอกสาร Compliance ร้านอาหาร/F&B ครบจบ — HACCP, GMP, ขออนุญาต อย., SOP ครัว</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai restaurants spend ฿30,000-100,000 on consultants to get food safety documents. Most HACCP templates only exist in English. อย. application forms are confusing government PDFs. MuteFood delivers Thai-language, ready-to-use food safety document packs at 1/10th the price of a consultant.</span>
+      <span class="th">ร้านอาหารไทยเสีย ฿30,000-100,000 กับที่ปรึกษาเพื่อทำเอกสารความปลอดภัยอาหาร เทมเพลต HACCP ส่วนใหญ่มีเฉพาะภาษาอังกฤษ แบบฟอร์มขออนุญาต อย. เป็น PDF รัฐบาลที่งงมาก MuteFood ให้ชุดเอกสารความปลอดภัยอาหารภาษาไทยพร้อมใช้ในราคา 1/10 ของที่ปรึกษา</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">500K+</span><span class="stat-label en">Thai food establishments</span><span class="stat-label th">สถานประกอบอาหารไทย</span></div>
+      <div class="stat"><span class="stat-val">฿30K-100K</span><span class="stat-label en">consultant cost per setup</span><span class="stat-label th">ค่าที่ปรึกษาต่อการตั้งค่า</span></div>
+      <div class="stat"><span class="stat-val">฿2,990</span><span class="stat-label en">MuteFood full kit</span><span class="stat-label th">ชุดครบ MuteFood</span></div>
+      <div class="stat"><span class="stat-val">1 day</span><span class="stat-label en">to complete kit setup</span><span class="stat-label th">ตั้งค่าชุดครบใน 1 วัน</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">WHAT'S IN THE KIT</div>
+    <div class="section-label th">ชุดมีอะไรบ้าง</div>
+    <h2><span class="en">Everything a Thai Restaurant Needs to Be Compliant</span><span class="th">ทุกอย่างที่ร้านอาหารไทยต้องการเพื่อ Compliant</span></h2>
+
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="en">🥗 Restaurant Compliance Kit — ฿2,990</h3>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="th">🥗 ชุด Compliance ร้านอาหาร — ฿2,990</h3>
+        <div class="doc-item"><div class="doc-icon">📋</div><div class="doc-text"><div class="doc-name en">HACCP Plan Template (Thai)</div><div class="doc-name th">แผน HACCP ภาษาไทย</div><span class="en">7-principle HACCP plan customizable by cuisine type. Critical control points pre-filled for Thai restaurant risks (raw meat, seafood, rice).</span><span class="th">แผน HACCP 7 หลักปรับได้ตามประเภทอาหาร จุดควบคุมวิกฤติกรอกล่วงหน้าสำหรับความเสี่ยงร้านอาหารไทย</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🌡️</div><div class="doc-text"><div class="doc-name en">Temperature Monitoring Logs</div><div class="doc-name th">บันทึกตรวจอุณหภูมิ</div><span class="en">Daily temperature check sheets for refrigerators, freezers, food holding. Ready to print. Includes Thai food safety temperature standards.</span><span class="th">แผ่นตรวจอุณหภูมิรายวันสำหรับตู้เย็น ช่องแช่แข็ง อาหารที่เก็บ พิมพ์พร้อมใช้ รวมมาตรฐานอุณหภูมิความปลอดภัยอาหารไทย</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🐀</div><div class="doc-text"><div class="doc-name en">Pest Control Log (Thai)</div><div class="doc-name th">บันทึกควบคุมสัตว์รบกวน</div><span class="en">Monthly pest inspection records. Required for GMP certification and อย. audits.</span><span class="th">บันทึกตรวจสัตว์รบกวนรายเดือน จำเป็นสำหรับการรับรอง GMP และการตรวจสอบ อย.</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🧼</div><div class="doc-text"><div class="doc-name en">Cleaning & Sanitation SOP</div><div class="doc-name th">SOP การทำความสะอาดและสุขอนามัย</div><span class="en">Detailed Thai-language procedures for surface, equipment, and food contact material cleaning schedules.</span><span class="th">ขั้นตอนภาษาไทยโดยละเอียดสำหรับตาราง ทำความสะอาดพื้นผิว อุปกรณ์ และวัสดุสัมผัสอาหาร</span></div></div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="en">📄 อย. Application Kit — ฿1,990</h3>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="th">📄 ชุดขออนุญาต อย. — ฿1,990</h3>
+        <div class="doc-item"><div class="doc-icon">📝</div><div class="doc-text"><div class="doc-name en">สบ.1 / สบ.3 Form Completion Guide</div><div class="doc-name th">คู่มือกรอก สบ.1 / สบ.3</div><span class="en">Step-by-step guide to fill out อย. application forms. Common rejection reasons and how to avoid them.</span><span class="th">คู่มือทีละขั้นสำหรับกรอกแบบฟอร์มขออนุญาต อย. เหตุผลปฏิเสธทั่วไปและวิธีหลีกเลี่ยง</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🏭</div><div class="doc-text"><div class="doc-name en">Factory/Kitchen Layout Requirements</div><div class="doc-name th">ข้อกำหนดผังโรงงาน/ครัว</div><span class="en">GMP zone requirements, minimum facility standards, hygiene zone drawings template for อย. submission.</span><span class="th">ข้อกำหนดโซน GMP มาตรฐานสิ่งอำนวยความสะดวกขั้นต่ำ เทมเพลตแบบแปลนโซนสุขอนามัยสำหรับส่ง อย.</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🧑‍🍳</div><div class="doc-text"><div class="doc-name en">Food Handler Training Records</div><div class="doc-name th">บันทึกการฝึกอบรมผู้สัมผัสอาหาร</div><span class="en">Training attendance sheets, knowledge test templates, hygiene certification tracking for all kitchen staff.</span><span class="th">แผ่นลงทะเบียนฝึกอบรม เทมเพลตทดสอบความรู้ ติดตามใบรับรองสุขอนามัยสำหรับพนักงานครัวทั้งหมด</span></div></div>
+        <div class="doc-item"><div class="doc-icon">🔬</div><div class="doc-text"><div class="doc-name en">Water Quality & Lab Test Tracker</div><div class="doc-name th">ติดตามคุณภาพน้ำและผลทดสอบห้องแล็บ</div><span class="en">Log for water testing results, microbial counts, supplier COA records. Essential for อย. renewal audits.</span><span class="th">บันทึกผลทดสอบน้ำ การนับจุลินทรีย์ บันทึก COA ผู้จัดหา จำเป็นสำหรับการตรวจสอบต่ออายุ อย.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">BUNDLE PRICING</div><div class="section-label th">ราคาแบบ Bundle</div>
+    <h2><span class="en">Everything vs. Consultants' ฿30,000+</span><span class="th">ทุกอย่างเทียบกับที่ปรึกษา ฿30,000+</span></h2>
+    <div class="kit-box">
+      <div class="kit-header">
+        <div><div class="kit-title en">🔥 FULL COMPLIANCE BUNDLE</div><div class="kit-title th">🔥 BUNDLE COMPLIANCE ครบชุด</div><p style="font-size:0.88rem;color:var(--text2);margin-top:0.4rem;" class="en">HACCP Plan + GMP Docs + อย. Application Kit + Kitchen SOP Pack + Food Handler Training Kit</p><p style="font-size:0.88rem;color:var(--text2);margin-top:0.4rem;" class="th">แผน HACCP + เอกสาร GMP + ชุดขออนุญาต อย. + ชุด SOP ครัว + ชุดฝึกอบรมผู้สัมผัสอาหาร</p></div>
+        <div style="text-align:right;"><div class="kit-price">฿3,990</div><div class="kit-unit en">one-time (vs ฿30K-100K consultant)</div><div class="kit-unit th">ครั้งเดียว (เทียบ ฿30K-100K ที่ปรึกษา)</div></div>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text2);" class="en">Includes 12 months of updates. New อย. regulations or GMP changes? Your kit updates automatically.</p>
+      <p style="font-size:0.88rem;color:var(--text2);" class="th">รวมการอัปเดต 12 เดือน กฎระเบียบ อย. ใหม่หรือการเปลี่ยนแปลง GMP ชุดของคุณอัปเดตอัตโนมัติ</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">Thailand's 500,000 Restaurants Need Compliance Docs. Most Don't Have Them.</span><span class="th">ร้านอาหาร 500,000 แห่งในไทยต้องการเอกสาร Compliance ส่วนใหญ่ยังไม่มี</span></h2>
+  <p><span class="en">MuteFood — Thai-language F&B compliance documents at 1/10th the price of a consultant.</span><span class="th">MuteFood — เอกสาร F&B Compliance ภาษาไทยในราคา 1/10 ของที่ปรึกษา</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #111 — MUTEFOOD — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>

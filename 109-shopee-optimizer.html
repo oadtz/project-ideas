@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSell AI — AI ปรับ Listing Shopee/Lazada ให้ขายดีขึ้น</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0808;--surface:#140f0d;--surface2:#1c1410;--border:rgba(251,146,60,0.12);--border2:rgba(251,146,60,0.28);--text:#fff5f0;--text2:#d4c0b8;--muted:#806860;--primary:#ea580c;--primary-light:#fb923c;--primary-pale:rgba(234,88,12,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#10b981;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(251,146,60,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(251,146,60,0.025) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(234,88,12,0.08) 0%,transparent 55%),radial-gradient(ellipse at 85% 90%,rgba(245,158,11,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,8,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #109</span>
+  <span class="nav-badge" style="background:rgba(251,146,60,0.15);color:#fb923c;border-color:rgba(251,146,60,0.3);">🛒 E-COMMERCE · SHOPEE · LAZADA</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🛒 ECOMMERCE · SHOPEE · LAZADA · TIKTOK SHOP</span>
+      <span class="hero-tag th">🛒 E-Commerce · Shopee · Lazada · TikTok Shop</span>
+      <span class="idea-num">SPRINT #109 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Sell</span> AI</span><span class="th">Mute<span class="accent">Sell</span> AI</span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Listing Optimizer for Thai Shopee & Lazada Sellers</span>
+      <span class="th">AI ปรับ Listing Shopee & Lazada ให้ขายดีขึ้น — ชื่อสินค้า รายละเอียด คีย์เวิร์ด ทั้งหมดใน 1 คลิก</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai e-commerce sellers spend hours writing product descriptions that don't rank. AI writes SEO-optimized Thai product titles, descriptions, and keyword tags tuned to Shopee/Lazada search algorithms. From one-line product name to fully optimized listing in 30 seconds. Sell more, write less.</span>
+      <span class="th">ผู้ขาย e-commerce ไทยใช้เวลาหลายชั่วโมงเขียนรายละเอียดสินค้าที่ไม่ขึ้นอันดับ AI เขียนชื่อสินค้าภาษาไทย SEO รายละเอียด และ tag คีย์เวิร์ดที่ปรับสำหรับอัลกอริธึมค้นหา Shopee/Lazada จากชื่อสินค้าหนึ่งบรรทัดถึง listing ที่ optimize เต็มใน 30 วินาที ขายได้มากขึ้น เขียนน้อยลง</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">฿700B</span><span class="stat-label en">Thai e-commerce market 2025</span><span class="stat-label th">ตลาด e-commerce ไทย 2568</span></div>
+      <div class="stat"><span class="stat-val">79%</span><span class="stat-label en">Thai e-commerce on Shopee+Lazada</span><span class="stat-label th">e-commerce ไทยบน Shopee+Lazada</span></div>
+      <div class="stat"><span class="stat-val">30 sec</span><span class="stat-label en">to full optimized listing</span><span class="stat-label th">ถึง listing ที่ optimize เต็ม</span></div>
+      <div class="stat"><span class="stat-val">3x</span><span class="stat-label en">more products listed daily</span><span class="stat-label th">ลิสต์สินค้าได้มากกว่า 3 เท่า/วัน</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SELLER PAIN POINTS</div>
+    <div class="section-label th">ปัญหาของผู้ขาย</div>
+    <h2><span class="en">Why Thai Sellers Lose to Chinese Competitors</span><span class="th">ทำไมผู้ขายไทยถึงแพ้คู่แข่งจีน</span></h2>
+    <div class="pain-item"><div class="pain-emoji">📝</div><div class="pain-text">
+      <h3 class="en">Writing 100 Listings Takes 2-3 Days</h3><h3 class="th">เขียน 100 Listing ใช้เวลา 2-3 วัน</h3>
+      <p class="en">Shopee sellers need keyword-rich titles (max 120 chars), detailed descriptions with features/benefits, proper category selection, attribute filling. Chinese sellers automate this — Thai sellers do it manually.</p>
+      <p class="th">ผู้ขาย Shopee ต้องการชื่อที่มีคีย์เวิร์ด (สูงสุด 120 ตัวอักษร) รายละเอียดพร้อมคุณสมบัติ/ประโยชน์ การเลือกหมวดหมู่ที่ถูกต้อง การกรอก attribute ผู้ขายจีนทำอัตโนมัติ — ผู้ขายไทยทำมือ</p>
+    </div></div>
+    <div class="pain-item"><div class="pain-emoji">🔍</div><div class="pain-text">
+      <h3 class="en">Wrong Keywords = Zero Impressions</h3><h3 class="th">คีย์เวิร์ดผิด = ไม่มี Impression</h3>
+      <p class="en">Shopee/Lazada search is keyword-driven. Sellers who put the right Thai keywords (buyer language, not seller language) rank on page 1. Wrong keywords = buried on page 50. AI knows which keywords Thai buyers actually search.</p>
+      <p class="th">การค้นหา Shopee/Lazada ขับเคลื่อนด้วยคีย์เวิร์ด ผู้ขายที่ใส่คีย์เวิร์ดไทยที่ถูกต้อง (ภาษาผู้ซื้อ ไม่ใช่ภาษาผู้ขาย) จะขึ้นหน้า 1 คีย์เวิร์ดผิด = ติดหน้า 50 AI รู้ว่าผู้ซื้อไทยค้นหาคำอะไรจริงๆ</p>
+    </div></div>
+    <div class="pain-item"><div class="pain-emoji">💰</div><div class="pain-text">
+      <h3 class="en">Commission Fees Keep Rising — Margins Are Squeezed</h3><h3 class="th">ค่าคอมมิชชั่นเพิ่มขึ้นเรื่อยๆ — Margin ถูกบีบ</h3>
+      <p class="en">Shopee commission raised to 6.5%. Platform ads are expensive. The only way to survive: higher conversion rate per impression. Better listings = higher conversion = same ad spend, more sales.</p>
+      <p class="th">Shopee ขึ้นค่าคอมมิชชั่นเป็น 6.5% โฆษณาแพง ทางรอดเดียว: อัตราการแปลงต่อ impression ที่สูงขึ้น listing ที่ดีกว่า = conversion สูงกว่า = ค่าโฆษณาเท่าเดิม ขายได้มากกว่า</p>
+    </div></div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">WHAT MUTESELL AI DOES</div>
+    <div class="section-label th">MuteSell AI ทำอะไร</div>
+    <h2><span class="en">From Product Photo to Ranked Listing in 30 Seconds</span><span class="th">จากรูปสินค้าถึง Listing ที่ขึ้นอันดับใน 30 วินาที</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">🎯</div>
+        <h3 class="en">Thai SEO Title Generator</h3><h3 class="th">สร้างชื่อสินค้า Thai SEO</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Generates keyword-optimized 120-char Thai titles. Includes search volume data for Thai keywords. Outputs 3 title variants to A/B test. Complies with Shopee/Lazada title policies.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">สร้างชื่อ 120 ตัวอักษร optimize คีย์เวิร์ด รวมข้อมูล search volume คีย์เวิร์ดไทย ให้ 3 ชื่อสำหรับ A/B test ปฏิบัติตามนโยบายชื่อ Shopee/Lazada</p>
+      </div>
+      <div class="card"><div class="card-icon">📄</div>
+        <h3 class="en">Product Description Writer</h3><h3 class="th">เขียนรายละเอียดสินค้า</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Structured Thai descriptions: key features (bullet), detailed specs, "เหมาะสำหรับใคร" section, FAQ. Uses buying-intent language. Includes emojis in Thai style.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">รายละเอียดไทยมีโครงสร้าง: คุณสมบัติหลัก (bullet) สเปคโดยละเอียด section "เหมาะสำหรับใคร" FAQ ใช้ภาษา buying-intent รวม emoji สไตล์ไทย</p>
+      </div>
+      <div class="card"><div class="card-icon">🏷️</div>
+        <h3 class="en">Hashtag & Keyword Tag Generator</h3><h3 class="th">สร้าง Hashtag & Tag คีย์เวิร์ด</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Shopee hashtags, Lazada keywords, TikTok Shop tags — all platform-specific. Mix of high-volume + niche keywords for balanced reach. Updated monthly with trending Thai search terms.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">hashtag Shopee คีย์เวิร์ด Lazada tag TikTok Shop — แต่ละแพลตฟอร์มเฉพาะ ผสม volume สูง + niche สำหรับ reach สมดุล อัปเดตทุกเดือนด้วยคำค้นหาไทยที่กำลังเทรนด์</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div><div class="section-label th">ราคา</div>
+    <h2><span class="en">ROI in the First Week</span><span class="th">ROI ในสัปดาห์แรก</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card"><div class="pricing-tier">STARTER</div><div class="pricing-price">฿299</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">50 listings/month, Thai SEO title, basic description. One platform (Shopee OR Lazada).</div><div class="pricing-desc th">50 listing/เดือน, ชื่อ Thai SEO, รายละเอียดพื้นฐาน หนึ่งแพลตฟอร์ม (Shopee หรือ Lazada)</div></div>
+      <div class="pricing-card featured"><div class="pricing-badge">POPULAR</div><div class="pricing-tier">SELLER PRO</div><div class="pricing-price">฿699</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">300 listings/month, all platforms, keyword research, bulk import/export, competitor title analysis.</div><div class="pricing-desc th">300 listing/เดือน ทุกแพลตฟอร์ม ค้นคว้าคีย์เวิร์ด import/export จำนวนมาก วิเคราะห์ชื่อคู่แข่ง</div></div>
+      <div class="pricing-card"><div class="pricing-tier">POWER SELLER</div><div class="pricing-price">฿1,990</div><div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div><div class="pricing-desc en">Unlimited listings, API access, Shopee/Lazada integration, auto-sync on stock updates, 3 store accounts.</div><div class="pricing-desc th">ไม่จำกัด listing API ผสาน Shopee/Lazada sync อัตโนมัติเมื่ออัปเดตสต็อก 3 บัญชีร้านค้า</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">Stop Writing. Start Selling.</span><span class="th">หยุดเขียน เริ่มขาย</span></h2>
+  <p><span class="en">Join Thai sellers who let AI handle listings while they focus on sourcing and shipping.</span><span class="th">ร่วมกับผู้ขายไทยที่ให้ AI จัดการ listing ในขณะที่พวกเขาโฟกัสการซื้อสินค้าและจัดส่ง</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #109 — MUTESELL AI — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>

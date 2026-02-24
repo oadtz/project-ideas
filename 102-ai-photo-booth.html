@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSnap — AI Photo Booth for Thai Festivals</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --bg2: #0b100c;
+    --surface: #0f1610;
+    --surface2: #141e15;
+    --surface3: #1a261b;
+    --border: rgba(13,148,136,0.15);
+    --border2: rgba(13,148,136,0.28);
+    --text: #f0f5f0;
+    --text2: #c0d0c0;
+    --muted: #708070;
+    --muted2: #526052;
+    --primary: #ec4899;
+    --primary-light: #f472b6;
+    --primary-pale: rgba(236,72,153,0.08);
+    --primary-glow: rgba(236,72,153,0.22);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(236,72,153,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(236,72,153,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); font-family: 'Space Mono', monospace; }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(10,15,10,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid rgba(236,72,153,0.3); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(236,72,153,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+  @media(max-width:900px) { .pricing-grid { grid-template-columns: repeat(2,1fr); } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: rgba(236,72,153,0.4); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .revenue-row:last-child .revenue-val { color: var(--primary-light); font-size: 1rem; }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .cta-section h2 { font-size: 2rem; margin-bottom: 1rem; }
+  .cta-section p { color: var(--text2); max-width: 520px; margin: 0 auto 2rem; }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid rgba(236,72,153,0.3); border-radius: 10px; transition: all 0.2s; }
+  .back-link:hover { background: var(--primary-pale); }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted2); letter-spacing: 0.06em; }
+  .viral-badge { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(236,72,153,0.12); border: 1px solid rgba(236,72,153,0.3); border-radius: 99px; padding: 0.4rem 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; color: var(--primary-light); font-weight: 700; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #102</span>
+  <span class="nav-badge" style="background:rgba(236,72,153,0.15);color:#f472b6;border-color:rgba(236,72,153,0.3);">📸 B2C · CAMERA</span>
+  <span class="nav-badge en">WAVE 1.5: HW+B2C</span>
+  <span class="nav-badge th">เวฟ 1.5: HW+B2C</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag">📸 AI PHOTO BOOTH · THAI FESTIVALS</span>
+      <span class="idea-num">SPRINT #102 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Snap</span></span><span class="th">Mute<span class="accent">Snap</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Photo Booth for Thai Festivals & Events</span>
+      <span class="th">AI Photo Booth สำหรับเทศกาลและอีเวนต์ไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">One tap → stunning festival photo → viral share. Songkran water splash effects, Loy Krathong lantern magic, New Year sparkles. AI processes your photo on-device, no upload wait. Built for Thai culture, designed to go viral on LINE, TikTok, and Facebook. Cal AI hit $1M MRR in 6 months with this exact model — Thailand's version doesn't exist yet.</span>
+      <span class="th">แตะครั้งเดียว → รูปสวยมากๆ → แชร์สนั่น เอฟเฟกต์น้ำสงกรานต์, โคมลอยลอยกระทง, ประกายปีใหม่ AI ประมวลผลภาพบนเครื่องเลย ไม่ต้องรออัพโหลด สร้างเพื่อวัฒนธรรมไทย ออกแบบให้ไวรัลบน LINE, TikTok, Facebook Cal AI ทำ $1M MRR ใน 6 เดือนด้วยโมเดลนี้ — เวอร์ชันไทยยังไม่มีใครทำ</span>
+    </p>
+    <div class="viral-badge">🔥 VIRAL COEFFICIENT: VERY HIGH — OUTPUT IS LITERALLY DESIGNED TO BE SHARED</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">50M</span><span class="stat-label en">Thai smartphone users</span><span class="stat-label th">ผู้ใช้สมาร์ทโฟนไทย</span></div>
+      <div class="stat"><span class="stat-val">฿29</span><span class="stat-label en">per session (impulse buy)</span><span class="stat-label th">ต่อเซสชัน (ซื้อตามใจ)</span></div>
+      <div class="stat"><span class="stat-val">4wk</span><span class="stat-label en">MVP build time</span><span class="stat-label th">เวลาสร้าง MVP</span></div>
+      <div class="stat"><span class="stat-val">3-6mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M รายได้</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE OPPORTUNITY</div>
+    <div class="section-label th">โอกาส</div>
+    <h2>
+      <span class="en">Thai People Are Obsessed With Photo-Sharing — No AI Festival App Exists</span>
+      <span class="th">คนไทยหลงใหลการแชร์รูปภาพ — แต่ยังไม่มีแอป AI เทศกาลไทย</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Songkran — April 13-15</h3>
+            <h3 class="th">สงกรานต์ — 13-15 เม.ย.</h3>
+            <p class="en">Thailand's biggest festival. 30M+ people celebrate. Everyone is taking photos. Water splash AI effects = instant viral content.</p>
+            <p class="th">เทศกาลใหญ่ที่สุดของไทย 30M+ คนฉลอง ทุกคนถ่ายรูป เอฟเฟกต์น้ำ AI = เนื้อหาไวรัลทันที</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Loy Krathong — November</h3>
+            <h3 class="th">ลอยกระทง — พฤศจิกายน</h3>
+            <p class="en">Floating lanterns, candlelight, romantic atmosphere. AI background replacement with lantern scenes. Perfect for couples.</p>
+            <p class="th">โคมลอย เทียน บรรยากาศโรแมนติก แทนพื้นหลังด้วย AI ฉาก lantern เหมาะสำหรับคู่รัก</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Everyday Selfie Culture</h3>
+            <h3 class="th">วัฒนธรรมเซลฟี่ทุกวัน</h3>
+            <p class="en">Thai social media users post 3-5x per day on average. Birthday frames, café vibes, travel themes — daily use beyond festivals.</p>
+            <p class="th">ผู้ใช้โซเชียลมีเดียไทยโพสต์เฉลี่ย 3-5 ครั้ง/วัน กรอบวันเกิด, บรรยากาศคาเฟ่, ธีมท่องเที่ยว — ใช้ได้ทุกวัน</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Why Cal AI Succeeded — And Why Thailand Needs This</h3>
+            <h3 class="th">ทำไม Cal AI ถึงประสบความสำเร็จ — และทำไมไทยต้องการสิ่งนี้</h3>
+            <p class="en">Cal AI: phone camera → instant useful output → impulse ฿29 purchase. MuteSnap is the exact same model but for social sharing, not calories. Thailand has 50M smartphone users, photo-obsessed culture, and NO Thai-first AI photo app.</p>
+            <p class="th">Cal AI: กล้องโทรศัพท์ → ผลลัพธ์ที่มีประโยชน์ทันที → ซื้อตามใจ ฿29 MuteSnap คือโมเดลเดียวกันแต่เพื่อการแชร์โซเชียล ไม่ใช่แคลอรี ไทยมีผู้ใช้สมาร์ทโฟน 50M คน วัฒนธรรมชอบถ่ายรูป และยังไม่มีแอป AI photo ที่เป็นภาษาไทยก่อน</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Built-In Viral Loop</h3>
+            <h3 class="th">ลูปไวรัลในตัว</h3>
+            <p class="en">Every shared photo has a subtle watermark. When friends ask "how did you make this?" → they download the app. The product markets itself. Seasonal spikes create news cycles and trending moments.</p>
+            <p class="th">ทุกรูปที่แชร์มีลายน้ำแบบ subtle เมื่อเพื่อนถามว่า "ทำยังไง?" → ดาวน์โหลดแอป สินค้าการตลาดตัวเอง ยอด seasonal สร้างข่าวและ trending moments</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="container">
+    <div class="section-label en">WHAT IT DOES</div>
+    <div class="section-label th">ทำอะไรได้บ้าง</div>
+    <h2>
+      <span class="en">Phone Camera → Magic Photo in 3 Seconds</span>
+      <span class="th">กล้องโทรศัพท์ → รูปมหัศจรรย์ใน 3 วินาที</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🌊</div>
+        <h3 class="en">Festival Effects</h3>
+        <h3 class="th">เอฟเฟกต์เทศกาล</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Songkran water splashes, Loy Krathong lanterns, fireworks, flower rain. New themes every season. AI perfectly composites effects around your body.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">น้ำสงกรานต์, โคมลอยกระทง, พลุ, ฝนดอกไม้ ธีมใหม่ทุกฤดูกาล AI ผสมผสานเอฟเฟกต์รอบๆ ตัวคุณได้อย่างสมบูรณ์แบบ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤳</div>
+        <h3 class="en">AI Background Magic</h3>
+        <h3 class="th">AI เปลี่ยนพื้นหลัง</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Real-time person segmentation. Swap your background to Chiang Mai night market, Phuket beach, Wat Pho, or abstract art. On-device ML, zero upload wait.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">แยกตัวคนแบบ real-time เปลี่ยนพื้นหลังเป็นตลาดกลางคืนเชียงใหม่, หาดภูเก็ต, วัดโพธิ์, หรืองานศิลป์ ML บนเครื่อง ไม่ต้องรออัพโหลด</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✨</div>
+        <h3 class="en">Beauty + Style AI</h3>
+        <h3 class="th">AI ความสวย + สไตล์</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Soft skin enhancement, teeth brightening, eye enhancement. Thai beauty standards built in. Traditional Thai dress overlays. Looks natural, not plastic.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ปรับผิวเนียน ฟันขาว เพิ่มความสดใสดวงตา มาตรฐานความสวยไทยในตัว ชุดไทยทรงผสม ดูเป็นธรรมชาติ ไม่เกิน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3 class="en">One-Tap Share</h3>
+        <h3 class="th">แชร์แตะเดียว</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Instant share to LINE, TikTok, Facebook, Instagram. Optimized formats for each platform. Story size, feed size, profile picture — all auto-generated.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">แชร์ทันทีไปยัง LINE, TikTok, Facebook, Instagram รูปแบบที่เหมาะสมสำหรับแต่ละแพลตฟอร์ม Story, feed, รูปโปรไฟล์ — สร้างอัตโนมัติ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎉</div>
+        <h3 class="en">Event Mode</h3>
+        <h3 class="th">Event Mode</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Wedding, birthday, graduation, company party. Custom frames with event name & date. QR code for guests to scan and contribute photos to shared album.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">งานแต่ง วันเกิด ซ้อมรับปริญญา ปาร์ตี้บริษัท กรอบที่ปรับแต่งด้วยชื่ออีเวนต์และวันที่ QR code ให้แขกสแกนและเพิ่มรูปใน album ร่วม</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏆</div>
+        <h3 class="en">Photo Contests</h3>
+        <h3 class="th">การแข่งขันรูปภาพ</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Weekly themed contests. Community voting. Winners get featured + prizes. Creates habit loop and reason to open app every week.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">การแข่งขันรายสัปดาห์ตามธีม โหวตชุมชน ผู้ชนะได้รับการแนะนำ + รางวัล สร้าง habit loop และเหตุผลเปิดแอปทุกสัปดาห์</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2>
+      <span class="en">Impulse Buy Pricing — ฿29 Is the Magic Number</span>
+      <span class="th">ราคาซื้อตามใจ — ฿29 คือตัวเลขมหัศจรรย์</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE FOREVER</div>
+        <div class="pricing-tier th">ฟรีตลอดไป</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">2 photos/day with watermark</div>
+        <div class="pricing-unit th">2 รูป/วัน มีลายน้ำ</div>
+        <div class="pricing-desc en">Basic effects, watermark, community access. Designed to hook users and convert.</div>
+        <div class="pricing-desc th">เอฟเฟกต์พื้นฐาน มีลายน้ำ เข้าชุมชน ออกแบบให้ดึงดูดและแปลง</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">PER SESSION</div>
+        <div class="pricing-tier th">ต่อเซสชัน</div>
+        <div class="pricing-price">฿29</div>
+        <div class="pricing-unit en">3 photos, no watermark</div>
+        <div class="pricing-unit th">3 รูป ไม่มีลายน้ำ</div>
+        <div class="pricing-desc en">Full effects, no watermark, all formats. Cheaper than a bubble tea. Impulse buy.</div>
+        <div class="pricing-desc th">เอฟเฟกต์ครบ ไม่มีลายน้ำ ทุกรูปแบบ ถูกกว่าชาไข่มุก ซื้อตามใจ</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">MONTHLY</div>
+        <div class="pricing-tier th">รายเดือน</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit en">per month, unlimited</div>
+        <div class="pricing-unit th">ต่อเดือน ไม่จำกัด</div>
+        <div class="pricing-desc en">Unlimited photos, early access to new themes, cloud backup for your collection.</div>
+        <div class="pricing-desc th">รูปภาพไม่จำกัด เข้าถึงธีมใหม่ก่อนใคร สำรองข้อมูลบนคลาวด์</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">EVENT PACK</div>
+        <div class="pricing-tier th">แพ็คอีเวนต์</div>
+        <div class="pricing-price">฿199</div>
+        <div class="pricing-unit en">one-time, 50 photos</div>
+        <div class="pricing-unit th">ครั้งเดียว 50 รูป</div>
+        <div class="pricing-desc en">Wedding, birthday, graduation mode. Custom frames, shared album, QR booth mode.</div>
+        <div class="pricing-desc th">งานแต่ง วันเกิด รับปริญญา กรอบปรับแต่ง album ร่วม โหมด QR booth</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MATH</div>
+    <div class="section-label th">คณิตศาสตร์รายได้</div>
+    <h2>
+      <span class="en">Path to ฿1M — Multiple Routes</span>
+      <span class="th">เส้นทางสู่ ฿1M — หลายเส้นทาง</span>
+    </h2>
+    <div class="two-col">
+      <div class="revenue-block">
+        <div class="revenue-row">
+          <span class="en">Sessions at ฿29 needed</span>
+          <span class="th">เซสชันที่ต้องการที่ ฿29</span>
+          <span class="revenue-val">34,483</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Monthly subs at ฿99 needed</span>
+          <span class="th">สมาชิกรายเดือนที่ต้องการ</span>
+          <span class="revenue-val">841/mo</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Songkran spike potential</span>
+          <span class="th">ศักยภาพ spike สงกรานต์</span>
+          <span class="revenue-val">฿300K+ in 1 week</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Time to ฿1M</span>
+          <span class="th">เวลาถึง ฿1M</span>
+          <span class="revenue-val">3-6 months</span>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-icon">💡</div>
+          <h3 class="en">The Cal AI Playbook</h3>
+          <h3 class="th">Playbook ของ Cal AI</h3>
+          <p style="font-size:0.88rem;color:var(--text2);" class="en">Cal AI: phone camera + instant output + ฿29 impulse buy = $1M MRR in 6 months. Built by a 17-year-old. Thailand's photo culture is even stronger — we have Songkran, a built-in annual viral event. The same model works here.</p>
+          <p style="font-size:0.88rem;color:var(--text2);" class="th">Cal AI: กล้อง + ผลลัพธ์ทันที + ซื้อตามใจ ฿29 = $1M MRR ใน 6 เดือน สร้างโดยเด็กอายุ 17 วัฒนธรรมถ่ายรูปของไทยยิ่งแข็งแกร่งกว่า — เรามีสงกรานต์ อีเวนต์ไวรัลประจำปีในตัว โมเดลเดียวกันใช้ได้ที่นี่</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="container">
+    <h2 class="en">📸 Built for Thai Viral Culture</h2>
+    <h2 class="th">📸 สร้างเพื่อวัฒนธรรมไวรัลไทย</h2>
+    <p class="en">4-week MVP. Ship before Songkran 2026. Every photo shared is free marketing.</p>
+    <p class="th">MVP 4 สัปดาห์ ปล่อยก่อนสงกรานต์ 2026 ทุกรูปที่แชร์คือการตลาดฟรี</p>
+    <a href="index.html" class="back-link">← <span class="en">Back to MuteLab Ideas</span><span class="th">กลับไปที่ MuteLab Ideas</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB · IDEA #102 · MUTESNAP · HW+B2C WAVE 1.5 · FEB 2026</p>
+  </div>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'btn-' + lang);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteScript — AI เขียนสคริปต์ TikTok/YouTube ภาษาไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080810;--surface:#0d0d1a;--surface2:#111122;--surface3:#161630;--border:rgba(139,92,246,0.12);--border2:rgba(139,92,246,0.28);--text:#f0f0ff;--text2:#b8b8e0;--muted:#6060a0;--primary:#7c3aed;--primary-light:#a78bfa;--primary-pale:rgba(124,58,237,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#10b981;--red:#ef4444;--amber:#f59e0b;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(139,92,246,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.025) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 10%,rgba(124,58,237,0.08) 0%,transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(245,158,11,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);font-family:'Space Mono',monospace;}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,8,16,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s,box-shadow 0.2s;}
+  .card:hover{border-color:var(--border2);box-shadow:0 4px 24px rgba(124,58,237,0.1);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .feature-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.4rem;}
+  .feature-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-light);flex-shrink:0;margin-top:0.45rem;}
+  .feature-item p{font-size:0.9rem;color:var(--text2);margin-top:0.2rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .script-demo{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:1.5rem;font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--text2);line-height:1.8;}
+  .script-label{font-size:0.65rem;letter-spacing:0.1em;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  .back-link:hover{background:var(--primary-pale);}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #108</span>
+  <span class="nav-badge" style="background:rgba(139,92,246,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.3);">🎬 CREATOR TOOLS</span>
+  <span class="nav-badge en">AI THAI SCRIPT GENERATOR</span>
+  <span class="nav-badge th">AI สคริปต์ภาษาไทย</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🎬 CREATOR ECONOMY · TIKTOK · YOUTUBE</span>
+      <span class="hero-tag th">🎬 Creator Economy · TikTok · YouTube</span>
+      <span class="idea-num">SPRINT #108 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Script</span></span><span class="th">Mute<span class="accent">Script</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Thai Script Generator for TikTok & YouTube Creators</span>
+      <span class="th">AI เขียนสคริปต์ภาษาไทยสำหรับ TikTok & YouTube — Hook จัดหนัก ปิดด้วย CTA</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thai content creators waste hours staring at blank pages. CapCut writes scripts in English. ChatGPT sounds robotic in Thai. MuteScript generates viral-ready Thai scripts with proven hooks, natural Thai phrasing, trending formats — in 30 seconds. From topic to camera-ready script.</span>
+      <span class="th">ครีเอเตอร์ไทยเสียเวลาหลายชั่วโมงนั่งมองหน้าจอว่าง CapCut เขียนสคริปต์เป็นภาษาอังกฤษ ChatGPT ฟังดูเป็นหุ่นยนต์ในภาษาไทย MuteScript สร้างสคริปต์ไทยพร้อมไวรัลด้วย hook ที่พิสูจน์แล้ว สำนวนไทยธรรมชาติ รูปแบบที่กำลังเทรนด์ — ใน 30 วินาที จากหัวข้อสู่สคริปต์พร้อมถ่าย</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">16M</span><span class="stat-label en">Thai TikTok creator followers (top creators)</span><span class="stat-label th">ผู้ติดตามครีเอเตอร์ TikTok ไทย (รายใหญ่)</span></div>
+      <div class="stat"><span class="stat-val">฿0</span><span class="stat-label en">good Thai script AI tools today</span><span class="stat-label th">เครื่องมือ AI สคริปต์ไทยดีๆ ตอนนี้</span></div>
+      <div class="stat"><span class="stat-val">30 sec</span><span class="stat-label en">from idea to full script</span><span class="stat-label th">จากไอเดียถึงสคริปต์เต็ม</span></div>
+      <div class="stat"><span class="stat-val">3x</span><span class="stat-label en">faster content output</span><span class="stat-label th">ผลิตคอนเทนต์เร็วขึ้น 3 เท่า</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">THE CREATOR PROBLEM</div>
+    <div class="section-label th">ปัญหาของครีเอเตอร์</div>
+    <h2>
+      <span class="en">Thai Creators Spend More Time Writing Than Filming</span>
+      <span class="th">ครีเอเตอร์ไทยใช้เวลาเขียนมากกว่าถ่าย</span>
+    </h2>
+    <div class="pain-item">
+      <div class="pain-emoji">⏰</div>
+      <div class="pain-text">
+        <h3 class="en">Script Writing Takes 2-4 Hours per Video</h3>
+        <h3 class="th">เขียนสคริปต์ใช้เวลา 2-4 ชั่วโมงต่อวิดีโอ</h3>
+        <p class="en">Researching topic, finding the hook, structuring the content, writing natural Thai dialogue, adding B-roll cues, CTA optimization — for one 3-minute video. Creators who post daily are burning out. AI can do this in 30 seconds.</p>
+        <p class="th">ค้นคว้าหัวข้อ หา hook จัดโครงสร้างเนื้อหา เขียนบทสนทนาไทยธรรมชาติ เพิ่ม B-roll คิว ปรับ CTA — สำหรับวิดีโอ 3 นาทีหนึ่งคลิป ครีเอเตอร์ที่โพสต์ทุกวันกำลัง burnout AI ทำได้ใน 30 วินาที</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🤖</div>
+      <div class="pain-text">
+        <h3 class="en">ChatGPT/Claude Thai Scripts Sound Unnatural</h3>
+        <h3 class="th">สคริปต์ภาษาไทยจาก ChatGPT/Claude ฟังดูไม่เป็นธรรมชาติ</h3>
+        <p class="en">Generic AI tools generate formal, textbook Thai. Real TikTok language uses slang, Gen-Z expressions, regional dialects, playful tone. "ไม่ก็ไม่รู้อ่ะ," "จริงๆ แล้ว," "พูดตรงๆ เลยนะ" — MuteScript is trained on actual viral Thai content.</p>
+        <p class="th">AI ทั่วไปสร้างภาษาไทยทางการแบบตำราเรียน ภาษา TikTok จริงใช้สแลง ศัพท์ Gen-Z สำเนียงท้องถิ่น โทนสนุกสนาน "ไม่ก็ไม่รู้อ่ะ" "จริงๆ แล้ว" "พูดตรงๆ เลยนะ" — MuteScript ฝึกจากคอนเทนต์ไทยที่ไวรัลจริงๆ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📉</div>
+      <div class="pain-text">
+        <h3 class="en">Bad Hooks = Videos Die in 3 Seconds</h3>
+        <h3 class="th">Hook แย่ = วิดีโอตายใน 3 วินาที</h3>
+        <p class="en">TikTok algorithm judges videos on 3-second retention. A boring opening kills reach regardless of content quality. MuteScript's hook library uses patterns from Thai creators with 1M+ views: curiosity gaps, shock statements, relatable pain points, trending challenges.</p>
+        <p class="th">อัลกอริธึม TikTok ตัดสินวิดีโอจากการรักษาผู้ชม 3 วินาที การเปิดที่น่าเบื่อฆ่า reach ไม่ว่าเนื้อหาจะดีแค่ไหน คลังข้อมูล hook ของ MuteScript ใช้รูปแบบจากครีเอเตอร์ไทยที่มีวิวล้าน: ช่องว่างความอยากรู้ ประโยคกระแทก ความเจ็บปวดที่เข้าใจได้ ความท้าทายที่กำลังเทรนด์</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2>
+      <span class="en">MuteScript: AI That Speaks Real Thai — Not Textbook Thai</span>
+      <span class="th">MuteScript: AI ที่พูดภาษาไทยจริง — ไม่ใช่ภาษาตำราเรียน</span>
+    </h2>
+
+    <div style="margin-bottom:2rem;">
+      <div class="script-label en">DEMO OUTPUT — INPUT: "แนะนำร้านกาแฟซ่อนเร้น กรุงเทพ" (30-second video)</div>
+      <div class="script-label th">ตัวอย่าง OUTPUT — INPUT: "แนะนำร้านกาแฟซ่อนเร้น กรุงเทพ" (วิดีโอ 30 วินาที)</div>
+      <div class="script-demo">
+        🎬 HOOK (3 วินาที): "คุณไม่รู้ว่ามีร้านกาแฟนี้อยู่ในกรุงเทพ — แต่คนที่รู้ไปกันตลอด"<br><br>
+        📍 BODY (20 วินาที): "ซ่อนอยู่ในซอยสุขุมวิท 71... [B-roll: เดินเข้าซอย]... ไม่มีป้าย ไม่มีรีวิว เป็นแค่ประตูบ้านสีขาว... [B-roll: มือเปิดประตู]... แต่ข้างในคือ..."<br><br>
+        🔥 REVEAL: "...สวนกาแฟ hidden ที่ Instagram ยังไม่รู้จัก — แต่คนในย่านมาประจำ"<br><br>
+        📣 CTA: "Save ไว้ก่อนเลย เผื่อแก๊งมาก็พาไปได้เลย 🙌 #กาแฟกรุงเทพ #HiddenCafe"
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🎣 Viral Hook Library (Thai)</h3><h3 class="th">🎣 คลังข้อมูล Hook ไวรัล (ไทย)</h3>
+          <p class="en">50+ proven Thai hook templates: curiosity gaps, before/after, "คุณไม่รู้ว่า..." patterns, controversial takes, listicles. Updated monthly with trending formats.</p>
+          <p class="th">แม่แบบ hook ไทยที่พิสูจน์แล้ว 50+: ช่องว่างความอยากรู้ before/after รูปแบบ "คุณไม่รู้ว่า..." มุมมองโต้แย้ง listicle อัปเดตทุกเดือนด้วยรูปแบบที่กำลังเทรนด์</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📺 Format Templates</h3><h3 class="th">📺 แม่แบบรูปแบบวิดีโอ</h3>
+          <p class="en">TikTok 15s, 30s, 60s, 3min. YouTube Short vs long-form. Review format, Vlog format, Tutorial format, Reaction format, "แกะกล่อง" format — each pre-structured.</p>
+          <p class="th">TikTok 15วิ 30วิ 60วิ 3นาที YouTube Short vs long-form รีวิว Vlog Tutorial Reaction แกะกล่อง — แต่ละแบบมีโครงสร้างสำเร็จรูป</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🔑 SEO Title & Hashtag Generator</h3><h3 class="th">🔑 สร้างชื่อ SEO & Hashtag</h3>
+          <p class="en">Auto-generate Thai YouTube titles optimized for search. TikTok hashtag combos that balance reach vs niche (trending + mid + specific). Caption copy with natural LINE sticker emoji style.</p>
+          <p class="th">สร้างชื่อ YouTube ไทยที่ optimize สำหรับการค้นหาอัตโนมัติ hashtag TikTok ที่สมดุล reach vs niche (กำลังเทรนด์ + กลาง + เฉพาะ) caption ด้วยสไตล์ emoji LINE สติ๊กเกอร์ธรรมชาติ</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📱 Platform-Specific Tone</h3><h3 class="th">📱 โทนเฉพาะแพลตฟอร์ม</h3>
+          <p class="en">TikTok = casual, Gen-Z, fast. YouTube = slightly more polished. IG Reel = aesthetic. Facebook = broader demographic. LINE OA = formal enough for business. MuteScript automatically adjusts voice.</p>
+          <p class="th">TikTok = ลำลอง Gen-Z เร็ว YouTube = ขัดเกลาขึ้นเล็กน้อย IG Reel = aesthetic Facebook = กลุ่มประชากรกว้าง LINE OA = ทางการพอสำหรับธุรกิจ MuteScript ปรับโทนเสียงอัตโนมัติ</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2><span class="en">Less Than Your Monthly Coffee Budget</span><span class="th">ถูกกว่างบกาแฟรายเดือนของคุณ</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">STARTER</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">20 scripts/month, all formats, hook library, basic SEO titles. Perfect for casual creators.</div>
+        <div class="pricing-desc th">20 สคริปต์/เดือน ทุกรูปแบบ คลัง hook, ชื่อ SEO พื้นฐาน เหมาะสำหรับครีเอเตอร์ทั่วไป</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier">CREATOR PRO</div>
+        <div class="pricing-price">฿599</div>
+        <div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">Unlimited scripts, trending topic alerts, hashtag optimizer, B-roll suggestions, competitor analysis, brand voice training.</div>
+        <div class="pricing-desc th">สคริปต์ไม่จำกัด แจ้งเตือนหัวข้อเทรนด์ ปรับ hashtag แนะนำ B-roll วิเคราะห์คู่แข่ง ฝึก brand voice</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">AGENCY</div>
+        <div class="pricing-price">฿1,990</div>
+        <div class="pricing-unit en">/month</div><div class="pricing-unit th">/เดือน</div>
+        <div class="pricing-desc en">10 creator accounts, brand kit management, bulk script generation, white-label export for client delivery.</div>
+        <div class="pricing-desc th">10 บัญชีครีเอเตอร์ จัดการ brand kit สร้างสคริปต์จำนวนมาก export white-label สำหรับส่งลูกค้า</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">From Blank Page to Camera-Ready Script in 30 Seconds</span><span class="th">จากหน้าจอว่างสู่สคริปต์พร้อมถ่ายใน 30 วินาที</span></h2>
+    <p><span class="en">Join Thai creators who post daily without burning out. MuteScript — AI that speaks real Thai.</span><span class="th">ร่วมกับครีเอเตอร์ไทยที่โพสต์ทุกวันโดยไม่ burnout MuteScript — AI ที่พูดภาษาไทยจริง</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #108 — MUTESCRIPT — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>
+function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}
+const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');
+</script>
+</body>
+</html>
