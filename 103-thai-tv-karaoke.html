@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteKaraoke — Thai Smart TV Karaoke App</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #0f1016;
+    --surface2: #141520;
+    --surface3: #1a1b2e;
+    --border: rgba(139,92,246,0.15);
+    --border2: rgba(139,92,246,0.3);
+    --text: #f0f0f8;
+    --text2: #c0c0d8;
+    --muted: #707088;
+    --muted2: #525068;
+    --primary: #8b5cf6;
+    --primary-light: #a78bfa;
+    --primary-pale: rgba(139,92,246,0.08);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --green: #10b981;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(139,92,246,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(139,92,246,0.1); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:768px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid var(--border2); border-radius: 10px; transition: all 0.2s; }
+  .back-link:hover { background: var(--primary-pale); }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted2); letter-spacing: 0.06em; }
+  .moat-badge { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(139,92,246,0.12); border: 1px solid var(--border2); border-radius: 99px; padding: 0.4rem 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; color: var(--primary-light); font-weight: 700; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #103</span>
+  <span class="nav-badge" style="background:rgba(139,92,246,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.35);">🎤 B2C · ANDROID TV</span>
+  <span class="nav-badge en">WAVE 1.5: HW+B2C</span>
+  <span class="nav-badge th">เวฟ 1.5: HW+B2C</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag">🎤 THAI SMART TV KARAOKE · ANDROID TV</span>
+      <span class="idea-num">SPRINT #103 — FEB 24, 2026</span>
+      <span class="hero-tag" style="color:#fbbf24;border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.1);">⭐ TOP PICK — FASTEST TO ฿1M</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Karaoke</span></span><span class="th">Mute<span class="accent">Karaoke</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Thai Smart TV Karaoke — Your Living Room, Your Stage</span>
+      <span class="th">คาราโอเกะ Smart TV ไทย — ห้องนั่งเล่นคุณ เวทีของคุณ</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">KTV bars charge ฿500-2,000 per night. With MuteKaraoke, it's ฿99/month. Android TV app with 50,000+ Thai songs — Luk Thung, Thai pop, Mor Lam, Isaan classics. Real-time vocal scoring via phone mic. Share your scores on LINE. No hardware box needed, no ads, no subscription-killing UX. Just sign in and sing.</span>
+      <span class="th">ห้องคาราโอเกะ KTV คิด ฿500-2,000 ต่อคืน MuteKaraoke เพียง ฿99/เดือน แอป Android TV พร้อมเพลงไทย 50,000+ เพลง — ลูกทุ่ง ไทยป๊อป หมอลำ ลำเพลินอีสาน ให้คะแนนเสียงแบบ real-time ผ่านไมค์โทรศัพท์ แชร์คะแนนบน LINE ไม่ต้องมีกล่องฮาร์ดแวร์ ไม่มีโฆษณา เข้าแล้วร้องได้เลย</span>
+    </p>
+    <div class="moat-badge">★★★★ MOAT LEVEL: HIGH — THAI CONTENT LIBRARY + REAL-TIME AUDIO SCORING</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">14M</span><span class="stat-label en">Thai households with Smart TV</span><span class="stat-label th">ครัวเรือนไทยที่มี Smart TV</span></div>
+      <div class="stat"><span class="stat-val">฿99</span><span class="stat-label en">per month subscription</span><span class="stat-label th">ต่อเดือน subscription</span></div>
+      <div class="stat"><span class="stat-val">6wk</span><span class="stat-label en">MVP build time</span><span class="stat-label th">เวลาสร้าง MVP</span></div>
+      <div class="stat"><span class="stat-val">4-8mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M รายได้</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CULTURAL FIT -->
+<section>
+  <div class="container">
+    <div class="section-label en">CULTURAL MEGA-FIT</div>
+    <div class="section-label th">ความเหมาะสมทางวัฒนธรรมระดับ MEGA</div>
+    <h2>
+      <span class="en">Karaoke Is Not a Hobby in Thailand — It's a Way of Life</span>
+      <span class="th">คาราโอเกะในไทยไม่ใช่แค่งานอดิเรก — มันคือวิถีชีวิต</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">฿50B+ Karaoke Industry</h3>
+            <h3 class="th">อุตสาหกรรมคาราโอเกะ ฿50B+</h3>
+            <p class="en">Thailand has 8,000+ KTV venues. Karaoke machines in every rural village. It's the #1 group entertainment activity across ALL social classes. Even hospitals have karaoke nights.</p>
+            <p class="th">ไทยมี KTV กว่า 8,000 แห่ง เครื่องคาราโอเกะในทุกหมู่บ้าน มันคือกิจกรรมบันเทิงกลุ่มอันดับ 1 ทุกระดับชั้นสังคม แม้แต่โรงพยาบาลยังมีคืนคาราโอเกะ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Smart TV Penetration</h3>
+            <h3 class="th">การเจาะตลาด Smart TV</h3>
+            <p class="en">70%+ of new TVs sold in Thailand are Smart TVs running Android TV. Samsung, LG, TCL, Hisense — all support Android TV apps. 14M+ households = massive install base already exists.</p>
+            <p class="th">70%+ ของทีวีใหม่ที่ขายในไทยคือ Smart TV ที่ใช้ Android TV Samsung, LG, TCL, Hisense — รองรับแอป Android TV ทั้งหมด ครัวเรือน 14M+ = ฐานการติดตั้งขนาดใหญ่มีอยู่แล้ว</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Zero Competition at ฿99/mo</h3>
+            <h3 class="th">ไม่มีคู่แข่งที่ ฿99/เดือน</h3>
+            <p class="en">KaraFun ($7/mo) has very few Thai songs. YouTube has karaoke videos but no scoring, ads everywhere. Physical karaoke machines cost ฿20,000-150,000. MuteKaraoke fills the $3 smart TV gap perfectly.</p>
+            <p class="th">KaraFun ($7/เดือน) มีเพลงไทยน้อยมาก YouTube มีวิดีโอคาราโอเกะแต่ไม่มีการให้คะแนน มีโฆษณาเต็มไปหมด เครื่องคาราโอเกะฟิสิคอลราคา ฿20,000-150,000 MuteKaraoke เติมช่องว่าง Smart TV ได้พอดีเป๊ะ</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Social Score Sharing via LINE</h3>
+            <h3 class="th">แชร์คะแนนสังคมผ่าน LINE</h3>
+            <p class="en">After each song, share your score to LINE group. "I got 97/100 on ใจสั่งมา!" → friends challenge you → they install the app → viral loop. Built-in sharing beats any marketing budget.</p>
+            <p class="th">หลังแต่ละเพลง แชร์คะแนนในกลุ่ม LINE "ฉันได้ 97/100 ในเพลงใจสั่งมา!" → เพื่อนท้าทาย → ดาวน์โหลดแอป → วงจรไวรัล การแชร์ในตัวดีกว่างบการตลาดใดๆ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Family Bonding Product</h3>
+            <h3 class="th">สินค้าสร้างความสัมพันธ์ครอบครัว</h3>
+            <p class="en">Thais spend weekends at home with family. 3-generation households are common. MuteKaraoke becomes the Saturday night activity. One subscription for the whole family — churn rate stays low.</p>
+            <p class="th">คนไทยใช้เวลาวันหยุดที่บ้านกับครอบครัว ครัวเรือน 3 รุ่นเป็นเรื่องปกติ MuteKaraoke กลายเป็นกิจกรรมคืนวันเสาร์ subscription เดียวสำหรับทั้งครอบครัว — อัตราการยกเลิกต่ำ</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="container">
+    <div class="section-label en">FEATURES</div>
+    <div class="section-label th">ฟีเจอร์</div>
+    <h2>
+      <span class="en">The Full KTV Experience at Home</span>
+      <span class="th">ประสบการณ์ KTV เต็มรูปแบบที่บ้าน</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🎵</div>
+        <h3 class="en">50,000+ Thai Songs</h3>
+        <h3 class="th">เพลงไทย 50,000+ เพลง</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Full catalog: Luk Thung, Thai pop, Mor Lam, Isaan, Thai rock, Thai country. Weekly new releases. Accurate lyrics sync. Song request queue.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">แค็ตตาล็อกครบ: ลูกทุ่ง ไทยป๊อป หมอลำ อีสาน ไทยร็อก ลูกกรุง เพลงใหม่รายสัปดาห์ ซิงก์เนื้อเพลงแม่นยำ คิวขอเพลง</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎤</div>
+        <h3 class="en">Real-Time Vocal Scoring</h3>
+        <h3 class="th">ให้คะแนนเสียงแบบ Real-Time</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Phone becomes wireless mic + scorer. AI measures pitch accuracy, rhythm, vibrato. 0-100 score after each song. Leaderboards, personal bests, improvement tracking.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">โทรศัพท์กลายเป็นไมค์ไร้สาย + เครื่องให้คะแนน AI วัดความแม่นยำของระดับเสียง จังหวะ วิบราโต คะแนน 0-100 หลังแต่ละเพลง ลีดเดอร์บอร์ด สถิติส่วนตัว ติดตามการพัฒนา</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h3 class="en">Multiplayer Duet Mode</h3>
+        <h3 class="th">โหมด Duet หลายคน</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">2-4 players on one TV. Split-screen lyrics. Team scores, battle mode. Remote play: friends join from their phone at home.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">2-4 คนบนทีวีเครื่องเดียว แสดงเนื้อเพลงแบบแยกหน้าจอ คะแนนทีม โหมดต่อสู้ เล่นระยะไกล: เพื่อนเข้าร่วมจากโทรศัพท์ที่บ้านได้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎬</div>
+        <h3 class="en">Record & Share</h3>
+        <h3 class="th">บันทึกและแชร์</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Record your performance with backing track. Share video clips to TikTok, Facebook, LINE. Built-in highlight reel of your best moments.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">บันทึกการแสดงพร้อม backing track แชร์วิดีโอคลิปไป TikTok, Facebook, LINE สรุป highlight เด็ดๆ ของคุณในตัว</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📺</div>
+        <h3 class="en">Works on Any Android TV</h3>
+        <h3 class="th">ใช้ได้กับ Android TV ทุกรุ่น</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Samsung, LG, TCL, Hisense, Sony, Xiaomi TV, Android TV box. Download from Play Store. No extra hardware. Setup in 2 minutes.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">Samsung, LG, TCL, Hisense, Sony, Xiaomi TV, Android TV box ดาวน์โหลดจาก Play Store ไม่ต้องมีฮาร์ดแวร์เพิ่ม ตั้งค่าใน 2 นาที</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎁</div>
+        <h3 class="en">Song Packs & Themes</h3>
+        <h3 class="th">แพ็คเพลงและธีม</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Curated packs: "Top 100 Luk Thung All Time," "Prayuth's Top Hits," "Thai Hits 2025." Festival themes: Songkran Special, New Year Eve Pack. Extra revenue stream.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">แพ็คคัดสรร: "Top 100 ลูกทุ่งตลอดกาล," "ฮิตไทย 2025" ธีมเทศกาล: สงกรานต์ Special, แพ็คคืนปีใหม่ รายได้เสริม</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2>
+      <span class="en">Cheaper Than One KTV Night — Every Month</span>
+      <span class="th">ถูกกว่าคืน KTV หนึ่งคืน — ทุกเดือน</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE TIER</div>
+        <div class="pricing-tier th">ฟรี</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">20 songs, ads</div>
+        <div class="pricing-unit th">20 เพลง มีโฆษณา</div>
+        <div class="pricing-desc en">Rotating free catalog. Experience the app, get hooked, upgrade.</div>
+        <div class="pricing-desc th">แค็ตตาล็อกฟรีหมุนเวียน ลองแอป ติดใจ อัพเกรด</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">BEST VALUE</div>
+        <div class="pricing-tier en">MONTHLY</div>
+        <div class="pricing-tier th">รายเดือน</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit en">per month</div>
+        <div class="pricing-unit th">ต่อเดือน</div>
+        <div class="pricing-desc en">Full 50K+ catalog, scoring, recording, social features. Family sharing for up to 4 accounts.</div>
+        <div class="pricing-desc th">แค็ตตาล็อก 50K+ ครบ ให้คะแนน บันทึก ฟีเจอร์สังคม แชร์ครอบครัวสูงสุด 4 บัญชี</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">ANNUAL</div>
+        <div class="pricing-tier th">รายปี</div>
+        <div class="pricing-price">฿799</div>
+        <div class="pricing-unit en">per year (save ฿389)</div>
+        <div class="pricing-unit th">ต่อปี (ประหยัด ฿389)</div>
+        <div class="pricing-desc en">All premium features + exclusive annual subscriber badge + early access to new songs.</div>
+        <div class="pricing-desc th">ฟีเจอร์พรีเมี่ยมทั้งหมด + ป้ายสมาชิกรายปีพิเศษ + เข้าถึงเพลงใหม่ก่อนใคร</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MATH</div>
+    <div class="section-label th">คณิตศาสตร์รายได้</div>
+    <h2>
+      <span class="en">1,300 Subscribers = ฿1M/Year</span>
+      <span class="th">สมาชิก 1,300 คน = ฿1M/ปี</span>
+    </h2>
+    <div class="two-col">
+      <div class="revenue-block">
+        <div class="revenue-row">
+          <span class="en">Monthly subs needed at ฿99</span>
+          <span class="th">สมาชิกรายเดือนที่ต้องการ</span>
+          <span class="revenue-val">842/mo</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Annual subs needed at ฿799</span>
+          <span class="th">สมาชิกรายปีที่ต้องการ</span>
+          <span class="revenue-val">1,252</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Target market (Smart TV HH)</span>
+          <span class="th">ตลาดเป้าหมาย (ครัวเรือน Smart TV)</span>
+          <span class="revenue-val">14,000,000</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Conversion needed</span>
+          <span class="th">Conversion ที่ต้องการ</span>
+          <span class="revenue-val">0.009% of market</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Time to ฿1M</span>
+          <span class="th">เวลาถึง ฿1M</span>
+          <span class="revenue-val">4-8 months</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3 class="en">Why This Wins</h3>
+        <h3 class="th">ทำไมถึงชนะ</h3>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="en">Subscription model = predictable MRR. Low churn (it's family entertainment — hard to cancel). Song packs = extra revenue. Partnership potential with Thai music labels. Thai smart TV market grows 20% YoY. Only need 0.009% of the market.</p>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="th">โมเดล subscription = MRR ที่คาดเดาได้ Churn ต่ำ (เป็นความบันเทิงครอบครัว — ยากที่จะยกเลิก) แพ็คเพลง = รายได้เสริม ศักยภาพความร่วมมือกับค่ายเพลงไทย ตลาด Smart TV ไทยโตปีละ 20% ต้องการแค่ 0.009% ของตลาด</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2 class="en">🎤 Turn Thailand's Living Rooms Into KTV</h2>
+    <h2 class="th">🎤 เปลี่ยนห้องนั่งเล่นไทยให้เป็น KTV</h2>
+    <p class="en">6-week MVP. Android TV + companion phone app. Ship before the next long holiday weekend.</p>
+    <p class="th">MVP 6 สัปดาห์ Android TV + แอปโทรศัพท์ companion ปล่อยก่อนวันหยุดยาวครั้งถัดไป</p>
+    <a href="index.html" class="back-link">← <span class="en">Back to MuteLab Ideas</span><span class="th">กลับไปที่ MuteLab Ideas</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB · IDEA #103 · MUTEKARAOKE · HW+B2C WAVE 1.5 · FEB 2026</p>
+  </div>
+</footer>
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => { b.classList.toggle('active', b.id === 'btn-' + lang); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteDao — AI Fortune Telling + Phone Sensors for Thai Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>:root{--bg:#0a0f0a;--surface:#0f1610;--surface2:#141e15;--surface3:#1a261b;--border:rgba(13,148,136,0.15);--border2:rgba(13,148,136,0.28);--text:#f0f5f0;--text2:#c0d0c0;--muted:#708070;--primary:#0d9488;--primary-light:#2dd4bf;--primary-pale:rgba(13,148,136,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--purple:#a855f7;--green:#10b981;--red:#ef4444}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6}.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(168,85,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.03) 1px,transparent 1px);background-size:48px 48px}.grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(168,85,247,0.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(245,158,11,0.05) 0%,transparent 60%)}.container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2}.lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface)}.lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'Space Mono',monospace}.lang-btn.active{background:var(--purple);color:#fff}body:not(.show-th) .th{display:none}body.show-th .en{display:none}nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,15,10,0.85);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem}.nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light)}.nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted)}.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem}.hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem}.hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--purple);background:rgba(168,85,247,0.1)}.idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted)}.hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;margin-bottom:0.5rem}.hero h1 .accent{color:var(--purple)}.hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem}.hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem}.hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem}.stat{display:flex;flex-direction:column;gap:0.2rem}.stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--purple)}.stat-label{font-size:0.75rem;color:var(--muted)}.score-banner{display:inline-flex;align-items:center;gap:1.2rem;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:1rem 1.8rem;margin-bottom:2rem}.score-val{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--purple)}.score-bar{width:140px;height:8px;background:var(--surface3);border-radius:99px;overflow:hidden}.score-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--secondary));border-radius:99px}section{padding:5rem 0;border-top:1px solid var(--border)}.section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--purple);margin-bottom:0.8rem;text-transform:uppercase}h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;margin-bottom:1.5rem}h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem}.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}@media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr}}.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem}.card:hover{border-color:var(--border2)}.card-icon{font-size:1.8rem;margin-bottom:0.8rem}.alert-box{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.3);border-radius:14px;padding:1.5rem;margin-bottom:2rem}.alert-title{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#c084fc;font-weight:700;margin-bottom:0.5rem}.pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(168,85,247,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem}.pain-emoji{font-size:1.4rem;flex-shrink:0}.pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem}.feature-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.4rem}.feature-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);flex-shrink:0;margin-top:0.45rem}.feature-item p{font-size:0.9rem;color:var(--text2);margin-top:0.2rem}.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-bottom:2.5rem}@media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}.pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative}.pricing-card.featured{border-color:var(--border2);background:var(--surface2)}.pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--purple);color:#fff;font-size:0.6rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace}.pricing-tier{font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem}.pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--purple);margin-bottom:0.2rem}.pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem}.pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5}.revenue-block{background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:1.5rem}.revenue-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.9rem}.revenue-row:last-child{border-bottom:none;font-weight:700;color:var(--purple)}.revenue-val{font-family:'Space Mono',monospace;color:var(--secondary-light)}.cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border)}.back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px}footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center}footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted2)}</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle"><button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button><button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button></div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #105</span>
+  <span class="nav-badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border-color:rgba(168,85,247,0.3);">🔮 HW+B2C</span>
+  <span class="nav-badge en">AI FORTUNE TELLING</span>
+  <span class="nav-badge th">AI ดูดวง</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🔮 THAI ASTROLOGY · PHONE SENSORS · AI</span>
+      <span class="hero-tag th">🔮 โหราศาสตร์ไทย · เซนเซอร์โทรศัพท์ · AI</span>
+      <span class="idea-num">WAVE 1.5 — HW+B2C RESEARCH — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Dao</span></span><span class="th">Mute<span class="accent">Dao</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Fortune Telling + Phone Sensors — ดูดวงไทย 2.0</span>
+      <span class="th">AI ดูดวง + เซนเซอร์โทรศัพท์ — ดูดวงไทย 2.0</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Fortune telling is a ฿10B+ industry in Thailand. Mainstream across all social classes. Thai people pay ฿300-3,000 per session. Duang Live app has 2,000+ fortune tellers. MuteDao: AI-powered fortune telling using phone sensors — palm camera scan, face reading, voice "energy" analysis, gyroscope crystal ball, birth chart from GPS. Thai astrology + ML. 4-8 months to ฿1M.</span>
+      <span class="th">การดูดวงเป็นอุตสาหกรรม ฿10B+ ในไทย ทุกชนชั้นดูดวง จ่าย ฿300-3,000 ต่อครั้ง แอป Duang Live มีหมอดู 2,000+ คน MuteDao: AI ดูดวงใช้เซนเซอร์โทรศัพท์ — สแกนฝ่ามือกล้อง อ่านใบหน้า วิเคราะห์พลังเสียง ลูกแก้วไจโรสโคป ดูชะตาจาก GPS โหราศาสตร์ไทย + ML 4-8 เดือนสู่ ฿1M</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">฿10B+</span><span class="stat-label en">fortune telling market</span><span class="stat-label th">ตลาดดูดวง</span></div>
+      <div class="stat"><span class="stat-val">฿300-3K</span><span class="stat-label en">per session price</span><span class="stat-label th">ราคาต่อครั้ง</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">AI + sensor apps</span><span class="stat-label th">แอป AI + เซนเซอร์</span></div>
+      <div class="stat"><span class="stat-val">3-5x</span><span class="stat-label en">viral coefficient</span><span class="stat-label th">viral coefficient</span></div>
+    </div>
+    <div class="score-banner">
+      <div><span class="score-val">39</span><span style="color:var(--muted)">/50</span></div>
+      <div><div class="score-bar"><div class="score-fill" style="width:78%"></div></div></div>
+      <div style="font-size:0.7rem;color:#c084fc;font-family:'Space Mono',monospace;">🔮 #4 RANKING · THAI CULTURE MOAT · 4 WEEKS MVP</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">🔮 THE CULTURAL INSIGHT</div>
+    <div class="section-label th">🔮 Insight ทางวัฒนธรรม</div>
+    <h2><span class="en">Fortune Telling Is Mainstream Thai Culture — ฿10B+ Industry</span><span class="th">ดูดวงเป็นวัฒนธรรมไทย — อุตสาหกรรม ฿10B+</span></h2>
+    <div class="alert-box">
+      <div class="alert-title">🔮 THAI FORTUNE TELLING IS NOT NICHE — IT'S MAINSTREAM</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">Every Thai newspaper has a horoscope section. Sanook.com (top Thai portal) has dedicated astrology. Duang Live app has 2,000+ fortune tellers. Thai people from all social classes visit fortune tellers before major decisions: marriage, business, travel. Willingness to pay: ฿300-3,000+ per session. There is ZERO AI-powered app using phone sensors creatively.</span>
+        <span class="th">หนังสือพิมพ์ไทยทุกฉบับมีคอลัมน์ดวง Sanook.com (พอร์ทัลใหญ่สุด) มีโหราศาสตร์ แอป Duang Live มีหมอดู 2,000+ คน คนไทยทุกชนชั้นไปหาหมอดูก่อนตัดสินใจ: แต่งงาน ธุรกิจ ท่องเที่ยว ยินดีจ่าย: ฿300-3,000+ ต่อครั้ง ไม่มีแอป AI ที่ใช้เซนเซอร์โทรศัพท์อย่างสร้างสรรค์เลย</span>
+      </p>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">📱</div>
+      <div class="pain-text">
+        <h3 class="en">Existing Apps Are Text-Based or Live Video — Not AI + Sensors</h3>
+        <h3 class="th">แอปที่มีเป็นข้อความหรือวิดีโอสด — ไม่ใช่ AI + เซนเซอร์</h3>
+        <p class="en">Duang Live: Connects to human fortune tellers (฿500-2,000/session). Horoscope apps: Generic daily predictions. No app uses phone camera for palm reading, microphone for voice analysis, gyroscope for "crystal ball" interaction, GPS for birth chart location.</p>
+        <p class="th">Duang Live: เชื่อมหมอดูคนจริง (฿500-2,000/ครั้ง) แอปดูดวง: ทำนายรายวันทั่วไป ไม่มีแอปใช้กล้องอ่านฝ่ามือ ไมค์วิเคราะห์เสียง ไจโรสโคปลูกแก้ว GPS ที่เกิด</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">💸</div>
+      <div class="pain-text">
+        <h3 class="en">Human Fortune Tellers Are Expensive and Inconvenient</h3>
+        <h3 class="th">หมอดูคนแพงและไม่สะดวก</h3>
+        <p class="en">Must travel to fortune teller. Wait in queue. Pay ฿300-3,000. Can only do once in a while. AI-powered app available 24/7 at ฿29-99 per reading. Same Thai astrology principles, instant results, shareable in LINE groups.</p>
+        <p class="th">ต้องเดินทางไปหาหมอดู รอคิว จ่าย ฿300-3,000 ทำได้นานๆ ครั้ง แอป AI ใช้ได้ 24/7 ราคา ฿29-99 หลักการโหราศาสตร์ไทยเดียวกัน ผลทันที แชร์ใน LINE กลุ่มได้</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SOLUTION</div>
+    <div class="section-label th">วิธีแก้</div>
+    <h2><span class="en">MuteDao: Thai Astrology + AI + Phone Sensors</span><span class="th">MuteDao: โหราศาสตร์ไทย + AI + เซนเซอร์โทรศัพท์</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">✋ Palm Reading via Camera</h3>
+          <h3 class="th">✋ อ่านฝ่ามือผ่านกล้อง</h3>
+          <p class="en">Point camera at palm → AI analyzes lines (heart, head, life, fate). Thai palmistry interpretation. "เส้นชีวิตยาว = อายุยืน" Personalized reading with Thai cultural context.</p>
+          <p class="th">ชี้กล้องที่ฝ่ามือ → AI วิเคราะห์เส้น (หัวใจ ศีรษะ ชีวิต ชะตา) ตีความตามโหราศาสตร์ไทย "เส้นชีวิตยาว = อายุยืน" ทำนายเฉพาะบุคคลพร้อมบริบทวัฒนธรรมไทย</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">👤 Face Reading (Physiognomy)</h3>
+          <h3 class="th">👤 อ่านใบหน้า (สัณฐานวิทยา)</h3>
+          <p class="en">AI analyzes facial features: forehead (intelligence), eyes (spirit), nose (wealth), mouth (relationships). Thai face reading tradition. "คิ้วชิดกัน = ขยัน"</p>
+          <p class="th">AI วิเคราะห์คุณลักษณะใบหน้า: หน้าผาก (ปัญญา) ตา (จิตใจ) จมูก (โชคลาภ) ปาก (ความสัมพันธ์) ตามประเพณีอ่านหน้าไทย "คิ้วชิดกัน = ขยัน"</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🎤 Voice "Energy" Analysis</h3>
+          <h3 class="th">🎤 วิเคราะห์ "พลังงาน" เสียง</h3>
+          <p class="en">Record voice → AI analyzes tone, rhythm, energy. Thai belief that voice reveals destiny. "เสียงแข็ง = เป็นผู้นำ" Fun, shareable readings.</p>
+          <p class="th">บันทึกเสียง → AI วิเคราะห์โทน จังหวะ พลังงาน ความเชื่อไทยว่าเสียงบอกชะตา "เสียงแข็ง = เป็นผู้นำ" สนุก แชร์ได้</p>
+        </div></div>
+      </div>
+      <div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">🔮 Crystal Ball via Gyroscope</h3>
+          <h3 class="th">🔮 ลูกแก้วผ่านไจโรสโคป</h3>
+          <p class="en">Shake phone → gyroscope detects motion → "crystal ball" reveals fortune. Interactive, mystical experience. "เขย่าโทรศัพท์ถามเรื่องรัก"</p>
+          <p class="th">เขย่าโทรศัพท์ → ไจโรสโคปตรวจจับการเคลื่อนไหว → "ลูกแก้ว" เปิดเผยดวง ประสบการณ์อินเทอร์แอคทีว์ ลึกลับ "เขย่าโทรศัพท์ถามเรื่องรัก"</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📍 Birth Chart from GPS</h3>
+          <h3 class="th">📍 ดูชะตาจาก GPS</h3>
+          <p class="en">Enter birth date + time → GPS finds birth location → AI generates Thai astrological chart. 12 ราศี + Thai-specific interpretations. Personalized predictions.</p>
+          <p class="th">ใส่วันเกิด + เวลา → GPS หาที่เกิด → AI สร้างแผนภูมิโหราศาสตร์ไทย 12 ราศี + ตีความเฉพาะไทย ทำนายเฉพาะบุคคล</p>
+        </div></div>
+        <div class="feature-item"><div class="feature-dot"></div><div>
+          <h3 class="en">📤 Share Readings in LINE</h3>
+          <h3 class="th">📤 แชร์ผลใน LINE</h3>
+          <p class="en">Every reading generates shareable image with prediction. "AI บอกว่าฉันจะรวย!" Viral loop through LINE groups. 3-5x viral coefficient.</p>
+          <p class="th">ทุกการทำนายสร้างภาพแชร์ได้พร้อมคำทำนาย "AI บอกว่าฉันจะรวย!" Viral loop ผ่าน LINE กลุ่ม Viral coefficient 3-5x</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2><span class="en">Per-Reading + Subscription — Thai Willingness to Pay Is Proven</span><span class="th">ต่อครั้ง + Subscription — คนไทยยินดีจ่าย</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">FREE</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit">daily horoscope</div>
+        <div class="pricing-desc en">Daily ราศี, basic palm scan. Teaser for paid features.</div>
+        <div class="pricing-desc th">ดวงรายวัน สแกนฝ่ามือพื้นฐาน ชวนให้ซื้อฟีเจอร์เพิ่ม</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier">SINGLE READING</div>
+        <div class="pricing-price">฿29-99</div>
+        <div class="pricing-unit">per detailed reading</div>
+        <div class="pricing-desc en">Full palm/face/voice analysis. Love, career, wealth, health. 10x cheaper than human fortune teller.</div>
+        <div class="pricing-desc th">วิเคราะห์ฝ่ามือ/หน้า/เสียงเต็ม ความรัก อาชีพ โชคลาภ สุขภาพ ถูกกว่าหมอดูคน 10 เท่า</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">UNLIMITED</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit">/month</div>
+        <div class="pricing-desc en">Unlimited readings, daily personalized predictions, priority features.</div>
+        <div class="pricing-desc th">ทำนายไม่จำกัด ทำนายรายวันเฉพาะบุคคล ฟีเจอร์ก่อนใคร</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <div class="revenue-row"><span>Month 3: 10,000 readings at ฿49 average</span><span class="revenue-val">฿490K/mo</span></div>
+      <div class="revenue-row"><span>Month 6: 25,000 readings + 2,000 subs</span><span class="revenue-val">฿1.2M/mo</span></div>
+      <div class="revenue-row"><span><strong>Year 1 Cumulative</strong></span><span class="revenue-val"><strong>฿9.5M</strong></span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">SCORING</div>
+    <div class="section-label th">คะแนน</div>
+    <h2><span class="en">39/50 — Thai Culture Is the Moat</span><span class="th">39/50 — วัฒนธรรมไทยคือ Moat</span></h2>
+    <p style="color:var(--text2);margin-bottom:1.5rem;">
+      <span class="en">Market: 9/10 · Problem: 8/10 · Competition: 8/10 · Build: 8/10 · Advantage: 6/10</span>
+      <span class="th">ตลาด: 9/10 · ปัญหา: 8/10 · การแข่งขัน: 8/10 · สร้าง: 8/10 · ข้อได้เปรียบ: 6/10</span>
+    </p>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">🇹🇭</div><h3>Thai Culture Moat</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Deep knowledge of Thai astrology, cultural beliefs, numerology. Not replicable by Western AI.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">ความรู้ลึกเรื่องโหราศาสตร์ไทย ความเชื่อทางวัฒนธรรม ศาสตร์ตัวเลข ก๊อปไม่ได้ด้วย AI ฝรั่ง</p></div>
+      <div class="card"><div class="card-icon">📱</div><h3>Phone Sensors</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Camera, mic, GPS, gyroscope — hardware people already own. No special device needed.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">กล้อง ไมค์ GPS ไจโรสโคป — ฮาร์ดแวร์ที่มีอยู่แล้ว ไม่ต้องซื้ออุปกรณ์เพิ่ม</p></div>
+      <div class="card"><div class="card-icon">🚀</div><h3>4 Weeks MVP</h3><p style="color:var(--text2);font-size:0.88rem;" class="en">Pre-trained CV models for palm/face. Thai astrology logic as rules engine. Fast to build.</p><p style="color:var(--text2);font-size:0.88rem;" class="th">โมเดล CV ที่ฝึกแล้วสำหรับฝ่ามือ/หน้า โลจิกโหราศาสตร์ไทยเป็น rules engine สร้างเร็ว</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">🔮 Your Destiny Awaits</span><span class="th">🔮 ชะตาของคุณรออยู่</span></h2>
+    <p><span class="en">MuteDao — AI Fortune Telling + Thai Astrology. Score: 39/50. 4-week MVP. 4-8 months to ฿1M. Thai culture is the moat.</span><span class="th">MuteDao — AI ดูดวง + โหราศาสตร์ไทย คะแนน: 39/50 MVP 4 สัปดาห์ 4-8 เดือนสู่ ฿1M วัฒนธรรมไทยคือ moat</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer><p>MUTELAB — WAVE 1.5 HW+B2C — IDEA #105 — MUTEDAO — AI FORTUNE TELLING — FEB 2026</p></footer>
+<script>function setLang(lang){document.body.classList.toggle('show-th',lang==='th');document.getElementById('btn-en').classList.toggle('active',lang==='en');document.getElementById('btn-th').classList.toggle('active',lang==='th');localStorage.setItem('lang',lang)}if(localStorage.getItem('lang')==='th')setLang('th')</script>
+</body>
+</html>

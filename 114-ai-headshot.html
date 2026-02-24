@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteShot — AI ถ่ายรูปโปรไฟล์มืออาชีพ ไม่ต้องไปถ่ายจริง</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0608;--surface:#140c10;--surface2:#1c1018;--border:rgba(236,72,153,0.12);--border2:rgba(236,72,153,0.28);--text:#fff0f5;--text2:#e0c0d0;--muted:#805070;--primary:#db2777;--primary-light:#f472b6;--primary-pale:rgba(219,39,119,0.08);--secondary:#8b5cf6;--secondary-light:#a78bfa;--green:#10b981;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(236,72,153,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 15%,rgba(219,39,119,0.07) 0%,transparent 55%),radial-gradient(ellipse at 80% 85%,rgba(139,92,246,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,6,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .feature-item{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.4rem;}
+  .feature-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-light);flex-shrink:0;margin-top:0.45rem;}
+  .feature-item p{font-size:0.9rem;color:var(--text2);margin-top:0.2rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comparison{display:flex;gap:2rem;align-items:center;justify-content:center;margin:2rem 0;}
+  .comp-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center;min-width:200px;}
+  .comp-label{font-size:0.7rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:0.4rem;}
+  .comp-price{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;margin-bottom:0.3rem;}
+  .comp-note{font-size:0.75rem;color:var(--text2);}
+  .vs{font-family:'Space Mono',monospace;font-size:1.5rem;color:var(--muted);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #114</span>
+  <span class="nav-badge" style="background:rgba(236,72,153,0.15);color:#f472b6;border-color:rgba(236,72,153,0.3);">📸 AI HEADSHOTS · PROFESSIONAL PHOTOS</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">📸 AI HEADSHOTS · LINKEDIN · CORPORATE PHOTOS</span>
+      <span class="hero-tag th">📸 AI Headshots · LinkedIn · รูปถ่าย Corporate</span>
+      <span class="idea-num">SPRINT #114 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Shot</span></span><span class="th">Mute<span class="accent">Shot</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Professional Headshots for Thai Professionals — No Photoshoot Required</span>
+      <span class="th">AI ถ่ายรูปโปรไฟล์มืออาชีพสำหรับคนไทย — ไม่ต้องไปถ่ายจริง</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Professional photographers in Thailand charge ฿5,000-15,000 for a headshot session. You need to book, travel, spend 2-3 hours. MuteShot: upload 5-10 selfies → get 40+ professional headshots in 60 minutes. Perfect for LinkedIn, company websites, speaker profiles — at 1/5th the cost.</span>
+      <span class="th">ช่างภาพมืออาชีพในไทยคิด ฿5,000-15,000 ต่อเซสชั่นถ่าย headshot ต้องจอง เดินทาง ใช้เวลา 2-3 ชั่วโมง MuteShot: อัปโหลด selfie 5-10 รูป → ได้ headshot มืออาชีพ 40+ รูปใน 60 นาที เหมาะสำหรับ LinkedIn เว็บบริษัท โปรไฟล์วิทยากร — ในราคา 1/5</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">60 min</span><span class="stat-label en">delivery time</span><span class="stat-label th">เวลาส่งมอบ</span></div>
+      <div class="stat"><span class="stat-val">40+</span><span class="stat-label en">headshots per session</span><span class="stat-label th">headshots ต่อเซสชั่น</span></div>
+      <div class="stat"><span class="stat-val">฿990</span><span class="stat-label en">vs ฿5K+ photographer</span><span class="stat-label th">เทียบ ฿5K+ ช่างภาพ</span></div>
+      <div class="stat"><span class="stat-val">$300K</span><span class="stat-label en">HeadshotPro revenue/month</span><span class="stat-label th">รายได้ HeadshotPro/เดือน</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">HOW IT WORKS</div>
+    <div class="section-label th">วิธีการใช้งาน</div>
+    <h2><span class="en">From Selfie to Professional Headshot in 3 Steps</span><span class="th">จาก Selfie สู่ Headshot มืออาชีพใน 3 ขั้นตอน</span></h2>
+    <div class="three-col">
+      <div class="card"><div class="card-icon">📤</div>
+        <h3 class="en">Step 1: Upload 5-10 Selfies</h3>
+        <h3 class="th">ขั้นตอน 1: อัปโหลด Selfie 5-10 รูป</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Good lighting, face clearly visible, different angles/expressions. No need to be perfect — AI works with everyday photos.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">แสงดี เห็นใบหน้าชัดเจน มุม/สีหน้าต่างๆ ไม่ต้องสมบูรณ์แบบ — AI ทำงานกับรูปธรรมดาได้</p>
+      </div>
+      <div class="card"><div class="card-icon">🎨</div>
+        <h3 class="en">Step 2: Choose Your Style</h3>
+        <h3 class="th">ขั้นตอน 2: เลือกสไตล์ของคุณ</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Corporate, startup casual, creative, academic, executive. Thai business context styles. Choose background color, clothing suggestions.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Corporate startup สบายๆ ครีเอทีฟ วิชาการ ผู้บริหาร สไตล์บริบทธุรกิจไทย เลือกสีพื้นหลัง คำแนะนำเสื้อผ้า</p>
+      </div>
+      <div class="card"><div class="card-icon">✨</div>
+        <h3 class="en">Step 3: Download 40+ Headshots</h3>
+        <h3 class="th">ขั้นตอน 3: ดาวน์โหลด 40+ Headshots</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">High-resolution (4K) images ready for LinkedIn, company website, business cards, speaker bios. Multiple backgrounds and outfits.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">รูปความละเอียดสูง (4K) พร้อมสำหรับ LinkedIn เว็บบริษัท นามบัตร ประวัติวิทยากร พื้นหลังและชุดหลายแบบ</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">COMPARISON</div>
+    <div class="section-label th">เปรียบเทียบ</div>
+    <h2><span class="en">Professional Results at 1/5th the Cost</span><span class="th">ผลลัพธ์มืออาชีพในราคา 1/5</span></h2>
+    <div class="comparison">
+      <div class="comp-box">
+        <div class="comp-label en">TRADITIONAL PHOTOGRAPHER</div>
+        <div class="comp-label th">ช่างภาพแบบดั้งเดิม</div>
+        <div class="comp-price" style="color:var(--red);">฿5,000-15,000</div>
+        <div class="comp-note en">2-3 hours • 10-20 photos • Book weeks ahead • Travel to studio</div>
+        <div class="comp-note th">2-3 ชม. • 10-20 รูป • จองล่วงหน้าหลายสัปดาห์ • เดินทางไปสตูดิโอ</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="comp-box" style="border-color:var(--primary);background:var(--primary-pale);">
+        <div class="comp-label en">MUTESHOT AI</div>
+        <div class="comp-label th">MuteShot AI</div>
+        <div class="comp-price" style="color:var(--primary-light);">฿990</div>
+        <div class="comp-note en">60 minutes • 40+ photos • Upload anytime • From home</div>
+        <div class="comp-note th">60 นาที • 40+ รูป • อัปโหลดได้ตลอด • จากที่บ้าน</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div><div class="section-label th">ราคา</div>
+    <h2><span class="en">One-Time Purchase — No Subscription</span><span class="th">ซื้อครั้งเดียว — ไม่มีสมาชิก</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card"><div class="pricing-tier">BASIC</div><div class="pricing-price">฿990</div><div class="pricing-unit en">one-time</div><div class="pricing-unit th">ครั้งเดียว</div><div class="pricing-desc en">40+ headshots, 10 backgrounds, 5 outfits, 60-minute delivery, high resolution downloads.</div><div class="pricing-desc th">40+ headshots พื้นหลัง 10 แบบ ชุด 5 แบบ ส่งใน 60 นาที ดาวน์โหลดความละเอียดสูง</div></div>
+      <div class="pricing-card featured"><div class="pricing-badge">MOST POPULAR</div><div class="pricing-tier">PROFESSIONAL</div><div class="pricing-price">฿1,490</div><div class="pricing-unit en">one-time</div><div class="pricing-unit th">ครั้งเดียว</div><div class="pricing-desc en">80+ headshots, 20 backgrounds, 10 outfits, 30-minute delivery, Thai business styles, LinkedIn banner included.</div><div class="pricing-desc th">80+ headshots พื้นหลัง 20 แบบ ชุด 10 แบบ ส่งใน 30 นาที สไตล์ธุรกิจไทย รวมแบนเนอร์ LinkedIn</div></div>
+      <div class="pricing-card"><div class="pricing-tier">TEAM / COMPANY</div><div class="pricing-price">฿690</div><div class="pricing-unit en">per person (min 10)</div><div class="pricing-unit th">/คน (ขั้นต่ำ 10 คน)</div><div class="pricing-desc en">Team bundle pricing. Consistent style across all headshots. Company background options. Dashboard for HR to manage.</div><div class="pricing-desc th">ราคาบันเดิลทีม สไตล์สม่ำเสมอทุก headshot ตัวเลือกพื้นหลังบริษัท Dashboard สำหรับ HR จัดการ</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">Professional Headshots for Every Thai Professional</span><span class="th">Headshot มืออาชีพสำหรับทุกคนไทย</span></h2>
+  <p><span class="en">MuteShot — AI-powered professional photos. No studio, no photographer, no hassle.</span><span class="th">MuteShot — รูปถ่ายมืออาชีพด้วย AI ไม่ต้องมีสตูดิโอ ไม่ต้องมีช่างภาพ ไม่ยุ่งยาก</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #114 — MUTESHOT — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>

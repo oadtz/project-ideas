@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteDuang — AI Fortune Telling via Phone Camera</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a080f;
+    --surface: #100e18;
+    --surface2: #161420;
+    --surface3: #1c1a2a;
+    --border: rgba(217,70,239,0.15);
+    --border2: rgba(217,70,239,0.3);
+    --text: #f0eefc;
+    --text2: #c0badc;
+    --muted: #706888;
+    --muted2: #524a68;
+    --primary: #d946ef;
+    --primary-light: #e879f9;
+    --primary-pale: rgba(217,70,239,0.08);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --green: #10b981;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(217,70,239,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(217,70,239,0.09) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--primary-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(10,8,15,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); box-shadow: 0 4px 24px rgba(217,70,239,0.1); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; }
+  @media(max-width:900px) { .pricing-grid { grid-template-columns: repeat(2,1fr); } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .cta-section { text-align: center; padding: 5rem 0 6rem; border-top: 1px solid var(--border); }
+  .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 0.8rem 1.8rem; border: 1px solid var(--border2); border-radius: 10px; transition: all 0.2s; }
+  .back-link:hover { background: var(--primary-pale); }
+  footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; }
+  footer p { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted2); letter-spacing: 0.06em; }
+  .thai-badge { display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(217,70,239,0.12); border: 1px solid var(--border2); border-radius: 99px; padding: 0.4rem 1rem; font-size: 0.75rem; font-family: 'Space Mono', monospace; color: var(--primary-light); font-weight: 700; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #104</span>
+  <span class="nav-badge" style="background:rgba(217,70,239,0.15);color:#e879f9;border-color:rgba(217,70,239,0.35);">🔮 B2C · CAMERA + SENSORS</span>
+  <span class="nav-badge en">WAVE 1.5: HW+B2C</span>
+  <span class="nav-badge th">เวฟ 1.5: HW+B2C</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag">🔮 AI FORTUNE TELLING · THAI ASTROLOGY · ดูดวง</span>
+      <span class="idea-num">SPRINT #104 — FEB 24, 2026</span>
+      <span class="hero-tag" style="color:#fbbf24;border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.1);">🇹🇭 UNIQUELY THAI</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Duang</span></span><span class="th">Mute<span class="accent">ดวง</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">AI Fortune Telling via Camera, Sensors & Thai Astrology</span>
+      <span class="th">ดูดวง AI ผ่านกล้อง เซ็นเซอร์ และโหราศาสตร์ไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Fortune telling (ดูดวง) is a ฿10 billion industry in Thailand — and everyone participates. MuteDuang turns your phone into a cosmic oracle: palm reading via camera, face reading AI, birth chart from GPS birth location, gyroscope crystal ball shake. Thai astrology algorithms trained on 50,000+ readings. Physical fortune tellers charge ฿300-3,000 per session. We charge ฿29-99. And we're available at 3am.</span>
+      <span class="th">การดูดวงเป็นอุตสาหกรรมมูลค่า ฿10,000 ล้านในไทย — และทุกคนมีส่วนร่วม MuteDuang เปลี่ยนโทรศัพท์ของคุณให้เป็นเทพทำนาย: อ่านลายมือผ่านกล้อง AI อ่านใบหน้า ดูดาวจากตำแหน่ง GPS วันเกิด เขย่าลูกแก้วผ่าน gyroscope อัลกอริทึมโหราศาสตร์ไทยเทรนจากการทำนาย 50,000+ ครั้ง หมอดูฟิสิคอลเก็บ ฿300-3,000 ต่อเซสชัน เราเก็บ ฿29-99 และเราพร้อมให้บริการตี 3</span>
+    </p>
+    <div class="thai-badge">🔮 ดูดวง MARKET IS ฿10B+ IN THAILAND — ALL CLASSES PARTICIPATE</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">฿10B+</span><span class="stat-label en">Thai fortune telling market</span><span class="stat-label th">ตลาดดูดวงไทย</span></div>
+      <div class="stat"><span class="stat-val">฿29</span><span class="stat-label en">per reading (impulse buy)</span><span class="stat-label th">ต่อการทำนาย (ซื้อตามใจ)</span></div>
+      <div class="stat"><span class="stat-val">4wk</span><span class="stat-label en">MVP build time</span><span class="stat-label th">เวลาสร้าง MVP</span></div>
+      <div class="stat"><span class="stat-val">4-8mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M รายได้</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section>
+  <div class="container">
+    <div class="section-label en">THE MARKET — ดูดวง IS MAINSTREAM</div>
+    <div class="section-label th">ตลาด — ดูดวงเป็นกระแสหลัก</div>
+    <h2>
+      <span class="en">Fortune Telling Is Thailand's National Pastime — Across All Classes</span>
+      <span class="th">การดูดวงคือกิจกรรมยามว่างแห่งชาติไทย — ทุกชั้นสังคม</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Proven Massive Demand</h3>
+            <h3 class="th">อุปสงค์ขนาดใหญ่ที่พิสูจน์แล้ว</h3>
+            <p class="en">Duang Live app: 2,000+ live fortune tellers, thousands of daily sessions. Sanook.com's horoscope section is their #2 traffic source. Thai people pay ฿300-3,000 for a single in-person reading — routinely.</p>
+            <p class="th">แอป Duang Live: หมอดูสด 2,000+ คน เซสชันรายวันนับพัน คอลัมน์ดูดวงของ Sanook.com เป็นแหล่ง traffic อันดับ 2 คนไทยจ่าย ฿300-3,000 สำหรับการดูดวงตัวต่อตัว — เป็นประจำ</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">No Sensor-Based App Exists</h3>
+            <h3 class="th">ยังไม่มีแอปที่ใช้เซ็นเซอร์</h3>
+            <p class="en">All existing apps are text horoscopes or live video with human fortune tellers. No one has combined phone camera ML (palm reading, face reading) with Thai astrology. This is a genuine gap.</p>
+            <p class="th">แอปที่มีอยู่ทั้งหมดเป็นดูดวงแบบข้อความหรือวิดีโอสดกับหมอดูมนุษย์ ยังไม่มีใครรวม ML กล้องโทรศัพท์ (อ่านลายมือ อ่านใบหน้า) กับโหราศาสตร์ไทย นี่คือช่องว่างจริงๆ</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Midnight Use Case</h3>
+            <h3 class="th">Use Case ตอนดึก</h3>
+            <p class="en">Anxious about a decision? Worried about love? Can't sleep? Physical fortune tellers close at 8pm. MuteDuang is open 24/7. This is when users are most emotionally driven — highest conversion rate.</p>
+            <p class="th">กังวลเกี่ยวกับการตัดสินใจ? กลุ้มใจเรื่องความรัก? นอนไม่หลับ? หมอดูฟิสิคอลปิดตี 2 ทุ่ม MuteDuang เปิด 24/7 นี่คือเวลาที่ผู้ใช้ขับเคลื่อนด้วยอารมณ์มากที่สุด — อัตรา conversion สูงสุด</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <div>
+            <h3 class="en">Screenshot Viral Loop</h3>
+            <h3 class="th">ลูปไวรัลจากสกรีนช็อต</h3>
+            <p class="en">"AI read my palm and said I'll find love before April! 😮" → screenshot → LINE group → friends install. The shock/delight factor is built in to every reading.</p>
+            <p class="th">"AI อ่านลายมือแล้วบอกว่าจะเจอรักก่อนเมษา! 😮" → สกรีนช็อต → กลุ่ม LINE → เพื่อนติดตั้ง ปัจจัยช็อก/ดีใจมีอยู่ในทุกการทำนาย</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="container">
+    <div class="section-label en">READING MODES</div>
+    <div class="section-label th">โหมดการทำนาย</div>
+    <h2>
+      <span class="en">Every Sensor on Your Phone — Put to Mystical Use</span>
+      <span class="th">ทุกเซ็นเซอร์ในโทรศัพท์ของคุณ — ใช้เพื่อลึกลับ</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🤚</div>
+        <h3 class="en">Palm Reading (Camera)</h3>
+        <h3 class="th">อ่านลายมือ (กล้อง)</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Point camera at palm. AI detects life line, heart line, head line, fate line. Cross-references with Thai palmistry traditions. Personalized Thai-language reading.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ชี้กล้องที่ฝ่ามือ AI ตรวจจับเส้นชีวิต เส้นหัวใจ เส้นความคิด เส้นชะตา อ้างอิงกับประเพณีการดูลายมือไทย การทำนายส่วนตัวเป็นภาษาไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">😊</div>
+        <h3 class="en">Face Reading (Camera)</h3>
+        <h3 class="th">อ่านใบหน้า (กล้อง)</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Chinese/Thai face reading: forehead shape, eyebrow arch, nose prominence, jawline. AI maps 68 facial landmarks. "Your nose indicates financial luck in 2026."</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">การดูใบหน้าจีน/ไทย: รูปหน้าผาก ส่วนโค้งคิ้ว จมูก เส้นกราม AI แมป 68 จุดสำคัญบนใบหน้า "จมูกของคุณบ่งชี้โชคลาภทางการเงินในปี 2569"</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⭐</div>
+        <h3 class="en">Thai Birth Chart (GPS)</h3>
+        <h3 class="th">ดวงชะตาไทย (GPS)</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Enter birth date, GPS confirms birth location. AI generates traditional Thai horoscope (โหราศาสตร์ไทย) + Western chart fusion. Daily transits, lucky numbers, auspicious times.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ใส่วันเกิด GPS ยืนยันสถานที่เกิด AI สร้างดวงชะตาไทยแบบดั้งเดิม (โหราศาสตร์ไทย) + ผสมดาวตะวันตก ดาวเคลื่อนรายวัน เลขมงคล เวลามงคล</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔮</div>
+        <h3 class="en">Crystal Ball Shake (Gyroscope)</h3>
+        <h3 class="th">เขย่าลูกแก้ว (Gyroscope)</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Focus on your question. Shake the phone. AI uses gyroscope motion data + timestamp entropy to generate a mystical answer. Satisfying UX, surprisingly addictive.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">โฟกัสที่คำถาม เขย่าโทรศัพท์ AI ใช้ข้อมูลการเคลื่อนไหว gyroscope + entropy เวลาเพื่อสร้างคำตอบลึกลับ UX ที่น่าพึงพอใจ ติดใจแบบไม่คาดคิด</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3 class="en">Voice Energy Reading (Mic)</h3>
+        <h3 class="th">อ่านพลังงานเสียง (ไมค์)</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Speak your name and question in Thai. AI analyzes vocal frequency, pitch, energy patterns. "Your voice energy today is 72% — lucky for business, avoid travel."</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">พูดชื่อและคำถามเป็นภาษาไทย AI วิเคราะห์ความถี่เสียง ระดับเสียง รูปแบบพลังงาน "พลังงานเสียงของคุณวันนี้ 72% — มงคลสำหรับธุรกิจ หลีกเลี่ยงการเดินทาง"</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎴</div>
+        <h3 class="en">Tarot + Lottery Numbers</h3>
+        <h3 class="th">ไพ่ทาโร่ + เลขสลาก</h3>
+        <p style="font-size:0.9rem;color:var(--text2);" class="en">Digital tarot optimized for Thai questions. AI-generated "lucky numbers" for the lottery draw. Thai people spend ฿60B/year on lottery — this feature drives massive repeat usage.</p>
+        <p style="font-size:0.9rem;color:var(--text2);" class="th">ไพ่ทาโร่ดิจิทัลปรับแต่งสำหรับคำถามไทย "เลขมงคล" ที่สร้างโดย AI สำหรับงวดสลาก คนไทยใช้ ฿60B/ปีกับสลากกินแบ่ง — ฟีเจอร์นี้ขับ repeat usage ขนาดใหญ่</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2>
+      <span class="en">฿29 Readings — Cheaper Than a Cup of Coffee, More Satisfying</span>
+      <span class="th">การทำนาย ฿29 — ถูกกว่ากาแฟหนึ่งแก้ว ได้ความพึงพอใจมากกว่า</span>
+    </h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE DAILY</div>
+        <div class="pricing-tier th">ฟรีรายวัน</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">daily horoscope + 1 palm scan</div>
+        <div class="pricing-unit th">ดวงรายวัน + อ่านลายมือ 1 ครั้ง</div>
+        <div class="pricing-desc en">Enough to hook. Not enough to satisfy. Creates daily opening habit.</div>
+        <div class="pricing-desc th">พอที่จะดึงดูด ไม่พอที่จะพึงพอใจ สร้างนิสัยเปิดรายวัน</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">IMPULSE BUY</div>
+        <div class="pricing-tier en">SINGLE READING</div>
+        <div class="pricing-tier th">อ่านครั้งเดียว</div>
+        <div class="pricing-price">฿29</div>
+        <div class="pricing-unit en">per reading session</div>
+        <div class="pricing-unit th">ต่อเซสชันการทำนาย</div>
+        <div class="pricing-desc en">Palm or face reading, detailed. One-time purchase, no commitment. The core conversion.</div>
+        <div class="pricing-desc th">อ่านลายมือหรือใบหน้า แบบละเอียด ซื้อครั้งเดียว ไม่ผูกมัด การแปลงหลัก</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">DESTINY DEEP DIVE</div>
+        <div class="pricing-tier th">วิเคราะห์ชะตาลึก</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit en">full multi-sensor reading</div>
+        <div class="pricing-unit th">อ่านหลายเซ็นเซอร์ครบ</div>
+        <div class="pricing-desc en">Palm + face + birth chart + voice + lucky numbers. Full destiny profile. Share-worthy result card.</div>
+        <div class="pricing-desc th">ลายมือ + ใบหน้า + ดวงชะตา + เสียง + เลขมงคล โปรไฟล์ชะตาครบถ้วน การ์ดผลลัพธ์ที่น่าแชร์</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">MONTHLY ORACLE</div>
+        <div class="pricing-tier th">นักพยากรณ์รายเดือน</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit en">per month unlimited</div>
+        <div class="pricing-unit th">ต่อเดือน ไม่จำกัด</div>
+        <div class="pricing-desc en">Unlimited readings + daily personalized predictions + lottery number alerts + priority support.</div>
+        <div class="pricing-desc th">อ่านไม่จำกัด + คำทำนายส่วนตัวรายวัน + แจ้งเตือนเลขสลาก + support ลำดับความสำคัญ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE -->
+<section>
+  <div class="container">
+    <div class="section-label en">REVENUE MATH</div>
+    <div class="section-label th">คณิตศาสตร์รายได้</div>
+    <h2>
+      <span class="en">Lottery Numbers Alone Drive Weekly Re-Engagement</span>
+      <span class="th">เลขสลากเพียงอย่างเดียวขับการกลับมาใช้ทุกสัปดาห์</span>
+    </h2>
+    <div class="two-col">
+      <div class="revenue-block">
+        <div class="revenue-row">
+          <span class="en">Readings at ฿29 needed for ฿1M</span>
+          <span class="th">การทำนายที่ต้องการที่ ฿29</span>
+          <span class="revenue-val">34,483</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Destiny reads at ฿99 needed</span>
+          <span class="th">การอ่านชะตาที่ต้องการที่ ฿99</span>
+          <span class="revenue-val">10,101</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Monthly subs at ฿299 needed</span>
+          <span class="th">สมาชิกรายเดือนที่ต้องการ</span>
+          <span class="revenue-val">280/mo</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Thai lottery draw frequency</span>
+          <span class="th">ความถี่งวดสลากไทย</span>
+          <span class="revenue-val">2x per month</span>
+        </div>
+        <div class="revenue-row">
+          <span class="en">Time to ฿1M</span>
+          <span class="th">เวลาถึง ฿1M</span>
+          <span class="revenue-val">4-8 months</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💡</div>
+        <h3 class="en">The Lottery Flywheel</h3>
+        <h3 class="th">ล้อหมุนสลาก</h3>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="en">Thai lottery draws every 1st and 16th. Before each draw, millions of Thais seek lucky numbers. If MuteDuang becomes "the AI that gives lottery numbers," we get 2 viral spikes every month with zero marketing spend. Combine with sharing mechanic = exponential growth.</p>
+        <p style="font-size:0.88rem;color:var(--text2);line-height:1.7;" class="th">สลากไทยออกทุกวันที่ 1 และ 16 ก่อนแต่ละงวด คนไทยล้านคนหาเลขมงคล ถ้า MuteDuang กลายเป็น "AI ที่ให้เลขสลาก" เราจะได้ spike ไวรัล 2 ครั้งทุกเดือนโดยไม่ต้องใช้งบการตลาด รวมกับกลไกการแชร์ = การเติบโตแบบเอกซ์โปเนนเชียล</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2 class="en">🔮 ดูดวง Meets AI — A Match Made in Heaven (and the Stars)</h2>
+    <h2 class="th">🔮 ดูดวงเจอ AI — คู่ที่ถูกชะตาจากฟ้า (และดวงดาว)</h2>
+    <p class="en">4-week MVP. Camera + gyroscope + Thai astrology logic. Ship before lottery draw on the 1st.</p>
+    <p class="th">MVP 4 สัปดาห์ กล้อง + gyroscope + ตรรกะโหราศาสตร์ไทย ปล่อยก่อนงวดสลากวันที่ 1</p>
+    <a href="index.html" class="back-link">← <span class="en">Back to MuteLab Ideas</span><span class="th">กลับไปที่ MuteLab Ideas</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB · IDEA #104 · MUTEDUANG · HW+B2C WAVE 1.5 · FEB 2026</p>
+  </div>
+</footer>
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.querySelectorAll('.lang-btn').forEach(b => { b.classList.toggle('active', b.id === 'btn-' + lang); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteHR — ชุดเอกสาร HR กฎหมายแรงงานไทย ใช้ได้ทันที</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080f;--surface:#0d0d1a;--surface2:#12122a;--border:rgba(168,85,247,0.12);--border2:rgba(168,85,247,0.28);--text:#f0f0ff;--text2:#c0c0e0;--muted:#6060a0;--primary:#9333ea;--primary-light:#c084fc;--primary-pale:rgba(147,51,234,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--green:#10b981;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(168,85,247,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 10%,rgba(147,51,234,0.07) 0%,transparent 55%),radial-gradient(ellipse at 85% 90%,rgba(245,158,11,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,8,15,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .doc-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:0.9rem 1.2rem;margin-bottom:0.7rem;}
+  .doc-icon{font-size:1.2rem;flex-shrink:0;}
+  .doc-text{font-size:0.88rem;color:var(--text2);}
+  .doc-name{font-weight:700;color:var(--text);margin-bottom:0.15rem;}
+  .alert-box{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:1.5rem;margin-bottom:2rem;}
+  .alert-title{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#f87171;font-weight:700;margin-bottom:0.5rem;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+  .kit-price{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--primary-light);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #112</span>
+  <span class="nav-badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border-color:rgba(168,85,247,0.3);">👥 HR TEMPLATES · THAI LABOR LAW</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">👥 HR DOCUMENTS · LABOR LAW · COMPLIANCE</span>
+      <span class="hero-tag th">👥 เอกสาร HR · กฎหมายแรงงาน · Compliance</span>
+      <span class="idea-num">SPRINT #112 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">HR</span></span><span class="th">Mute<span class="accent">HR</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Complete Thai Labor Law HR Document Templates — Compliant, Thai-Language, Ready to Use</span>
+      <span class="th">ชุดเอกสาร HR กฎหมายแรงงานไทยครบถ้วน — Compliant ภาษาไทย พร้อมใช้ทันที</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Free HR templates on Pantip are dangerously outdated. Wrong termination = lawsuit. Wrong employment contract = ฿1M+ penalty. Law firms charge ฿10,000-30,000 per document. MuteHR delivers Thai labor law compliant employment documents at 1/10th the price.</span>
+      <span class="th">เทมเพลต HR ฟรีบน Pantิตล้าสมัยอันตราย ไล่ออกผิดวิธี = ถูกฟ้อง สัญญาจ้างผิด = ค่าปรับ ฿1M+ สำนักงานกฎหมายคิด ฿10,000-30,000 ต่อเอกสาร MuteHR ให้เอกสารการจ้างงานที่ comply กฎหมายแรงงานไทยในราคา 1/10</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">3.1M</span><span class="stat-label en">Thai SMEs need HR docs</span><span class="stat-label th">SME ไทยต้องการเอกสาร HR</span></div>
+      <div class="stat"><span class="stat-val">10+ พนักงาน</span><span class="stat-label en">= ต้องมีข้อบังคับเกี่ยวกับการทำงาน</span><span class="stat-label th">= ต้องมีข้อบังคับเกี่ยวกับการทำงาน</span></div>
+      <div class="stat"><span class="stat-val">฿4,990</span><span class="stat-label en">complete HR kit</span><span class="stat-label th">ชุด HR ครบถ้วน</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="alert-box">
+      <div class="alert-title">⚠️ ความเสี่ยงของเอกสาร HR ฟรี</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;" class="en">Wrong termination documents can result in wrongful dismissal claims up to <strong>3+ years of back wages</strong> plus ฿100,000-500,000+ in damages. Using a template from 2018 in 2026 when labor law changed in 2022 is a lawsuit waiting to happen. MuteHR templates are updated for 2026 Thai Labor Protection Act.</p>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;" class="th">เอกสารไล่ออกผิดอาจส่งผลให้ถูกฟ้องร้องการเลิกจ้างโดยมิชอบสูงถึง <strong>3+ ปีของค่าจ้างย้อนหลัง</strong> บวกค่าเสียหาย ฿100,000-500,000+ การใช้เทมเพลตจากปี 2561 ในปี 2569 เมื่อกฎหมายแรงงานเปลี่ยนปี 2565 เป็นการรอฟ้อง เทมเพลต MuteHR อัปเดตสำหรับพ.ร.บ.คุ้มครองแรงงานไทย 2569</p>
+    </div>
+    <div class="section-label en">WHAT'S INCLUDED</div>
+    <div class="section-label th">มีอะไรบ้าง</div>
+    <h2><span class="en">Every HR Document Your Company Needs</span><span class="th">ทุกเอกสาร HR ที่บริษัทคุณต้องการ</span></h2>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="en">📄 Employment & Hiring</h3>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="th">📄 การจ้างงาน</h3>
+        <div class="doc-item"><div class="doc-icon">📋</div><div class="doc-text"><div class="doc-name en">Employment Contract (Full-time Thai)</div><div class="doc-name th">สัญญาจ้างงาน (Full-time ไทย)</div><span class="en">Labor Act compliant with probation, salary, benefits, termination clauses. Thai-language only.</span><span class="th">Comply พ.ร.บ.แรงงาน พร้อมทดลองงาน เงินเดือน สวัสดิการ เงื่อนไขการเลิกจ้าง ภาษาไทย</span></div></div>
+        <div class="doc-item"><div class="doc-icon">📝</div><div class="doc-text"><div class="doc-name en">ข้อบังคับเกี่ยวกับการทำงาน (Work Regulations)</div><div class="doc-name th">ข้อบังคับเกี่ยวกับการทำงาน</div><span class="en">Required by law for 10+ employees. Hours, leave, overtime, discipline, grievance procedures.</span><span class="th">จำเป็นตามกฎหมายสำหรับ 10+ พนักงาน ชั่วโมง ลา โอที วินัย ขั้นตอนร้องเรียน</span></div></div>
+        <div class="doc-item"><div class="doc-icon">📑</div><div class="doc-text"><div class="doc-name en">Job Offer Letter (Thai)</div><div class="doc-name th">จดหมายเสนองาน</div><span class="en">Formal offer with salary, start date, role description, conditions. Thai-language.</span><span class="th">ข้อเสนอเป็นทางการพร้อมเงินเดือน วันเริ่ม รายละเอียดตำแหน่ง เงื่อนไข ภาษาไทย</span></div></div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="en">🚪 Termination & Exit</h3>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="th">🚪 เลิกจ้าง & ออก</h3>
+        <div class="doc-item"><div class="doc-icon">⚠️</div><div class="doc-text"><div class="doc-name en">Termination Letter Templates (5 types)</div><div class="doc-name th">แม่แบบหนังสือเลิกจ้าง (5 ประเภท)</div><span class="en">Resignation acceptance, termination for cause, redundancy, end of contract, mutual separation. Legal notice periods included.</span><span class="th">รับลาออก เลิกจ้างเพราะเหตุผล ซ้ำซ้อน สิ้นสุดสัญญา ตกลงร่วมกัน รวมระยะเวลาแจ้งล่วงหน้าตามกฎหมาย</span></div></div>
+        <div class="doc-item"><div class="doc-icon">💰</div><div class="doc-text"><div class="doc-name en">Severance Calculation Sheet</div><div class="doc-name th">ใบคำนวณเงินชดเชย</div><span class="en">Excel auto-calculator for severance based on tenure. Legal minimum + common practice.</span><span class="th">Excel คำนวณอัตโนมัติเงินชดเชยตามอายุงาน ขั้นต่ำตามกฎหมาย + ปฏิบัติทั่วไป</span></div></div>
+        <div class="doc-item"><div class="doc-icon">📋</div><div class="doc-text"><div class="doc-name en">Exit Interview Form</div><div class="doc-name th">แบบสัมภาษณ์ออก</div><span class="en">Thai-language exit interview to collect feedback, protect company, handover checklist.</span><span class="th">สัมภาษณ์ออกภาษาไทยเก็บ feedback ปกป้องบริษัท checklist ส่งมอบงาน</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div><div class="section-label th">ราคา</div>
+    <h2><span class="en">Complete HR Kit vs ฿10K+ per Document from Lawyers</span><span class="th">ชุด HR ครบถ้วน vs ฿10K+ ต่อเอกสารจากทนาย</span></h2>
+    <div style="background:var(--surface);border:2px solid var(--border2);border-radius:16px;padding:2rem;text-align:center;">
+      <div class="kit-price">฿4,990</div>
+      <div style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;" class="en">ONE-TIME — COMPLETE HR KIT</div>
+      <div style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;" class="th">ครั้งเดียว — ชุด HR ครบถ้วน</div>
+      <p style="font-size:0.92rem;color:var(--text2);max-width:600px;margin:0 auto;" class="en">Employment contracts + Work regulations + Termination templates + Probation evaluation forms + Leave request forms + Performance review templates + 12 months of legal updates</p>
+      <p style="font-size:0.92rem;color:var(--text2);max-width:600px;margin:0 auto;" class="th">สัญญาจ้าง + ข้อบังคับ + เทมเพลตเลิกจ้าง + แบบประเมินทดลองงาน + แบบขอลา + เทมเพลตประเมินผล + อัปเดตกฎหมาย 12 เดือน</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">Every Company Needs HR Documents. Most Use Risky Free Templates.</span><span class="th">ทุกบริษัทต้องการเอกสาร HR ส่วนใหญ่ใช้เทมเพลตฟรีที่เสี่ยง</span></h2>
+  <p><span class="en">MuteHR — Thai labor law compliant HR documents. Updated for 2026.</span><span class="th">MuteHR — เอกสาร HR Compliant กฎหมายแรงงานไทย อัปเดตปี 2569</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #112 — MUTEHR — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>

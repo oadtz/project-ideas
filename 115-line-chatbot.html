@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteBot — บริการตั้งค่า LINE OA Chatbot สำหรับธุรกิจไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#060a08;--surface:#0a140c;--surface2:#0e1a10;--border:rgba(6,182,212,0.12);--border2:rgba(6,182,212,0.28);--text:#f0fffa;--text2:#b8e8d8;--muted:#508878;--primary:#0891b2;--primary-light:#22d3ee;--primary-pale:rgba(8,145,178,0.08);--secondary:#10b981;--secondary-light:#34d399;--green:#10b981;--red:#ef4444;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(6,182,212,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(16,185,129,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 10%,rgba(8,145,178,0.07) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(16,185,129,0.05) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(6,10,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .use-case{display:flex;gap:1rem;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:0.8rem;}
+  .use-icon{font-size:1.4rem;flex-shrink:0;}
+  .use-text{font-size:0.88rem;color:var(--text2);}
+  .use-name{font-weight:700;color:var(--text);margin-bottom:0.15rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #115</span>
+  <span class="nav-badge" style="background:rgba(6,182,212,0.15);color:#22d3ee;border-color:rgba(6,182,212,0.3);">💬 LINE OA · CHATBOT · AUTOMATION</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">💬 LINE OA · CHATBOT · CUSTOMER SERVICE AUTOMATION</span>
+      <span class="hero-tag th">💬 LINE OA · Chatbot · ระบบอัตโนมัติบริการลูกค้า</span>
+      <span class="idea-num">SPRINT #115 — FEB 24, 2026</span>
+    </div>
+    <h1><span class="en">Mute<span class="accent">Bot</span></span><span class="th">Mute<span class="accent">Bot</span></span></h1>
+    <div class="hero-sub">
+      <span class="en">Done-For-You LINE OA Chatbot Setup for Thai Businesses</span>
+      <span class="th">บริการตั้งค่า LINE OA Chatbot สำเร็จรูปสำหรับธุรกิจไทย</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">54 million Thais use LINE daily. Every business needs LINE OA. But setting up chatbots requires technical skills most Thai SMEs don't have. ZWIZ.AI starts at ฿500/mo but it's DIY. MuteBot: We build your LINE chatbot FOR you — FAQ auto-replies, booking system, order tracking — ready in 3-5 days.</span>
+      <span class="th">คนไทย 54 ล้านคนใช้ LINE ทุกวัน ทุกธุรกิจต้องมี LINE OA แต่การตั้งค่า chatbot ต้องการทักษะเทคนิคที่ SME ไทยส่วนใหญ่ไม่มี ZWIZ.AI เริ่มที่ ฿500/เดือนแต่ต้องทำเอง MuteBot: เราสร้าง LINE chatbot ให้คุณ — FAQ ตอบอัตโนมัติ ระบบจอง ติดตามออเดอร์ — พร้อมใช้ใน 3-5 วัน</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">54M</span><span class="stat-label en">Thai LINE users</span><span class="stat-label th">ผู้ใช้ LINE ไทย</span></div>
+      <div class="stat"><span class="stat-val">3-5 วัน</span><span class="stat-label en">setup time</span><span class="stat-label th">เวลาตั้งค่า</span></div>
+      <div class="stat"><span class="stat-val">฿15K</span><span class="stat-label en">setup fee (one-time)</span><span class="stat-label th">ค่าตั้งค่า (ครั้งเดียว)</span></div>
+      <div class="stat"><span class="stat-val">24/7</span><span class="stat-label en">auto-reply coverage</span><span class="stat-label th">ตอบอัตโนมัติตลอด 24/7</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">USE CASES</div>
+    <div class="section-label th">กรณีใช้งาน</div>
+    <h2><span class="en">What Your LINE Chatbot Can Do</span><span class="th">LINE Chatbot ของคุณทำอะไรได้บ้าง</span></h2>
+    <div class="three-col">
+      <div>
+        <div class="use-case"><div class="use-icon">🍽️</div><div class="use-text"><div class="use-name en">Restaurants</div><div class="use-name th">ร้านอาหาร</div><span class="en">Menu display, table booking, order status, promotion broadcasts</span><span class="th">แสดงเมนู จองโต๊ะ สถานะออเดอร์ ส่งโปรโมชั่น</span></div></div>
+        <div class="use-case"><div class="use-icon">🏥</div><div class="use-text"><div class="use-name en">Clinics</div><div class="use-name th">คลินิก</div><span class="en">Appointment booking, queue status, reminder notifications, doctor info</span><span class="th">จองนัด สถานะคิว แจ้งเตือนนัด ข้อมูลหมอ</span></div></div>
+      </div>
+      <div>
+        <div class="use-case"><div class="use-icon">🛍️</div><div class="use-text"><div class="use-name en">Retail / E-commerce</div><div class="use-name th">Retail / E-commerce</div><span class="en">Product catalog, order tracking, return requests, customer support</span><span class="th">แคตตาล็อกสินค้า ติดตามออเดอร์ ขอคืน ซัพพอร์ตลูกค้า</span></div></div>
+        <div class="use-case"><div class="use-icon">🏢</div><div class="use-text"><div class="use-name en">Service Businesses</div><div class="use-name th">ธุรกิจบริการ</div><span class="en">Quote requests, appointment scheduling, service menu, location/map</span><span class="th">ขอใบเสนอราคา นัดหมาย เมนูบริการ แผนที่</span></div></div>
+      </div>
+      <div>
+        <div class="use-case"><div class="use-icon">🏠</div><div class="use-text"><div class="use-name en">Real Estate</div><div class="use-name th">อสังหาริมทรัพย์</div><span class="en">Property listings, viewing booking, mortgage calculator, agent contact</span><span class="th">รายการอสังหา จองดูห้อง คำนวณสินเชื่อ ติดต่อเอเจนท์</span></div></div>
+        <div class="use-case"><div class="use-icon">📚</div><div class="use-text"><div class="use-name en">Education / Schools</div><div class="use-name th">การศึกษา / โรงเรียน</div><span class="en">Course info, enrollment, schedule updates, parent communication</span><span class="th">ข้อมูลคอร์ส สมัคร อัปเดตตาราง สื่อสารผู้ปกครอง</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">PRICING</div><div class="section-label th">ราคา</div>
+    <h2><span class="en">Done-For-You Setup — We Build, You Relax</span><span class="th">ตั้งค่าสำเร็จรูป — เราสร้าง คุณพักผ่อน</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card"><div class="pricing-tier en">BASIC CHATBOT</div><div class="pricing-tier th">CHATBOT พื้นฐาน</div><div class="pricing-price">฿15,000</div><div class="pricing-unit en">one-time setup</div><div class="pricing-unit th">ตั้งค่าครั้งเดียว</div><div class="pricing-desc en">FAQ auto-replies (up to 50), welcome message, menu buttons, basic analytics. 3-5 day delivery.</div><div class="pricing-desc th">FAQ ตอบอัตโนมัติ (สูงสุด 50) ข้อความต้อนรับ ปุ่มเมนู analytics พื้นฐาน ส่งมอบ 3-5 วัน</div></div>
+      <div class="pricing-card featured"><div class="pricing-badge">BEST VALUE</div><div class="pricing-tier en">PRO CHATBOT</div><div class="pricing-tier th">CHATBOT PRO</div><div class="pricing-price">฿35,000</div><div class="pricing-unit en">one-time setup</div><div class="pricing-unit th">ตั้งค่าครั้งเดียว</div><div class="pricing-desc en">Unlimited FAQ, booking system, order tracking integration, broadcast campaigns, rich menus, AI-powered responses, 1 month support.</div><div class="pricing-desc th">FAQ ไม่จำกัด ระบบจอง ผสานติดตามออเดอร์ แคมเปญบรอดแคสต์ rich menu ตอบ AI สนับสนุน 1 เดือน</div></div>
+      <div class="pricing-card"><div class="pricing-tier en">ENTERPRISE</div><div class="pricing-tier th">ENTERPRISE</div><div class="pricing-price">฿75,000+</div><div class="pricing-unit en">one-time setup</div><div class="pricing-unit th">ตั้งค่าครั้งเดียว</div><div class="pricing-desc en">Custom AI training, CRM integration, multi-language, API connections, dedicated account manager, ongoing support package available.</div><div class="pricing-desc th">ฝึก AI กำหนดเอง ผสาน CRM หลายภาษา การเชื่อม API ผู้จัดการบัญชีเฉพาะ แพ็คเกจสนับสนุนต่อเนื่อง</div></div>
+    </div>
+    <p style="text-align:center;font-size:0.85rem;color:var(--muted);margin-top:1.5rem;" class="en">All plans include ฿2,000/mo optional management fee for updates & monitoring</p>
+    <p style="text-align:center;font-size:0.85rem;color:var(--muted);margin-top:1.5rem;" class="th">ทุกแผนมีค่าจัดการต่อเนื่อง ฿2,000/เดือน (ไม่บังคับ) สำหรับอัปเดต & ติดตาม</p>
+  </div>
+</section>
+
+<div class="cta-section"><div class="container">
+  <h2><span class="en">Every Thai Business Needs LINE. Most Don't Have a Proper Chatbot.</span><span class="th">ทุกธุรกิจไทยต้องมี LINE ส่วนใหญ่ยังไม่มี Chatbot ที่เหมาะสม</span></h2>
+  <p><span class="en">MuteBot — Done-for-you LINE OA chatbot setup. 3-5 days to 24/7 customer service.</span><span class="th">MuteBot — บริการตั้งค่า LINE OA chatbot สำเร็จรูป 3-5 วันถึงบริการลูกค้า 24/7</span></p>
+  <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+</div></div>
+<footer><div class="container"><p>MUTELAB — IDEA SPRINT #115 — MUTEBOT — COWORK-ERA RESEARCH — FEB 2026</p></div></footer>
+<script>function setLang(l){document.body.classList.toggle('show-th',l==='th');document.getElementById('btn-en').classList.toggle('active',l==='en');document.getElementById('btn-th').classList.toggle('active',l==='th');localStorage.setItem('lang',l);}const saved=localStorage.getItem('lang');if(saved==='th')setLang('th');</script>
+</body>
+</html>
