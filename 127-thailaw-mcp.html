@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThaiLaw MCP Server — Structured Thai Legal Data for AI Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --bg2: #0b100c;
+    --surface: #0f1610;
+    --surface2: #141e15;
+    --surface3: #1a261b;
+    --border: rgba(13,148,136,0.15);
+    --border2: rgba(13,148,136,0.28);
+    --text: #f0f5f0;
+    --text2: #c0d0c0;
+    --muted: #708070;
+    --muted2: #526052;
+    --primary: #0d9488;
+    --primary-light: #2dd4bf;
+    --primary-pale: rgba(13,148,136,0.08);
+    --primary-glow: rgba(13,148,136,0.22);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --secondary-pale: rgba(245,158,11,0.08);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --robot: #818cf8;
+    --robot-light: #a5b4fc;
+    --robot-pale: rgba(129,140,248,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', 'Noto Sans Thai', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(129,140,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .grid-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, rgba(129,140,248,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle {
+    position: fixed; top: 1.3rem; right: 2rem; z-index: 100;
+    display: flex; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--surface);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    font-family: 'Space Mono', monospace;
+  }
+  .lang-btn {
+    padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; border: none; background: transparent;
+    color: var(--muted); transition: all 0.2s;
+    font-family: 'Space Mono', monospace; letter-spacing: 0.04em;
+  }
+  .lang-btn.active { background: var(--robot); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--robot-light); }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+    padding: 1.1rem 2rem;
+    background: rgba(10,15,10,0.85);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--robot-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700;
+    padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid rgba(129,140,248,0.3);
+    color: var(--robot-light); background: var(--robot-pale);
+  }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--robot-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--robot-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid rgba(129,140,248,0.3); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--robot-light); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--robot), var(--secondary)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--robot-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .card:hover { border-color: rgba(129,140,248,0.3); box-shadow: 0 4px 24px rgba(129,140,248,0.08); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .alert-box { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.25); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+  .alert-title { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--robot-light); font-weight: 700; margin-bottom: 0.5rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--robot-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:700px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: rgba(129,140,248,0.4); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--robot); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--robot-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid rgba(129,140,248,0.2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--robot); }
+  .code-block { background: var(--surface2); border: 1px solid rgba(129,140,248,0.2); border-radius: 12px; padding: 1.2rem 1.5rem; font-family: 'Space Mono', monospace; font-size: 0.82rem; color: var(--robot-light); line-height: 1.8; overflow-x: auto; margin-bottom: 1.5rem; }
+  .code-block .comment { color: var(--muted); }
+  .code-block .string { color: var(--secondary-light); }
+  .revenue-block { background: var(--surface2); border: 1px solid rgba(129,140,248,0.25); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--robot-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--robot), var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--robot); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--robot-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .cta-section h2 { font-size:2rem; margin-bottom:1rem; }
+  .cta-section p { color:var(--text2); max-width:520px; margin:0 auto 2rem; }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--robot-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid rgba(129,140,248,0.3); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--robot-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); letter-spacing:0.06em; }
+  .insight-box { background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+  .insight-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--secondary-light); letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.4rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #127</span>
+  <span class="nav-badge" style="background:var(--robot-pale);color:var(--robot-light);border-color:rgba(129,140,248,0.3);">🤖 SELL TO AI</span>
+  <span class="nav-badge" style="background:rgba(16,185,129,0.1);color:#34d399;border-color:rgba(16,185,129,0.3);">ZERO COMPETITORS</span>
+  <span class="nav-badge en">THAI LEGAL DATA API</span>
+  <span class="nav-badge th">Thai Legal Data API</span>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🤖 MCP · AI AGENTS · THAI LAW</span>
+      <span class="hero-tag th">🤖 MCP · AI Agents · กฎหมายไทย</span>
+      <span class="idea-num">SPRINT #127 — FEB 24, 2026 — SELL TO AI SERIES</span>
+    </div>
+    <h1><span class="en">Thai<span class="accent">Law</span> MCP</span><span class="th">Thai<span class="accent">Law</span> MCP</span></h1>
+    <div class="hero-sub">
+      <span class="en">Structured Thai Legal Data — Sold to AI Agents, Not Humans</span>
+      <span class="th">ข้อมูลกฎหมายไทยแบบ Structured — ขายให้ AI Agents ไม่ใช่คน</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Every AI agent operating in Thailand needs legal context. PDPA compliance checks, labor law queries, tax regulations, BOI rules — currently locked inside government PDFs. ThaiLaw MCP Server unlocks Thai law for the agent economy: structured, queryable, MCP-compatible. Works with Claude, GPT-4, Gemini, any framework. Zero competitors. First mover takes all.</span>
+      <span class="th">AI agent ทุกตัวที่ทำงานในไทยต้องการ context กฎหมาย ตรวจ PDPA, สอบถามกฎหมายแรงงาน, ระเบียบภาษี, กฎ BOI — ปัจจุบันติดอยู่ใน PDF ของรัฐบาล ThaiLaw MCP Server ปลดล็อคกฎหมายไทยสำหรับ agent economy: structured, query ได้, MCP-compatible ทำงานกับ Claude, GPT-4, Gemini, ทุก framework ไม่มีคู่แข่ง First mover คว้าทุกอย่าง</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">Thai law APIs for AI agents</span><span class="stat-label th">Thai law API สำหรับ AI agents</span></div>
+      <div class="stat"><span class="stat-val">8,600+</span><span class="stat-label en">MCP servers (growing fast)</span><span class="stat-label th">MCP servers (เพิ่มเร็วมาก)</span></div>
+      <div class="stat"><span class="stat-val">$251B</span><span class="stat-label en">AI agent market by 2034</span><span class="stat-label th">ตลาด AI agent ปี 2577</span></div>
+      <div class="stat"><span class="stat-val">฿10/mo</span><span class="stat-label en">entry price — zero friction</span><span class="stat-label th">ราคาเริ่มต้น — ไม่มีแรงต้าน</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">OPPORTUNITY SCORE</div>
+        <div class="score-label th">คะแนนโอกาส</div>
+        <div><span class="score-val">45</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:90%"></div></div>
+        <div style="font-size:0.7rem;color:#a5b4fc;margin-top:0.4rem;font-family:'Space Mono',monospace;">🤖 FIRST MOVER · ZERO COMPETITION · MCP-NATIVE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THE PARADIGM SHIFT ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">🔄 THE PARADIGM SHIFT</div>
+    <div class="section-label th">🔄 การเปลี่ยนกระบวนทัศน์</div>
+    <h2>
+      <span class="en">Stop Selling to Humans. Sell to Their Agents.</span>
+      <span class="th">หยุดขายให้คน ขายให้ AI Agents ของเขา</span>
+    </h2>
+    <div class="alert-box">
+      <div class="alert-title">🤖 THE INSIGHT: AI AGENTS ARE BECOMING THE BUYING DECISION-MAKER</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">When a lawyer uses Claude to review a Thai contract, Claude needs Thai legal context. When an accounting firm deploys an AI agent for PDPA compliance, that agent needs to query Thai law. When a foreign investor's AI assistant researches Thailand entry options — it needs structured Thai regulatory data. <strong>The agent is the customer. Not the human.</strong> Build for agents, and humans follow automatically.</span>
+        <span class="th">เมื่อทนายใช้ Claude รีวิวสัญญาไทย Claude ต้องการ context กฎหมายไทย เมื่อบริษัทบัญชี deploy AI agent สำหรับ PDPA compliance agent นั้นต้องสอบถามกฎหมายไทย เมื่อ AI assistant ของนักลงทุนต่างชาติวิจัยตัวเลือกเข้าไทย — มันต้องการข้อมูลระเบียบไทย structured <strong>Agent คือลูกค้า ไม่ใช่คน</strong> สร้างสำหรับ agents และคนจะตามมาเอง</span>
+      </p>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-icon">😩</div>
+        <h3 class="en">What AI Agents Do Today (Painful)</h3>
+        <h3 class="th">สิ่งที่ AI Agents ทำในวันนี้ (น่าเจ็บปวด)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Agent queries Thai law → Brave Search returns 10 results → Agent scrapes each PDF → Text is OCR-extracted → Thai is misread → Wrong answer. Cost: 5+ API calls, 30 seconds, $0.02–0.05 per query, 40% accuracy.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Agent สอบถามกฎหมายไทย → Brave Search คืน 10 ผลลัพธ์ → Agent scrape PDF แต่ละไฟล์ → ดึงข้อความ OCR → ภาษาไทยอ่านผิด → คำตอบผิด ราคา: 5+ API calls, 30 วินาที, $0.02–0.05 ต่อ query, ความแม่นยำ 40%</p>
+      </div>
+      <div class="card" style="border-color:rgba(129,140,248,0.3);">
+        <div class="card-icon">🚀</div>
+        <h3 class="en">What ThaiLaw MCP Does (Beautiful)</h3>
+        <h3 class="th">สิ่งที่ ThaiLaw MCP ทำ (สวยงาม)</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Agent calls <code style="color:var(--robot-light);">query_thai_law("PDPA personal data consent")</code> → Structured JSON with law name, section number, exact text, Thai+English, related sections, enforcement precedents. Cost: 1 API call, 200ms, $0.003, 98% accuracy.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Agent เรียก <code style="color:var(--robot-light);">query_thai_law("PDPA personal data consent")</code> → JSON structured พร้อมชื่อกฎหมาย, เลขมาตรา, ข้อความแน่ชัด, ไทย+อังกฤษ, มาตราที่เกี่ยวข้อง, บรรทัดฐานการบังคับใช้ ราคา: 1 API call, 200ms, $0.003, ความแม่นยำ 98%</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT'S IN THE DATABASE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">📚 THE LEGAL CORPUS</div>
+    <div class="section-label th">📚 คลังกฎหมาย</div>
+    <h2>
+      <span class="en">All Thai Law That Agents Need — In One MCP Server</span>
+      <span class="th">กฎหมายไทยทั้งหมดที่ Agents ต้องการ — ใน MCP Server เดียว</span>
+    </h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3 class="en">Privacy & Data Law</h3>
+        <h3 class="th">กฎหมายความเป็นส่วนตัวและข้อมูล</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">PDPA full text (160 sections) + all sub-regulations + all PDPC enforcement decisions (2023–2026). Searchable by principle, obligation, exemption, penalty.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">PDPA ฉบับเต็ม (160 มาตรา) + กฎย่อยทั้งหมด + คำสั่ง สคส. ทั้งหมด (2566–2569) ค้นหาตามหลักการ หน้าที่ ข้อยกเว้น โทษ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👷</div>
+        <h3 class="en">Labor & Employment Law</h3>
+        <h3 class="th">กฎหมายแรงงานและการจ้างงาน</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Labour Protection Act, minimum wage by province, overtime rules, termination requirements, Social Security Act, Workmen's Compensation Fund.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">พ.ร.บ. คุ้มครองแรงงาน, ค่าจ้างขั้นต่ำตามจังหวัด, กฎค่าล่วงเวลา, ข้อกำหนดเลิกจ้าง, ประกันสังคม, กองทุนเงินทดแทน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💼</div>
+        <h3 class="en">Business Registration & Corporate</h3>
+        <h3 class="th">การจดทะเบียนธุรกิจและบรรษัท</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Civil and Commercial Code (company law), Foreign Business Act (restricted categories), BOI privileges, Board of Investment regulations.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ประมวลกฎหมายแพ่งและพาณิชย์ (กฎหมายบริษัท), พ.ร.บ. ประกอบธุรกิจต่างด้าว, สิทธิประโยชน์ BOI, กฎระเบียบคณะกรรมการส่งเสริมการลงทุน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧾</div>
+        <h3 class="en">Tax Law</h3>
+        <h3 class="th">กฎหมายภาษี</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Revenue Code (corporate income tax, personal income tax, VAT, specific business tax), withholding tax rates, transfer pricing rules.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ประมวลรัษฎากร (ภาษีเงินได้นิติบุคคล, ภาษีเงินได้บุคคลธรรมดา, VAT, ภาษีธุรกิจเฉพาะ), อัตราภาษีหัก ณ ที่จ่าย, กฎราคาโอน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏠</div>
+        <h3 class="en">Property & Land Law</h3>
+        <h3 class="th">กฎหมายทรัพย์สินและที่ดิน</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Land Code, Condominium Act, foreign ownership restrictions, lease vs. ownership, land title types (Chanote, NS-3K, NS-3, etc.).</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ประมวลกฎหมายที่ดิน, พ.ร.บ. อาคารชุด, ข้อจำกัดการถือครองต่างด้าว, เช่าเทียบกับซื้อ, ประเภทโฉนดที่ดิน (โฉนด, น.ส.3ก, น.ส.3 ฯลฯ)</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <h3 class="en">Consumer & E-Commerce Law</h3>
+        <h3 class="th">กฎหมายผู้บริโภคและ E-Commerce</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Consumer Protection Act, Electronic Transactions Act, Computer Crimes Act, e-commerce regulations, digital signature requirements.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">พ.ร.บ. คุ้มครองผู้บริโภค, พ.ร.บ. ธุรกรรมทางอิเล็กทรอนิกส์, พ.ร.บ. คอมพิวเตอร์, กฎ e-commerce, ข้อกำหนดลายเซ็นดิจิทัล</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MCP API EXAMPLE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">⚡ MCP INTEGRATION</div>
+    <div class="section-label th">⚡ MCP Integration</div>
+    <h2>
+      <span class="en">One Line to Add Thai Legal Intelligence to Any AI Agent</span>
+      <span class="th">หนึ่งบรรทัดเพื่อเพิ่ม Thai Legal Intelligence ให้ AI Agent ใดก็ได้</span>
+    </h2>
+    <div class="code-block">
+<span class="comment">// claude_desktop_config.json — Add ThaiLaw MCP in seconds</span>
+{
+  <span class="string">"mcpServers"</span>: {
+    <span class="string">"thailaw"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [<span class="string">"@mutelab/thailaw-mcp"</span>],
+      <span class="string">"env"</span>: { <span class="string">"THAILAW_API_KEY"</span>: <span class="string">"your_key"</span> }
+    }
+  }
+}
+
+<span class="comment">// Now Claude / GPT / Gemini can call:</span>
+query_thai_law({ law: <span class="string">"PDPA"</span>, query: <span class="string">"consent requirements for marketing emails"</span> })
+search_thai_regulation({ sector: <span class="string">"fintech"</span>, topic: <span class="string">"payment service providers"</span> })
+get_enforcement_cases({ law: <span class="string">"PDPA"</span>, year: 2025, outcome: <span class="string">"fined"</span> })
+check_foreign_business({ activity: <span class="string">"software development"</span> })
+    </div>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3 class="en">Claude + ThaiLaw</h3>
+        <h3 class="th">Claude + ThaiLaw</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Claude Code, Claude Desktop, Claude API — all MCP-native. Add ThaiLaw as a tool and Claude automatically uses it when answering Thai legal questions.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">Claude Code, Claude Desktop, Claude API — ทั้งหมด MCP-native เพิ่ม ThaiLaw เป็น tool และ Claude จะใช้อัตโนมัติเมื่อตอบคำถามกฎหมายไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3 class="en">LangChain / CrewAI / AutoGPT</h3>
+        <h3 class="th">LangChain / CrewAI / AutoGPT</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">MCP is supported across all major agent frameworks. ThaiLaw integrates in minutes. Build a Thai compliance agent in an afternoon.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">MCP รองรับทุก agent framework หลัก ThaiLaw integrate ใน 5 นาที สร้าง Thai compliance agent ได้ภายในบ่ายเดียว</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💳</div>
+        <h3 class="en">x402-Compatible (Future)</h3>
+        <h3 class="th">x402-Compatible (อนาคต)</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Ready for the agent payment future. Agents pay per query via x402 stablecoin micropayments — no API keys, no subscriptions needed. Pay-as-you-go for autonomous agents.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">พร้อมสำหรับอนาคต agent payment Agents จ่ายต่อ query ผ่าน x402 stablecoin micropayments — ไม่ต้อง API key ไม่ต้องสมัครสมาชิก</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHO BUYS ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">🎯 WHO PAYS FOR THAILAW MCP</div>
+    <div class="section-label th">🎯 ใครจ่ายสำหรับ ThaiLaw MCP</div>
+    <h2>
+      <span class="en">Every AI Agent Touching Thailand Needs This</span>
+      <span class="th">ทุก AI Agent ที่สัมผัสไทยต้องการสิ่งนี้</span>
+    </h2>
+    <div class="pain-item">
+      <div class="pain-emoji">⚖️</div>
+      <div class="pain-text">
+        <h3 class="en">Law Firm AI Assistants</h3>
+        <h3 class="th">AI Assistant สำนักงานกฎหมาย</h3>
+        <p class="en">Baker McKenzie, Tilleke & Gibbins, Chandler MHM — all building AI agents for client work. Thai law research that takes a junior lawyer 2 hours takes the agent 2 seconds with ThaiLaw MCP. ROI is instant.</p>
+        <p class="th">Baker McKenzie, Tilleke & Gibbins, Chandler MHM — ทั้งหมดสร้าง AI agents สำหรับงานลูกค้า การวิจัยกฎหมายไทยที่ทนายผู้ช่วยใช้ 2 ชั่วโมง agent ใช้ 2 วินาทีด้วย ThaiLaw MCP ROI ทันที</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🏦</div>
+      <div class="pain-text">
+        <h3 class="en">Compliance & Accounting Agents</h3>
+        <h3 class="th">AI Compliance และบัญชี</h3>
+        <p class="en">Deloitte, KPMG, PwC Thailand — all running AI for compliance work. Every Thai PDPA compliance agent, every tax calculation agent, every payroll agent needs to query Thai regulations. That's ThaiLaw MCP's market.</p>
+        <p class="th">Deloitte, KPMG, PwC ไทย — ทั้งหมดรัน AI สำหรับงาน compliance ทุก Thai PDPA compliance agent, ทุก tax calculation agent, ทุก payroll agent ต้องสอบถามกฎระเบียบไทย นั่นคือตลาดของ ThaiLaw MCP</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🌏</div>
+      <div class="pain-text">
+        <h3 class="en">Foreign Investment Research Agents</h3>
+        <h3 class="th">AI Research สำหรับนักลงทุนต่างชาติ</h3>
+        <p class="en">Japanese, Korean, Chinese, EU companies expanding to Thailand — they use AI agents to research market entry requirements. Foreign Business Act restrictions, BOI privileges, land ownership rules — all need ThaiLaw MCP.</p>
+        <p class="th">บริษัทญี่ปุ่น เกาหลี จีน EU ที่ขยายตลาดไทย — ใช้ AI agents วิจัยข้อกำหนดเข้าตลาด ข้อจำกัด FBA, สิทธิ BOI, กฎถือครองที่ดิน — ทั้งหมดต้อง ThaiLaw MCP</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <div class="pain-emoji">🚀</div>
+      <div class="pain-text">
+        <h3 class="en">Thai Startup AI Tools (MutePDPA etc.)</h3>
+        <h3 class="th">AI Tools Startup ไทย (MutePDPA ฯลฯ)</h3>
+        <p class="en">Every Thai SaaS that involves regulations will need ThaiLaw MCP. MutePDPA uses it. MuteGreen uses it. Accounting SaaS uses it. We're the plumbing layer for the entire Thai AI ecosystem.</p>
+        <p class="th">ทุก Thai SaaS ที่เกี่ยวข้องกับกฎระเบียบจะต้อง ThaiLaw MCP MutePDPA ใช้มัน MuteGreen ใช้มัน Accounting SaaS ใช้มัน เราคือชั้น plumbing ของ ecosystem AI ไทยทั้งหมด</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPETITION ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">🏆 COMPETITIVE LANDSCAPE</div>
+    <div class="section-label th">🏆 แผนที่คู่แข่ง</div>
+    <h2>
+      <span class="en">Zero. We Are Competing Against Brave Search + PDF Scrapers.</span>
+      <span class="th">ไม่มี เราแข่งกับ Brave Search + PDF Scrapers</span>
+    </h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>SOLUTION</th>
+            <th>Structured Thai Law</th>
+            <th>MCP Protocol</th>
+            <th>Agent-Optimized</th>
+            <th>Thai+English</th>
+            <th>Cost/Query</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Brave Search API</strong></td>
+            <td class="no">❌ Raw web results</td>
+            <td class="no">❌ REST only</td>
+            <td class="no">❌ Not agent-first</td>
+            <td class="partial">⚡ Mixed quality</td>
+            <td class="no">$0.005</td>
+          </tr>
+          <tr>
+            <td><strong>PDF Scraping (DIY)</strong></td>
+            <td class="no">❌ Unstructured</td>
+            <td class="no">❌ Custom build</td>
+            <td class="no">❌ Unreliable</td>
+            <td class="partial">⚡ Thai OCR errors</td>
+            <td class="no">$0.02–0.05</td>
+          </tr>
+          <tr>
+            <td><strong>OneTrust / Securiti</strong></td>
+            <td class="partial">⚡ PDPA partial</td>
+            <td class="no">❌ Enterprise API</td>
+            <td class="no">❌ Human UI</td>
+            <td class="no">❌ English only</td>
+            <td class="no">$10K+/yr</td>
+          </tr>
+          <tr>
+            <td><strong>Thai Law Firm APIs</strong></td>
+            <td class="no">❌ Don't exist</td>
+            <td class="no">❌ None</td>
+            <td class="no">❌ None</td>
+            <td class="no">❌ None</td>
+            <td class="no">N/A</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>ThaiLaw MCP ✦</strong></td>
+            <td class="yes">✅ Full corpus</td>
+            <td class="yes">✅ Native MCP</td>
+            <td class="yes">✅ Agent-first</td>
+            <td class="yes">✅ Bilingual</td>
+            <td class="yes">$0.003</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="insight-box" style="margin-top:1.5rem;">
+      <div class="insight-label">🎯 FIRST MOVER ADVANTAGE</div>
+      <p style="font-size:0.9rem;color:var(--text2);" class="en">The MCP ecosystem grew from 0 to 8,600+ servers in 12 months. No one has built a Thai law MCP server. We have a 12-18 month window to establish the standard. Once law firms and enterprises integrate ThaiLaw MCP, switching costs are enormous.</p>
+      <p style="font-size:0.9rem;color:var(--text2);" class="th">ecosystem MCP เติบโตจาก 0 เป็น 8,600+ servers ใน 12 เดือน ไม่มีใครสร้าง Thai law MCP server เรามีหน้าต่าง 12-18 เดือนเพื่อสร้างมาตรฐาน เมื่อสำนักงานกฎหมายและ enterprise integrate ThaiLaw MCP แล้ว switching costs มหาศาล</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">💰 PRICING</div>
+    <div class="section-label th">💰 ราคา</div>
+    <h2>
+      <span class="en">Cheap Enough for Indie Developers, Scalable for Enterprise</span>
+      <span class="th">ถูกพอสำหรับ Indie Developer, Scale ได้สำหรับ Enterprise</span>
+    </h2>
+    <div class="pricing-grid" style="margin-bottom:2.5rem;">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE</div>
+        <div class="pricing-tier th">ฟรี</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-unit en">forever</div>
+        <div class="pricing-unit th">ตลอดไป</div>
+        <div class="pricing-desc en">100 queries/month. All law categories. Perfect for prototyping and demos. No credit card required.</div>
+        <div class="pricing-desc th">100 queries/เดือน ทุกหมวดกฎหมาย เหมาะสร้าง prototype และ demo ไม่ต้องบัตรเครดิต</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">MOST POPULAR</div>
+        <div class="pricing-tier en">PRO</div>
+        <div class="pricing-tier th">PRO</div>
+        <div class="pricing-price">$29</div>
+        <div class="pricing-unit en">/month (~฿928)</div>
+        <div class="pricing-unit th">/เดือน (~฿928)</div>
+        <div class="pricing-desc en">10,000 queries/month. Webhook alerts for law updates. Priority support. Perfect for startups and indie AI tools.</div>
+        <div class="pricing-desc th">10,000 queries/เดือน Webhook แจ้งกฎหมายอัปเดต Support priority เหมาะ startup และ indie AI tools</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">BUSINESS</div>
+        <div class="pricing-tier th">BUSINESS</div>
+        <div class="pricing-price">$99</div>
+        <div class="pricing-unit en">/month (~฿3,168)</div>
+        <div class="pricing-unit th">/เดือน (~฿3,168)</div>
+        <div class="pricing-desc en">100,000 queries/month. Custom law corpus additions. SLA 99.9%. SSO. White-label option. For law firms and enterprises.</div>
+        <div class="pricing-desc th">100,000 queries/เดือน เพิ่ม corpus กฎหมายเอง SLA 99.9% SSO White-label สำหรับสำนักงานกฎหมายและ enterprise</div>
+      </div>
+    </div>
+    <div class="revenue-block">
+      <p class="section-label" style="margin-bottom:1rem;">REVENUE PROJECTION (CONSERVATIVE)</p>
+      <div class="revenue-row">
+        <span class="en">Month 3: 30 Pro + 5 Business — early adopters</span>
+        <span class="th">เดือน 3: Pro 30 + Business 5 — early adopters</span>
+        <span class="revenue-val">$1,365/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 6: 100 Pro + 20 Business — word-of-mouth traction</span>
+        <span class="th">เดือน 6: Pro 100 + Business 20 — traction word-of-mouth</span>
+        <span class="revenue-val">$4,880/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en">Month 12: 300 Pro + 80 Business — established standard</span>
+        <span class="th">เดือน 12: Pro 300 + Business 80 — มาตรฐานที่ยอมรับ</span>
+        <span class="revenue-val">$16,620/mo</span>
+      </div>
+      <div class="revenue-row">
+        <span class="en"><strong>Year 1 ARR</strong></span>
+        <span class="th"><strong>ARR ปีที่ 1</strong></span>
+        <span class="revenue-val"><strong>~$120K (~฿3.8M)</strong></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BUILD TIMELINE ═══ -->
+<section>
+  <div class="container">
+    <div class="section-label en">🏗️ BUILD PLAN</div>
+    <div class="section-label th">🏗️ แผนการสร้าง</div>
+    <h2><span class="en">2-Week MVP — Legal Corpus + MCP Server + API Key Auth</span><span class="th">MVP 2 สัปดาห์ — Legal Corpus + MCP Server + API Key Auth</span></h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 1</div>
+        <div class="tl-title en">Legal Corpus Ingestion</div>
+        <div class="tl-title th">นำเข้า Legal Corpus</div>
+        <div class="tl-desc en">Scrape Thai law PDFs from government websites (PDPA, Labour Protection Act, Revenue Code, Land Code, FBA, Condominium Act). Structure into JSON with section numbers, Thai text, official English translations, cross-references. Load into vector DB + PostgreSQL for hybrid search.</div>
+        <div class="tl-desc th">Scrape PDF กฎหมายไทยจากเว็บรัฐ (PDPA, พ.ร.บ. แรงงาน, ประมวลรัษฎากร, ประมวลที่ดิน, FBA, อาคารชุด) จัด structure เป็น JSON พร้อมเลขมาตรา ข้อความไทย คำแปลอังกฤษทางการ cross-references โหลดลง vector DB + PostgreSQL</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 2</div>
+        <div class="tl-title en">MCP Server + API + Billing</div>
+        <div class="tl-title th">MCP Server + API + Billing</div>
+        <div class="tl-desc en">Build MCP server with 6 tools: query_thai_law, search_regulation, get_enforcement_cases, check_foreign_business, get_tax_rate, list_recent_amendments. API key auth, rate limiting, Stripe billing. Publish to npm.</div>
+        <div class="tl-desc th">สร้าง MCP server พร้อม 6 tools เพิ่ม API key auth, rate limiting, Stripe billing เผยแพร่ที่ npm</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">🤖 The Agent Economy Needs Thai Legal Infrastructure</span><span class="th">🤖 Agent Economy ต้องการ Thai Legal Infrastructure</span></h2>
+    <p><span class="en">ThaiLaw MCP Server — Idea #127 · Sell to AI · Zero Competitors · 2-Week Build · $29-99/mo</span><span class="th">ThaiLaw MCP Server — ไอเดีย #127 · Sell to AI · ไม่มีคู่แข่ง · สร้าง 2 สัปดาห์ · $29-99/เดือน</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>MUTELAB — IDEA SPRINT #127 — THAILAW MCP SERVER — SELL TO AI SERIES — FEB 24, 2026</p>
+  </div>
+</footer>
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-th').classList.toggle('active', lang === 'th');
+  localStorage.setItem('lang', lang);
+}
+const saved = localStorage.getItem('lang');
+if (saved === 'th') setLang('th');
+</script>
+</body>
+</html>

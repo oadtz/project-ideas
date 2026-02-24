@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThaiCompany API — DBD Business Data for AI Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0b0b10;
+    --surface: #0f0f16;
+    --surface2: #14141e;
+    --surface3: #1a1a26;
+    --border: rgba(59,130,246,0.15);
+    --border2: rgba(59,130,246,0.28);
+    --text: #f0f0f5;
+    --text2: #c0c0d0;
+    --muted: #707080;
+    --muted2: #505060;
+    --primary: #3b82f6;
+    --primary-light: #60a5fa;
+    --primary-pale: rgba(59,130,246,0.08);
+    --secondary: #f59e0b;
+    --secondary-light: #fbbf24;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sora', 'Noto Sans Thai', sans-serif; overflow-x: hidden; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .grid-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 0%, rgba(59,130,246,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.05) 0%, transparent 60%); pointer-events: none; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+  .lang-toggle { position: fixed; top: 1.3rem; right: 2rem; z-index: 100; display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); background: var(--surface); box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  .lang-btn { padding: 0.4rem 0.9rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 0.04em; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+  body:not(.show-th) .th { display: none; }
+  body.show-th .en { display: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 90; padding: 1.1rem 2rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary-light); letter-spacing: 0.06em; }
+  .nav-badge { font-family: 'Space Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.06em; }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 0 5rem; }
+  .hero-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.12em; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 99px; border: 1px solid var(--border2); color: var(--primary-light); background: var(--primary-pale); }
+  .idea-num { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+  .hero h1 .accent { color: var(--primary-light); }
+  .hero-sub { font-size: clamp(1rem, 2vw, 1.35rem); color: var(--secondary-light); font-weight: 600; margin-bottom: 1.5rem; }
+  .hero-desc { font-size: 1.05rem; color: var(--text2); max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+  .hero-stats { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stat { display: flex; flex-direction: column; gap: 0.2rem; }
+  .stat-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; }
+  .score-banner { display: inline-flex; align-items: center; gap: 1.2rem; background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1rem 1.8rem; margin-bottom: 2rem; }
+  .score-label { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; }
+  .score-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--primary-light); }
+  .score-total { font-size: 1rem; color: var(--muted); }
+  .score-bar { width: 140px; height: 8px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 99px; }
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .section-label { font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.14em; font-weight: 700; color: var(--primary-light); margin-bottom: 0.8rem; text-transform: uppercase; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media(max-width:768px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.2s; }
+  .card:hover { border-color: var(--border2); }
+  .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .alert-box { background: var(--primary-pale); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem; }
+  .alert-title { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--primary-light); font-weight: 700; margin-bottom: 0.5rem; }
+  .pain-item { display: flex; gap: 1rem; align-items: flex-start; background: var(--surface); border: 1px solid rgba(239,68,68,0.18); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .pain-emoji { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .pain-text p { font-size: 0.92rem; color: var(--text2); margin-top: 0.3rem; }
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.4rem; }
+  .feature-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); flex-shrink: 0; margin-top: 0.45rem; }
+  .feature-item p { font-size: 0.9rem; color: var(--text2); margin-top: 0.2rem; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; }
+  @media(max-width:700px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.2rem; text-align: center; position: relative; }
+  .pricing-card.featured { border-color: var(--border2); background: var(--surface2); }
+  .pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; padding: 0.25rem 0.7rem; border-radius: 99px; font-family: 'Space Mono', monospace; }
+  .pricing-tier { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pricing-price { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.2rem; }
+  .pricing-unit { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .pricing-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border2); font-family: 'Space Mono', monospace; }
+  .comp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: var(--red); }
+  .partial { color: var(--amber); }
+  .highlight-row td { background: var(--surface2); }
+  .highlight-row td:first-child { border-left: 3px solid var(--primary); }
+  .code-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 1.2rem 1.5rem; font-family: 'Space Mono', monospace; font-size: 0.82rem; color: var(--primary-light); line-height: 1.8; overflow-x: auto; margin-bottom: 1.5rem; }
+  .code-block .comment { color: var(--muted); }
+  .code-block .string { color: var(--secondary-light); }
+  .revenue-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: 14px; padding: 1.5rem; }
+  .revenue-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .revenue-row:last-child { border-bottom: none; font-weight: 700; color: var(--primary-light); }
+  .revenue-val { font-family: 'Space Mono', monospace; color: var(--secondary-light); }
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background: linear-gradient(180deg, var(--primary), var(--secondary)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; }
+  .tl-dot { position:absolute; left:-2.35rem; top:0.35rem; width:12px; height:12px; border-radius:50%; background:var(--primary); border:2px solid var(--bg); }
+  .tl-week { font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--primary-light); letter-spacing:0.08em; margin-bottom:0.3rem; }
+  .tl-title { font-weight:700; margin-bottom:0.3rem; }
+  .tl-desc { font-size:0.88rem; color:var(--text2); }
+  .cta-section { text-align:center; padding:5rem 0 6rem; border-top:1px solid var(--border); }
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--primary-light); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.8rem 1.8rem; border:1px solid var(--border2); border-radius:10px; transition:all 0.2s; }
+  .back-link:hover { background:var(--primary-pale); }
+  footer { padding:2rem 0; border-top:1px solid var(--border); text-align:center; }
+  footer p { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted2); letter-spacing:0.06em; }
+  .data-field { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+  .field-name { font-family: 'Space Mono', monospace; color: var(--primary-light); font-size: 0.78rem; }
+  .field-val { color: var(--text2); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTELAB</span>
+  <span class="nav-badge">IDEA #128</span>
+  <span class="nav-badge" style="background:rgba(59,130,246,0.1);color:#60a5fa;border-color:rgba(59,130,246,0.3);">🤖 SELL TO AI</span>
+  <span class="nav-badge" style="background:rgba(16,185,129,0.1);color:#34d399;border-color:rgba(16,185,129,0.3);">USAGE-BASED</span>
+  <span class="nav-badge en">THAI COMPANY DATA API</span>
+  <span class="nav-badge th">Thai Company Data API</span>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-meta">
+      <span class="hero-tag en">🏢 DBD DATA · AI AGENTS · KYC</span>
+      <span class="hero-tag th">🏢 ข้อมูล DBD · AI Agents · KYC</span>
+      <span class="idea-num">SPRINT #128 — FEB 24, 2026 — SELL TO AI SERIES</span>
+    </div>
+    <h1><span class="en">Thai<span class="accent">Company</span> API</span><span class="th">Thai<span class="accent">Company</span> API</span></h1>
+    <div class="hero-sub">
+      <span class="en">Structured DBD Business Data — Liberated from Government PDFs for AI Agents</span>
+      <span class="th">ข้อมูลธุรกิจ DBD แบบ Structured — ปลดปล่อยจาก PDF รัฐบาลสำหรับ AI Agents</span>
+    </div>
+    <p class="hero-desc">
+      <span class="en">Thailand has 1.4 million registered companies. Every piece of data — registration details, directors, shareholders, financials, BOJ status — sits in the Department of Business Development's clunky portal. AI agents doing KYC, due diligence, and market research are flying blind. ThaiCompany API turns 1.4 million company records into clean, queryable, agent-ready data. Usage-based. No minimums. Agents pay only when they query.</span>
+      <span class="th">ไทยมีบริษัทจดทะเบียน 1.4 ล้านแห่ง ข้อมูลทั้งหมด — รายละเอียดจดทะเบียน กรรมการ ผู้ถือหุ้น การเงิน สถานะ BOJ — อยู่ในพอร์ทัลของกรมพัฒนาธุรกิจการค้าที่ยุ่งยาก AI agents ที่ทำ KYC, due diligence และวิจัยตลาดกำลังบินตาบอด ThaiCompany API เปลี่ยน 1.4 ล้านบันทึกบริษัทเป็นข้อมูลสะอาด query ได้ พร้อม agent</span>
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">1.4M</span><span class="stat-label en">Thai registered companies</span><span class="stat-label th">บริษัทจดทะเบียนไทย</span></div>
+      <div class="stat"><span class="stat-val">0</span><span class="stat-label en">agent-friendly Thai company APIs</span><span class="stat-label th">Thai company API สำหรับ agents</span></div>
+      <div class="stat"><span class="stat-val">$0.005</span><span class="stat-label en">per lookup — zero friction</span><span class="stat-label th">ต่อ lookup — ไม่มีแรงต้าน</span></div>
+      <div class="stat"><span class="stat-val">฿1M+</span><span class="stat-label en">current alternative cost (enterprise)</span><span class="stat-label th">ราคาทางเลือกปัจจุบัน (enterprise)</span></div>
+    </div>
+    <div class="score-banner">
+      <div>
+        <div class="score-label en">OPPORTUNITY SCORE</div>
+        <div class="score-label th">คะแนนโอกาส</div>
+        <div><span class="score-val">43</span><span class="score-total">/50</span></div>
+      </div>
+      <div>
+        <div class="score-bar"><div class="score-fill" style="width:86%"></div></div>
+        <div style="font-size:0.7rem;color:#60a5fa;margin-top:0.4rem;font-family:'Space Mono',monospace;">🏢 DATA TRAPPED IN PDFS · AGENTS NEED THIS NOW</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">😩 THE PROBLEM — DATA TRAPPED IN GOVERNMENT PDFS</div>
+    <div class="section-label th">😩 ปัญหา — ข้อมูลติดอยู่ใน PDF รัฐบาล</div>
+    <h2>
+      <span class="en">1.4 Million Companies, Zero Queryable API</span>
+      <span class="th">1.4 ล้านบริษัท ไม่มี API ให้ Query ได้เลย</span>
+    </h2>
+    <div class="alert-box">
+      <div class="alert-title">🚨 THIS IS HOW AI AGENTS ACCESS THAI COMPANY DATA TODAY — AND IT'S TERRIBLE</div>
+      <p style="color:var(--text2);font-size:0.92rem;line-height:1.7;">
+        <span class="en">1. Agent navigates to DBD portal (dbdregis.dbd.go.th) via Browserbase ($20-99/mo). 2. Enters company name in Thai. 3. Waits for slow government server (5-15 seconds). 4. CAPTCHA appears. 5. Agent fails. 6. Human intervenes. <strong>Total cost: $0.50-2.00 per company lookup, 50% failure rate, requires human oversight.</strong> ThaiCompany API: $0.005, 200ms, 99.9% success rate, fully autonomous.</span>
+        <span class="th">1. Agent เข้า DBD portal ผ่าน Browserbase ($20-99/เดือน) 2. ใส่ชื่อบริษัทภาษาไทย 3. รอ server รัฐที่ช้า (5-15 วินาที) 4. CAPTCHA ปรากฏ 5. Agent ล้มเหลว 6. คนต้องเข้ามาช่วย <strong>ราคารวม: $0.50-2.00 ต่อ lookup, อัตราล้มเหลว 50%, ต้องมีคนดูแล</strong> ThaiCompany API: $0.005, 200ms, 99.9% success</span>
+      </p>
+    </div>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3 class="en">KYC Agent Nightmare</h3>
+        <h3 class="th">KYC Agent ฝันร้าย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Banks, fintechs, and legal firms deploy KYC agents that need to verify Thai company legitimacy. Director names, registration status, capital, shareholders — all inaccessible to agents today. ThaiCompany API makes autonomous Thai KYC possible.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ธนาคาร fintech และสำนักงานกฎหมาย deploy KYC agents ที่ต้องตรวจสอบความถูกต้องบริษัทไทย ชื่อกรรมการ สถานะจดทะเบียน ทุน ผู้ถือหุ้น — ทั้งหมด agents เข้าไม่ถึงในวันนี้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3 class="en">Due Diligence Agent Bottleneck</h3>
+        <h3 class="th">Due Diligence Agent คอขวด</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">M&A advisors and investment analysts deploy agents to pre-screen Thai acquisition targets. Company age, financial history, director network, litigation exposure — locked in PDFs that agents can't parse reliably.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">ที่ปรึกษา M&A และนักวิเคราะห์การลงทุน deploy agents เพื่อ pre-screen เป้าหมายซื้อกิจการไทย อายุบริษัท ประวัติการเงิน เครือข่ายกรรมการ ความเสี่ยงคดี — ติดอยู่ใน PDF ที่ agents parse ไม่ได้</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Market Research Agent Blindspot</h3>
+        <h3 class="th">Market Research Agent จุดบอด</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Sales agents identifying prospects in the Thai market need company data to qualify leads — size, industry, founding year, director contacts. Today's agents do this manually via web scraping. ThaiCompany API makes it instant.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Sales agents ระบุ prospect ในตลาดไทยต้องการข้อมูลบริษัทเพื่อ qualify leads — ขนาด อุตสาหกรรม ปีก่อตั้ง กรรมการ ปัจจุบัน agents ทำผ่าน web scraping ด้วยตนเอง</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">📦 WHAT YOU GET</div>
+    <div class="section-label th">📦 สิ่งที่คุณได้รับ</div>
+    <h2>
+      <span class="en">Every Thai Company Field, Structured and Queryable</span>
+      <span class="th">ทุก Field ของบริษัทไทย Structured และ Query ได้</span>
+    </h2>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="en">📋 Basic Company Data</h3>
+        <h3 style="color:var(--primary-light);margin-bottom:1rem;" class="th">📋 ข้อมูลบริษัทพื้นฐาน</h3>
+        <div class="data-field"><span class="field-name">company_name_th</span><span class="field-val">ชื่อบริษัท (ภาษาไทย)</span></div>
+        <div class="data-field"><span class="field-name">company_name_en</span><span class="field-val">Company Name (English)</span></div>
+        <div class="data-field"><span class="field-name">registration_number</span><span class="field-val">0105562012345 (13-digit)</span></div>
+        <div class="data-field"><span class="field-name">registration_date</span><span class="field-val">2019-03-15</span></div>
+        <div class="data-field"><span class="field-name">company_type</span><span class="field-val">บริษัทจำกัด / หจก. / ห้างร้าน</span></div>
+        <div class="data-field"><span class="field-name">status</span><span class="field-val">active / dissolved / suspended</span></div>
+        <div class="data-field"><span class="field-name">registered_capital_thb</span><span class="field-val">1,000,000</span></div>
+        <div class="data-field"><span class="field-name">industry_code</span><span class="field-val">TSIC 62010 (Software)</span></div>
+        <div class="data-field"><span class="field-name">registered_address</span><span class="field-val">Full address + postal code</span></div>
+        <div class="data-field"><span class="field-name">province</span><span class="field-val">Bangkok / Chiang Mai etc.</span></div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="en">👥 People & Financials</h3>
+        <h3 style="color:var(--secondary-light);margin-bottom:1rem;" class="th">👥 บุคคลและการเงิน</h3>
+        <div class="data-field"><span class="field-name">directors[]</span><span class="field-val">Name, ID, appointment date</span></div>
+        <div class="data-field"><span class="field-name">authorized_directors</span><span class="field-val">Who can sign for company</span></div>
+        <div class="data-field"><span class="field-name">shareholders[]</span><span class="field-val">Name, shares, % ownership</span></div>
+        <div class="data-field"><span class="field-name">foreign_ownership_pct</span><span class="field-val">0–100%</span></div>
+        <div class="data-field"><span class="field-name">annual_revenue_latest</span><span class="field-val">From DBD financial filings</span></div>
+        <div class="data-field"><span class="field-name">paid_up_capital</span><span class="field-val">Current paid-up capital</span></div>
+        <div class="data-field"><span class="field-name">vat_registered</span><span class="field-val">true / false</span></div>
+        <div class="data-field"><span class="field-name">balance_sheet_url</span><span class="field-val">Direct PDF link from DBD</span></div>
+        <div class="data-field"><span class="field-name">last_updated</span><span class="field-val">2026-01-30 (freshness score)</span></div>
+        <div class="data-field"><span class="field-name">related_companies[]</span><span class="field-val">Shared directors/shareholders</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">⚡ API EXAMPLE</div>
+    <div class="section-label th">⚡ ตัวอย่าง API</div>
+    <h2><span class="en">Clean JSON Response in Under 200ms</span><span class="th">JSON Response สะอาดภายใน 200ms</span></h2>
+    <div class="code-block">
+<span class="comment">// Simple REST + MCP-compatible tool</span>
+GET /v1/company?q=<span class="string">"mutelab"</span>&lang=<span class="string">"en"</span>
+Authorization: Bearer {api_key}
+
+<span class="comment">// Response</span>
+{
+  <span class="string">"company_name_en"</span>: <span class="string">"MUTELAB CO., LTD."</span>,
+  <span class="string">"registration_number"</span>: <span class="string">"0105565012345"</span>,
+  <span class="string">"status"</span>: <span class="string">"active"</span>,
+  <span class="string">"registered_capital_thb"</span>: 1000000,
+  <span class="string">"industry"</span>: <span class="string">"Software Development"</span>,
+  <span class="string">"directors"</span>: [{ <span class="string">"name"</span>: <span class="string">"Thanapat ..."</span>, <span class="string">"appointed"</span>: <span class="string">"2022-01-15"</span> }],
+  <span class="string">"foreign_ownership_pct"</span>: 0,
+  <span class="string">"vat_registered"</span>: true,
+  <span class="string">"confidence_score"</span>: 0.98  <span class="comment">// Data freshness confidence</span>
+}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">🏆 COMPETITION</div>
+    <div class="section-label th">🏆 คู่แข่ง</div>
+    <h2><span class="en">Enterprise-Only vs. Agent-First</span><span class="th">Enterprise เท่านั้น vs. Agent-First</span></h2>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr><th>SOLUTION</th><th>Agent-Friendly API</th><th>Usage-Based</th><th>Self-Serve</th><th>Price</th><th>Coverage</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>DBD Portal (DIY)</strong></td><td class="no">❌ Manual scraping</td><td class="no">❌ Browserbase $99/mo</td><td class="no">❌ CAPTCHA fails</td><td class="no">$0.50-2/lookup</td><td class="partial">⚡ Basic info</td></tr>
+          <tr><td><strong>AsiaVerify</strong></td><td class="no">❌ Enterprise API</td><td class="no">❌ Contract required</td><td class="no">❌ Sales demo needed</td><td class="no">$5K+/year</td><td class="yes">✅ Full data</td></tr>
+          <tr><td><strong>Refinitiv / Bloomberg</strong></td><td class="no">❌ Not for agents</td><td class="no">❌ Annual contract</td><td class="no">❌ Enterprise only</td><td class="no">$20K+/year</td><td class="partial">⚡ Large cos only</td></tr>
+          <tr class="highlight-row"><td><strong>ThaiCompany API ✦</strong></td><td class="yes">✅ MCP + REST</td><td class="yes">✅ $0.005/lookup</td><td class="yes">✅ API key in 60s</td><td class="yes">From free</td><td class="yes">✅ 1.4M companies</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">💰 PRICING — USAGE-BASED</div>
+    <div class="section-label th">💰 ราคา — Usage-Based</div>
+    <h2><span class="en">Agents Pay Per Query. No Minimums. No Commitments.</span><span class="th">Agents จ่ายต่อ Query ไม่มีขั้นต่ำ ไม่มีผูกพัน</span></h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">FREE TIER</div>
+        <div class="pricing-tier th">Free Tier</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-unit en">50 lookups/month</div>
+        <div class="pricing-unit th">50 lookups/เดือน</div>
+        <div class="pricing-desc en">All fields included. Great for prototyping. No credit card needed. Upgrade when ready.</div>
+        <div class="pricing-desc th">ครบทุก field เหมาะ prototype ไม่ต้องบัตรเครดิต</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">POPULAR</div>
+        <div class="pricing-tier en">PAY-AS-YOU-GO</div>
+        <div class="pricing-tier th">Pay-as-you-go</div>
+        <div class="pricing-price">$0.005</div>
+        <div class="pricing-unit en">per lookup (add credits)</div>
+        <div class="pricing-unit th">ต่อ lookup (เติม credits)</div>
+        <div class="pricing-desc en">$5 = 1,000 lookups. $50 = 10,000 lookups. Perfect for agents. Credits never expire. Volume discounts at 100K+.</div>
+        <div class="pricing-desc th">$5 = 1,000 lookups $50 = 10,000 lookups เหมาะ agents Credits ไม่หมดอายุ ส่วนลดปริมาณที่ 100K+</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">ENTERPRISE</div>
+        <div class="pricing-tier th">Enterprise</div>
+        <div class="pricing-price">$199</div>
+        <div class="pricing-unit en">/month + $0.002/lookup</div>
+        <div class="pricing-unit th">/เดือน + $0.002/lookup</div>
+        <div class="pricing-desc en">Unlimited monthly lookups at $0.002 each. SLA 99.9%. Bulk data export. Webhook for company changes. Custom integrations.</div>
+        <div class="pricing-desc th">Lookups ไม่จำกัดที่ $0.002 SLA 99.9% Export bulk data Webhook แจ้งการเปลี่ยนแปลง</div>
+      </div>
+    </div>
+    <div style="margin-top:2rem;">
+      <div class="revenue-block">
+        <p class="section-label" style="margin-bottom:1rem;">REVENUE PROJECTION (USAGE-BASED)</p>
+        <div class="revenue-row"><span class="en">Month 3: 20 customers, avg 2K lookups/mo each</span><span class="th">เดือน 3: 20 ลูกค้า เฉลี่ย 2K lookups/เดือน</span><span class="revenue-val">$200/mo</span></div>
+        <div class="revenue-row"><span class="en">Month 6: 100 customers, avg 5K lookups/mo each</span><span class="th">เดือน 6: 100 ลูกค้า เฉลี่ย 5K lookups/เดือน</span><span class="revenue-val">$2,500/mo</span></div>
+        <div class="revenue-row"><span class="en">Month 12: 500 customers, avg 8K lookups/mo each</span><span class="th">เดือน 12: 500 ลูกค้า เฉลี่ย 8K lookups/เดือน</span><span class="revenue-val">$20,000/mo</span></div>
+        <div class="revenue-row"><span class="en"><strong>Year 1 ARR</strong></span><span class="th"><strong>ARR ปีที่ 1</strong></span><span class="revenue-val"><strong>~$150K (~฿4.8M)</strong></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label en">🏗️ BUILD PLAN</div>
+    <div class="section-label th">🏗️ แผนการสร้าง</div>
+    <h2><span class="en">3-Week Build: Scrape DBD → Structure → API → Billing</span><span class="th">สร้าง 3 สัปดาห์: Scrape DBD → Structure → API → Billing</span></h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 1</div>
+        <div class="tl-title en">DBD Data Ingestion Pipeline</div>
+        <div class="tl-title th">Pipeline นำเข้าข้อมูล DBD</div>
+        <div class="tl-desc en">Build Playwright-based scraper for DBD portal. Handle CAPTCHA with 2captcha service ($1/1K). Extract all 1.4M companies: name (TH+EN), registration number, status, capital, industry code, address, directors, shareholders. Store in PostgreSQL. Estimated scraping time: 2-3 weeks at 5 req/s.</div>
+        <div class="tl-desc th">สร้าง scraper ด้วย Playwright สำหรับ DBD portal จัดการ CAPTCHA ด้วย 2captcha ($1/1K) ดึงบริษัท 1.4M: ชื่อ (ไทย+อังกฤษ), เลขจดทะเบียน, สถานะ, ทุน, รหัสอุตสาหกรรม, ที่อยู่, กรรมการ, ผู้ถือหุ้น เก็บใน PostgreSQL</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 2</div>
+        <div class="tl-title en">API + Search Engine</div>
+        <div class="tl-title th">API + Search Engine</div>
+        <div class="tl-desc en">Build REST API with endpoints: search by name (Thai fuzzy search), lookup by registration number, director search, industry filter, bulk export. Add Thai text normalization for search accuracy. Elasticsearch for fast full-text Thai search.</div>
+        <div class="tl-desc th">สร้าง REST API: ค้นหาตามชื่อ (Thai fuzzy search), lookup ตามเลขจดทะเบียน, ค้นหากรรมการ, กรองอุตสาหกรรม, bulk export เพิ่ม Thai text normalization สำหรับความแม่นยำ Elasticsearch สำหรับ full-text Thai search เร็ว</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-week">WEEK 3</div>
+        <div class="tl-title en">MCP Server + Billing + Launch</div>
+        <div class="tl-title th">MCP Server + Billing + Launch</div>
+        <div class="tl-desc en">Wrap API as MCP server: search_thai_company, get_company_details, find_directors, check_shareholders. Add Stripe billing (pay-as-you-go credits), usage metering, API key management. Launch landing page, submit to MCP Registry. Soft launch in Claude MCP community (Reddit r/mcp, Discord).</div>
+        <div class="tl-desc th">Wrap API เป็น MCP server: search_thai_company, get_company_details, find_directors, check_shareholders เพิ่ม Stripe billing, usage metering, API key management Launch landing page, ส่ง MCP Registry</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="container">
+    <h2><span class="en">🏢 1.4M Thai Companies, Finally Accessible to AI Agents</span><span class="th">🏢 บริษัทไทย 1.4 ล้านแห่ง ในที่สุดก็ให้ AI Agents เข้าถึงได้</span></h2>
+    <p><span class="en">ThaiCompany API — Idea #128 · Sell to AI Series · Usage-Based $0.005/lookup · DBD Data Liberated · Agent-Native Design</span><span class="th">ThaiCompany API — ไอเดีย #128 · Sell to AI Series · Usage-Based $0.005/lookup · ข้อมูล DBD ถูกปลดปล่อย</span></p>
+    <a href="index.html" class="back-link">← <span class="en">Back to All Ideas</span><span class="th">กลับหน้ารวมไอเดีย</span></a>
+  </div>
+</div>
+<footer>
+  <div class="container"><p>MUTELAB — IDEA SPRINT #128 — THAICOMPANY API — SELL TO AI SERIES — FEB 24, 2026</p></div>
+</footer>
+<script>
+function setLang(lang) {
+  document.body.classList.toggle('show-th', lang === 'th');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-th').classList.toggle('active', lang === 'th');
+  localStorage.setItem('lang', lang);
+}
+const saved = localStorage.getItem('lang');
+if (saved === 'th') setLang('th');
+</script>
+</body>
+</html>
