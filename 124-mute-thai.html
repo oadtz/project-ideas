@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteThai — AI Thai Language Learning App</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080a08;--surface:#0f170f;--surface2:#161f16;--border:rgba(34,197,94,0.12);--border2:rgba(34,197,94,0.28);--text:#f0fff4;--text2:#86efac;--muted:#5a7a62;--primary:#22c55e;--primary-light:#4ade80;--primary-pale:rgba(34,197,94,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--accent:#38bdf8;--red:#ff3e3e;--purple:#a78bfa;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(34,197,94,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.025) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 10% 15%,rgba(34,197,94,0.09) 0%,transparent 55%),radial-gradient(ellipse at 90% 80%,rgba(56,189,248,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,10,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .lesson-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;}
+  .lesson-header{display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem;}
+  .lesson-icon{font-size:1.4rem;}
+  .lesson-title{font-size:0.9rem;font-weight:700;}
+  .lesson-progress{margin-left:auto;font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--primary);background:var(--primary-pale);padding:0.2rem 0.6rem;border-radius:6px;}
+  .thai-char{font-size:2.5rem;text-align:center;padding:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-bottom:0.5rem;}
+  .thai-char-label{font-size:0.75rem;color:var(--muted);text-align:center;font-family:'Space Mono',monospace;}
+  .char-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.8rem;margin-bottom:1.5rem;}
+  .tone-bar{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;}
+  .tone-label{font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted);min-width:80px;}
+  .tone-wave{flex:1;height:3px;border-radius:99px;background:var(--border);}
+  .tone-wave-1{background:linear-gradient(90deg,var(--primary),var(--primary));}
+  .tone-wave-2{background:linear-gradient(90deg,var(--primary),var(--accent));}
+  .tone-wave-3{background:linear-gradient(90deg,var(--primary),var(--red));}
+  .tone-wave-4{background:linear-gradient(90deg,var(--primary-light),var(--primary));}
+  .tone-wave-5{background:linear-gradient(90deg,var(--accent),var(--primary));}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#000;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comp-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+  .comp-table th,.comp-table td{padding:0.7rem 1rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem;}
+  .comp-table th{background:var(--surface2);color:var(--muted);font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .good{color:var(--primary-light);}
+  .bad{color:var(--red);}
+  .ok{color:var(--secondary-light);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;margin-top:1.5rem;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+  .tag-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .tag{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:6px;background:var(--primary-pale);border:1px solid var(--border2);color:var(--primary-light);}
+  .audience-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+  @media(max-width:768px){.audience-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTE<span style="color:var(--text2)">LAB</span></span>
+  <span class="nav-badge">IDEA #124</span>
+  <span class="nav-badge" style="color:var(--primary-light);border-color:var(--primary);">WAVE 3</span>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-meta">
+      <span class="hero-tag">LANGUAGE LEARNING · AI · GLOBAL B2C</span>
+      <span class="idea-num">#124 — MuteThai</span>
+    </div>
+    <h1><span class="accent">Learn Thai</span><br>with AI. Finally.</h1>
+    <p class="hero-sub">Tones. Script. Culture. The Thai learning app that actually works.</p>
+    <p class="hero-desc">40 million tourists visit Thailand yearly. 300K+ expats live there. Yet no serious AI-powered Thai language app exists. Duolingo Thai is shallow, Ling App is basic. MuteThai is the first AI-native Thai learning app — with tone recognition, script mastery, cultural immersion, and real conversation practice.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">40M+</span><span class="stat-label">tourists/yr to Thailand</span></div>
+      <div class="stat"><span class="stat-val">$7.36B</span><span class="stat-label">language learning market 2025</span></div>
+      <div class="stat"><span class="stat-val">16.15%</span><span class="stat-label">CAGR through 2033</span></div>
+      <div class="stat"><span class="stat-val">6-9mo</span><span class="stat-label">to ฿1M revenue</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">WHY THAI IS HARD</div>
+    <h2>The Problem With Learning Thai</h2>
+    <div class="two-col">
+      <div>
+        <div class="pain-item">
+          <span class="pain-emoji">🎵</span>
+          <div class="pain-text">
+            <h3>5 Tones Nobody Teaches Correctly</h3>
+            <p>Thai has 5 tones that change meaning completely. "Maa" can mean horse, dog, come, or burn. No app gives real-time tone feedback with AI voice recognition.</p>
+          </div>
+        </div>
+        <div class="pain-item">
+          <span class="pain-emoji">📖</span>
+          <div class="pain-text">
+            <h3>Script That Looks Impossible</h3>
+            <p>44 consonants, 32 vowels, tone marks, no spaces between words. Duolingo skips script entirely. You can't be functional in Thai without reading it.</p>
+          </div>
+        </div>
+        <div class="pain-item">
+          <span class="pain-emoji">🏛️</span>
+          <div class="pain-text">
+            <h3>Cultural Context Missing Everywhere</h3>
+            <p>"Sawadee" is more than hello — it's a bow, a social hierarchy, a gender marker. Generic apps miss all of this. MuteThai teaches language + culture together.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="lesson-card">
+          <div class="lesson-header">
+            <span class="lesson-icon">🎵</span>
+            <span class="lesson-title">Tone Recognition — Lesson 3</span>
+            <span class="lesson-progress">AI LISTENING</span>
+          </div>
+          <div class="tone-bar"><span class="tone-label">Mid (สามัญ)</span><div class="tone-wave tone-wave-1" style="height:2px;"></div></div>
+          <div class="tone-bar"><span class="tone-label">Low (เอก)</span><div class="tone-wave tone-wave-2" style="height:2px;transform:skewY(-2deg);"></div></div>
+          <div class="tone-bar"><span class="tone-label">Falling (โท)</span><div class="tone-wave tone-wave-3" style="height:2px;transform:skewY(3deg);"></div></div>
+          <div class="tone-bar"><span class="tone-label">High (ตรี)</span><div class="tone-wave tone-wave-4" style="height:2px;transform:skewY(-4deg);"></div></div>
+          <div class="tone-bar"><span class="tone-label">Rising (จัตวา)</span><div class="tone-wave tone-wave-5" style="height:2px;transform:skewY(5deg);"></div></div>
+          <p style="font-size:0.78rem;color:var(--muted);margin-top:1rem;">Say "มา" — AI scores your tone accuracy in real-time</p>
+        </div>
+        <div class="lesson-card" style="margin-top:1rem;">
+          <div class="lesson-header">
+            <span class="lesson-icon">📝</span>
+            <span class="lesson-title">Script Builder — Consonants</span>
+            <span class="lesson-progress">12/44</span>
+          </div>
+          <div class="char-grid">
+            <div><div class="thai-char">ก</div><div class="thai-char-label">K (gai)</div></div>
+            <div><div class="thai-char">ข</div><div class="thai-char-label">Kh (khai)</div></div>
+            <div><div class="thai-char">ค</div><div class="thai-char-label">Kh (khuan)</div></div>
+            <div><div class="thai-char">ง</div><div class="thai-char-label">Ng (ngu)</div></div>
+            <div><div class="thai-char">จ</div><div class="thai-char-label">J (jan)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">FEATURES</div>
+    <h2>What MuteThai Does Differently</h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>AI Tone Coach</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">Speak into your phone. AI analyzes your tones in real-time, shows a waveform visualization, and tells you exactly which tone you're hitting vs. what you should hit. No other Thai app has this.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✍️</div>
+        <h3>Script Mastery Path</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">Learn to read Thai script from zero. Spaced repetition + stroke-order animations + reading actual Thai signs/menus. Progress from tourist to reader in 30 days.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏮</div>
+        <h3>Cultural Immersion Modules</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">Songkran phrases, Loy Krathong traditions, temple etiquette, street food ordering, taxi negotiation, reading menus — real-life Thai scenarios with cultural context.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3>AI Conversation Partner</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">Chat with an AI Thai tutor in text or voice. Practice before your trip. Ask anything. The AI adjusts difficulty based on your level and corrects mistakes naturally.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h3>Travel Mode</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">Offline-ready phrasebook with pronunciation. Point camera at Thai text for instant translation. Quick-access survival phrases for emergency situations.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Progress Tracking</h3>
+        <p style="font-size:0.88rem;color:var(--text2);">See your tone accuracy improve over time. Track vocabulary retention. Streak system with Thai festival milestones. Share progress with friends learning Thai.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">TARGET AUDIENCE</div>
+    <h2>Who Will Pay for This</h2>
+    <div class="audience-grid">
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">✈️</div>
+        <h3>Tourists</h3>
+        <p style="font-size:0.82rem;color:var(--text2);">40M/yr. Want to order food, bargain, say basic phrases. Pay $1-5 for a travel app.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">🏠</div>
+        <h3>Expats</h3>
+        <p style="font-size:0.82rem;color:var(--text2);">300K+ in Thailand. Long-term learners. Pay $10+/mo consistently for years.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">💻</div>
+        <h3>Digital Nomads</h3>
+        <p style="font-size:0.82rem;color:var(--text2);">Thailand is top nomad destination. Chiang Mai, Bangkok. Want to integrate, not just visit.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon">🌏</div>
+        <h3>Thai Culture Fans</h3>
+        <p style="font-size:0.82rem;color:var(--text2);">Thai drama fans, Buddhist practitioners, Thai food enthusiasts worldwide. Growing global community.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">COMPETITION</div>
+    <h2>Duolingo Thai is Broken — No Real Rival</h2>
+    <table class="comp-table">
+      <thead><tr><th>App</th><th>Tone Recognition</th><th>Thai Script</th><th>Cultural Context</th><th>AI Conversation</th><th>Price</th></tr></thead>
+      <tbody>
+        <tr><td>Duolingo (Thai)</td><td class="bad">✗ None</td><td class="bad">✗ Skips it</td><td class="bad">✗ Generic</td><td class="bad">✗ None</td><td>$7.99/mo</td></tr>
+        <tr><td>Ling App</td><td class="bad">✗ Basic</td><td class="ok">~ Partial</td><td class="bad">✗ Minimal</td><td class="bad">✗ None</td><td>$10/mo</td></tr>
+        <tr><td>Pimsleur Thai</td><td class="ok">~ Audio only</td><td class="bad">✗ None</td><td class="ok">~ Some</td><td class="bad">✗ None</td><td>$20/mo</td></tr>
+        <tr><td>ThaiPod101</td><td class="bad">✗ None</td><td class="ok">~ Some videos</td><td class="ok">~ Some</td><td class="bad">✗ None</td><td>$8/mo</td></tr>
+        <tr><td style="color:var(--primary-light);font-weight:700;">MuteThai</td><td class="good">✓ AI real-time</td><td class="good">✓ Full path</td><td class="good">✓ Deep</td><td class="good">✓ AI tutor</td><td>฿299/mo</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label">PRICING</div>
+    <h2>Globally Competitive Pricing</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">TRAVELER</div>
+        <div class="pricing-price">฿99</div>
+        <div class="pricing-unit">one-time purchase</div>
+        <div class="pricing-desc">Survival phrases · Travel mode (offline) · Basic tone guide · 200 essential words · No subscription required</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">🌟 BEST VALUE</div>
+        <div class="pricing-tier">LEARNER</div>
+        <div class="pricing-price">฿299</div>
+        <div class="pricing-unit">per month (~$8.50)</div>
+        <div class="pricing-desc">Full course · AI tone coach · Script mastery · Cultural modules · AI conversation partner · Offline access · Progress analytics</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">ANNUAL</div>
+        <div class="pricing-price">฿2,490</div>
+        <div class="pricing-unit">per year (save 30%)</div>
+        <div class="pricing-desc">Everything in Learner · 2 months free · Certificate of completion · 1 live tutor session/month · Priority feature access</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">MARKET SIZE</div>
+    <h2>Global Market — Thai Cultural Export</h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>Language App Market</h3>
+        <p style="font-size:0.85rem;color:var(--text2);">$7.36B in 2025, growing to $24.39B by 2033 at 16.15% CAGR (Straits Research). Duolingo alone: $748M revenue in 2024. Thai is massively underserved.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏖️</div>
+        <h3>Thailand Tourism</h3>
+        <p style="font-size:0.85rem;color:var(--text2);">40M tourists/yr, $80B contribution. TDAC digital arrival card launched May 2025 — every tourist is digitally onboarded. MuteThai = perfect pre/during trip companion.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>Revenue Potential</h3>
+        <p style="font-size:0.85rem;color:var(--text2);">100K subscribers × ฿299/mo = ฿29.9M/mo. Achievable in 18-24 months with SEO + app stores + expat communities. ฿1M target: ~3,345 subscribers.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-section">
+    <div class="section-label" style="text-align:center;margin-bottom:1rem;">WAVE 3 · IDEA #124</div>
+    <h2 style="margin-bottom:0.5rem;">The Duolingo of Thai — Built Right</h2>
+    <p style="color:var(--text2);max-width:520px;margin:0 auto 2rem;">40M tourists + 300K expats + global Thai culture fans = massive underserved market. Duolingo Thai is broken. No AI-powered alternative exists. This is a global product with Thailand as the cultural anchor.</p>
+    <div class="tag-row" style="justify-content:center;margin-bottom:1.5rem;">
+      <span class="tag">B2C · 9/10</span>
+      <span class="tag">Time-to-฿1M: 6-9 months</span>
+      <span class="tag">Competition: WEAK</span>
+      <span class="tag">Market: GLOBAL $7.36B</span>
+    </div>
+    <a href="index.html" class="back-link">← Back to All Ideas</a>
+  </div>
+</div>
+
+<footer><div class="container"><p>MUTELAB © 2026 · WAVE 3 RESEARCH · IDEA #124 · MUTETHAI</p></div></footer>
+
+<script>
+function setLang(l){
+  document.body.classList.toggle('show-th',l==='th');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  document.getElementById('btn-th').classList.toggle('active',l==='th');
+}
+</script>
+</body>
+</html>

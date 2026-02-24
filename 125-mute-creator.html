@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteCreator — Thai Creator All-in-One Analytics Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080a0f;--surface:#0e1120;--surface2:#141728;--border:rgba(56,189,248,0.12);--border2:rgba(56,189,248,0.28);--text:#f0f9ff;--text2:#7dd3fc;--muted:#4a6a80;--primary:#38bdf8;--primary-light:#7dd3fc;--primary-pale:rgba(56,189,248,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--accent:#a78bfa;--red:#ff3e3e;--green:#22c55e;--pink:#ec4899;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(56,189,248,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 15%,rgba(56,189,248,0.09) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(167,139,250,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,10,15,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .platform-row{display:flex;align-items:center;gap:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:0.8rem;}
+  .platform-icon{font-size:1.5rem;flex-shrink:0;}
+  .platform-name{font-weight:700;font-size:0.9rem;}
+  .platform-stat{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--primary-light);margin-left:auto;}
+  .dashboard-mock{background:var(--surface2);border:1px solid var(--border2);border-radius:16px;padding:1.5rem;margin-top:1.5rem;}
+  .dash-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;}
+  .dash-label{font-size:0.78rem;color:var(--muted);min-width:120px;}
+  .dash-bar-wrap{flex:1;background:var(--surface);border-radius:99px;height:6px;overflow:hidden;}
+  .dash-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--accent));}
+  .dash-val{font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--primary-light);min-width:60px;text-align:right;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#000;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comp-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+  .comp-table th,.comp-table td{padding:0.7rem 1rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem;}
+  .comp-table th{background:var(--surface2);color:var(--muted);font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .good{color:var(--green);}
+  .bad{color:var(--red);}
+  .ok{color:var(--secondary-light);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;margin-top:1.5rem;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+  .tag-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .tag{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:6px;background:var(--primary-pale);border:1px solid var(--border2);color:var(--primary-light);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTE<span style="color:var(--text2)">LAB</span></span>
+  <span class="nav-badge">IDEA #125</span>
+  <span class="nav-badge" style="color:var(--primary-light);border-color:var(--primary);">WAVE 3</span>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-meta">
+      <span class="hero-tag en">CREATOR TOOLS · ANALYTICS · THAI-FIRST</span>
+      <span class="hero-tag th">เครื่องมือครีเอเตอร์ · Analytics · ไทยเป็นหลัก</span>
+      <span class="idea-num">#125 — MuteCreator</span>
+    </div>
+    <h1 class="en">The <span class="accent">Analytics Hub</span><br>for Thai Creators.</h1>
+    <h1 class="th"><span class="accent">Analytics Hub</span><br>สำหรับครีเอเตอร์ไทย</h1>
+    <p class="hero-sub en">TikTok + YouTube + LINE + Instagram — one Thai-language dashboard.</p>
+    <p class="hero-sub th">TikTok + YouTube + LINE + Instagram — แดชบอร์ดภาษาไทยในที่เดียว</p>
+    <p class="hero-desc en">500K+ Thai content creators use multiple platforms — but all analytics tools are English-only, expensive, and don't understand Thai creator economics. MuteCreator is the first Thai-language creator analytics suite: cross-platform insights, Thai audience behavior, content scheduling, and monetization tracking.</p>
+    <p class="hero-desc th">ครีเอเตอร์ไทยกว่า 500K+ ใช้หลายแพลตฟอร์ม แต่เครื่องมือ analytics ทั้งหมดเป็นภาษาอังกฤษ แพง และไม่เข้าใจ economics ของครีเอเตอร์ไทย MuteCreator คือ creator analytics suite ภาษาไทยชุดแรก</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">500K+</span><span class="stat-label en">Thai active creators</span><span class="stat-label th">ครีเอเตอร์ไทยที่ active</span></div>
+      <div class="stat"><span class="stat-val">54M</span><span class="stat-label en">Thai YouTube users</span><span class="stat-label th">ผู้ใช้ YouTube ไทย</span></div>
+      <div class="stat"><span class="stat-val">฿46.8M</span><span class="stat-label en">yr revenue potential</span><span class="stat-label th">ศักยภาพรายได้ต่อปี</span></div>
+      <div class="stat"><span class="stat-val">5-7mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M แรก</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">PLATFORMS COVERED</div>
+    <div class="section-label th">แพลตฟอร์มที่ครอบคลุม</div>
+    <h2 class="en">All Thai Creator Platforms in One Dashboard</h2>
+    <h2 class="th">แพลตฟอร์มครีเอเตอร์ไทยทุกที่ในแดชบอร์ดเดียว</h2>
+    <div class="two-col">
+      <div>
+        <div class="platform-row">
+          <span class="platform-icon">🎵</span>
+          <div>
+            <div class="platform-name">TikTok / TikTok Shop</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="en">Views, shares, GMV, affiliate income, LIVE stats</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="th">ยอดวิว, แชร์, GMV, รายได้ affiliate, stats LIVE</div>
+          </div>
+          <span class="platform-stat">20M users</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-icon">▶️</span>
+          <div>
+            <div class="platform-name">YouTube</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="en">Views, watch time, CTR, CPM, subscriber growth</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="th">ยอดวิว, watch time, CTR, CPM, growth subscriber</div>
+          </div>
+          <span class="platform-stat">54M users</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-icon">💚</span>
+          <div>
+            <div class="platform-name">LINE (Sticker sales + OA)</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="en">Sticker revenue, OA followers, broadcast performance</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="th">รายได้สติกเกอร์, followers OA, ประสิทธิภาพ broadcast</div>
+          </div>
+          <span class="platform-stat">56M users</span>
+        </div>
+        <div class="platform-row">
+          <span class="platform-icon">📸</span>
+          <div>
+            <div class="platform-name">Instagram / Facebook</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="en">Reels performance, reach, engagement, story metrics</div>
+            <div style="font-size:0.78rem;color:var(--muted);" class="th">ประสิทธิภาพ Reels, reach, engagement, story</div>
+          </div>
+          <span class="platform-stat">40M+ users</span>
+        </div>
+      </div>
+      <div>
+        <div class="dashboard-mock">
+          <div style="font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);margin-bottom:1rem;">WEEKLY PERFORMANCE — ครีเอเตอร์ @yourname</div>
+          <div class="dash-row">
+            <span class="dash-label">TikTok Views</span>
+            <div class="dash-bar-wrap"><div class="dash-bar" style="width:85%;"></div></div>
+            <span class="dash-val">128.5K</span>
+          </div>
+          <div class="dash-row">
+            <span class="dash-label">YouTube CTR</span>
+            <div class="dash-bar-wrap"><div class="dash-bar" style="width:62%;background:linear-gradient(90deg,var(--red),var(--secondary));"></div></div>
+            <span class="dash-val">6.2%</span>
+          </div>
+          <div class="dash-row">
+            <span class="dash-label">LINE Sticker Rev</span>
+            <div class="dash-bar-wrap"><div class="dash-bar" style="width:40%;background:linear-gradient(90deg,var(--green),var(--primary));"></div></div>
+            <span class="dash-val">฿2,840</span>
+          </div>
+          <div class="dash-row">
+            <span class="dash-label">IG Reach</span>
+            <div class="dash-bar-wrap"><div class="dash-bar" style="width:55%;background:linear-gradient(90deg,var(--pink),var(--accent));"></div></div>
+            <span class="dash-val">45.1K</span>
+          </div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+            <div style="font-family:'Space Mono',monospace;font-size:0.62rem;color:var(--primary-light);">🤖 AI INSIGHT: <span style="color:var(--text2);">TikTok videos posted at 20:00-21:00 get 3.2x more Thai engagement. Shift your schedule.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">THE PROBLEM</div>
+    <div class="section-label th">ปัญหา</div>
+    <h2 class="en">Every Tool is English-Only and Expensive</h2>
+    <h2 class="th">ทุกเครื่องมือเป็นอังกฤษและแพงมาก</h2>
+    <div class="pain-item">
+      <span class="pain-emoji">🗣️</span>
+      <div class="pain-text">
+        <h3 class="en">English interfaces confuse Thai creators</h3>
+        <h3 class="th">UI ภาษาอังกฤษสร้างความสับสนให้ครีเอเตอร์ไทย</h3>
+        <p class="en">Later, Hootsuite, TubeBuddy — all English. Thai creators lose time navigating tools meant for US/EU markets. Key metrics aren't contextualized for Thai audiences.</p>
+        <p class="th">Later, Hootsuite, TubeBuddy — อังกฤษทั้งหมด ครีเอเตอร์ไทยเสียเวลากับ UI ที่ออกแบบสำหรับตลาด US/EU ตัวชี้วัดสำคัญไม่ได้ถูก contextualize สำหรับกลุ่มผู้ชมไทย</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">💸</span>
+      <div class="pain-text">
+        <h3 class="en">Prices designed for US markets — too expensive</h3>
+        <h3 class="th">ราคาออกแบบสำหรับตลาด US — แพงเกินไป</h3>
+        <p class="en">Later $42/mo, Hootsuite $99/mo, VidIQ $25/mo — each separately. Thai creator income in baht makes USD pricing a barrier. No Thai platform offers combined functionality.</p>
+        <p class="th">Later $42/เดือน, Hootsuite $99/เดือน, VidIQ $25/เดือน — แยกกันซื้อ รายได้ครีเอเตอร์ไทยเป็นบาท ราคา USD เป็นอุปสรรค ไม่มีแพลตฟอร์มไทยที่รวมฟีเจอร์ครบ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">🧩</span>
+      <div class="pain-text">
+        <h3 class="en">Thai platforms missing: LINE, Facebook Gaming</h3>
+        <h3 class="th">แพลตฟอร์มไทยสำคัญขาดหาย: LINE, Facebook Gaming</h3>
+        <p class="en">No global creator tool tracks LINE sticker revenue or Facebook Gaming donations — but these are huge income sources for Thai creators. We fill that gap.</p>
+        <p class="th">ไม่มีเครื่องมือสากลที่ track รายได้สติกเกอร์ LINE หรือเงิน donate Facebook Gaming แต่นี่คือแหล่งรายได้ใหญ่สำหรับครีเอเตอร์ไทย เราเติมเต็มช่องว่างนั้น</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">FEATURES</div>
+    <div class="section-label th">ฟีเจอร์</div>
+    <h2 class="en">Everything a Thai Creator Needs</h2>
+    <h2 class="th">ทุกอย่างที่ครีเอเตอร์ไทยต้องการ</h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="en">Cross-Platform Dashboard</h3>
+        <h3 class="th">แดชบอร์ดข้ามแพลตฟอร์ม</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">All your metrics in one Thai-language view. Total earnings, best-performing content, audience demographics — aggregated, not siloed.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">ตัวชี้วัดทั้งหมดในมุมมองภาษาไทยเดียว รายได้รวม, คอนเทนต์ที่ดีที่สุด, demographics ผู้ชม — รวบรวม ไม่แยกส่วน</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🕐</div>
+        <h3 class="en">Best Time to Post (Thai Data)</h3>
+        <h3 class="th">เวลาที่ดีที่สุดในการโพสต์ (ข้อมูลไทย)</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">AI analyzes when your specific Thai audience is most active. Not global averages — your data, Thai timezone, Thai behavior patterns.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">AI วิเคราะห์ว่ากลุ่มผู้ชมไทยของคุณ active มากที่สุดเมื่อไหร่ ไม่ใช่ค่าเฉลี่ยโลก — ข้อมูลของคุณ, timezone ไทย, พฤติกรรมไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3 class="en">Content AI Advisor</h3>
+        <h3 class="th">AI ที่ปรึกษาคอนเทนต์</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">AI analyzes your top videos and tells you: why they worked, what elements to repeat, what Thai trends to ride next week. In Thai language.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">AI วิเคราะห์วิดีโอยอดนิยมของคุณ: ทำไมมันถึงสำเร็จ, องค์ประกอบใดที่ควรทำซ้ำ, เทรนด์ไทยอะไรที่ควรจับสัปดาห์หน้า — เป็นภาษาไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3 class="en">Thai Income Tracker</h3>
+        <h3 class="th">ตัวติดตามรายได้ไทย</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Track all income in THB: TikTok Shop affiliate, YouTube AdSense, LINE sticker revenue, Facebook Gaming donations, brand deals — total P&L in baht.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">ติดตามรายได้ทั้งหมดเป็น THB: TikTok Shop affiliate, YouTube AdSense, รายได้สติกเกอร์ LINE, เงิน donate Facebook Gaming, ดีล brand — P&L รวมเป็นบาท</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <h3 class="en">Content Calendar (Thai)</h3>
+        <h3 class="th">ปฏิทินคอนเทนต์ (ไทย)</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Schedule posts across all platforms. Built-in Thai festival calendar: Songkran, Loy Krathong, King's Birthday — plan seasonal content automatically.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">กำหนดเวลาโพสต์ข้ามแพลตฟอร์ม ปฏิทินเทศกาลไทยในตัว: สงกรานต์, ลอยกระทง, วันพ่อ — วางแผนคอนเทนต์ตามฤดูกาลอัตโนมัติ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3 class="en">Brand Deal Manager</h3>
+        <h3 class="th">ตัวจัดการดีล Brand</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Track brand partnership inquiries, contracts, payment due dates, deliverable deadlines. Generate media kit automatically from your real analytics.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">ติดตามการติดต่อ brand, สัญญา, วันครบกำหนดชำระ, deadline งาน สร้าง media kit อัตโนมัติจาก analytics จริงของคุณ</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">COMPETITION</div>
+    <div class="section-label th">คู่แข่ง</div>
+    <h2 class="en">All Competitors Are English, Expensive, Fragmented</h2>
+    <h2 class="th">คู่แข่งทุกรายเป็นอังกฤษ แพง และแตกกระจาย</h2>
+    <table class="comp-table">
+      <thead><tr><th>Tool</th><th class="en">Thai UI</th><th class="th">UI ไทย</th><th class="en">Multi-Platform</th><th class="th">หลายแพลตฟอร์ม</th><th class="en">LINE+FB Gaming</th><th class="th">LINE+FB Gaming</th><th>Price</th></tr></thead>
+      <tbody>
+        <tr><td>Later</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="ok en">~ 6 platforms</td><td class="ok th">~ 6 แพลตฟอร์ม</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$42/mo</td></tr>
+        <tr><td>Hootsuite</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="good en">✓</td><td class="good th">✓</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$99/mo</td></tr>
+        <tr><td>TubeBuddy</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="bad en">✗ YouTube only</td><td class="bad th">✗ YouTube เท่านั้น</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$11-49/mo</td></tr>
+        <tr><td>FastMoss</td><td class="bad en">✗ Chinese/EN</td><td class="bad th">✗ จีน/อังกฤษ</td><td class="bad en">✗ TikTok only</td><td class="bad th">✗ TikTok เท่านั้น</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$200+/mo</td></tr>
+        <tr><td style="color:var(--primary-light);font-weight:700;">MuteCreator</td><td class="good en">✓ Thai-first</td><td class="good th">✓ ไทยเป็นหลัก</td><td class="good en">✓ 5+ platforms</td><td class="good th">✓ 5+ แพลตฟอร์ม</td><td class="good en">✓ Yes</td><td class="good th">✓ มี</td><td>฿590/mo</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2 class="en">Priced for Thai Creator Income</h2>
+    <h2 class="th">ราคาที่เหมาะกับรายได้ครีเอเตอร์ไทย</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER</div>
+        <div class="pricing-tier th">เริ่มต้น</div>
+        <div class="pricing-price">฿190</div>
+        <div class="pricing-unit en">per month · 2 platforms</div>
+        <div class="pricing-unit th">ต่อเดือน · 2 แพลตฟอร์ม</div>
+        <div class="pricing-desc en">Connect TikTok + YouTube · 30-day analytics · Basic scheduling · Thai dashboard</div>
+        <div class="pricing-desc th">เชื่อม TikTok + YouTube · analytics 30 วัน · กำหนดเวลาพื้นฐาน · แดชบอร์ดไทย</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⚡ POPULAR</div>
+        <div class="pricing-tier en">PRO CREATOR</div>
+        <div class="pricing-tier th">ครีเอเตอร์โปร</div>
+        <div class="pricing-price">฿590</div>
+        <div class="pricing-unit en">per month · all platforms</div>
+        <div class="pricing-unit th">ต่อเดือน · ทุกแพลตฟอร์ม</div>
+        <div class="pricing-desc en">All platforms + LINE + FB Gaming · AI content advisor · Best time to post · Income tracker in THB · Thai festival calendar · Brand deal manager · Media kit generator</div>
+        <div class="pricing-desc th">ทุกแพลตฟอร์ม + LINE + FB Gaming · AI ที่ปรึกษา · เวลาโพสต์ที่ดีที่สุด · ติดตามรายได้ THB · ปฏิทินเทศกาล · จัดการดีล · สร้าง media kit</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">AGENCY</div>
+        <div class="pricing-tier th">เอเจนซี่</div>
+        <div class="pricing-price">฿2,490</div>
+        <div class="pricing-unit en">per month · up to 20 creators</div>
+        <div class="pricing-unit th">ต่อเดือน · สูงสุด 20 ครีเอเตอร์</div>
+        <div class="pricing-desc en">Manage multiple creator accounts · Aggregate performance reports · White-label reports for brands · API access</div>
+        <div class="pricing-desc th">จัดการหลายบัญชีครีเอเตอร์ · รายงาน performance รวม · รายงาน white-label สำหรับ brand · API access</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-section">
+    <div class="section-label" style="text-align:center;margin-bottom:1rem;">WAVE 3 · IDEA #125</div>
+    <h2 class="en" style="margin-bottom:0.5rem;">500K Thai Creators — Zero Thai Tools</h2>
+    <h2 class="th" style="margin-bottom:0.5rem;">ครีเอเตอร์ไทย 500K — ไม่มีเครื่องมือไทยเลย</h2>
+    <p style="color:var(--text2);max-width:520px;margin:0 auto 2rem;" class="en">Every Thai creator manages 3-5 platforms in English tools priced for US markets. MuteCreator is the obvious choice: Thai language, Thai pricing, Thai platform support (LINE + FB Gaming), AI insights in Thai.</p>
+    <p style="color:var(--text2);max-width:520px;margin:0 auto 2rem;" class="th">ครีเอเตอร์ไทยทุกคนจัดการ 3-5 แพลตฟอร์มผ่านเครื่องมืออังกฤษที่ราคาสำหรับตลาด US MuteCreator คือตัวเลือกที่ชัดเจน: ภาษาไทย, ราคาไทย, รองรับแพลตฟอร์มไทย</p>
+    <div class="tag-row" style="justify-content:center;margin-bottom:1.5rem;">
+      <span class="tag">B2C · 8/10</span>
+      <span class="tag">Time-to-฿1M: 5-7 months</span>
+      <span class="tag">Competition: HIGH but NO Thai tool</span>
+      <span class="tag">Market: ฿46.8M/yr</span>
+    </div>
+    <a href="index.html" class="back-link">← Back to All Ideas</a>
+  </div>
+</div>
+
+<footer><div class="container"><p>MUTELAB © 2026 · WAVE 3 RESEARCH · IDEA #125 · MUTECREATOR</p></div></footer>
+
+<script>
+function setLang(l){
+  document.body.classList.toggle('show-th',l==='th');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  document.getElementById('btn-th').classList.toggle('active',l==='th');
+}
+</script>
+</body>
+</html>

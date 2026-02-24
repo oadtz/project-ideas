@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteAcademy — ชุดเครื่องมือ AI สำหรับธุรกิจไทย</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#080a0a;--surface:#0f1118;--surface2:#161825;--border:rgba(139,92,246,0.12);--border2:rgba(139,92,246,0.28);--text:#f5f3ff;--text2:#c4b5fd;--muted:#7c6fa0;--primary:#8b5cf6;--primary-light:#a78bfa;--primary-pale:rgba(139,92,246,0.08);--secondary:#f59e0b;--secondary-light:#fbbf24;--accent:#06b6d4;--red:#ff3e3e;--green:#22c55e;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(139,92,246,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.025) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 15%,rgba(139,92,246,0.09) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(6,182,212,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#fff;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(8,10,10,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .prompt-card{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:0.8rem;font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--primary-light);position:relative;}
+  .prompt-card::before{content:'▶';position:absolute;left:-1px;top:50%;transform:translateY(-50%);color:var(--primary);font-size:0.6rem;}
+  .prompt-category{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;}
+  .prompt-text{color:var(--text2);font-family:'Sora','Noto Sans Thai',sans-serif;font-size:0.88rem;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comp-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+  .comp-table th,.comp-table td{padding:0.7rem 1rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem;}
+  .comp-table th{background:var(--surface2);color:var(--muted);font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .comp-table td:first-child{font-weight:600;color:var(--text);}
+  .good{color:var(--green);}
+  .bad{color:var(--red);}
+  .ok{color:var(--secondary-light);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .cta-btn{display:inline-flex;align-items:center;gap:0.6rem;background:var(--primary);color:#fff;font-weight:700;font-size:1rem;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;transition:all 0.2s;box-shadow:0 0 30px rgba(139,92,246,0.3);}
+  .cta-btn:hover{background:var(--primary-light);box-shadow:0 0 40px rgba(139,92,246,0.5);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;margin-top:1.5rem;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+  .feature-row{display:grid;grid-template-columns:1fr 2fr;gap:2rem;align-items:start;padding:1.5rem 0;border-bottom:1px solid var(--border);}
+  .feature-row:last-child{border-bottom:none;}
+  .feature-num{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--primary);opacity:0.4;}
+  @media(max-width:768px){.feature-row{grid-template-columns:1fr;}}
+  .tag-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .tag{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:6px;background:var(--primary-pale);border:1px solid var(--border2);color:var(--primary-light);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTE<span style="color:var(--text2)">LAB</span></span>
+  <span class="nav-badge">IDEA #122</span>
+  <span class="nav-badge" style="color:var(--primary-light);border-color:var(--primary);">WAVE 3</span>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-meta">
+      <span class="hero-tag en">AI TOOLS · B2C SAAS</span>
+      <span class="hero-tag th">AI TOOLS · B2C ซอฟต์แวร์</span>
+      <span class="idea-num">#122 — MuteAcademy</span>
+    </div>
+    <h1 class="en"><span class="accent">AI Toolkit</span><br>for Thai Business.</h1>
+    <h1 class="th"><span class="accent">ชุดเครื่องมือ AI</span><br>สำหรับธุรกิจไทย</h1>
+    <p class="hero-sub en">100+ Thai-Language AI Prompts + Workflow Templates + Community</p>
+    <p class="hero-sub th">พร้อมใช้งานทันที — ไม่ต้องมีพื้นฐาน AI</p>
+    <p class="hero-desc en">3.2 million Thai SMEs are using ChatGPT — but 70% don't know how to use it effectively. MuteAcademy is the first Thai-language AI toolkit: curated prompts, ready-made workflow templates, video tutorials, and a community — all in Thai.</p>
+    <p class="hero-desc th">SME ไทย 3.2 ล้านแห่งใช้ ChatGPT แต่กว่า 70% ไม่รู้วิธีใช้ให้ได้ผล MuteAcademy คือชุดเครื่องมือ AI ภาษาไทยชุดแรก: prompt สำเร็จรูป, เทมเพลต workflow, คลิปสอน และคอมมูนิตี้ — ครบในที่เดียว</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">3.2M+</span><span class="stat-label en">Thai SMEs</span><span class="stat-label th">SME ไทย</span></div>
+      <div class="stat"><span class="stat-val">5M+</span><span class="stat-label en">Thai Freelancers</span><span class="stat-label th">ฟรีแลนซ์ไทย</span></div>
+      <div class="stat"><span class="stat-val">฿59.7M</span><span class="stat-label en">yr revenue potential</span><span class="stat-label th">ศักยภาพรายปี</span></div>
+      <div class="stat"><span class="stat-val">2-4mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M แรก</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">THE PROBLEM</div>
+    <div class="section-label th">ปัญหา</div>
+    <h2 class="en">Thais Use AI — But Don't Know How</h2>
+    <h2 class="th">คนไทยใช้ AI แต่ไม่รู้จะใช้ยังไง</h2>
+    <div class="pain-item">
+      <span class="pain-emoji">😤</span>
+      <div class="pain-text">
+        <h3 class="en">Prompts don't work in Thai</h3>
+        <h3 class="th">พิมพ์ prompt ไทยแล้วผลลัพธ์แย่มาก</h3>
+        <p class="en">ChatGPT was built for English. Thai prompts give generic, unhelpful outputs. Business owners waste hours getting nothing useful.</p>
+        <p class="th">ChatGPT ถูกออกแบบมาสำหรับภาษาอังกฤษ prompt ภาษาไทยให้ผลลัพธ์ที่ไม่ตรงประเด็น เสียเวลาเป็นชั่วโมง</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">📚</span>
+      <div class="pain-text">
+        <h3 class="en">Courses are in English — or too expensive</h3>
+        <h3 class="th">คอร์ส AI เป็นภาษาอังกฤษหรือแพงมาก</h3>
+        <p class="en">Udemy, Coursera have AI courses — all in English. Thai courses exist on Facebook but scattered, outdated, and no tools included.</p>
+        <p class="th">Udemy, Coursera มีคอร์ส AI แต่ภาษาอังกฤษทั้งนั้น คอร์สไทยมีบน Facebook แต่กระจัดกระจาย ล้าสมัย ไม่มีเครื่องมือ</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">🔄</span>
+      <div class="pain-text">
+        <h3 class="en">No Thai business context</h3>
+        <h3 class="th">ไม่มีบริบทธุรกิจไทย</h3>
+        <p class="en">Global AI tools don't know Thai tax law, Thai HR regulations, Shopee Thailand, LINE OA, or Thai customer behavior. Every prompt needs heavy customization.</p>
+        <p class="th">เครื่องมือ AI สากลไม่รู้กฎหมายภาษีไทย, HR ไทย, Shopee TH, LINE OA หรือพฤติกรรมลูกค้าไทย ต้องปรับ prompt ทุกครั้ง</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้ปัญหา</div>
+    <h2 class="en">MuteAcademy: Thai AI Toolkit</h2>
+    <h2 class="th">MuteAcademy: ชุดเครื่องมือ AI ไทย</h2>
+    <p style="color:var(--text2);margin-bottom:2rem;" class="en">Everything a Thai business needs to leverage AI — without needing to be technical.</p>
+    <p style="color:var(--text2);margin-bottom:2rem;" class="th">ทุกสิ่งที่ธุรกิจไทยต้องการเพื่อใช้ AI — โดยไม่ต้องมีพื้นฐานเทคนิค</p>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <h3 class="en">100+ Thai Prompt Library</h3>
+        <h3 class="th">คลัง Prompt ไทย 100+ รายการ</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Ready-to-use prompts for: Shopee listings, LINE OA messages, Thai HR contracts, invoices, marketing copy, customer service — all in Thai context.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Prompt พร้อมใช้: ลิสต์สินค้า Shopee, ข้อความ LINE OA, สัญญา HR ไทย, ใบแจ้งหนี้, copywriting ไทย — ครบบริบทธุรกิจไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3 class="en">AI Workflow Templates</h3>
+        <h3 class="th">เทมเพลต Workflow AI</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Step-by-step workflows: write a product review campaign in 5 steps, create a LINE broadcast in 3 prompts, build a customer FAQ automatically.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">Workflow ทีละขั้น: เขียนแคมเปญรีวิวใน 5 ขั้น, สร้าง LINE broadcast ใน 3 prompt, สร้าง FAQ ลูกค้าอัตโนมัติ</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎓</div>
+        <h3 class="en">Thai AI Video Courses</h3>
+        <h3 class="th">คลิปสอน AI ภาษาไทย</h3>
+        <p style="font-size:0.88rem;color:var(--text2);" class="en">Bite-sized 5-15 minute Thai-language videos: how to use each prompt category, how to customize for your business, what AI can and can't do.</p>
+        <p style="font-size:0.88rem;color:var(--text2);" class="th">คลิปสั้น 5-15 นาทีภาษาไทย: วิธีใช้ prompt แต่ละหมวด, ปรับให้เหมาะกับธุรกิจตัวเอง, AI ทำได้และทำไม่ได้อะไรบ้าง</p>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <div class="section-label en" style="margin-bottom:1rem;">SAMPLE PROMPTS</div>
+      <div class="section-label th" style="margin-bottom:1rem;">ตัวอย่าง PROMPT</div>
+      <div class="prompt-card">
+        <div class="prompt-category en">SHOPEE LISTING ·  PRODUCT DESCRIPTION</div>
+        <div class="prompt-category th">SHOPEE · คำอธิบายสินค้า</div>
+        <div class="prompt-text en">"เขียนคำอธิบายสินค้า Shopee สำหรับ [ชื่อสินค้า] ราคา [X] บาท เน้น [จุดเด่น 3 อย่าง] ใส่ hashtag ยอดนิยม 10 อัน ปิดท้ายด้วย call-to-action ภาษาไทยแบบเป็นกันเอง"</div>
+        <div class="prompt-text th">"เขียนคำอธิบายสินค้า Shopee สำหรับ [ชื่อสินค้า] ราคา [X] บาท เน้น [จุดเด่น 3 อย่าง] ใส่ hashtag ยอดนิยม 10 อัน ปิดท้ายด้วย call-to-action ภาษาไทยแบบเป็นกันเอง"</div>
+      </div>
+      <div class="prompt-card">
+        <div class="prompt-category en">LINE OA · BROADCAST MESSAGE</div>
+        <div class="prompt-category th">LINE OA · ข้อความบรอดแคสต์</div>
+        <div class="prompt-text en">"เขียนข้อความ LINE broadcast โปรโมชัน [ชื่อแคมเปญ] ลด [X]% เฉพาะวันที่ [วันที่] สำหรับลูกค้าประจำ เพิ่ม emoji ให้สวยงาม ความยาวไม่เกิน 200 ตัวอักษร"</div>
+        <div class="prompt-text th">"เขียนข้อความ LINE broadcast โปรโมชัน [ชื่อแคมเปญ] ลด [X]% เฉพาะวันที่ [วันที่] สำหรับลูกค้าประจำ เพิ่ม emoji ให้สวยงาม ความยาวไม่เกิน 200 ตัวอักษร"</div>
+      </div>
+      <div class="prompt-card">
+        <div class="prompt-category en">HR · EMPLOYEE CONTRACT</div>
+        <div class="prompt-category th">HR · สัญญาจ้างงาน</div>
+        <div class="prompt-text en">"ช่วยร่างสัญญาจ้างงานแบบง่ายตามกฎหมายแรงงานไทย สำหรับพนักงานประจำ เงินเดือน [X] บาท ทดลองงาน 119 วัน ทำงาน 5 วัน/สัปดาห์ ใช้ภาษาเข้าใจง่าย"</div>
+        <div class="prompt-text th">"ช่วยร่างสัญญาจ้างงานแบบง่ายตามกฎหมายแรงงานไทย สำหรับพนักงานประจำ เงินเดือน [X] บาท ทดลองงาน 119 วัน ทำงาน 5 วัน/สัปดาห์ ใช้ภาษาเข้าใจง่าย"</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">MARKET SIZE</div>
+    <div class="section-label th">ขนาดตลาด</div>
+    <h2 class="en">8 Million Thai Professionals Need This</h2>
+    <h2 class="th">นักธุรกิจไทย 8 ล้านคนต้องการสิ่งนี้</h2>
+    <div class="three-col">
+      <div class="card">
+        <div class="card-icon">🏪</div>
+        <h3 class="en">3.2M SMEs</h3>
+        <h3 class="th">SME 3.2 ล้านแห่ง</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Shopee/Lazada/TikTok sellers, restaurants, clinics, schools — all need AI tools in Thai language with Thai business context.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">ร้านค้า Shopee/Lazada/TikTok, ร้านอาหาร, คลินิก, โรงเรียน — ทุกธุรกิจต้องการ AI ภาษาไทยบริบทธุรกิจไทย</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💻</div>
+        <h3 class="en">5M Freelancers</h3>
+        <h3 class="th">ฟรีแลนซ์ 5 ล้านคน</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">Graphic designers, copywriters, social media managers, VAs — all compete with AI. They need to master AI to stay relevant.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">นักออกแบบ, คนเขียนคอนเทนต์, social media manager — ทุกคนแข่งกับ AI ต้องเชี่ยวชาญ AI เพื่ออยู่รอด</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <h3 class="en">Revenue Model</h3>
+        <h3 class="th">โมเดลรายได้</h3>
+        <p style="font-size:0.85rem;color:var(--text2);" class="en">฿199/mo subscription + ฿990 prompt packs + ฿2,500 workshops. 0.5% conversion of 8M = 40K users = ฿8M/mo.</p>
+        <p style="font-size:0.85rem;color:var(--text2);" class="th">฿199/เดือน subscription + ฿990 prompt packs + ฿2,500 workshop. แปลง 0.5% จาก 8M = 40K users = ฿8M/เดือน</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">COMPETITION</div>
+    <div class="section-label th">คู่แข่ง</div>
+    <h2 class="en">No Thai-First AI Toolkit Exists</h2>
+    <h2 class="th">ไม่มีชุดเครื่องมือ AI ไทยอยู่ในตลาด</h2>
+    <table class="comp-table">
+      <thead><tr><th>Platform</th><th class="en">Focus</th><th class="th">จุดเน้น</th><th>Price</th><th class="en">Thai?</th><th class="th">ภาษาไทย?</th></tr></thead>
+      <tbody>
+        <tr><td>PromptBase</td><td class="en">Prompt marketplace</td><td class="th">ตลาด prompt</td><td>$2-50/prompt</td><td class="bad en">✗ English</td><td class="bad th">✗ อังกฤษ</td></tr>
+        <tr><td>Udemy / Coursera</td><td class="en">Video courses</td><td class="th">คอร์สวิดีโอ</td><td>$10-200/course</td><td class="bad en">✗ English</td><td class="bad th">✗ อังกฤษ</td></tr>
+        <tr><td>Zapier + Make.com</td><td class="en">Workflow automation</td><td class="th">workflow อัตโนมัติ</td><td>$29-99/mo</td><td class="bad en">✗ Technical</td><td class="bad th">✗ ต้องมีทักษะเทคนิค</td></tr>
+        <tr><td>Thai Facebook Groups</td><td class="en">Scattered tips</td><td class="th">เคล็ดลับกระจัดกระจาย</td><td>Free</td><td class="ok en">~ Partial</td><td class="ok th">~ บางส่วน</td></tr>
+        <tr><td style="color:var(--primary-light);font-weight:700;">MuteAcademy</td><td class="en">Thai AI toolkit + community</td><td class="th">ชุดเครื่องมือ AI + คอมมูนิตี้</td><td>฿199/mo</td><td class="good en">✓ Thai-first</td><td class="good th">✓ ไทยเป็นหลัก</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2 class="en">Simple, Affordable Pricing</h2>
+    <h2 class="th">ราคาเข้าถึงง่าย</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER · ฟรี</div>
+        <div class="pricing-tier th">เริ่มต้น · ฟรี</div>
+        <div class="pricing-price">฿0</div>
+        <div class="pricing-unit en">forever free</div>
+        <div class="pricing-unit th">ฟรีตลอด</div>
+        <div class="pricing-desc en">10 Thai prompts · 3 workflow templates · Community access · Weekly newsletter</div>
+        <div class="pricing-desc th">10 prompt ไทย · 3 เทมเพลต workflow · เข้าคอมมูนิตี้ · newsletter รายสัปดาห์</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⭐ POPULAR</div>
+        <div class="pricing-tier en">PRO · สมาชิก</div>
+        <div class="pricing-tier th">โปร · สมาชิก</div>
+        <div class="pricing-price">฿199</div>
+        <div class="pricing-unit en">per month</div>
+        <div class="pricing-unit th">ต่อเดือน</div>
+        <div class="pricing-desc en">100+ Thai prompts · All workflow templates · Video courses · New prompts weekly · Private community · Priority support</div>
+        <div class="pricing-desc th">100+ prompt ไทย · เทมเพลตทั้งหมด · คลิปสอน · prompt ใหม่ทุกสัปดาห์ · คอมมูนิตี้ส่วนตัว · ซัพพอร์ตด่วน</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">TEAM · ทีม</div>
+        <div class="pricing-tier th">ทีม</div>
+        <div class="pricing-price">฿990</div>
+        <div class="pricing-unit en">per month · up to 10 users</div>
+        <div class="pricing-unit th">ต่อเดือน · สูงสุด 10 คน</div>
+        <div class="pricing-desc en">All Pro features · Custom prompts for your business · 1-hour consultation · Team workshop (monthly)</div>
+        <div class="pricing-desc th">ทุกอย่างใน Pro · prompt ปรับเฉพาะธุรกิจ · ปรึกษา 1 ชั่วโมง · workshop ทีม (รายเดือน)</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-section">
+    <div class="section-label" style="text-align:center;margin-bottom:1rem;">WAVE 3 · IDEA #122</div>
+    <h2 class="en" style="margin-bottom:0.5rem;">The Fastest Path to ฿1M</h2>
+    <h2 class="th" style="margin-bottom:0.5rem;">เส้นทางสู่ ฿1M ที่เร็วที่สุด</h2>
+    <p style="color:var(--text2);max-width:500px;margin:0 auto 2rem;" class="en">Pure content + community product. Low build cost. 8M potential users. 2-4 months to first ฿1M revenue.</p>
+    <p style="color:var(--text2);max-width:500px;margin:0 auto 2rem;" class="th">สินค้าคอนเทนต์ + คอมมูนิตี้ ต้นทุนสร้างต่ำ ผู้ใช้เป้าหมาย 8 ล้านคน 2-4 เดือนถึง ฿1M แรก</p>
+    <div class="tag-row" style="justify-content:center;margin-bottom:1.5rem;">
+      <span class="tag">B2C · 10/10</span>
+      <span class="tag">Time-to-฿1M: 2-4 months</span>
+      <span class="tag">Competition: LOW</span>
+      <span class="tag">Market: ฿59.7M/yr</span>
+    </div>
+    <a href="index.html" class="back-link">← Back to All Ideas</a>
+  </div>
+</div>
+
+<footer><div class="container"><p>MUTELAB © 2026 · WAVE 3 RESEARCH · IDEA #122 · MUTEACADEMY</p></div></footer>
+
+<script>
+function setLang(l){
+  document.body.classList.toggle('show-th',l==='th');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  document.getElementById('btn-th').classList.toggle('active',l==='th');
+}
+</script>
+</body>
+</html>

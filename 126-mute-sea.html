@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteSEA — Thai Cross-Border E-Commerce Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0808;--surface:#151010;--surface2:#1c1515;--border:rgba(251,146,60,0.12);--border2:rgba(251,146,60,0.28);--text:#fff7ed;--text2:#fdba74;--muted:#8b6f5c;--primary:#fb923c;--primary-light:#fdba74;--primary-pale:rgba(251,146,60,0.08);--secondary:#22c55e;--secondary-light:#4ade80;--accent:#3b82f6;--red:#ff3e3e;--teal:#14b8a6;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora','Noto Sans Thai',sans-serif;overflow-x:hidden;line-height:1.6;}
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(251,146,60,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(251,146,60,0.02) 1px,transparent 1px);background-size:48px 48px;}
+  .grid-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 15% 20%,rgba(251,146,60,0.09) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(59,130,246,0.06) 0%,transparent 55%);}
+  .container{max-width:1180px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+  .lang-toggle{position:fixed;top:1.3rem;right:2rem;z-index:100;display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border2);background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.4);}
+  .lang-btn{padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Space Mono',monospace;letter-spacing:0.04em;}
+  .lang-btn.active{background:var(--primary);color:#000;}
+  body:not(.show-th) .th{display:none;}body.show-th .en{display:none;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:90;padding:1.1rem 2rem;background:rgba(10,8,8,0.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:0.85rem;font-weight:700;color:var(--primary-light);letter-spacing:0.06em;}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:0.06em;}
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 0 5rem;}
+  .hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem;}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;font-weight:700;padding:0.35rem 0.9rem;border-radius:99px;border:1px solid var(--border2);color:var(--primary-light);background:var(--primary-pale);}
+  .idea-num{font-family:'Space Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.08em;}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+  .hero h1 .accent{color:var(--primary-light);}
+  .hero-sub{font-size:clamp(1rem,2vw,1.35rem);color:var(--secondary-light);font-weight:600;margin-bottom:1.5rem;}
+  .hero-desc{font-size:1.05rem;color:var(--text2);max-width:680px;line-height:1.75;margin-bottom:2.5rem;}
+  .hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+  .stat{display:flex;flex-direction:column;gap:0.2rem;}
+  .stat-val{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);}
+  .stat-label{font-size:0.75rem;color:var(--muted);letter-spacing:0.04em;}
+  section{padding:5rem 0;border-top:1px solid var(--border);}
+  .section-label{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.14em;font-weight:700;color:var(--primary-light);margin-bottom:0.8rem;text-transform:uppercase;}
+  h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:1.5rem;}
+  h3{font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+  @media(max-width:768px){.two-col,.three-col{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:border-color 0.2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-icon{font-size:1.8rem;margin-bottom:0.8rem;}
+  .pain-item{display:flex;gap:1rem;align-items:flex-start;background:var(--surface);border:1px solid rgba(239,68,68,0.18);border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+  .pain-emoji{font-size:1.4rem;flex-shrink:0;margin-top:0.1rem;}
+  .pain-text p{font-size:0.92rem;color:var(--text2);margin-top:0.3rem;}
+  .country-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem;}
+  @media(max-width:768px){.country-grid{grid-template-columns:repeat(3,1fr);}}
+  .country-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;}
+  .country-flag{font-size:1.8rem;margin-bottom:0.5rem;}
+  .country-name{font-size:0.8rem;font-weight:600;margin-bottom:0.3rem;}
+  .country-stat{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--primary-light);}
+  .country-label{font-size:0.62rem;color:var(--muted);}
+  .flow-step{display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:1.5rem;}
+  .flow-arrow{font-size:1.2rem;color:var(--primary);flex-shrink:0;margin-top:0.2rem;}
+  .flow-content{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;}
+  .flow-title{font-size:0.9rem;font-weight:700;margin-bottom:0.3rem;}
+  .flow-desc{font-size:0.82rem;color:var(--text2);}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+  @media(max-width:768px){.pricing-grid{grid-template-columns:1fr;}}
+  .pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem 1.2rem;text-align:center;position:relative;}
+  .pricing-card.featured{border-color:var(--border2);background:var(--surface2);}
+  .pricing-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--primary);color:#000;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;padding:0.25rem 0.7rem;border-radius:99px;font-family:'Space Mono',monospace;}
+  .pricing-tier{font-size:0.72rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+  .pricing-price{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--primary-light);margin-bottom:0.2rem;}
+  .pricing-unit{font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;}
+  .pricing-desc{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+  .comp-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+  .comp-table th,.comp-table td{padding:0.7rem 1rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.85rem;}
+  .comp-table th{background:var(--surface2);color:var(--muted);font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;}
+  .good{color:var(--secondary-light);}
+  .bad{color:var(--red);}
+  .ok{color:var(--primary-light);}
+  .cta-section{text-align:center;padding:5rem 0 6rem;border-top:1px solid var(--border);}
+  .back-link{display:inline-flex;align-items:center;gap:0.5rem;color:var(--primary-light);text-decoration:none;font-size:0.9rem;font-weight:600;padding:0.8rem 1.8rem;border:1px solid var(--border2);border-radius:10px;transition:all 0.2s;margin-top:1.5rem;}
+  footer{padding:2rem 0;border-top:1px solid var(--border);text-align:center;}
+  footer p{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;}
+  .tag-row{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+  .tag{font-family:'Space Mono',monospace;font-size:0.62rem;padding:0.2rem 0.6rem;border-radius:6px;background:var(--primary-pale);border:1px solid var(--border2);color:var(--primary-light);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="btn-th" onclick="setLang('th')">TH</button>
+</div>
+<nav>
+  <span class="nav-logo">MUTE<span style="color:var(--text2)">LAB</span></span>
+  <span class="nav-badge">IDEA #126</span>
+  <span class="nav-badge" style="color:var(--primary-light);border-color:var(--primary);">WAVE 3</span>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <div class="hero-meta">
+      <span class="hero-tag en">CROSS-BORDER · E-COMMERCE · THAI-FIRST</span>
+      <span class="hero-tag th">ข้ามพรมแดน · E-COMMERCE · ไทยเป็นหลัก</span>
+      <span class="idea-num">#126 — MuteSEA</span>
+    </div>
+    <h1 class="en">Thai Sellers,<br><span class="accent">Go Global</span>.</h1>
+    <h1 class="th">ผู้ขายไทย<<br><span class="accent">ขยายตลาดโลก</span></h1>
+    <p class="hero-sub en">List on 5 SEA markets in minutes. Thai → Multi-language. One dashboard.</p>
+    <p class="hero-sub th">ลิสต์ 5 ตลาด SEA ในไม่กี่นาที ไทย → หลายภาษา แดชบอร์ดเดียว</p>
+    <p class="hero-desc en">Thailand cross-border e-commerce is worth $4B. 50K+ Thai sellers want to expand to Malaysia, Indonesia, Vietnam, Singapore, Philippines — but existing tools are built for US-China trade. MuteSEA is the first Thai-native multi-market listing tool with auto-translation, local payment support, and SEA-specific logistics.</p>
+    <p class="hero-desc th">Cross-border e-commerce ของไทยมีมูลค่า $4B ผู้ขายไทยกว่า 50K+ ต้องการขยายไปมาเลเซีย อินโดนีเซีย เวียดนาม สิงคโปร์ ฟิลิปปินส์ แต่เครื่องมือที่มีอยู่ออกแบบสำหรับการค้า US-จีน MuteSEA คือเครื่องมือ multi-market listing ภาษาไทยชุดแรก</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">$4.0B</span><span class="stat-label en">Thai cross-border market</span><span class="stat-label th">ตลาด cross-border ไทย</span></div>
+      <div class="stat"><span class="stat-val">$330B</span><span class="stat-label en">SEA internet economy 2025</span><span class="stat-label th">เศรษฐกิจอินเทอร์เน็ต SEA 2025</span></div>
+      <div class="stat"><span class="stat-val">50K+</span><span class="stat-label en">Thai sellers want to expand</span><span class="stat-label th">ผู้ขายไทยที่ต้องการขยาย</span></div>
+      <div class="stat"><span class="stat-val">8-12mo</span><span class="stat-label en">to ฿1M revenue</span><span class="stat-label th">ถึง ฿1M แรก</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">TARGET MARKETS</div>
+    <div class="section-label th">ตลาดเป้าหมาย</div>
+    <h2 class="en">5 SEA Markets, One Click</h2>
+    <h2 class="th">5 ตลาด SEA คลิกเดียว</h2>
+    <div class="country-grid">
+      <div class="country-card">
+        <div class="country-flag">🇹🇭</div>
+        <div class="country-name">Thailand</div>
+        <div class="country-stat">$4.0B</div>
+        <div class="country-label">cross-border</div>
+      </div>
+      <div class="country-card">
+        <div class="country-flag">🇲🇾</div>
+        <div class="country-name">Malaysia</div>
+        <div class="country-stat">$2.2B</div>
+        <div class="country-label">cross-border</div>
+      </div>
+      <div class="country-card">
+        <div class="country-flag">🇮🇩</div>
+        <div class="country-name">Indonesia</div>
+        <div class="country-stat">$3.9B</div>
+        <div class="country-label">cross-border</div>
+      </div>
+      <div class="country-card">
+        <div class="country-flag">🇻🇳</div>
+        <div class="country-name">Vietnam</div>
+        <div class="country-stat">$3.6B</div>
+        <div class="country-label">cross-border</div>
+      </div>
+      <div class="country-card">
+        <div class="country-flag">🇸🇬</div>
+        <div class="country-name">Singapore</div>
+        <div class="country-stat">$1.8B</div>
+        <div class="country-label">cross-border</div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);text-align:center;" class="en">Source: Citi Research 2025 — SEA cross-border e-commerce forecast</p>
+    <p style="font-size:0.85rem;color:var(--muted);text-align:center;" class="th">แหล่งข้อมูล: Citi Research 2025 — พยากรณ์ cross-border e-commerce SEA</p>
+  </section>
+
+  <section>
+    <div class="section-label en">THE PROBLEM</div>
+    <div class="section-label th">ปัญหา</div>
+    <h2 class="en">Thai Sellers Are Locked In</h2>
+    <h2 class="th">ผู้ขายไทยถูกล็อกไว้</h2>
+    <div class="pain-item">
+      <span class="pain-emoji">🌐</span>
+      <div class="pain-text">
+        <h3 class="en">Language barrier: Thai product → Bahasa/Vietnamese/Filipino</h3>
+        <h3 class="th">อุปสรรคภาษา: สินค้าไทย → บาฮาซา/เวียดนาม/ฟิลิปปินโน</h3>
+        <p class="en">Thai sellers can't list on Shopee Malaysia or Lazada Indonesia without translating product descriptions. Google Translate produces awkward, low-converting listings. No AI tool handles this well.</p>
+        <p class="th">ผู้ขายไทยลิสต์บน Shopee มาเลเซียหรือ Lazada อินโดนีเซียไม่ได้โดยไม่แปลคำอธิบายสินค้า Google Translate ให้ข้อความแปลก ๆ ขายยาก ไม่มี AI ที่ทำดี</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">💳</span>
+      <div class="pain-text">
+        <h3 class="en">Payment chaos: each country has different wallets</h3>
+        <h3 class="th">ความยุ่งเหยิงของการชำระเงิน: แต่ละประเทศมี wallet ต่างกัน</h3>
+        <p class="en">MoMo (Vietnam), GCash (Philippines), Touch'n'Go (Malaysia), OVO/Dana (Indonesia). Thai sellers don't know which to enable. No unified settlement → Thai bank account.</p>
+        <p class="th">MoMo (เวียดนาม), GCash (ฟิลิปปินส์), Touch'n'Go (มาเลเซีย), OVO/Dana (อินโดนีเซีย) ผู้ขายไทยไม่รู้จะเปิดอันไหน ไม่มีการเคลียร์เงินรวม → บัญชีธนาคารไทย</p>
+      </div>
+    </div>
+    <div class="pain-item">
+      <span class="pain-emoji">📦</span>
+      <div class="pain-text">
+        <h3 class="en">Logistics nightmare: customs, duties, multiple carriers</h3>
+        <h3 class="th">ฝันร้ายโลจิสติกส์: ศุลกากร อากร ขนส่งหลายราย</h3>
+        <p class="en">Each SEA country has different import duties, customs processes, preferred carriers. Thai sellers lose money to unexpected fees, returns, and slow shipping. No tool gives landed cost by country.</p>
+        <p class="th">แต่ละประเทศ SEA มีอากรนำเข้า กระบวนการศุลกากร ขนส่งที่ชอบต่างกัน ผู้ขายไทยเสียเงินกับค่าธรรมเนียมที่ไม่คาดคิด คืนสินค้า และการขนส่งช้า</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">THE SOLUTION</div>
+    <div class="section-label th">วิธีแก้</div>
+    <h2 class="en">MuteSEA: Cross-Border Command Center</h2>
+    <h2 class="th">MuteSEA: ศูนย์บัญชาการข้ามพรมแดน</h2>
+    <div class="two-col">
+      <div>
+        <div class="flow-step">
+          <span class="flow-arrow">1️⃣</span>
+          <div class="flow-content">
+            <div class="flow-title en">List Once in Thai</div>
+            <div class="flow-title th">ลิสต์ครั้งเดียวเป็นไทย</div>
+            <div class="flow-desc en">Add your product on MuteSEA in Thai. Upload photos. Set THB price. Done.</div>
+            <div class="flow-desc th">เพิ่มสินค้าบน MuteSEA เป็นไทย อัปโหลดรูป ตั้งราคาบาท เสร็จ</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="flow-arrow">2️⃣</span>
+          <div class="flow-content">
+            <div class="flow-title en">AI Translates to 5 Languages</div>
+            <div class="flow-title th">AI แปลเป็น 5 ภาษา</div>
+            <div class="flow-desc en">AI generates listings optimized for each market: Bahasa Malaysia, Bahasa Indonesia, Vietnamese, Filipino, Simplified Chinese (Singapore).</div>
+            <div class="flow-desc th">AI สร้างรายการที่ปรับให้เหมาะกับแต่ละตลาด: บาฮาซามาเลเซีย บาฮาซาอินโดนีเซีย เวียดนาม ฟิลิปปินโน จีนตัวย่อ (สิงคโปร์)</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="flow-arrow">3️⃣</span>
+          <div class="flow-content">
+            <div class="flow-title en">Auto-List on 5 Markets</div>
+            <div class="flow-title th">ลิสต์อัตโนมัติ 5 ตลาด</div>
+            <div class="flow-desc en">Push to Shopee MY/SG/ID/VN/PH, Lazada MY/SG/ID/VN/PH, TikTok Shop — simultaneously from one dashboard.</div>
+            <div class="flow-desc th">ส่งไป Shopee MY/SG/ID/VN/PH, Lazada MY/SG/ID/VN/PH, TikTok Shop — พร้อมกันจากแดชบอร์ดเดียว</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="flow-arrow">4️⃣</span>
+          <div class="flow-content">
+            <div class="flow-title en">Landed Cost Calculator</div>
+            <div class="flow-title th">คำนวณต้นทุนรวม</div>
+            <div class="flow-desc en">See real profit per country: shipping + customs + platform fees + taxes. Price optimally for each market.</div>
+            <div class="flow-desc th">ดูกำไรจริงต่อประเทศ: ขนส่ง + ศุลกากร + ค่าแพลตฟอร์ม + ภาษี ตั้งราคาให้เหมาะกับแต่ละตลาด</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span class="flow-arrow">5️⃣</span>
+          <div class="flow-content">
+            <div class="flow-title en">Unified Settlement → THB</div>
+            <div class="flow-title th">เคลียร์เงินรวม → บาท</div>
+            <div class="flow-desc en">All sales from all markets settle in THB to your Thai bank account. No foreign exchange hassle.</div>
+            <div class="flow-desc th">ยอดขายทั้งหมดจากทุกตลาดเคลียร์เป็นบาทเข้าบัญชีธนาคารไทย ไม่ต้องยุ่งกับแลกเปลี่ยนเงินตรา</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-icon">🌍</div>
+          <h3 class="en">What Thai Products Sell in SEA?</h3>
+          <h3 class="th">สินค้าไทยอะไรขายดีใน SEA?</h3>
+          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem;" class="en">Based on cross-border data and Thai export trends:</p>
+          <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1rem;" class="th">จากข้อมูล cross-border และแนวโน้มส่งออกไทย:</p>
+          <ul style="font-size:0.85rem;color:var(--text2);list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
+            <li>💄 <strong class="en">Thai Cosmetics & Skincare</strong><strong class="th">เครื่องสำอางและสกินแคร์ไทย</strong> <span class="th">— SNAIL WHITE, Mistine</span></li>
+            <li>🍘 <strong class="en">Thai Snacks & Food</strong><strong class="th">ขนมและอาหารไทย</strong> <span class="th">— Tao Kae Noi, Mama</span></li>
+            <li>👗 <strong class="en">Thai Fashion & Accessories</strong><strong class="th">แฟชั่นและเครื่องประดับไทย</strong></li>
+            <li>📿 <strong class="en">Thai Amulets & Lucky Items</strong><strong class="th">พระเครื่องและของมงคล</strong> <span class="th">— huge in Singapore/Malaysia</span></li>
+            <li>🌿 <strong class="en">Thai Herbs & Wellness</strong><strong class="th">สมุนไพรและสุขภาพไทย</strong> <span class="th">— balms, oils</span></li>
+            <li>🏠 <strong class="en">Home & Living Decor</strong><strong class="th">เครื่องตกแต่งบ้าน</strong> <span class="th">— Thai craft, ceramics</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label en">COMPETITION</div>
+    <div class="section-label th">คู่แข่ง</div>
+    <h2 class="en">Global Tools Don't Serve Thai Sellers</h2>
+    <h2 class="th">เครื่องมือสากลไม่ได้รองรับผู้ขายไทย</h2>
+    <table class="comp-table">
+      <thead><tr><th>Tool</th><th class="en">Thai UI</th><th class="th">UI ไทย</th><th class="en">SEA Markets</th><th class="th">ตลาด SEA</th><th class="en">Auto Translate</th><th class="th">แปลอัตโนมัติ</th><th class="en">THB Settlement</th><th class="th">เคลียร์เป็นบาท</th><th>Price</th></tr></thead>
+      <tbody>
+        <tr><td>Linnworks</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="ok en">~ Some</td><td class="ok th">~ บางส่วน</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$499/mo</td></tr>
+        <tr><td>ChannelAdvisor</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="ok en">~ Some</td><td class="ok th">~ บางส่วน</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$250+/mo</td></tr>
+        <tr><td>Sellbrite</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="bad en">✗ US only</td><td class="bad th">✗ US เท่านั้น</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="bad en">✗</td><td class="bad th">✗</td><td>$49/mo</td></tr>
+        <tr><td>Shopee Seller Center</td><td class="ok en">~ Basic</td><td class="ok th">~ พื้นฐาน</td><td class="bad en">✗ Shopee only</td><td class="bad th">✗ Shopee เท่านั้น</td><td class="bad en">✗</td><td class="bad th">✗</td><td class="ok en">~ Per market</td><td class="ok th">~ แยกตลาด</td><td>Free</td></tr>
+        <tr><td style="color:var(--primary-light);font-weight:700;">MuteSEA</td><td class="good en">✓ Thai-first</td><td class="good th">✓ ไทยเป็นหลัก</td><td class="good en">✓ 5 markets</td><td class="good th">✓ 5 ตลาด</td><td class="good en">✓ AI</td><td class="good th">✓ AI</td><td class="good en">✓ Unified</td><td class="good th">✓ รวม</td><td>฿1,490/mo</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label en">PRICING</div>
+    <div class="section-label th">ราคา</div>
+    <h2 class="en">Pricing That Scales With Your Sales</h2>
+    <h2 class="th">ราคาที่โตตามยอดขาย</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier en">STARTER</div>
+        <div class="pricing-tier th">เริ่มต้น</div>
+        <div class="pricing-price">฿790</div>
+        <div class="pricing-unit en">per month · 1 market</div>
+        <div class="pricing-unit th">ต่อเดือน · 1 ตลาด</div>
+        <div class="pricing-desc en">Choose 1 SEA market · 50 product listings · Thai → target language AI translation · Basic analytics · THB settlement</div>
+        <div class="pricing-desc th">เลือก 1 ตลาด SEA · 50 รายการสินค้า · AI แปลไทย → ภาษาเป้าหมาย · Analytics พื้นฐาน · เคลียร์เป็นบาท</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">🌏 POPULAR</div>
+        <div class="pricing-tier en">GROWTH</div>
+        <div class="pricing-tier th">โต</div>
+        <div class="pricing-price">฿1,490</div>
+        <div class="pricing-unit en">per month · 3 markets</div>
+        <div class="pricing-unit th">ต่อเดือน · 3 ตลาด</div>
+        <div class="pricing-desc en">3 SEA markets · 500 listings · All AI translations · Landed cost calculator · Multi-market inventory sync · Performance by country · Priority support</div>
+        <div class="pricing-desc th">3 ตลาด SEA · 500 รายการ · แปล AI ทั้งหมด · คำนวณต้นทุนรวม · sync inventory หลายตลาด · ประสิทธิภาพตามประเทศ · ซัพพอร์ตด่วน</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier en">SCALE</div>
+        <div class="pricing-tier th">ขยายใหญ่</div>
+        <div class="pricing-price">฿3,990</div>
+        <div class="pricing-unit en">per month · 5 markets</div>
+        <div class="pricing-unit th">ต่อเดือน · 5 ตลาด</div>
+        <div class="pricing-desc en">All 5 SEA markets · Unlimited listings · White-label reports · API access · Dedicated account manager · Custom integrations</div>
+        <div class="pricing-desc th">5 ตลาด SEA ทั้งหมด · รายการไม่จำกัด · รายงาน white-label · API access · manager ประจำตัว · integration ตามสั่ง</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-section">
+    <div class="section-label" style="text-align:center;margin-bottom:1rem;">WAVE 3 · IDEA #126</div>
+    <h2 class="en" style="margin-bottom:0.5rem;">First Thai-Native Cross-Border Tool</h2>
+    <h2 class="th" style="margin-bottom:0.5rem;">เครื่องมือ Cross-Border ภาษาไทยชุดแรก</h2>
+    <p style="color:var(--text2);max-width:520px;margin:0 auto 2rem;" class="en">$4B Thai cross-border market. 50K sellers want to expand. Every existing tool is built for US/EU markets. MuteSEA is Thai-first, SEA-focused, and priced in THB. B2B model with long-term SaaS revenue.</p>
+    <p style="color:var(--text2);max-width:520px;margin:0 auto 2rem;" class="th">ตลาด cross-border ไทย $4B ผู้ขาย 50K ต้องการขยาย เครื่องมือที่มีอยู่สร้างสำหรับตลาด US/EU ทั้งหมด MuteSEA ภาษาไทยเป็นหลัก เน้น SEA ราคาเป็นบาท โมเดล B2B รายได้ SaaS ระยะยาว</p>
+    <div class="tag-row" style="justify-content:center;margin-bottom:1.5rem;">
+      <span class="tag">B2C · 6/10 (B2B lean)</span>
+      <span class="tag">Time-to-฿1M: 8-12 months</span>
+      <span class="tag">Competition: WEAK Thai-native</span>
+      <span class="tag">Market: ฿11.9M/yr</span>
+    </div>
+    <a href="index.html" class="back-link">← Back to All Ideas</a>
+  </div>
+</div>
+
+<footer><div class="container"><p>MUTELAB © 2026 · WAVE 3 RESEARCH · IDEA #126 · MUTESEA</p></div></footer>
+
+<script>
+function setLang(l){
+  document.body.classList.toggle('show-th',l==='th');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  document.getElementById('btn-th').classList.toggle('active',l==='th');
+}
+</script>
+</body>
+</html>
