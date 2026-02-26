@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteLab Strategic Review — February 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #222;
+    --border2: #333;
+    --text: #e8e8e8;
+    --muted: #888;
+    --accent: #ff6b35;
+    --accent2: #ffd700;
+    --green: #10b981;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --red: #ef4444;
+    --teal: #14b8a6;
+    --cyan: #06b6d4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .hero h1 { font-family: 'Instrument Serif', serif; font-size: 2.8rem; font-weight: 400; margin-bottom: 0.5rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero .subtitle { color: var(--muted); font-size: 1rem; max-width: 650px; margin: 0 auto; }
+  .hero .date { color: var(--accent2); font-size: 0.85rem; margin-top: 0.75rem; font-weight: 600; }
+
+  /* Sections */
+  .section { margin: 2.5rem 0; }
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.8rem; font-weight: 400;
+    color: var(--accent2);
+    margin-bottom: 0.25rem;
+  }
+  .section-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card.highlight { border-color: rgba(255,215,0,0.3); }
+  .card.danger { border-color: rgba(239,68,68,0.3); }
+  .card.success { border-color: rgba(16,185,129,0.3); }
+  .card .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .card .meta { display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.78rem; margin-top: 0.75rem; }
+  .card .meta span { padding: 0.2rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.05); }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-right: 0.3rem; }
+  .badge-gold { background: rgba(255,215,0,0.2); color: #fbbf24; }
+  .badge-green { background: rgba(16,185,129,0.2); color: #34d399; }
+  .badge-blue { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .badge-red { background: rgba(239,68,68,0.2); color: #f87171; }
+  .badge-purple { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .badge-pink { background: rgba(236,72,153,0.2); color: #f472b6; }
+  .badge-teal { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); margin: 1rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface2); color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Callout */
+  .callout {
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .callout.green { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); }
+  .callout.blue { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
+  .callout.gold { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.25); }
+  .callout h4 { font-size: 1rem; margin-bottom: 0.4rem; }
+  .callout p { font-size: 0.88rem; color: var(--muted); }
+
+  /* Timeline */
+  .timeline { position: relative; margin: 1.5rem 0; padding-left: 2rem; }
+  .timeline::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: var(--border2); }
+  .timeline-item { position: relative; margin-bottom: 1.25rem; }
+  .timeline-item::before { content: ''; position: absolute; left: -1.65rem; top: 0.5rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .timeline-item.done::before { background: var(--green); }
+  .timeline-item h4 { font-size: 0.9rem; color: var(--accent2); }
+  .timeline-item p { font-size: 0.85rem; color: var(--muted); }
+
+  /* Prose */
+  .prose { font-size: 0.92rem; line-height: 1.75; }
+  .prose p { margin-bottom: 1rem; }
+  .prose strong { color: var(--text); }
+  .prose em { color: var(--accent2); font-style: normal; font-weight: 600; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Score */
+  .score-big { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; line-height: 1; }
+
+  /* Links */
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* HR */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🧭</div>
+    <h1>MuteLab <span>Strategic Review</span></h1>
+    <p class="subtitle">Deep research synthesis for Thanapat — re-evaluating 128 ideas, validating MutePDPA, discovering new angles, and charting the path from ฿0 to ฿350K/month</p>
+    <p class="date">February 26, 2026 — "Escape Velocity" Edition</p>
+  </div>
+
+  <!-- =============================== -->
+  <!-- EXECUTIVE SUMMARY -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">Executive Summary</div>
+    <div class="section-sub">The brutal truth about where you are and what to do next</div>
+
+    <div class="callout">
+      <h4>The Core Tension</h4>
+      <p>You have <strong>128 ideas</strong> researched to an extraordinary depth — but <strong>zero revenue</strong>. You're a CTO working 4-5 hours/day on side projects, with a MutePDPA prototype, needing income in 1-3 months. The research is done. <em>It's time to ship.</em></p>
+    </div>
+
+    <div class="prose">
+      <p>After deep research across 3 parallel investigations — the global AI solopreneur landscape, the Thai PDPA compliance market, and 15 new business ideas — here's the verdict:</p>
+
+      <p><strong>Your MutePDPA prototype is the right bet.</strong> The PDPA market just entered active enforcement (THB 21.5M in fines, 2,672 complaints, 8 new fines in August 2025 alone). There are <em>ZERO AI-powered PDPA compliance tools in Thailand</em>. The closest competitor (Formiti) charges THB 30,000/month with no AI. You can undercut them 3-5x while delivering more value.</p>
+
+      <p><strong>But MutePDPA alone won't get you to ฿350K/month in 3 months.</strong> B2B SaaS in Thailand has slow adoption cycles. You need a <em>revenue bridge</em> — fast cash from services while the SaaS compounds.</p>
+    </div>
+
+    <div class="callout green">
+      <h4>The Recommended Strategy: "Ship MutePDPA + Bridge with Services"</h4>
+      <p><strong>Month 1:</strong> Launch MutePDPA free scanner + paid tiers. Simultaneously sell AI implementation packages (MuteForge model) at ฿19K-39K per project.<br>
+      <strong>Month 2-3:</strong> Scale MutePDPA to 15-25 paying customers while running 2-3 implementation projects/month.<br>
+      <strong>Month 4-6:</strong> MutePDPA recurring revenue compounds, services decline as product takes over.<br>
+      <strong>Target:</strong> ฿150K from MutePDPA + ฿200K from services = ฿350K/month by Month 3.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 1: EXISTING IDEAS RE-EVALUATION -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">1. Existing Dashboard Re-Evaluation</div>
+    <div class="section-sub">Your 128 ideas scored through the "1-3 month revenue" lens</div>
+
+    <div class="prose">
+      <p>Your dashboard scores ideas on 5 dimensions (market potential, problem severity, competition gap, build feasibility, our advantage). But <em>none of these measure speed-to-revenue</em> — the most critical factor for your situation. Here's the re-ranking:</p>
+    </div>
+
+    <!-- TOP 5 RE-RANKED -->
+    <h3 style="color: var(--accent2); margin: 1.5rem 0 1rem; font-family: 'Instrument Serif', serif; font-size: 1.3rem;">Re-Ranked Top 5 (Speed-to-Revenue Priority)</h3>
+
+    <!-- #1 MutePDPA -->
+    <div class="card highlight">
+      <div class="top-bar" style="background: linear-gradient(90deg, #fbbf24, #10b981);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-gold">CONFIRMED #1</span>
+          <span class="badge badge-green">PROTOTYPE READY</span>
+          <h3 style="margin-top:0.4rem;">🛡️ MutePDPA — AI PDPA Compliance Platform</h3>
+        </div>
+        <div class="score-big" style="color:#fbbf24;">42</div>
+      </div>
+      <p><strong>Research confirms:</strong> PDPC enforcement accelerating. 8 new fines in Aug 2025, THB 21.5M total. Thai SMEs score <em>6.19/100 on compliance</em> — 53% have NO privacy policy. Formiti charges THB 30K/mo with no AI. OneTrust starts at $10K/year (too expensive for SMEs). <strong>You are the ONLY AI-powered PDPA tool in Thailand.</strong></p>
+      <div class="meta">
+        <span style="color:var(--green);">✅ Prototype exists</span>
+        <span>🎯 3.2M Thai SMEs</span>
+        <span>⚠️ 2,672 complaints filed</span>
+        <span>💰 23 clients × ฿15K = ฿345K/mo</span>
+        <span>⏱️ Revenue in 30 days</span>
+      </div>
+    </div>
+
+    <!-- #2 MuteForge -->
+    <div class="card highlight">
+      <div class="top-bar" style="background: linear-gradient(90deg, #fbbf24, #a855f7);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-gold">UPGRADED TO #2</span>
+          <span class="badge badge-purple">REVENUE BRIDGE</span>
+          <h3 style="margin-top:0.4rem;">⚒️ MuteForge — AI Solution Packages (Revenue Bridge)</h3>
+        </div>
+        <div class="score-big" style="color:#a855f7;">37→40</div>
+      </div>
+      <p><strong>Re-evaluated:</strong> MuteForge scored 37/50 but was ranked low because of "agency burnout" risk. In your situation, this is your <em>fastest path to cash</em>. Pre-built AI packages (PDPA ฿19K, chatbot ฿29K, docs ฿39K) deployed in 1-3 days. Each project client becomes a future MutePDPA subscriber. Score upgraded to 40 because it's the critical bridge to sustainability.</p>
+      <div class="meta">
+        <span style="color:var(--green);">💰 ฿19K-39K per project</span>
+        <span>⏱️ First ฿ in 3-7 days</span>
+        <span>🔄 Each client → MutePDPA upsell</span>
+        <span>📊 3 projects/mo = ฿80-120K</span>
+      </div>
+    </div>
+
+    <!-- #3 MuteWeb -->
+    <div class="card success">
+      <div class="top-bar" style="background: linear-gradient(90deg, #10b981, #3b82f6);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-green">HOLDS #3</span>
+          <span class="badge badge-blue">FAST BREAKEVEN</span>
+          <h3 style="margin-top:0.4rem;">🌐 MuteWeb — AI Website Building via LINE</h3>
+        </div>
+        <div class="score-big" style="color:#10b981;">41</div>
+      </div>
+      <p><strong>Still strong but deprioritized for timing.</strong> Break-even in Month 1 is great, but building the full LINE workflow + 8 templates takes 4-6 weeks. Consider this as your Month 2-3 add-on once MutePDPA + MuteForge are generating cash. The ฿1,990-9,990 pricing + Cloudflare Pages (98% margin) is excellent economics.</p>
+      <div class="meta">
+        <span>⏱️ 4-6 weeks to launch</span>
+        <span>💰 Break-even Month 1</span>
+        <span>📊 ฿750K/mo potential (Mo 12)</span>
+        <span>🔗 Complements MuteForge offerings</span>
+      </div>
+    </div>
+
+    <!-- #4 MuteValidate -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #3b82f6, #10b981);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-blue">HOLDS #4</span>
+          <span class="badge badge-teal">GLOBAL PLAY</span>
+          <h3 style="margin-top:0.4rem;">🚀 MuteValidate — AI Launch Kit Engine</h3>
+        </div>
+        <div class="score-big" style="color:#3b82f6;">38</div>
+      </div>
+      <p><strong>Best global play in your portfolio.</strong> Validation report + landing page + pitch deck + infographic in 30 min. VentureKit ($8/mo, 750K users) proves demand but doesn't bundle all 4. This is your <em>mid-term global product</em> — English-first, USD pricing. But don't build it until Month 3-4 when you have Thai revenue covering basics.</p>
+      <div class="meta">
+        <span>🌍 $65-272M TAM</span>
+        <span>🔥 Fit: 9/10</span>
+        <span>⏱️ Build in Month 3-4</span>
+        <span>💰 $747K-$1.44M ARR (Y2)</span>
+      </div>
+    </div>
+
+    <!-- #5 MuteKit -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #60a5fa, #10b981);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span class="badge badge-blue">NEW #5</span>
+          <span class="badge badge-green">PASSIVE INCOME</span>
+          <h3 style="margin-top:0.4rem;">📦 MuteKit — AI Digital Product Factory (Global Niche)</h3>
+        </div>
+        <div class="score-big" style="color:#60a5fa;">38</div>
+      </div>
+      <p><strong>Sleeper pick for passive revenue.</strong> AI micro-niche content kits on Etsy/Gumroad. 200+ products at $25 each. 95% margin. Can generate $150-300K/year with minimal ongoing effort. Start creating kits on weekends while MutePDPA runs during weekdays. This is your "sleep revenue" layer.</p>
+      <div class="meta">
+        <span>🌍 Global English-first</span>
+        <span>💤 Passive income</span>
+        <span>⏱️ Start anytime (weekends)</span>
+        <span>💰 $150-300K/yr at scale</span>
+      </div>
+    </div>
+
+    <!-- DOWNGRADED IDEAS -->
+    <h3 style="color: var(--red); margin: 2rem 0 1rem; font-family: 'Instrument Serif', serif; font-size: 1.3rem;">Ideas Downgraded for Your Timeline</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Idea</th>
+            <th>Original Score</th>
+            <th>Speed Score</th>
+            <th>Why Deprioritized</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--accent2);">MuteEvent #96</td>
+            <td>40/50</td>
+            <td style="color:var(--red);">28/50</td>
+            <td>Merged into MuteWeb. Don't build separately.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MorNee AI #37</td>
+            <td>37/50</td>
+            <td style="color:var(--red);">25/50</td>
+            <td>28M potential users but ฿199/mo pricing = need 1,750 users for ฿350K. Too slow.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteTrade #39</td>
+            <td>36/50</td>
+            <td style="color:var(--red);">24/50</td>
+            <td>Regulatory risk (SEC Thailand). Crypto market volatile. Not predictable revenue.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteMoo #22</td>
+            <td>35/50</td>
+            <td style="color:var(--red);">22/50</td>
+            <td>Fortune telling is entertainment, not pain. Low ARPU. Fun but won't pay rent.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteAcademy #122</td>
+            <td>41/50</td>
+            <td style="color:var(--accent);">32/50</td>
+            <td>Score: 41 (Wave 3 top). Viable but requires content creation stamina. Revisit Month 4+.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteGreen #81</td>
+            <td>35/50</td>
+            <td style="color:var(--red);">20/50</td>
+            <td>Enterprise sales = 6-12 month cycles. Won't produce revenue in 3 months.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">RWA Studio #19</td>
+            <td>31/50</td>
+            <td style="color:var(--red);">18/50</td>
+            <td>Highest "our advantage" but 6-12 month sales cycles + regulatory complexity.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 2: MARKET INTELLIGENCE -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">2. Market Intelligence</div>
+    <div class="section-sub">What's actually making money for AI solopreneurs right now</div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Verified Revenue Examples</h3>
+        <p><strong>PhotoAI</strong> (Pieter Levels): $132K MRR — AI headshots</p>
+        <p><strong>Subscribr</strong> (Gil Hildebrand): $10K MRR in 100 days</p>
+        <p><strong>Leadmore AI</strong>: $30K MRR — AI marketing</p>
+        <p><strong>Mattia Pomelli</strong>: $10K MRR in 6 weeks — AI design</p>
+        <p><strong>AI Solopreneur</strong> (Sarah Chen): $35K/mo — AI agency</p>
+        <p style="color:var(--accent2); margin-top:0.5rem; font-weight:600;">Common thread: niche focus + distribution (Twitter/X) + immediate monetization</p>
+      </div>
+      <div class="card">
+        <h3>What's NOT Working</h3>
+        <p><span style="color:var(--red);">❌</span> Generic AI wrappers (everyone can build)</p>
+        <p><span style="color:var(--red);">❌</span> Simple ChatGPT front-ends (saturated)</p>
+        <p><span style="color:var(--red);">❌</span> MCP servers as primary business (too early)</p>
+        <p><span style="color:var(--red);">❌</span> Horizontal AI tools (competing with OpenAI)</p>
+        <p><span style="color:var(--red);">❌</span> Product Hunt-only launches (flooded)</p>
+        <p style="color:var(--accent); margin-top:0.5rem; font-weight:600;">Key insight: specialists win, generalists lose. Deep niche > wide market.</p>
+      </div>
+    </div>
+
+    <div class="callout blue" style="margin-top:1rem;">
+      <h4>PDPA Market Deep Dive Findings</h4>
+      <p><strong>Enforcement is REAL and accelerating:</strong> THB 21.5M in fines across 6 cases. PDPC issued 8 new fines in August 2025. 2,672 complaints filed. Hospital fined THB 1.21M for patient data leak. Cosmetics company fined THB 2.5M. <strong>The fear factor is building.</strong></p>
+      <p style="margin-top:0.5rem;"><strong>Competition gap confirmed:</strong> OneTrust (too expensive, $10K+/yr), Formiti (THB 30K/mo, no AI), CyberSec (consulting only). <em>ZERO AI-powered PDPA tools exist in Thailand.</em> You would be literally the first.</p>
+      <p style="margin-top:0.5rem;"><strong>GDPR precedent:</strong> OneTrust grew from $0 to $5.1B valuation in 5 years riding GDPR enforcement. PDPA is Thailand's GDPR moment. The compliance SaaS market is growing at 25% CAGR globally. APAC is the fastest-growing region at 23.9% CAGR.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 3: NEW IDEAS -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">3. New Ideas Worth Adding</div>
+    <div class="section-sub">10 fresh angles you haven't explored — filtered for your specific situation</div>
+
+    <div class="prose">
+      <p>After researching 15+ potential ideas, here are the 10 that pass the "Thanapat filter": CTO-buildable, revenue in 1-6 months, leverages your unique combination of full-stack + blockchain + AI + Thailand location.</p>
+    </div>
+
+    <!-- NEW IDEA 1 -->
+    <div class="card highlight">
+      <div class="top-bar" style="background: linear-gradient(90deg, #fbbf24, #ff6b35);"></div>
+      <span class="badge badge-gold">HIGHEST PRIORITY</span>
+      <span class="badge badge-green">WEEK 1 START</span>
+      <h3 style="margin-top:0.4rem;">#129: MuteForge Pro — Productized AI Services via LINE</h3>
+      <p><strong>The pivot:</strong> Instead of selling "AI implementation packages" as custom projects, <em>productize them on LINE</em>. Customer adds your LINE OA → selects package (PDPA scan ฿9,900, chatbot setup ฿29,000, doc automation ฿39,000) → pays via PromptPay → you deliver in 1-3 days using 90% AI automation. Think of it as "Shopify for AI services" but on LINE.</p>
+      <p><strong>Why this is different from existing MuteForge:</strong> The original was positioned as "agency packages" — this is positioned as a <em>self-serve LINE storefront</em> where the buying friction is zero (Thai SMEs already live on LINE). Combine with MutePDPA: the free PDPA scan leads to ฿9,900 fix-it package.</p>
+      <div class="meta">
+        <span style="color:var(--green);">💰 ฿80-200K/mo (5-10 projects)</span>
+        <span>⏱️ First ฿ in 7 days</span>
+        <span>🔗 Feeds MutePDPA pipeline</span>
+        <span>🇹🇭 LINE-native = zero friction</span>
+        <span style="color:var(--accent2);">Score: 44/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 2 -->
+    <div class="card highlight">
+      <div class="top-bar" style="background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+      <span class="badge badge-green">FAST REVENUE</span>
+      <span class="badge badge-teal">GLOBAL</span>
+      <h3 style="margin-top:0.4rem;">#130: ThaiCompliance.ai — English-Facing PDPA Service for Multinationals</h3>
+      <p><strong>The angle:</strong> Thousands of multinational companies operate in Thailand and need PDPA compliance but can't navigate Thai regulations. Offer an <em>English-language PDPA compliance-as-a-service</em> at premium USD pricing ($500-2,000/month). Same MutePDPA engine, different wrapper. Target: international companies with Thai subsidiaries, SaaS companies processing Thai user data.</p>
+      <p><strong>Why this works:</strong> International companies have bigger budgets (USD not THB), shorter decision cycles (legal urgency), and you already have the tech. This is the same product, 10x the price, for a different customer segment.</p>
+      <div class="meta">
+        <span style="color:var(--green);">💰 $500-2K/mo per client</span>
+        <span>🌍 Global English market</span>
+        <span>⏱️ Same MutePDPA engine</span>
+        <span>💎 5 clients = $5K/mo</span>
+        <span style="color:var(--accent2);">Score: 43/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 3 -->
+    <div class="card success">
+      <div class="top-bar" style="background: linear-gradient(90deg, #a855f7, #ec4899);"></div>
+      <span class="badge badge-purple">MID-TERM</span>
+      <span class="badge badge-pink">PASSIVE</span>
+      <h3 style="margin-top:0.4rem;">#131: SEA Compliance Template Vault — Digital Products on Gumroad</h3>
+      <p><strong>The play:</strong> Package your PDPA knowledge into downloadable template bundles: privacy policy generators, data processing agreements, cookie consent banners, DPIA templates, breach notification scripts. Sell on Gumroad at $49-199 per bundle. Expand to Vietnam (PDPL), Indonesia, Singapore, Malaysia privacy laws.</p>
+      <p>95% margin, zero marginal cost. Build once, sell forever. Each template bundle takes 2-3 hours to create with AI assistance. This is your "sleep money" stream.</p>
+      <div class="meta">
+        <span>💤 Passive income</span>
+        <span>⏱️ 2-3 hrs per bundle</span>
+        <span>🌏 SEA multi-country</span>
+        <span>💰 $3-8K/mo at scale</span>
+        <span style="color:var(--accent2);">Score: 39/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 4 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+      <span class="badge badge-blue">MID-TERM</span>
+      <h3 style="margin-top:0.4rem;">#132: MCP Server for Thai Business Data — ThaiLaw + DBD Combo</h3>
+      <p><strong>Combine ideas #127 + #128:</strong> Build a premium MCP server that gives AI agents access to Thai legal data (Royal Gazette, court decisions) + business registry (DBD data, company directors, financials). Sell to law firms, accounting firms, compliance teams. $99-299/month subscription. You already have the idea pages — just build it.</p>
+      <p><strong>Timing:</strong> MCP ecosystem is nascent but growing. Being early means you own the "Thai business data" category. This is a <em>moat-building</em> play, not a quick-cash play. Start Month 3.</p>
+      <div class="meta">
+        <span>🔧 MCP ecosystem play</span>
+        <span>⏱️ Start Month 3</span>
+        <span>🏛️ Government data moat</span>
+        <span>💰 $99-299/mo per subscriber</span>
+        <span style="color:var(--accent2);">Score: 38/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 5 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #14b8a6, #22c55e);"></div>
+      <span class="badge badge-teal">BLOCKCHAIN + AI</span>
+      <h3 style="margin-top:0.4rem;">#133: CryptoTax.th — AI Crypto Tax Calculator for Thai Traders</h3>
+      <p><strong>Already in your dashboard as MuteTax #70 (34/50, Fit: 9).</strong> Re-elevating because: 4M+ crypto accounts in Thailand, Revenue Department cracking down, ZERO Thai AI crypto tax tools, and your blockchain CTO background makes this a perfect fit. Bitkub/Binance API integration + AI categorization + PDF tax report = ฿590-1,990/filing season.</p>
+      <p><strong>Seasonal but massive:</strong> Tax season (Jan-Mar) could generate ฿2-5M in 3 months. Off-season: portfolio tracking subscription at ฿99/mo.</p>
+      <div class="meta">
+        <span>🔥 Fit: 9/10</span>
+        <span>🇹🇭 4M+ crypto accounts</span>
+        <span>⏱️ Build in 4-6 weeks</span>
+        <span>💰 Seasonal spike + recurring</span>
+        <span style="color:var(--accent2);">Score: 38/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 6 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #ec4899, #f59e0b);"></div>
+      <span class="badge badge-pink">CONTENT PLAY</span>
+      <h3 style="margin-top:0.4rem;">#134: "AI ทำเงิน" — Thai AI Business Content Brand</h3>
+      <p><strong>Not a product — a distribution channel.</strong> Build a Thai-language content brand about "making money with AI" on TikTok, YouTube, LINE, and Twitter. Share your journey building MutePDPA, MuteForge, etc. This becomes your <em>top-of-funnel</em> for everything: MutePDPA signups, MuteForge clients, MuteKit template sales, consulting inquiries.</p>
+      <p>The AI Solopreneur went 0 → 100K Twitter followers in 65 days. Pieter Levels' 422K followers drive $132K/mo in PhotoAI revenue. <strong>Distribution is the moat, not the product.</strong></p>
+      <div class="meta">
+        <span>📣 Distribution channel</span>
+        <span>⏱️ Start Day 1 (parallel)</span>
+        <span>🇹🇭 Thai-language = less competition</span>
+        <span>🔗 Feeds ALL other products</span>
+        <span style="color:var(--accent2);">Score: 42/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 7 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #06b6d4, #3b82f6);"></div>
+      <span class="badge badge-blue">DEVELOPER TOOLS</span>
+      <h3 style="margin-top:0.4rem;">#135: SmartAudit.ai — AI Smart Contract Security Scanner</h3>
+      <p><strong>Your highest-moat idea.</strong> AI-powered smart contract auditing tool. Upload Solidity/Vyper code → get security report in 5 minutes (vs. $50K-$200K and 2-4 weeks for manual audits). Your blockchain CTO background + AI skills = nobody else can build this as well. Target: DeFi protocols, token launches, DAOs.</p>
+      <p><strong>Pricing:</strong> $49/scan (automated) to $2,999/audit (AI + manual review). Global market from Day 1.</p>
+      <div class="meta">
+        <span>🛡️ Blockchain + AI intersection</span>
+        <span>🌍 Global from Day 1</span>
+        <span>💰 $49-$2,999 per audit</span>
+        <span>⏱️ 6-8 weeks to MVP</span>
+        <span style="color:var(--accent2);">Score: 40/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 8 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
+      <span class="badge badge-gold">HIGH-TICKET</span>
+      <h3 style="margin-top:0.4rem;">#136: Fractional CTO-as-a-Service (AI + Blockchain)</h3>
+      <p><strong>The fastest possible path to revenue.</strong> Offer yourself as a fractional CTO for startups needing AI + blockchain expertise. 10-15 hours/month per client at $3,000-5,000/month. 2-3 clients = $6K-15K/month immediately. No product to build — <em>you are the product</em>.</p>
+      <p>This is the ultimate "revenue bridge" while your products mature. Position on LinkedIn, AngelList, Toptal. Your Water Ledger CTO title + 128-idea portfolio = instant credibility.</p>
+      <div class="meta">
+        <span style="color:var(--green);">💰 $3-5K/client/mo</span>
+        <span>⏱️ First client in 1-2 weeks</span>
+        <span>🎯 2-3 clients = $10K+/mo</span>
+        <span>⚠️ Trades time for money</span>
+        <span style="color:var(--accent2);">Score: 41/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 9 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #22c55e, #14b8a6);"></div>
+      <span class="badge badge-green">INFRASTRUCTURE</span>
+      <h3 style="margin-top:0.4rem;">#137: PromptPay Webhook Service — Payment Infrastructure for Thai Apps</h3>
+      <p><strong>Simple infrastructure play.</strong> Thai developers building LINE bots, mini-apps, and web apps need PromptPay payment integration. Build a simple webhook service: customer pays via PromptPay QR → your service detects the payment → sends webhook to developer's app. Charge ฿990/mo + 0.5% per transaction.</p>
+      <p>This scratches your own itch (you need PromptPay for MutePDPA, MuteWeb, MuteForge) and becomes infrastructure that others pay for.</p>
+      <div class="meta">
+        <span>🔧 Infrastructure play</span>
+        <span>🇹🇭 Thai developer ecosystem</span>
+        <span>💰 ฿990/mo + transaction fees</span>
+        <span>🔗 Powers your own products</span>
+        <span style="color:var(--accent2);">Score: 36/50</span>
+      </div>
+    </div>
+
+    <!-- NEW IDEA 10 -->
+    <div class="card">
+      <div class="top-bar" style="background: linear-gradient(90deg, #8b5cf6, #ec4899);"></div>
+      <span class="badge badge-purple">LONG-TERM</span>
+      <h3 style="margin-top:0.4rem;">#138: WaterCredit.ai — AI Carbon/Water Credit Verification (Water Ledger Spin-off)</h3>
+      <p><strong>Your long-term moat.</strong> Leverage your Water Ledger expertise to build an AI-powered carbon/water credit verification platform. Automate MRV (Measurement, Reporting, Verification) for sustainability projects. Thailand TGO is active, ESG reporting is mandatory for 820+ listed companies.</p>
+      <p><strong>Why long-term:</strong> Enterprise sales cycle is 6-12 months. But this has the highest ceiling ($36M+ ARR target from your MuteGreen research). Start planting seeds now, harvest in Month 6-12.</p>
+      <div class="meta">
+        <span>🌿 Water Ledger DNA</span>
+        <span>⏱️ 6-12 month play</span>
+        <span>💰 $36M+ ARR ceiling</span>
+        <span>🏢 820+ listed companies</span>
+        <span style="color:var(--accent2);">Score: 37/50</span>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 4: THE STRATEGIC ROADMAP -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">4. The Strategic Roadmap</div>
+    <div class="section-sub">From ฿0 to ฿350K/month — a phased plan for survival and growth</div>
+
+    <div class="callout gold">
+      <h4>The "Stacking" Strategy</h4>
+      <p>Don't pick ONE idea. <em>Stack complementary revenue streams</em> that feed each other. MutePDPA (SaaS) + MuteForge Pro (services) + content brand (distribution) + templates (passive) = a resilient income portfolio where no single failure kills you.</p>
+    </div>
+
+    <!-- PHASE 1 -->
+    <h3 style="color: var(--green); margin: 1.5rem 0 0.5rem; font-family: 'Instrument Serif', serif;">Phase 1: Survive (Month 1-2) — Target: ฿150-250K/month</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Week 1-2: Launch MutePDPA Free Scanner</h4>
+        <p>Deploy the prototype as a free website PDPA compliance scanner. Any Thai SME enters their URL → gets a compliance score + list of violations. <em>Fear-driven conversion:</em> "Your site has 12 PDPA violations. Fix them before PDPC fines you ฿5M." Call-to-action: upgrade to paid plan.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Week 1-2: Simultaneously launch MuteForge Pro on LINE</h4>
+        <p>Create LINE OA. List 3 packages: PDPA Quick Fix (฿9,900), AI Chatbot Setup (฿29,000), Doc Automation (฿39,000). Post in Thai business Facebook groups, SME LINE groups. Target: 3-5 projects in first month = ฿30-100K.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Week 2-3: Start "AI ทำเงิน" content brand</h4>
+        <p>Daily posts on Twitter/X + TikTok about your journey. Share MutePDPA scan results (anonymized). Show the PDPC fines happening. Build audience = build distribution.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Week 3-4: MutePDPA paid tiers go live</h4>
+        <p>Three tiers: ฿2,990/mo (micro SME), ฿8,990/mo (SME), ฿19,990/mo (medium). Target: 10-20 subscribers by end of Month 2 from scanner leads.</p>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <h3 style="color: var(--blue); margin: 1.5rem 0 0.5rem; font-family: 'Instrument Serif', serif;">Phase 2: Stabilize (Month 3-4) — Target: ฿350K+/month</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Month 3: Launch ThaiCompliance.ai (English-facing)</h4>
+        <p>Same MutePDPA engine, English UI, USD pricing ($500-2,000/mo). Target multinationals with Thai operations. 5 clients = $5K/mo additional. Market on LinkedIn to compliance officers.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Month 3: Release first SEA compliance template bundles</h4>
+        <p>PDPA Starter Kit on Gumroad ($99). Thailand Employment Contracts Pack ($79). Data Breach Response Kit ($149). Target: 30-50 sales/month = $3-5K passive.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Month 4: Start building MuteWeb</h4>
+        <p>With cash flow stabilized, begin MuteWeb (AI website builder via LINE). This expands your Thai SME product suite. Cross-sell to MutePDPA customers.</p>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <h3 style="color: var(--purple); margin: 1.5rem 0 0.5rem; font-family: 'Instrument Serif', serif;">Phase 3: Scale (Month 5-12) — Target: ฿500K-1M+/month</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>Month 5-6: MuteValidate global launch</h4>
+        <p>Launch the AI Launch Kit Engine targeting global startup founders. English-first, $29-99/month. ProductHunt launch + indie hacker community + your Twitter audience. This is your first truly global product.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Month 6-8: MCP Server for Thai Business Data</h4>
+        <p>Build and launch ThaiLaw + ThaiCompany MCP servers. First-mover in Thai business data for AI agents. Subscription model $99-299/mo. Moat-building play.</p>
+      </div>
+      <div class="timeline-item">
+        <h4>Month 8-12: SmartAudit.ai or WaterCredit.ai</h4>
+        <p>Pick the one with more traction: blockchain security auditing (global, developer market) or carbon credit verification (enterprise, your deepest expertise). Both are $1M+ ARR plays.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 5: REVENUE PROJECTION -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">5. Revenue Projection</div>
+    <div class="section-sub">Conservative scenario based on research benchmarks</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Revenue Stream</th>
+            <th>Month 1</th>
+            <th>Month 3</th>
+            <th>Month 6</th>
+            <th>Month 12</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--accent2);">MutePDPA SaaS</td>
+            <td>฿15K</td>
+            <td>฿120K</td>
+            <td>฿400K</td>
+            <td>฿1.2M</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteForge Pro (services)</td>
+            <td>฿60K</td>
+            <td>฿150K</td>
+            <td>฿100K</td>
+            <td>฿50K</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">ThaiCompliance.ai (USD)</td>
+            <td>—</td>
+            <td>฿70K</td>
+            <td>฿175K</td>
+            <td>฿350K</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">Templates/Digital Products</td>
+            <td>—</td>
+            <td>฿20K</td>
+            <td>฿60K</td>
+            <td>฿120K</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">MuteValidate (global)</td>
+            <td>—</td>
+            <td>—</td>
+            <td>฿50K</td>
+            <td>฿200K</td>
+          </tr>
+          <tr>
+            <td style="color:var(--accent2);">Content/Consulting</td>
+            <td>฿20K</td>
+            <td>฿40K</td>
+            <td>฿30K</td>
+            <td>฿20K</td>
+          </tr>
+          <tr style="font-weight:700; background:rgba(255,215,0,0.08);">
+            <td style="color:var(--accent2);">TOTAL</td>
+            <td style="color:var(--accent);">฿95K</td>
+            <td style="color:var(--green);">฿400K ✅</td>
+            <td style="color:var(--green);">฿815K</td>
+            <td style="color:var(--accent2);">฿1.94M</td>
+          </tr>
+          <tr style="font-size:0.75rem; color:var(--muted);">
+            <td>USD equivalent</td>
+            <td>~$2.7K</td>
+            <td>~$11.4K</td>
+            <td>~$23.3K</td>
+            <td>~$55.4K</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1rem;">
+      <p><strong>Key assumption:</strong> MuteForge services revenue <em>intentionally declines</em> as SaaS revenue grows. Services are the bridge, not the destination. By Month 6, recurring SaaS + digital products should exceed ฿500K, meaning you've achieved "escape velocity" — revenue that continues even if you stop selling services.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 6: SURVIVAL GUIDE -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">6. Survival Guide for the AI Era</div>
+    <div class="section-sub">Mid-term + long-term thinking for a solopreneur with an AI companion</div>
+
+    <div class="callout">
+      <h4>The Uncomfortable Truth</h4>
+      <p>AI is both your greatest tool and your greatest threat. Every product you build with AI can be replicated by someone else with AI — often in days. <strong>Your moat is NOT the technology. Your moat is:</strong></p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card success">
+        <h3>Moats That Work in 2026+</h3>
+        <p><strong>1. Thai regulatory knowledge</strong> — PDPA specifics that Claude can't just Google</p>
+        <p><strong>2. Distribution (audience)</strong> — 10K followers > 10 features</p>
+        <p><strong>3. Data flywheel</strong> — each MutePDPA scan trains better compliance detection</p>
+        <p><strong>4. Switching costs</strong> — once a company sets up PDPA compliance, they don't switch</p>
+        <p><strong>5. Speed of execution</strong> — you've shipped while others plan</p>
+      </div>
+      <div class="card danger">
+        <h3>Threats to Watch</h3>
+        <p><strong>1. ChatGPT/Claude adding Thai compliance features</strong> — mitigate by going deep, not wide</p>
+        <p><strong>2. Thai tech companies building PDPA tools</strong> — mitigate by being first + building switching costs</p>
+        <p><strong>3. PDPC slowing enforcement</strong> — unlikely given trajectory, but hedge with multiple revenue streams</p>
+        <p><strong>4. Your own energy</strong> — 128 ideas = paralysis risk. FOCUS on 2-3 max</p>
+        <p><strong>5. Pricing pressure</strong> — AI makes everything cheaper; win on completeness, not price</p>
+      </div>
+    </div>
+
+    <h3 style="color: var(--accent2); margin: 1.5rem 0 0.5rem; font-family: 'Instrument Serif', serif;">The Personality/Brand POV</h3>
+    <div class="prose">
+      <p>You asked about "better branding, new PoV, new personality." Here's what works for AI solopreneurs who sustain $10K+/month:</p>
+
+      <p><strong>Don't be "MuteLab the company." Be "Thanapat the AI CTO who builds in public."</strong> Every successful AI solopreneur (Pieter Levels, Marc Lou, Danny Postma, Sarah Chen) built their personal brand FIRST, then attached products to it. Your story — CTO at a sustainability startup, building 128 AI ideas, trying to reach escape velocity — is <em>inherently compelling</em>.</p>
+
+      <p><strong>The brand positioning that works:</strong> "Thai CTO building AI tools for Thai businesses, sharing everything publicly." This is niche enough to be memorable, broad enough to sell multiple products, and authentic because it's literally what you're doing.</p>
+
+      <p><strong>Content pillars:</strong> (1) PDPA enforcement news + scare content, (2) building in public updates, (3) AI tool tutorials for Thai businesses, (4) revenue/growth transparency. Post daily on Twitter + TikTok. Weekly on YouTube/LINE.</p>
+    </div>
+
+    <h3 style="color: var(--teal); margin: 1.5rem 0 0.5rem; font-family: 'Instrument Serif', serif;">Long-Term Vision (12-36 Months)</h3>
+    <div class="prose">
+      <p>If the strategy works, by Month 12 you should have ฿1-2M/month from a portfolio of: MutePDPA (compliance SaaS), ThaiCompliance.ai (international), digital products (templates), and one global product (MuteValidate or SmartAudit).</p>
+
+      <p><strong>The long game is becoming the "MuteLab platform"</strong> — a suite of AI tools for Thai (and eventually SEA) businesses. Think of it like Zoho for AI-powered Thai business tools. Each product you launch has lower CAC because you cross-sell to existing customers. This is the <em>compounding moat</em> that competitors can't replicate overnight.</p>
+
+      <p><strong>The ultimate exit/scale scenario:</strong> If MutePDPA captures even 0.5% of Thai SMEs (16,000 customers) at ฿10K/month average, that's ฿160M/month (≈$4.5M/month). At 10x ARR multiple, that's a $500M+ company. This is not fantasy — OneTrust did exactly this for GDPR. <em>You could be Thailand's OneTrust.</em></p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- =============================== -->
+  <!-- SECTION 7: WHAT TO DO MONDAY -->
+  <!-- =============================== -->
+  <div class="section">
+    <div class="section-title">7. What to Do Monday Morning</div>
+    <div class="section-sub">The 7-day sprint that starts your revenue engine</div>
+
+    <div class="card highlight">
+      <div class="top-bar" style="background: linear-gradient(90deg, #fbbf24, #10b981);"></div>
+      <h3>The First 7 Days</h3>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 1 (Mon):</strong> Deploy MutePDPA free scanner to production. Set up PromptPay payment link. Create a simple landing page. Don't overthink design — <em>ship it.</em></p>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 2 (Tue):</strong> Create LINE OA for MuteForge Pro. List 3 packages with pricing. Set up auto-reply with package descriptions + payment instructions.</p>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 3 (Wed):</strong> Post the MutePDPA scanner in 10 Thai business Facebook groups + 5 LINE groups. Message reads: "Free PDPA compliance scan for your website. Check if you're at risk of ฿5M fines." Track responses.</p>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 4 (Thu):</strong> Create first TikTok/Twitter content: "I scanned 50 Thai business websites for PDPA compliance. Here's what I found..." (share anonymized results). This is your first viral content piece.</p>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 5 (Fri):</strong> Follow up on scanner leads. Anyone with a score below 30/100 gets a DM: "Your website has 15 PDPA violations. I can fix all of them in 48 hours for ฿9,900. Interested?"</p>
+
+      <p style="margin:0.5rem 0;"><strong style="color:var(--accent2);">Day 6-7 (Weekend):</strong> Create first Gumroad template bundle: "PDPA Privacy Policy Generator for Thai Businesses" — $49. Create 3 blog posts about PDPA fines for SEO. Schedule next week's social content.</p>
+
+      <div class="meta" style="margin-top:1rem;">
+        <span style="color:var(--green);">🎯 Goal: First paying customer by Day 7</span>
+        <span style="color:var(--accent2);">💰 Target Week 1: ฿10-30K</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center; padding: 3rem 0 2rem; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 2rem;">
+    <p>MuteLab Strategic Review — February 26, 2026</p>
+    <p style="margin-top:0.25rem;">Research conducted by Claude Opus 4.6 | All data sourced from public records, market reports, and web research</p>
+    <p style="margin-top:0.5rem; color: var(--accent2);">Stop planning. Start shipping. 🚀</p>
+  </div>
+
+</div>
+</body>
+</html>

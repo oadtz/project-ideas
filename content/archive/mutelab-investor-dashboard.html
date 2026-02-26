@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MuteLab — Investor Decision Dashboard</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#0f172a; color:#e2e8f0; line-height:1.6; }
+.container { max-width:1400px; margin:0 auto; padding:20px; }
+header { text-align:center; padding:40px 20px; border-bottom:1px solid #1e293b; }
+header h1 { font-size:2.5em; color:#f8fafc; margin-bottom:8px; }
+header .subtitle { color:#94a3b8; font-size:1.1em; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:30px 0; }
+.stat-card { background:#1e293b; border-radius:12px; padding:20px; text-align:center; }
+.stat-card .number { font-size:2.2em; font-weight:700; }
+.stat-card .label { color:#94a3b8; font-size:0.85em; margin-top:4px; }
+.section { margin:40px 0; }
+.section h2 { font-size:1.5em; color:#f8fafc; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #1e293b; }
+.section h3 { font-size:1.2em; color:#cbd5e1; margin:20px 0 10px; }
+table { width:100%; border-collapse:collapse; }
+th { background:#1e293b; color:#94a3b8; padding:12px 8px; text-align:left; font-size:0.75em; text-transform:uppercase; letter-spacing:0.05em; position:sticky; top:0; cursor:pointer; }
+th:hover { color:#f8fafc; }
+td { padding:10px 8px; border-bottom:1px solid #1e293b; font-size:0.85em; }
+tr:hover { background:#1e293b40; }
+.score-cell { text-align:center; font-weight:700; }
+.score-high { color:#22c55e; }
+.score-med { color:#eab308; }
+.score-low { color:#ef4444; }
+.filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
+.filter-btn { padding:6px 16px; border-radius:20px; border:1px solid #334155; background:transparent; color:#94a3b8; cursor:pointer; font-size:0.85em; transition:all 0.2s; }
+.filter-btn:hover, .filter-btn.active { background:#3b82f6; color:white; border-color:#3b82f6; }
+.idea-detail { background:#1e293b; border-radius:12px; padding:20px; margin:12px 0; }
+.idea-detail h4 { color:#f8fafc; font-size:1.1em; margin-bottom:8px; }
+.detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; }
+.detail-item { background:#0f172a; border-radius:8px; padding:12px; }
+.detail-item .dim-label { color:#3b82f6; font-size:0.75em; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.merge-card { background:linear-gradient(135deg,#1e293b,#0f172a); border:1px solid #3b82f6; border-radius:12px; padding:20px; margin:12px 0; }
+.merge-card h4 { color:#60a5fa; }
+.merge-ids { display:flex; gap:4px; flex-wrap:wrap; margin:8px 0; }
+.merge-id { background:#3b82f640; color:#93c5fd; padding:2px 8px; border-radius:8px; font-size:0.8em; }
+.timeline { position:relative; padding-left:30px; }
+.timeline::before { content:''; position:absolute; left:12px; top:0; bottom:0; width:2px; background:#3b82f6; }
+.timeline-item { position:relative; margin:20px 0; }
+.timeline-item::before { content:''; position:absolute; left:-24px; top:6px; width:12px; height:12px; border-radius:50%; background:#3b82f6; }
+.search-input { width:100%; padding:12px 16px; background:#1e293b; border:1px solid #334155; border-radius:8px; color:#f8fafc; font-size:0.9em; margin-bottom:16px; }
+.search-input::placeholder { color:#64748b; }
+.score-breakdown { display:flex; gap:4px; align-items:center; }
+.score-dot { width:24px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.7em; font-weight:700; }
+.market-data { background:#0f172a; border-left:3px solid #3b82f6; padding:12px; margin:8px 0; border-radius:0 8px 8px 0; font-size:0.85em; }
+@media (max-width: 768px) {
+    header h1 { font-size:1.5em; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .detail-grid { grid-template-columns:1fr; }
+    td, th { padding:6px 4px; font-size:0.75em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+    <h1>MuteLab</h1>
+    <div class="subtitle">Investor Decision Dashboard — 69 Ideas Analyzed with Real Market Data</div>
+    <div style="color:#64748b;margin-top:8px;font-size:0.85em">Generated February 2026 | Thanapat Pirmphol, CTO & Founder</div>
+</header>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="section">
+    <h2>Executive Summary</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number" style="color:#22c55e">24</div>
+            <div class="label">GO — Build Now</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="color:#eab308">21</div>
+            <div class="label">MAYBE — Conditional</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="color:#ef4444">14</div>
+            <div class="label">KILL — Don't Build</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="color:#8b5cf6">5</div>
+            <div class="label">WAIT / LATER</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="color:#06b6d4">5</div>
+            <div class="label">MERGE into Suites</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" style="color:#f8fafc">47</div>
+            <div class="label">Highest Score /50</div>
+        </div>
+    </div>
+    <div style="background:#1e293b;border-radius:12px;padding:20px;margin-top:16px">
+        <p style="color:#94a3b8;margin-bottom:12px"><strong style="color:#f8fafc">Context:</strong> Thanapat is a CTO (fullstack + blockchain + AI/ML) at Water Ledger Global, building solopreneur ventures part-time (20hr/week). Needs $10K+/month income within 1-3 months. MutePDPA has a working prototype.</p>
+        <p style="color:#94a3b8;margin-bottom:12px"><strong style="color:#f8fafc">Scoring:</strong> 8 dimensions, /50 total. Market Size /7, Competition /7 (higher=less competition), Monetization /6, Distribution /6, Technical Feasibility /7, Founder-Market Fit /7, Timing /5, AI-Era Opportunity /5. All scores are brutally honest with real market data.</p>
+        <p style="color:#94a3b8"><strong style="color:#f8fafc">Key Insight:</strong> 128 individual ideas consolidate into <strong style="color:#60a5fa">10 mega-products</strong> through strategic merging. The recommended launch sequence starts with MutePDPA (prototype exists) + MuteLearn (content product, fastest to revenue) + MuteData (highest score, defensible moat).</p>
+    </div>
+</div>
+
+<!-- SCORING FRAMEWORK -->
+<div class="section">
+    <h2>Scoring Framework (/50)</h2>
+    <div class="detail-grid">
+        <div class="detail-item"><div class="dim-label">1. Market Size /7</div>TAM/SAM/SOM with real data. Distribution + monetization > TAM.</div>
+        <div class="detail-item"><div class="dim-label">2. Competition /7</div>Real competitors with names, funding, pricing. English AND Thai research. Higher = less competition.</div>
+        <div class="detail-item"><div class="dim-label">3. Monetization /6</div>Who pays, how much, evidence of willingness. Revenue model clarity.</div>
+        <div class="detail-item"><div class="dim-label">4. Distribution /6</div>Channels to reach paying customers. CAC estimate. Path to first 100 users.</div>
+        <div class="detail-item"><div class="dim-label">5. Technical Feasibility /7</div>AI coding agents = 10-50x faster. 8-10/10 unless physical work, heavy regulation, or partnerships needed.</div>
+        <div class="detail-item"><div class="dim-label">6. Founder-Market Fit /7</div>Thanapat (Thai-English, 20hr/week) + Claude (AI, unlimited). Weak: in-person BD/sales.</div>
+        <div class="detail-item"><div class="dim-label">7. Timing /5</div>Why now? Regulatory tailwinds, market gaps, technology readiness.</div>
+        <div class="detail-item"><div class="dim-label">8. AI-Era Opportunity /5</div>Is this a new category enabled by AI? Or existing market with AI enhancement?</div>
+    </div>
+</div>
+
+<!-- MERGE OPPORTUNITIES -->
+<div class="section">
+    <h2>Strategic Merges — 128 Ideas → 10 Mega-Products</h2>
+    <p style="color:#94a3b8;margin-bottom:16px">Many ideas are stronger combined. Here are the recommended mega-merges:</p>
+
+    <div class="merge-card">
+        <h4>🔥 MuteData — Score: 47/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Thai Structured Data Platform — Legal + Business + Regulatory data APIs for AI agents</p>
+        <div class="merge-ids"><span class="merge-id">#127</span><span class="merge-id">#128</span><span class="merge-id">#110</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> Data is the new oil. Thai data is locked in government PDFs. First to structure it wins permanently.</p>
+    </div>
+    <div class="merge-card">
+        <h4>🔥 MuteCommerce — Score: 42/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">All-in-One Thai E-Commerce Suite — TikTok live coach + competitor spy + listing optimizer + product photos + videos</p>
+        <div class="merge-ids"><span class="merge-id">#117</span><span class="merge-id">#120</span><span class="merge-id">#109</span><span class="merge-id">#78</span><span class="merge-id">#44</span><span class="merge-id">#73</span><span class="merge-id">#11</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> ฿1.1T market. Sellers need multiple tools but hate multiple subscriptions. Bundle wins.</p>
+    </div>
+    <div class="merge-card">
+        <h4>🔥 MuteLearn — Score: 46/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">AI Education Platform — 'Survive & Beat AI' courses + business toolkit + community</p>
+        <div class="merge-ids"><span class="merge-id">#28</span><span class="merge-id">#122</span><span class="merge-id">#54</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> Fear-driven demand at peak. Content product = near-zero COGS. Feeds MuteLab brand.</p>
+    </div>
+    <div class="merge-card">
+        <h4>🔥 MutePDPA+ — Score: 44/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Thai Compliance Suite — PDPA scanner + security audit + compliance training + regulatory monitor</p>
+        <div class="merge-ids"><span class="merge-id">#100</span><span class="merge-id">#46</span><span class="merge-id">#49</span><span class="merge-id">#52</span><span class="merge-id">#110</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> ฿21.5M fines in 2025. Prototype exists. Fear drives purchase. Multiple upsell paths.</p>
+    </div>
+    <div class="merge-card">
+        <h4>MuteChain — Score: 41/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Blockchain Services Suite — Smart contract audit + crypto tax + trading signals + digital estate</p>
+        <div class="merge-ids"><span class="merge-id">#65</span><span class="merge-id">#70</span><span class="merge-id">#39</span><span class="merge-id">#75</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> Perfect CTO fit. 4M+ Thai crypto accounts. Multiple revenue streams from one domain.</p>
+    </div>
+    <div class="merge-card">
+        <h4>🔥 MuteMINI+ — Score: 42/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">LINE Super-Platform — No-code LINE MINI App builder absorbing chatbot, booking, support features</p>
+        <div class="merge-ids"><span class="merge-id">#119</span><span class="merge-id">#8</span><span class="merge-id">#40</span><span class="merge-id">#115</span><span class="merge-id">#47</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> 6M LINE OAs. ฿1.14T chat commerce by 2028. Platform play with extreme lock-in.</p>
+    </div>
+    <div class="merge-card">
+        <h4>MuteSolo+ — Score: 40/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Thai Freelancer Super-App — CRM + invoicing + PromptPay + finance + payroll</p>
+        <div class="merge-ids"><span class="merge-id">#84</span><span class="merge-id">#95</span><span class="merge-id">#57</span><span class="merge-id">#79</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> 5M+ Thai freelancers. HoneyBook clone with Thai moat (PromptPay + LINE).</p>
+    </div>
+    <div class="merge-card">
+        <h4>MuteMoo+ — Score: 39/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Thai Fortune/Mutelu Platform — AI ดูดวง + lottery intelligence + wallpapers</p>
+        <div class="merge-ids"><span class="merge-id">#22</span><span class="merge-id">#59</span><span class="merge-id">#104</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> 52M Thai believers. ฿10B+ market. High-margin digital products. Viral potential.</p>
+    </div>
+    <div class="merge-card">
+        <h4>MuteGreen+ — Score: 37/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Enterprise ESG Suite — ESG reporting + carbon credits + climate compliance (LATER)</p>
+        <div class="merge-ids"><span class="merge-id">#81</span><span class="merge-id">#13</span><span class="merge-id">#107</span><span class="merge-id">#116</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> 2027 Climate Act deadline. Water Ledger CTO = domain expert. Enterprise sales = need revenue first.</p>
+    </div>
+    <div class="merge-card">
+        <h4>MuteProp — Score: 37/50</h4>
+        <p style="color:#94a3b8;margin:8px 0">Thai Property Tech Suite — Landlord management + condo app + property visuals</p>
+        <div class="merge-ids"><span class="merge-id">#90</span><span class="merge-id">#50</span><span class="merge-id">#121</span><span class="merge-id">#101</span></div>
+        <p style="color:#64748b;font-size:0.85em"><strong>Why merge:</strong> 300K+ landlords. Silverman competitor. PromptPay rent collection = killer feature.</p>
+    </div>
+</div>
+
+<!-- FULL PORTFOLIO TABLE -->
+<div class="section">
+    <h2>Full Portfolio — All Ideas Ranked</h2>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search ideas by name, category, or verdict..." onkeyup="filterTable()">
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterVerdict('ALL', this)">All</button>
+        <button class="filter-btn" onclick="filterVerdict('GO', this)">GO</button>
+        <button class="filter-btn" onclick="filterVerdict('MAYBE', this)">MAYBE</button>
+        <button class="filter-btn" onclick="filterVerdict('KILL', this)">KILL</button>
+        <button class="filter-btn" onclick="filterVerdict('WAIT', this)">WAIT/LATER</button>
+        <button class="filter-btn" onclick="filterVerdict('MERGE', this)">MERGE</button>
+    </div>
+    <div style="overflow-x:auto">
+    <table id="ideaTable">
+    <thead>
+    <tr>
+        <th onclick="sortTable(0)">#</th>
+        <th onclick="sortTable(1)">Name</th>
+        <th onclick="sortTable(2)">Category</th>
+        <th onclick="sortTable(3)" title="Market Size">MKT</th>
+        <th onclick="sortTable(4)" title="Competition (higher=less)">CMP</th>
+        <th onclick="sortTable(5)" title="Monetization">MON</th>
+        <th onclick="sortTable(6)" title="Distribution">DST</th>
+        <th onclick="sortTable(7)" title="Technical Feasibility">TEC</th>
+        <th onclick="sortTable(8)" title="Founder-Market Fit">FIT</th>
+        <th onclick="sortTable(9)" title="Timing">TMG</th>
+        <th onclick="sortTable(10)" title="AI-Era Opportunity">AI</th>
+        <th onclick="sortTable(11)" style="color:#f8fafc">TOTAL</th>
+        <th>Verdict</th>
+    </tr>
+    </thead>
+    <tbody>
+<tr data-verdict="GO" data-name="mutedata (new)" data-category="data api">
+        <td>129</td>
+        <td><strong style="color:#f8fafc">MuteData (NEW)</strong><br><span style="color:#64748b;font-size:0.8em">Thai Structured Data Platform (Legal + Business + Regulatory)</span></td>
+        <td>Data API</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">47</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="thailaw mcp" data-category="data api">
+        <td>127</td>
+        <td><strong style="color:#f8fafc">ThaiLaw MCP</strong><br><span style="color:#64748b;font-size:0.8em">Structured Thai Legal Data API for AI Agents</span></td>
+        <td>Data API</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">46</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="thaicompany api" data-category="data api">
+        <td>128</td>
+        <td><strong style="color:#f8fafc">ThaiCompany API</strong><br><span style="color:#64748b;font-size:0.8em">Structured DBD Business Data for AI Agents</span></td>
+        <td>Data API</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">46</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="muteacademy" data-category="education">
+        <td>122</td>
+        <td><strong style="color:#f8fafc">MuteAcademy</strong><br><span style="color:#64748b;font-size:0.8em">Thai AI Business Toolkit + Community</span></td>
+        <td>Education</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">46</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutelearn (new)" data-category="education">
+        <td>131</td>
+        <td><strong style="color:#f8fafc">MuteLearn (NEW)</strong><br><span style="color:#64748b;font-size:0.8em">AI Education Platform: Survive & Thrive in AI Era</span></td>
+        <td>Education</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">46</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutetutor (redesigned)" data-category="education">
+        <td>28</td>
+        <td><strong style="color:#f8fafc">MuteTutor (Redesigned)</strong><br><span style="color:#64748b;font-size:0.8em">AI Academy: Survive & Beat AI in the New World</span></td>
+        <td>Education</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">45</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutepdpa" data-category="regtech">
+        <td>100</td>
+        <td><strong style="color:#f8fafc">MutePDPA</strong><br><span style="color:#64748b;font-size:0.8em">AI PDPA Compliance for Thai Businesses</span></td>
+        <td>RegTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">44</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutelive" data-category="e-commerce tools">
+        <td>117</td>
+        <td><strong style="color:#f8fafc">MuteLIVE</strong><br><span style="color:#64748b;font-size:0.8em">AI Real-Time Coach for TikTok LIVE Sellers</span></td>
+        <td>E-Commerce Tools</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutesticker" data-category="creator tools">
+        <td>123</td>
+        <td><strong style="color:#f8fafc">MuteSticker</strong><br><span style="color:#64748b;font-size:0.8em">AI LINE Sticker Studio for Thai Creators</span></td>
+        <td>Creator Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="GO" data-name="gigpocket" data-category="fintech">
+        <td>118</td>
+        <td><strong style="color:#f8fafc">GigPocket</strong><br><span style="color:#64748b;font-size:0.8em">Income Tracker for Thai Gig Workers</span></td>
+        <td>FinTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutemini" data-category="platform/builder">
+        <td>119</td>
+        <td><strong style="color:#f8fafc">MuteMINI</strong><br><span style="color:#64748b;font-size:0.8em">No-Code LINE MINI App Builder</span></td>
+        <td>Platform/Builder</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutetax" data-category="blockchain/fintech">
+        <td>70</td>
+        <td><strong style="color:#f8fafc">MuteTax</strong><br><span style="color:#64748b;font-size:0.8em">Thailand's First AI Crypto Tax Calculator</span></td>
+        <td>Blockchain/FinTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutecommerce (new)" data-category="e-commerce tools">
+        <td>130</td>
+        <td><strong style="color:#f8fafc">MuteCommerce (NEW)</strong><br><span style="color:#64748b;font-size:0.8em">All-in-One Thai E-Commerce Seller Suite</span></td>
+        <td>E-Commerce Tools</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">42</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutespy" data-category="e-commerce tools">
+        <td>120</td>
+        <td><strong style="color:#f8fafc">MuteSpy</strong><br><span style="color:#64748b;font-size:0.8em">TikTok Shop Thailand Competitor Intelligence</span></td>
+        <td>E-Commerce Tools</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">41</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutesell ai" data-category="e-commerce tools">
+        <td>109</td>
+        <td><strong style="color:#f8fafc">MuteSell AI</strong><br><span style="color:#64748b;font-size:0.8em">AI Listing Optimizer for Shopee & Lazada</span></td>
+        <td>E-Commerce Tools</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">41</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="muteaudit" data-category="blockchain/web3">
+        <td>65</td>
+        <td><strong style="color:#f8fafc">MuteAudit</strong><br><span style="color:#64748b;font-size:0.8em">AI Smart Contract Auditor</span></td>
+        <td>Blockchain/Web3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">41</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutevalidate" data-category="developer tools">
+        <td>69</td>
+        <td><strong style="color:#f8fafc">MuteValidate</strong><br><span style="color:#64748b;font-size:0.8em">AI Launch Kit Engine (Validation + Landing + Pitch)</span></td>
+        <td>Developer Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-high">41</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutechain (new)" data-category="blockchain">
+        <td>132</td>
+        <td><strong style="color:#f8fafc">MuteChain (NEW)</strong><br><span style="color:#64748b;font-size:0.8em">Blockchain Services Suite (Audit + Tax + Signals)</span></td>
+        <td>Blockchain</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-high">41</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutesolo" data-category="saas/tools">
+        <td>84</td>
+        <td><strong style="color:#f8fafc">MuteSolo</strong><br><span style="color:#64748b;font-size:0.8em">AI Business OS for Thai Freelancers (HoneyBook clone)</span></td>
+        <td>SaaS/Tools</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-high">40</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mornee (หมอหนี้)" data-category="fintech">
+        <td>37</td>
+        <td><strong style="color:#f8fafc">MorNee (หมอหนี้)</strong><br><span style="color:#64748b;font-size:0.8em">AI Debt Coach on LINE</span></td>
+        <td>FinTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-high">40</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutemoo" data-category="consumer/culture">
+        <td>22</td>
+        <td><strong style="color:#f8fafc">MuteMoo</strong><br><span style="color:#64748b;font-size:0.8em">AI Fortune Telling + Digital Mutelu Art</span></td>
+        <td>Consumer/Culture</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">39</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="WAIT" data-name="x402 gateway" data-category="blockchain/web3">
+        <td>5</td>
+        <td><strong style="color:#f8fafc">x402 Gateway</strong><br><span style="color:#64748b;font-size:0.8em">Agent-to-Agent Payment Protocol</span></td>
+        <td>Blockchain/Web3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-med">39</td>
+        <td><span style="background:#6366f1;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">WAIT</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutekit" data-category="digital products">
+        <td>55</td>
+        <td><strong style="color:#f8fafc">MuteKit</strong><br><span style="color:#64748b;font-size:0.8em">AI Micro-Niche Digital Product Factory</span></td>
+        <td>Digital Products</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">39</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="GO" data-name="muteclub" data-category="creator tools">
+        <td>88</td>
+        <td><strong style="color:#f8fafc">MuteClub</strong><br><span style="color:#64748b;font-size:0.8em">Paid Community Platform for Thai Creators</span></td>
+        <td>Creator Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">39</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutethai" data-category="education">
+        <td>124</td>
+        <td><strong style="color:#f8fafc">MuteThai</strong><br><span style="color:#64748b;font-size:0.8em">AI Thai Language Learning App (Global Market)</span></td>
+        <td>Education</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">39</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MERGE" data-name="line ai assistant" data-category="chatbot/ai">
+        <td>8</td>
+        <td><strong style="color:#f8fafc">LINE AI Assistant</strong><br><span style="color:#64748b;font-size:0.8em">AI Chatbot for Thai Businesses on LINE</span></td>
+        <td>Chatbot/AI</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></td>
+    </tr><tr data-verdict="LATER" data-name="muteflow" data-category="automation">
+        <td>53</td>
+        <td><strong style="color:#f8fafc">MuteFlow</strong><br><span style="color:#64748b;font-size:0.8em">Thai Zapier — Connect LINE + Shopee + FlowAccount</span></td>
+        <td>Automation</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#8b5cf6;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">LATER</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutetrade" data-category="blockchain/fintech">
+        <td>39</td>
+        <td><strong style="color:#f8fafc">MuteTrade</strong><br><span style="color:#64748b;font-size:0.8em">AI Crypto Trading Signals on Telegram</span></td>
+        <td>Blockchain/FinTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="GO" data-name="mutecash" data-category="fintech">
+        <td>42</td>
+        <td><strong style="color:#f8fafc">MuteCash</strong><br><span style="color:#64748b;font-size:0.8em">AI Accounts Receivable</span></td>
+        <td>FinTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutebid" data-category="govtech">
+        <td>45</td>
+        <td><strong style="color:#f8fafc">MuteBid</strong><br><span style="color:#64748b;font-size:0.8em">AI Gov Procurement Monitor</span></td>
+        <td>GovTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="GO" data-name="mutecod" data-category="e-commerce/fintech">
+        <td>64</td>
+        <td><strong style="color:#f8fafc">MuteCOD</strong><br><span style="color:#64748b;font-size:0.8em">AI COD Risk Scoring</span></td>
+        <td>E-Commerce/FinTech</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muteswarm" data-category="ai/agents">
+        <td>98</td>
+        <td><strong style="color:#f8fafc">MuteSwarm</strong><br><span style="color:#64748b;font-size:0.8em">Anti-SaaS AI Agent Packs</span></td>
+        <td>AI/Agents</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutecal" data-category="health/consumer">
+        <td>106</td>
+        <td><strong style="color:#f8fafc">MuteCal</strong><br><span style="color:#64748b;font-size:0.8em">Thai Food Calorie Camera</span></td>
+        <td>Health/Consumer</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">38</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muterent v2" data-category="proptech">
+        <td>90</td>
+        <td><strong style="color:#f8fafc">MuteRent v2</strong><br><span style="color:#64748b;font-size:0.8em">AI Property Management via LINE + PromptPay</span></td>
+        <td>PropTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">37</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="LATER" data-name="mutegreen (esg)" data-category="regtech">
+        <td>81</td>
+        <td><strong style="color:#f8fafc">MuteGreen (ESG)</strong><br><span style="color:#64748b;font-size:0.8em">AI ESG Reporting for Thai Listed Companies</span></td>
+        <td>RegTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">37</td>
+        <td><span style="background:#8b5cf6;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">LATER</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutevoice" data-category="ai/voice">
+        <td>62</td>
+        <td><strong style="color:#f8fafc">MuteVoice</strong><br><span style="color:#64748b;font-size:0.8em">AI Thai Voice Receptionist</span></td>
+        <td>AI/Voice</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">37</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="KILL" data-name="mcp hub" data-category="developer tools">
+        <td>2</td>
+        <td><strong style="color:#f8fafc">MCP Hub</strong><br><span style="color:#64748b;font-size:0.8em">MCP Server Registry/Marketplace</span></td>
+        <td>Developer Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muteinsure" data-category="vertical saas">
+        <td>56</td>
+        <td><strong style="color:#f8fafc">MuteInsure</strong><br><span style="color:#64748b;font-size:0.8em">AI CRM for 400K+ Thai Insurance Agents</span></td>
+        <td>Vertical SaaS</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MERGE" data-name="shopcopilot" data-category="e-commerce">
+        <td>11</td>
+        <td><strong style="color:#f8fafc">ShopCopilot</strong><br><span style="color:#64748b;font-size:0.8em">AI E-Commerce Assistant for Thai Sellers</span></td>
+        <td>E-Commerce</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="ai photo studio" data-category="ai/consumer">
+        <td>21</td>
+        <td><strong style="color:#f8fafc">AI Photo Studio</strong><br><span style="color:#64748b;font-size:0.8em">AI Headshots for Thai Professionals</span></td>
+        <td>AI/Consumer</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MERGE" data-name="mutelens" data-category="e-commerce">
+        <td>44</td>
+        <td><strong style="color:#f8fafc">MuteLens</strong><br><span style="color:#64748b;font-size:0.8em">AI Product Photography</span></td>
+        <td>E-Commerce</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutesource" data-category="e-commerce">
+        <td>61</td>
+        <td><strong style="color:#f8fafc">MuteSource</strong><br><span style="color:#64748b;font-size:0.8em">AI Cross-Border Sourcing from China</span></td>
+        <td>E-Commerce</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutesell" data-category="sales">
+        <td>74</td>
+        <td><strong style="color:#f8fafc">MuteSell</strong><br><span style="color:#64748b;font-size:0.8em">AI Outbound Sales Agent for Thai B2B</span></td>
+        <td>Sales</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MERGE" data-name="muteclip" data-category="e-commerce/content">
+        <td>78</td>
+        <td><strong style="color:#f8fafc">MuteClip</strong><br><span style="color:#64748b;font-size:0.8em">AI Product Video Generator</span></td>
+        <td>E-Commerce/Content</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muteschool" data-category="vertical saas">
+        <td>94</td>
+        <td><strong style="color:#f8fafc">MuteSchool</strong><br><span style="color:#64748b;font-size:0.8em">AI SaaS for Thai Tutoring Centers</span></td>
+        <td>Vertical SaaS</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutefood" data-category="regtech">
+        <td>111</td>
+        <td><strong style="color:#f8fafc">MuteFood</strong><br><span style="color:#64748b;font-size:0.8em">F&B Compliance Document Kit (HACCP, GMP)</span></td>
+        <td>RegTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">36</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutepaw" data-category="consumer">
+        <td>38</td>
+        <td><strong style="color:#f8fafc">MutePaw</strong><br><span style="color:#64748b;font-size:0.8em">AI Pet Advisor on LINE</span></td>
+        <td>Consumer</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">35</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muteprint" data-category="e-commerce">
+        <td>67</td>
+        <td><strong style="color:#f8fafc">MutePrint</strong><br><span style="color:#64748b;font-size:0.8em">AI POD Automation</span></td>
+        <td>E-Commerce</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-med">35</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutehr" data-category="hr/legal">
+        <td>112</td>
+        <td><strong style="color:#f8fafc">MuteHR</strong><br><span style="color:#64748b;font-size:0.8em">Thai Labor Law HR Document Templates</span></td>
+        <td>HR/Legal</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#ef4444"></td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-med">35</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="LATER" data-name="rwa studio" data-category="blockchain/web3">
+        <td>19</td>
+        <td><strong style="color:#f8fafc">RWA Studio</strong><br><span style="color:#64748b;font-size:0.8em">Real-World Asset Tokenization Platform</span></td>
+        <td>Blockchain/Web3</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td class="score-cell score-low">34</td>
+        <td><span style="background:#8b5cf6;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">LATER</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="mutemind" data-category="health">
+        <td>41</td>
+        <td><strong style="color:#f8fafc">MuteMind</strong><br><span style="color:#64748b;font-size:0.8em">AI Mental Health Companion</span></td>
+        <td>Health</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">34</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muteglow" data-category="vertical saas">
+        <td>51</td>
+        <td><strong style="color:#f8fafc">MuteGlow</strong><br><span style="color:#64748b;font-size:0.8em">AI Clinic Management for Beauty Clinics</span></td>
+        <td>Vertical SaaS</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">34</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="KILL" data-name="ai agent marketplace" data-category="marketplace">
+        <td>1</td>
+        <td><strong style="color:#f8fafc">AI Agent Marketplace</strong><br><span style="color:#64748b;font-size:0.8em">Buy/Sell AI Agents</span></td>
+        <td>Marketplace</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-low">33</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="agentproof" data-category="developer tools">
+        <td>4</td>
+        <td><strong style="color:#f8fafc">AgentProof</strong><br><span style="color:#64748b;font-size:0.8em">AI Agent Observability Platform</span></td>
+        <td>Developer Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-low">33</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="WAIT" data-name="ai agent reputation protocol" data-category="blockchain">
+        <td>7</td>
+        <td><strong style="color:#f8fafc">AI Agent Reputation Protocol</strong><br><span style="color:#64748b;font-size:0.8em">Trust Layer for AI Agents</span></td>
+        <td>Blockchain</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-low">33</td>
+        <td><span style="background:#6366f1;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">WAIT</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="ai senior companion" data-category="health/social">
+        <td>32</td>
+        <td><strong style="color:#f8fafc">AI Senior Companion</strong><br><span style="color:#64748b;font-size:0.8em">LINE AI for Thai Elderly</span></td>
+        <td>Health/Social</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">33</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="MAYBE" data-name="muterank" data-category="marketing">
+        <td>43</td>
+        <td><strong style="color:#f8fafc">MuteRank</strong><br><span style="color:#64748b;font-size:0.8em">AI Review Manager</span></td>
+        <td>Marketing</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">33</td>
+        <td><span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></td>
+    </tr><tr data-verdict="KILL" data-name="devsage" data-category="developer tools">
+        <td>20</td>
+        <td><strong style="color:#f8fafc">DevSage</strong><br><span style="color:#64748b;font-size:0.8em">AI Code Review/Mentoring</span></td>
+        <td>Developer Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-low">32</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="MERGE" data-name="greenchain thailand" data-category="blockchain/esg">
+        <td>13</td>
+        <td><strong style="color:#f8fafc">GreenChain Thailand</strong><br><span style="color:#64748b;font-size:0.8em">Carbon Credit Verification</span></td>
+        <td>Blockchain/ESG</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td class="score-cell score-low">31</td>
+        <td><span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></td>
+    </tr><tr data-verdict="KILL" data-name="querybrain" data-category="bi/analytics">
+        <td>15</td>
+        <td><strong style="color:#f8fafc">QueryBrain</strong><br><span style="color:#64748b;font-size:0.8em">Thai Text-to-SQL</span></td>
+        <td>BI/Analytics</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-low">31</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="loyaltyos" data-category="blockchain">
+        <td>16</td>
+        <td><strong style="color:#f8fafc">LoyaltyOS</strong><br><span style="color:#64748b;font-size:0.8em">Web3 Loyalty for Thai Brands</span></td>
+        <td>Blockchain</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td class="score-cell score-low">31</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="synthdata.io" data-category="ai/data">
+        <td>9</td>
+        <td><strong style="color:#f8fafc">SynthData.io</strong><br><span style="color:#64748b;font-size:0.8em">Thai Synthetic Training Data</span></td>
+        <td>AI/Data</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-low">30</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="agentos" data-category="developer tools">
+        <td>10</td>
+        <td><strong style="color:#f8fafc">AgentOS</strong><br><span style="color:#64748b;font-size:0.8em">Agent Management Platform</span></td>
+        <td>Developer Tools</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">5</td>
+        <td class="score-cell score-low">30</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="creatorclone" data-category="ai/video">
+        <td>12</td>
+        <td><strong style="color:#f8fafc">CreatorClone</strong><br><span style="color:#64748b;font-size:0.8em">AI Avatar for Thai Sellers</span></td>
+        <td>AI/Video</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-low">29</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="autonomous business machine" data-category="platform">
+        <td>3</td>
+        <td><strong style="color:#f8fafc">Autonomous Business Machine</strong><br><span style="color:#64748b;font-size:0.8em">End-to-End AI Business Automation</span></td>
+        <td>Platform</td>
+        <td style="text-align:center;color:#22c55e">6</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#22c55e">4</td>
+        <td class="score-cell score-low">28</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="narrateai" data-category="content">
+        <td>14</td>
+        <td><strong style="color:#f8fafc">NarrateAI</strong><br><span style="color:#64748b;font-size:0.8em">Thai Text-to-Podcast</span></td>
+        <td>Content</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#22c55e">7</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">28</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="kol.ai" data-category="marketing">
+        <td>18</td>
+        <td><strong style="color:#f8fafc">KOL.ai</strong><br><span style="color:#64748b;font-size:0.8em">Thai Influencer Marketplace</span></td>
+        <td>Marketing</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">28</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="vibebuild thailand" data-category="platform">
+        <td>6</td>
+        <td><strong style="color:#f8fafc">VibeBuild Thailand</strong><br><span style="color:#64748b;font-size:0.8em">Thai AI Website Builder</span></td>
+        <td>Platform</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#f97316">4</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td class="score-cell score-low">27</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr><tr data-verdict="KILL" data-name="dealflow.ai" data-category="fintech">
+        <td>17</td>
+        <td><strong style="color:#f8fafc">DealFlow.ai</strong><br><span style="color:#64748b;font-size:0.8em">AI Cash Flow for Thai SMEs</span></td>
+        <td>FinTech</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">5</td>
+        <td style="text-align:center;color:#eab308">4</td>
+        <td style="text-align:center;color:#ef4444">2</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#f97316">3</td>
+        <td style="text-align:center;color:#eab308">3</td>
+        <td style="text-align:center;color:#f97316">2</td>
+        <td class="score-cell score-low">27</td>
+        <td><span style="background:#ef4444;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">KILL</span></td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+</div>
+
+<!-- DETAILED ANALYSIS FOR TOP IDEAS -->
+<div class="section">
+    <h2>Deep Analysis — Top Ideas with Market Data</h2>
+
+    <div class="idea-detail" id="idea-129">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#129 MuteData (NEW) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">47/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Thai Structured Data Platform (Legal + Business + Regulatory) | Data API | B2B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> $251B AI agent market needs data. 1.4M Thai companies + all Thai law<br>
+                <strong>SAM:</strong> AI companies, fintechs, legal tech, accounting firms<br>
+                <strong>SOM:</strong> 1,000-10,000 API users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                ZERO structured Thai data APIs. DBD is PDF hell. Royal Gazette is unsearchable.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                Usage-based $0.005-0.05/query + $299-999/mo subscriptions. Data APIs have 80%+ margins.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                MCP protocol → Claude/GPT native. API marketplaces. Thai developer communities.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Scrape → structure → serve. Thai legal + business + regulatory data. CTO can build. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (6/7)</div>
+                CTO builds data pipelines at Water Ledger. API infrastructure is core skill.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                AI agents NEED structured data NOW. No one has done this for Thailand. First-mover advantage.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free tier MCP server → developers use for Claude → paid for volume/premium data
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MEGA-MERGE: ThaiLaw MCP + ThaiCompany API + MuteReg = MuteData platform</div>
+    </div>
+    <div class="idea-detail" id="idea-127">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#127 ThaiLaw MCP <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">46/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Structured Thai Legal Data API for AI Agents | Data API | B2B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> $251B AI agent market by 2034<br>
+                <strong>SAM:</strong> Thai legal data consumers — law firms, fintechs, AI companies<br>
+                <strong>SOM:</strong> 500-2,000 API customers Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                Zero Thai law APIs for AI agents. LexisNexis/Westlaw don't cover Thai law in structured format. 15 Thai legal tech startups exist but none API-first.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                $0.01-0.05/query, $299-999/mo subscription. Legal data = high willingness to pay.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                MCP protocol native → Claude/ChatGPT integration. Developer docs + Thai lawyer communities. Blognone/Techsauce PR.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Scrape Royal Gazette + court decisions → structure with AI → serve via API/MCP. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (6/7)</div>
+                CTO can build API infrastructure. Thai-English bilingual = can structure Thai law. No legal domain expertise (risk).
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                MCP protocol exploding 2025. PDPA fines ฿21.5M+ in 2025 driving demand. Zero Thai legal APIs exist.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Launch MCP server → list on Smithery/mcp.run → post on Thai dev communities → free tier for law firms
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine with ThaiCompany API (#128) + MuteReg (#110) into 'Thai Data Infrastructure' mega-product</div>
+    </div>
+    <div class="idea-detail" id="idea-128">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#128 ThaiCompany API <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">46/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Structured DBD Business Data for AI Agents | Data API | B2B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 1.4M Thai registered companies. Global business data market $4B+<br>
+                <strong>SAM:</strong> Fintechs, lenders, legal, accounting firms needing Thai company data<br>
+                <strong>SOM:</strong> 1,000-5,000 API customers Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                OpenCorporates has partial Thai data. DBD DataWarehouse exists but terrible UX. Zero structured API.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                $0.005/lookup, bulk plans $99-499/mo. Credit check companies pay $0.50-2.00/lookup globally.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                MCP server for Claude/GPT → developers find you. API marketplace listings. Thai fintech partnerships.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Scrape DBD + structure 1.8M+ entities → REST API + MCP server. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (6/7)</div>
+                Perfect CTO fit — data pipeline + API infrastructure. Blockchain background helps with data integrity.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                AI agents need data NOW. DBD is PDF hell. No one has structured this properly yet.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free tier (100 lookups/mo) → list on API marketplaces → target Thai fintech developers
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine into 'MuteData' — Thai structured data platform (legal + business + regulatory)</div>
+    </div>
+    <div class="idea-detail" id="idea-122">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#122 MuteAcademy <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">46/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Thai AI Business Toolkit + Community | Education | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> AI upskilling market $9.3B global. Thai EdTech $1.76B. 3.2M SMEs + 5M freelancers<br>
+                <strong>SAM:</strong> Tech-savvy Thai professionals wanting AI tools = 500K-1M<br>
+                <strong>SOM:</strong> 2,000-10,000 paying members Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Zero Thai-first AI business toolkit. Coursera/Udemy have generic courses. No Thai community.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                ฿1,990 one-time kit + ฿499/mo community. AI demand surged 291% in 12 months.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (6/6)</div>
+                TikTok content (Thai AI tips) + LINE community + Techsauce presence. Self-referential — toolkit users create content.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                100+ curated Thai prompts + workflow templates + video courses. 10/10 feasibility — content product.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO using AI daily = credible teacher. Thai-English bilingual. Weak: no teaching/course creation track record.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                AI literacy exploding in Thailand. 80%+ Thais use AI regularly. ZERO Thai-language AI business toolkit.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free 10-prompt starter pack on LINE → upsell to full kit → community converts to monthly
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MuteTutor (#28) redesigned as 'survive/beat AI' → feeds into MuteAcademy for adults</div>
+    </div>
+    <div class="idea-detail" id="idea-131">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#131 MuteLearn (NEW) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">46/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Education Platform: Survive & Thrive in AI Era | Education | B2C/B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> AI upskilling $9.3B → $97B by 2034. Thai EdTech $1.76B<br>
+                <strong>SAM:</strong> Thai professionals + SME owners wanting AI skills = 2-5M<br>
+                <strong>SOM:</strong> 5,000-30,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Zero Thai AI survival toolkit. Educative.io (English only). Coursera generic.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                ฿2,990 toolkit + ฿499/mo community + ฿49,900 corporate training. Multi-stream.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (6/6)</div>
+                TikTok 'survive AI' content → LINE community → paid toolkit → corporate sales.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Content product + community platform + AI tool tutorials. 10/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                Building MuteLab = proof of concept. CTO using AI daily = credible teacher.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                AI displacement fear at peak. 291% skills demand increase. NOW.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free '7 AI Tools' guide → 10K downloads → convert 500 to paid → community builds
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MEGA-MERGE: MuteTutor (redesigned) + MuteAcademy + MuteKid into MuteLearn</div>
+    </div>
+    <div class="idea-detail" id="idea-28">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#28 MuteTutor (Redesigned) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">45/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Academy: Survive & Beat AI in the New World | Education | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> AI upskilling market $9.3B global (2024) → $97B by 2034. Thai EdTech $1.76B<br>
+                <strong>SAM:</strong> Thai professionals fearing AI displacement = 2-5M<br>
+                <strong>SOM:</strong> 5,000-20,000 paying users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                Educative.io 'AI Survival Plan' (English). Zero Thai equivalent. Coursera/Udemy generic courses.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                ฿2,990 course + ฿499/mo community. Corporate training ฿49,900/company. High willingness — fear drives purchase.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (6/6)</div>
+                TikTok fear-content viral. Thai HR associations. Corporate wellness partnerships. LINE community.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Course content + AI tool tutorials + community platform. 10/10 feasibility — content product.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO using AI daily = credible. Building MuteLab portfolio = proof of concept. Needs teaching skills.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                AI disruption fear at peak. 291% increase in AI skills demand. NOW is the window.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free '7 AI Tools Every Thai Professional Needs' guide → LINE community → paid course upsell
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MuteTutor (survive AI) + MuteAcademy (#122, business toolkit) + MuteKid (#54, homework) = 'MuteLearn' education platform</div>
+    </div>
+    <div class="idea-detail" id="idea-100">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#100 MutePDPA <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">44/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI PDPA Compliance for Thai Businesses | RegTech | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> Global privacy software $5.07B (2025). 640K+ Thai SMEs need PDPA compliance<br>
+                <strong>SAM:</strong> 87,000 Thai businesses likely to buy software (e-commerce, healthcare, mid-market)<br>
+                <strong>SOM:</strong> 240-2,560 customers Y1 at ฿2,000-6,000/mo
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                OneTrust ($5.3B val, $10K+/yr), TrustArc ($22K/yr avg), iComply (Thai, Odoo-based), PDPA Core (50+ clients), Netka Solution. NO dominant Thai SaaS leader.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                ฿1,990-9,990/mo tiers. Thai SMEs want ฿2-6K/mo range. International tools 10-100x more expensive.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Free website scanner = lead magnet. Thai business associations. Techsauce/Blognone PR. PDPA fear = organic search.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Website scanner + privacy policy generator + DSAR manager + consent management. PROTOTYPE EXISTS. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                Has working prototype. CTO = strong technical build. No legal/compliance domain expertise (needs advisor).
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                CRITICAL: ฿21.5M fines in 2025. Monthly enforcement actions. 6.19/100 avg SME compliance score. Fear is real NOW.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free PDPA scan for any Thai website → report shows gaps → upsell to fix/monitor → referral from law firms
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MuteSafe (#46) + MuteGuard (#49) + MuteLearn (#52) + MuteReg (#110) all fold into MutePDPA as features</div>
+    </div>
+    <div class="idea-detail" id="idea-117">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#117 MuteLIVE <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Real-Time Coach for TikTok LIVE Sellers | E-Commerce Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (7/7)</div>
+                <strong>TAM:</strong> Thailand TikTok Shop $5.9B GMV H1 2025. 3M+ sellers. Social commerce $5.2B<br>
+                <strong>SAM:</strong> 470K active stores × 70% doing live = 329K live sellers<br>
+                <strong>SOM:</strong> 1,000-5,000 paying sellers Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                MaGo (Thai MCN) does consulting not SaaS. Chinese tools $200+/mo. ZERO Thai-native live selling tools.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿790-1,990/mo. Top sellers earn 26M THB/mo — ฿790 is nothing. Break-even at 50 users.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                TikTok creator communities, Thai seller Facebook groups (massive), content marketing showing live data.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (5/7)</div>
+                Real-time chat analysis + script prompts + viewer analytics overlay. Complex but doable. 7/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                No e-commerce experience (weak). But technical build is solid. Needs seller advisor/partner.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                TikTok Shop Thailand 100% YoY growth. Live commerce = 70% of GMV. Window is NOW.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free beta for 50 top TikTok sellers → case study results → viral in seller communities
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine with MuteSell AI (#109) + MuteSpy (#120) + MuteClip (#78) into 'MuteCommerce' suite</div>
+    </div>
+    <div class="idea-detail" id="idea-123">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#123 MuteSticker <span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI LINE Sticker Studio for Thai Creators | Creator Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> LINE sticker global revenue $200M+/yr. Thailand = #3 market globally<br>
+                <strong>SAM:</strong> Thai creators wanting to make stickers — 500K+ potential<br>
+                <strong>SOM:</strong> 5,000-20,000 users Y1 (freemium)
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                Zero Thai-native sticker creation tool. Top creators earn ฿161M+ over 3 years. 50/50 revenue split with LINE.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿299/mo pro plan + 10% of sticker revenue share. Revenue split with LINE = passive income for platform.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (6/6)</div>
+                Thai creator TikTok community + LINE Creator Market integration. Viral: every sticker set promotes the tool.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                AI image gen → LINE sticker format compliance → submission automation. 8/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                No design/art background. Technical build fine. Needs creator community understanding.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                AI art generation mature. LINE sticker market still growing. But market may be peaking.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free sticker generator → show earnings potential → pro features for serious creators
+            </div>
+        </div>
+        
+    </div>
+    <div class="idea-detail" id="idea-118">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#118 GigPocket <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Income Tracker for Thai Gig Workers | FinTech | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 800K+ Thai gig riders. Gig economy 35-40% of workforce by 2027. Food delivery $7.1B by 2028<br>
+                <strong>SAM:</strong> Tech-savvy riders tracking multi-platform income = 200-400K<br>
+                <strong>SOM:</strong> 5,000-20,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                ZERO Thai competitor. Robinhood shut down July 2024. No dedicated rider income tools exist.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (4/6)</div>
+                ฿149/mo basic, ฿299/mo with tax filing. Low ARPU but massive volume potential.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Rider Facebook groups (100K+ members), Grab/LINE MAN driver communities, TikTok rider content.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                OCR receipt scanning + PromptPay bank statement parsing + income dashboard. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO can build the tech. No gig economy domain expertise. Need rider advisor.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                Platform fee increases squeezing riders. Need income proof for bank loans. Growing urgency.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free income tracker → post in rider groups → premium features for tax/loan proof
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine with MuteBooks (#57 — gig worker finance) into single 'GigPocket' app</div>
+    </div>
+    <div class="idea-detail" id="idea-119">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#119 MuteMINI <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">No-Code LINE MINI App Builder | Platform/Builder | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 6M LINE Official Accounts. LINE chat commerce ฿1.14T by 2028<br>
+                <strong>SAM:</strong> Thai SMEs wanting digital storefront on LINE = 100-500K<br>
+                <strong>SOM:</strong> 500-2,000 paying businesses Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                LINE OA Plus opened 2024. No Thai no-code LINE MINI App builder. Global: Shopify doesn't do LINE.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                ฿2,490/mo. High retention — switching costs once deployed. Restaurant/salon/clinic templates.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                LINE for Business partnerships. Thai SME Facebook groups. Digital agency referral program.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (5/7)</div>
+                No-code builder → LINE MINI App deployment. Complex — LINE SDK integration. 6/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO can build platform. LINE ecosystem knowledge needed. Complex but achievable.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                LINE OA Plus (2024) opened APIs. 56M Thai LINE users. NOW is the window.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free template for restaurants → deploy in 30 min → word-of-mouth in restaurant groups
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Absorbs LINE AI Assistant (#8) + MuteSlot (#40) + MuteBot (#115) as features within MINI Apps</div>
+    </div>
+    <div class="idea-detail" id="idea-70">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#70 MuteTax <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Thailand's First AI Crypto Tax Calculator | Blockchain/FinTech | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> 4M+ Thai crypto accounts (Bitkub + Binance). Global crypto tax market growing<br>
+                <strong>SAM:</strong> Active traders needing tax help = 500K-1M<br>
+                <strong>SOM:</strong> 5,000-20,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                CoinTracker, Koinly (global, no Thai tax rules). ZERO Thai crypto tax tool. Revenue Dept unclear on crypto tax.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿990-2,990/yr tax season. One-time purchase model. Revenue peaks Jan-Mar.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai crypto communities (Bitkub users), Telegram groups, tax season content marketing.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Import from Bitkub/Binance APIs → calculate Thai tax → generate Revenue Dept form. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (7/7)</div>
+                Blockchain CTO = perfect. Understands exchange APIs, wallet data, DeFi transactions.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                4M+ accounts need to file. Regulatory clarity still evolving — risk and opportunity.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free tax estimate during tax season → paid for full report + filing support
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Bundle with MuteAudit into 'MuteChain' blockchain services</div>
+    </div>
+    <div class="idea-detail" id="idea-130">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#130 MuteCommerce (NEW) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#22c55e">42/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">All-in-One Thai E-Commerce Seller Suite | E-Commerce Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (7/7)</div>
+                <strong>TAM:</strong> Thai e-commerce ฿1.1T. 3M+ TikTok sellers. 470K active stores<br>
+                <strong>SAM:</strong> Serious sellers wanting tools = 100-300K<br>
+                <strong>SOM:</strong> 2,000-10,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Graas.ai ($9M, enterprise). Chinese tools expensive/English. ZERO Thai all-in-one.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿890-3,990/mo. Tiered: spy only → spy+listing → spy+listing+live coach.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai seller Facebook/LINE groups. TikTok content showing data insights.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                Analytics dashboard + listing AI + live coach + product photo. 7/10 — many features.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                No e-commerce expertise. Need seller co-founder/advisor.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                TikTok Shop 100% YoY. Shopee fees rising. Sellers desperate for tools.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free trending products report → viral in seller groups → paid for full suite
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MEGA-MERGE of all e-commerce ideas into one suite</div>
+    </div>
+    <div class="idea-detail" id="idea-120">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#120 MuteSpy <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">41/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">TikTok Shop Thailand Competitor Intelligence | E-Commerce Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> TikTok Shop Thailand $5.9B H1 2025, 470K active stores<br>
+                <strong>SAM:</strong> Sellers wanting competitive intelligence = 50-100K<br>
+                <strong>SOM:</strong> 1,000-5,000 paying users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Chinese tools (Kalodata, FastMoss) $200+/mo, English UI. ZERO Thai-native tool. Jungle Scout doesn't cover TikTok.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿890-2,990/mo. Chinese tools charge $200+ — massive price gap for Thai sellers.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai seller Facebook groups. TikTok content showing competitor data. Seller WhatsApp/LINE groups.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                TikTok data scraping + analytics dashboard. 7/10 — scraping risk from TikTok ToS.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                CTO can build scraper/analytics. No e-commerce expertise. Scraping risk is real.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (5/5)</div>
+                TikTok Shop 100% YoY growth. Thai sellers NEED data to compete. Chinese sellers dominating with better tools.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free trending products report → viral in seller groups → premium for competitor deep-dives
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine into MuteCommerce suite (live coaching + listing optimization + spy + probe)</div>
+    </div>
+    <div class="idea-detail" id="idea-109">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#109 MuteSell AI <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">41/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Listing Optimizer for Shopee & Lazada | E-Commerce Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (7/7)</div>
+                <strong>TAM:</strong> Thai e-commerce ฿1.1T (2024). Millions of Shopee/Lazada sellers<br>
+                <strong>SAM:</strong> Active sellers wanting optimization = 200-500K<br>
+                <strong>SOM:</strong> 2,000-10,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                Graas.ai ($9M raised, enterprise focus). Platform native AI tools emerging. No Thai-first listing optimizer.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿500-2,000/mo. Sellers see direct ROI in sales increase. Easy to prove value.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Shopee/Lazada seller groups. Free listing audit tool → viral. Content showing before/after results.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                AI rewrites titles/descriptions/tags. Image optimization. SEO for platform search. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                CTO can build AI tools. No e-commerce seller expertise. Needs seller feedback loop.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                Shopee/Lazada fees increasing → sellers need efficiency. AI tools mature. Good timing.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free listing audit for 100 products → show CTR improvement → convert to paid
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Part of MuteCommerce suite</div>
+    </div>
+    <div class="idea-detail" id="idea-65">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#65 MuteAudit <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">41/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Smart Contract Auditor | Blockchain/Web3 | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> Smart contract audit market $500M+. DeFi TVL $100B+<br>
+                <strong>SAM:</strong> Small-to-mid DeFi projects ($500-5K audits)<br>
+                <strong>SOM:</strong> 100-500 audits Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                CertiK, OpenZeppelin, Trail of Bits (expensive $50K+). Slither, Aderyn (free/open source). AI auditing emerging.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (6/6)</div>
+                $500-5,000 per audit vs $50K traditional. Clear 10x savings value proposition.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (4/6)</div>
+                DeFi Twitter/X. Smart contract deployment platforms. GitHub integrations.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                AI vulnerability detection + report generation. Blockchain CTO = can validate results. 8/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (7/7)</div>
+                PERFECT — Blockchain CTO with smart contract expertise. This IS the domain.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                DeFi growing but audit market is competitive. AI auditing credibility still questioned.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free audit for 50 small DeFi projects → publish results → reputation builds
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Pair with MuteTax (#70 — crypto tax) for blockchain services bundle</div>
+    </div>
+    <div class="idea-detail" id="idea-69">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#69 MuteValidate <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">41/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Launch Kit Engine (Validation + Landing + Pitch) | Developer Tools | B2C Global</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> Startup validation market. VentureKit 750K users at $8/mo<br>
+                <strong>SAM:</strong> Indie hackers, solopreneurs globally<br>
+                <strong>SOM:</strong> 5,000-20,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                VentureKit ($8/mo, 750K users) — closest. But no one bundles validation + landing page + pitch deck + infographic.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                $19-49/launch kit. Volume play. We literally use this for MuteLab ideas.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                IndieHackers, ProductHunt, Twitter/X indie dev community. Dog-food with MuteLab.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                AI generates 4 deliverables from 1 description. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (6/7)</div>
+                CTO building MuteLab = literally validates 128+ ideas. PERFECT dogfooding.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                AI making startup validation easier. Growing market.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free for 100 ProductHunt launches → convert to paid
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Global product — standalone</div>
+    </div>
+    <div class="idea-detail" id="idea-132">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#132 MuteChain (NEW) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">41/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Blockchain Services Suite (Audit + Tax + Signals) | Blockchain | B2C/B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> 4M+ Thai crypto accounts. Global audit market $500M+<br>
+                <strong>SAM:</strong> Active crypto users + DeFi projects<br>
+                <strong>SOM:</strong> 5,000 tax users + 100 audits Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                CoinTracker (no Thai tax). CertiK (expensive $50K+). Zero Thai suite.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                Tax: ฿990-2,990/yr. Audits: $500-5K each. Signals: ฿999-4,990/mo. Multiple streams.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai crypto communities. Bitkub ecosystem. DeFi Twitter/X.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                CTO is blockchain expert. Tax calc + audit AI + signal generation. 8/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (7/7)</div>
+                PERFECT — Blockchain CTO. This is the domain. Water Ledger = credibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                Crypto market cyclical but Thai tax need is permanent.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free crypto tax estimate → convert to paid report → upsell audit services
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MEGA-MERGE: MuteAudit + MuteTax + MuteTrade + MuteWill</div>
+    </div>
+    <div class="idea-detail" id="idea-84">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#84 MuteSolo <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">40/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Business OS for Thai Freelancers (HoneyBook clone) | SaaS/Tools | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 5M+ Thai freelancers. HoneyBook $400M+ val<br>
+                <strong>SAM:</strong> Tech-savvy freelancers wanting business tools = 500K-1M<br>
+                <strong>SOM:</strong> 2,000-10,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                HoneyBook/Dubsado (English, US-focused). FlowAccount (accounting only). No Thai all-in-one.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿499-1,490/mo. Freelancers earn 35-48% premium if bilingual. Willing to invest in tools.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Freelancer Facebook groups. Thai programmer communities. PromptPay QR invoicing as hook.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                Client CRM + invoicing + PromptPay + Thai VAT receipts via LINE OA. 8/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO IS a freelancer/solopreneur. Dogfooding the product. Good fit.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                8.2M Thai freelancers projected by 2027. Gig economy growing. Steady growth.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free PromptPay invoice generator → upsell to CRM + recurring billing features
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MuteSolo + MuteInvoice (#95) + MuteBooks (#57) + MuteWage (#79) = 'MuteSolo' super-app for Thai freelancers</div>
+    </div>
+    <div class="idea-detail" id="idea-37">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#37 MorNee (หมอหนี้) <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">40/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Debt Coach on LINE | FinTech | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 28M+ Thais in debt. ฿16.35T crisis<br>
+                <strong>SAM:</strong> Digital-savvy debtors = 5-10M<br>
+                <strong>SOM:</strong> 10,000-50,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (7/7)</div>
+                ZERO AI debt tools in Thailand. Traditional debt counseling is expensive and stigmatized.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                Free debt X-ray → ฿199/mo plan → ฿499/mo negotiation scripts. 98% margin, LTV:CAC 6.94x.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Financial distress content on TikTok. LINE communities. Google 'แก้หนี้' searches.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                Debt calculator + personalized plan + negotiation scripts on LINE. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (3/7)</div>
+                No financial advisory expertise. Regulatory risk with financial advice. Need legal review.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                Household debt crisis. Growing problem. Steady demand.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free debt X-ray tool → viral in debt forums → premium plan conversion
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Standalone — unique positioning in financial wellness</div>
+    </div>
+    <div class="idea-detail" id="idea-22">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#22 MuteMoo <span style="background:#22c55e;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">GO</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">39/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Fortune Telling + Digital Mutelu Art | Consumer/Culture | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> Thai fortune telling market estimated ฿10B+. 52M Thai believers. Spiritual goods hundreds of millions annually<br>
+                <strong>SAM:</strong> Digital-savvy Thais interested in ดูดวง = 10-20M<br>
+                <strong>SOM:</strong> 50,000-200,000 users Y1 (freemium)
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                ถูกหวย app (4.6★). ChatGPT gaining popularity for Thai fortune telling. GoWabi lists 47 services ฿99-899.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                Free ดูดวง → personalized wallpapers ฿99-249. Subscription ฿199/mo. 95%+ margin.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (6/6)</div>
+                TikTok/IG viral content. Thai astrology communities. Word-of-mouth — people share readings.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                AI fortune algorithm + image generation for wallpapers. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (3/7)</div>
+                No fortune telling domain knowledge. No astrology/spiritual credibility. Need content partner.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                AI art generation mature. Digital fortune telling growing. But ChatGPT can do this too.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free AI ดูดวง on LINE/web → viral sharing → wallpaper upsell
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> MuteMoo + MuteHuay (#59) + MuteDuang (#104) = 'MuteMoo' mega fortune/mutelu platform</div>
+    </div>
+    <div class="idea-detail" id="idea-5">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#5 x402 Gateway <span style="background:#6366f1;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">WAIT</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">39/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Agent-to-Agent Payment Protocol | Blockchain/Web3 | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> $251B AI agent market by 2034. Agent payments = subset<br>
+                <strong>SAM:</strong> AI companies needing agent payment rails<br>
+                <strong>SOM:</strong> Very uncertain — market premature
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Coinbase x402 protocol (they may build native). Few builders yet. Stripe Agent Toolkit emerging.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (4/6)</div>
+                Transaction fee 0.5-2%. But agents barely transact autonomously today.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (3/6)</div>
+                Developer communities, MCP integration, GitHub presence.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                Blockchain CTO = perfect technical fit. x402 protocol well-documented. 8/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (7/7)</div>
+                STRONGEST founder-market fit. Blockchain CTO + Water Ledger payment infrastructure experience.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (3/5)</div>
+                TOO EARLY. Few agents actually transact. 2027-2028 may be the real window.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Build x402 reference implementation → open source → become the standard
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Combine with Agent Reputation (#7) + MutePay (#71) + MuteGate (#76) into 'MuteProtocol' web3 stack</div>
+    </div>
+    <div class="idea-detail" id="idea-55">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#55 MuteKit <span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">39/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Micro-Niche Digital Product Factory | Digital Products | B2C Global</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> Global digital product market. Etsy digital revenue 17% of total ($112M Q1 2025)<br>
+                <strong>SAM:</strong> Niche content kits for specific industries<br>
+                <strong>SOM:</strong> 200+ products × $25 = $150-300K/yr potential
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (5/7)</div>
+                Etsy sellers (massive). Canva templates. Creative Market. But <50 results per target niche.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                $9-49 per kit. 95%+ margin. Etsy + Gumroad + own site distribution.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Etsy SEO + Pinterest + targeted Facebook ads.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                AI generates designs → package into kits → list on platforms. 9/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (4/7)</div>
+                CTO can build automation. No design/marketing expertise for templates.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                Digital products growing but saturating. Niche focus is key.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                10 niche kits → Etsy launch → SEO optimize → scale what sells
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Standalone global play — doesn't depend on Thai market</div>
+    </div>
+    <div class="idea-detail" id="idea-8">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#8 LINE AI Assistant <span style="background:#06b6d4;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MERGE</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">38/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Chatbot for Thai Businesses on LINE | Chatbot/AI | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (6/7)</div>
+                <strong>TAM:</strong> 54M LINE users. 6M LINE OA. Chat commerce ฿1.14T by 2028<br>
+                <strong>SAM:</strong> SMEs wanting chatbot automation = 100-500K<br>
+                <strong>SOM:</strong> 500-2,000 paying businesses Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (4/7)</div>
+                ZWIZ.AI (official LINE partner, ฿500/mo+), Amity Solutions (enterprise), LINE AI launching native features (¥3K/mo).
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (4/6)</div>
+                ฿999-2,990/mo. ZWIZ charges ฿500/mo minimum. LINE's own AI at ¥3K/mo ($20) is price floor.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai SME groups, digital agency partnerships, LINE for Business partnerships.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (7/7)</div>
+                LINE Messaging API + LLM integration. Well-documented. 9/10 feasibility.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO can build. But LINE API has limitations. Shop-by-shop onboarding is labor-intensive.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (3/5)</div>
+                LINE itself adding AI features. ZWIZ.AI well-established. Late to market.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free chatbot for 50 businesses → prove response time improvement → convert to paid
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Becomes a feature inside MuteMINI (#119) LINE MINI App builder, not standalone</div>
+    </div>
+    <div class="idea-detail" id="idea-53">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#53 MuteFlow <span style="background:#8b5cf6;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">LATER</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">38/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">Thai Zapier — Connect LINE + Shopee + FlowAccount | Automation | B2B</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> Global iPaaS market $20B+. Thai SaaS ฿1.65B<br>
+                <strong>SAM:</strong> Thai businesses needing automation = 50-200K<br>
+                <strong>SOM:</strong> 500-2,000 users Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (6/7)</div>
+                Zapier (ZERO Thai integrations — LINE, Shopee, KBank not supported). Make.com, n8n (same gap).
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿990-4,990/mo based on automations. Zapier charges $20-100+/mo for comparable flows.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (4/6)</div>
+                Thai dev communities. SME Facebook groups. 'Connect your LINE + Shopee' messaging.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (5/7)</div>
+                API integrations for Thai services. Each integration is custom work. 5/10 — lots of integrations needed.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (5/7)</div>
+                CTO can build integrations. Time-intensive to maintain many connectors.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (4/5)</div>
+                Growing but not urgent. Zapier hasn't entered Thai market yet.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                LINE OA + Google Sheets free connector → upsell Shopee/FlowAccount integrations
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Standalone — horizontal play that connects other MuteLab products</div>
+    </div>
+    <div class="idea-detail" id="idea-39">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <h4>#39 MuteTrade <span style="background:#eab308;color:white;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">MAYBE</span></h4>
+            <span style="font-size:1.5em;font-weight:700;color:#eab308">38/50</span>
+        </div>
+        <p style="color:#94a3b8;margin:8px 0">AI Crypto Trading Signals on Telegram | Blockchain/FinTech | B2C</p>
+
+        <div class="detail-grid" style="margin-top:12px">
+            <div class="detail-item">
+                <div class="dim-label">🏪 Market Size (5/7)</div>
+                <strong>TAM:</strong> 4M+ Thai crypto accounts. Global signals market<br>
+                <strong>SAM:</strong> Active traders wanting AI signals = 200-500K<br>
+                <strong>SOM:</strong> 1,000-5,000 subscribers Y1
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🏆 Competition (4/7)</div>
+                Many global signal bots. Thai signal groups exist (manual). No Thai AI-first platform.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">💰 Monetization (5/6)</div>
+                ฿999-4,990/mo subscription. Break-even at 25 users.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📢 Distribution (5/6)</div>
+                Thai crypto Telegram groups. Bitkub community. Trading influencers.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🛠️ Technical (6/7)</div>
+                On-chain data + whale tracking + signal generation. 7/10.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">🎯 Founder Fit (7/7)</div>
+                Blockchain CTO = perfect. Understands on-chain data, DeFi, trading.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">⏰ Timing (3/5)</div>
+                Crypto market cyclical. Currently unclear direction.
+            </div>
+            <div class="detail-item">
+                <div class="dim-label">📊 First 100 Users</div>
+                Free signals channel → prove accuracy → premium conversion
+            </div>
+        </div>
+        <div class="market-data" style="margin-top:12px"><strong>Merge:</strong> Part of 'MuteChain' blockchain services bundle</div>
+    </div>
+</div>
+
+<!-- RECOMMENDED ROADMAP -->
+<div class="section">
+    <h2>Recommended Launch Sequence</h2>
+    <div class="timeline">
+        <div class="timeline-item">
+            <h4 style="color:#22c55e">Phase 1: Week 1-4 — Revenue Sprint</h4>
+            <p style="color:#94a3b8"><strong>MutePDPA</strong> (prototype exists → launch MVP → first paying customers)<br>
+            <strong>MuteLearn</strong> (content product → free guide → paid toolkit in 2 weeks)<br>
+            Target: First ฿100K revenue within 30 days</p>
+        </div>
+        <div class="timeline-item">
+            <h4 style="color:#3b82f6">Phase 2: Month 2-3 — Data Moat</h4>
+            <p style="color:#94a3b8"><strong>MuteData</strong> (ThaiLaw + ThaiCompany APIs → MCP servers → developer adoption)<br>
+            <strong>MuteChain</strong> (MuteTax for tax season → MuteAudit for ongoing revenue)<br>
+            Target: $5K MRR from diversified streams</p>
+        </div>
+        <div class="timeline-item">
+            <h4 style="color:#8b5cf6">Phase 3: Month 4-6 — Scale Winners</h4>
+            <p style="color:#94a3b8"><strong>MuteCommerce</strong> (TikTok spy tool → add listing optimizer → live coaching)<br>
+            <strong>MuteMINI</strong> (LINE MINI App builder for SMEs)<br>
+            Target: $10K+ MRR, 3+ revenue streams</p>
+        </div>
+        <div class="timeline-item">
+            <h4 style="color:#a855f7">Phase 4: Month 7-12 — Platform Play</h4>
+            <p style="color:#94a3b8">Scale what's working. Kill what isn't. Consider enterprise plays (MuteGreen ESG) if cash flow supports.<br>
+            Target: $20-50K MRR, sustainable solopreneur income</p>
+        </div>
+    </div>
+</div>
+
+<!-- KEY MARKET DATA -->
+<div class="section">
+    <h2>Key Market Data (Sources Verified)</h2>
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="dim-label">Thai Digital Economy</div>
+            • Thai SaaS market: $1.65B (2024), 15% CAGR<br>
+            • PromptPay: 24.3B transactions (2024), +22% YoY<br>
+            • Digital transformation: $10.06B market<br>
+            • 3.2M SMEs, 99.5% of all businesses
+        </div>
+        <div class="detail-item">
+            <div class="dim-label">E-Commerce & TikTok Shop</div>
+            • Thai e-commerce: ฿1.1T (2024), +14% YoY<br>
+            • TikTok Shop Thailand: $5.9B GMV H1 2025<br>
+            • 3M+ TikTok sellers, 470K active stores<br>
+            • 25.66% of GLOBAL TikTok Shop GMV
+        </div>
+        <div class="detail-item">
+            <div class="dim-label">LINE Ecosystem</div>
+            • 54M monthly active users (85.4% of internet)<br>
+            • 6M LINE Official Accounts<br>
+            • Chat commerce: ฿1.14T by 2028<br>
+            • 67 min/day average platform time
+        </div>
+        <div class="detail-item">
+            <div class="dim-label">PDPA Enforcement</div>
+            • ฿21.5M+ fines in 2025 (8 fines, 5 cases)<br>
+            • Max penalty: ฿5M + criminal liability<br>
+            • SME compliance score: 6.19/100 average<br>
+            • Monthly enforcement actions escalating
+        </div>
+        <div class="detail-item">
+            <div class="dim-label">Developer Ecosystem</div>
+            • ~550K software developers in Thailand<br>
+            • 177,606 positions needed (3 years)<br>
+            • Only 3,500 IT graduates/year<br>
+            • Only 1% of population has advanced digital skills
+        </div>
+        <div class="detail-item">
+            <div class="dim-label">Solo Founder Benchmarks</div>
+            • PhotoAI: $138K MRR (1 person)<br>
+            • Bannerbear: $52.5K MRR (1 person)<br>
+            • ScreenshotOne: $12-21K MRR (1 person)<br>
+            • Typical: 18-24 months to $10K MRR
+        </div>
+    </div>
+</div>
+
+<footer style="text-align:center;padding:40px;color:#475569;font-size:0.85em;border-top:1px solid #1e293b;margin-top:40px">
+    MuteLab — Built by Thanapat Pirmphol | Research powered by Claude AI | February 2026<br>
+    <span style="font-size:0.8em">All market data sourced from Mordor Intelligence, Grand View Research, Statista, GetLatka, TechCrunch, DLA Piper, Nation Thailand, Bangkok Post, and verified public sources.</span>
+</footer>
+</div>
+
+<script>
+function filterTable() {{
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#ideaTable tbody tr');
+    rows.forEach(row => {{
+        const name = row.getAttribute('data-name') || '';
+        const category = row.getAttribute('data-category') || '';
+        const verdict = row.getAttribute('data-verdict') || '';
+        const match = name.includes(query) || category.includes(query) || verdict.toLowerCase().includes(query);
+        row.style.display = match ? '' : 'none';
+    }});
+}}
+
+function filterVerdict(verdict, btn) {{
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const rows = document.querySelectorAll('#ideaTable tbody tr');
+    rows.forEach(row => {{
+        const rv = row.getAttribute('data-verdict');
+        if (verdict === 'ALL') {{ row.style.display = ''; }}
+        else if (verdict === 'WAIT') {{ row.style.display = (rv === 'WAIT' || rv === 'LATER') ? '' : 'none'; }}
+        else {{ row.style.display = rv === verdict ? '' : 'none'; }}
+    }});
+}}
+
+let sortDirection = {{}};
+function sortTable(col) {{
+    const table = document.getElementById('ideaTable');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const dir = sortDirection[col] = !sortDirection[col];
+
+    rows.sort((a, b) => {{
+        let aVal = a.cells[col].textContent.trim();
+        let bVal = b.cells[col].textContent.trim();
+        let aNum = parseFloat(aVal);
+        let bNum = parseFloat(bVal);
+        if (!isNaN(aNum) && !isNaN(bNum)) {{
+            return dir ? bNum - aNum : aNum - bNum;
+        }}
+        return dir ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    }});
+
+    rows.forEach(row => tbody.appendChild(row));
+}}
+</script>
+</body>
+</html>
