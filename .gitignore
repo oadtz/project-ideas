@@ -42,3 +42,6 @@ package-lock.json
 .DS_Store
 Thumbs.db
 .~lock.*
+
+# large media files
+content/videos/*.mp4
